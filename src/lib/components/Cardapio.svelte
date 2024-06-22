@@ -40,6 +40,8 @@
       })
     }
   }
+  let timeoutId: number | null = null
+
   function scrollIntoView(event: {
     preventDefault: () => void
     currentTarget: HTMLAnchorElement
@@ -52,12 +54,18 @@
     anchor?.scrollIntoView({ behavior: 'smooth' })
 
     selected = anchorId
-    setTimeout(() => {
-      preventSelect = false
-      changeSelection(anchorId)
-    }, 1000)
-  }
 
+    // Clear any existing timeout
+    if (timeoutId !== null) {
+      clearTimeout(timeoutId)
+    }
+
+    timeoutId = setTimeout(() => {
+      preventSelect = false
+      // changeSelection(anchorId)
+      timeoutId = null // Reset the timeout ID
+    }, 2000)
+  }
   function onViewportEnter(node: HTMLElement, callback: () => void) {
     const observer = new IntersectionObserver(entries => {
       // Check if the element is intersecting
@@ -79,7 +87,7 @@
 </script>
 
 <main class="mx-1">
-  <div class="sticky top-1 mx-2 z-10 pt-2">
+  <div class="sticky top-1 z-10 mx-2 pt-2">
     <div
       class="hide-scrollbar flex w-full gap-3 overflow-y-hidden overflow-x-scroll rounded-box bg-base-100 p-2 shadow-xl"
       bind:this={scrollContainer}
@@ -87,7 +95,9 @@
       {#each data as d}
         <a
           id="head-{d.id}"
-          class="btn hover:translate-y-1 hover:-translate-x-1  {selected === d.id ? 'btn-primary' : 'btn-secondary'}"
+          class="btn hover:-translate-x-1 hover:translate-y-1 {selected === d.id
+            ? 'btn-primary'
+            : ''}"
           href="#{d.id}"
           onclick={scrollIntoView}
         >
@@ -96,22 +106,26 @@
       {/each}
     </div>
   </div>
-  {#each data as d}
-    <h2
-      id={d.id}
-      class="mt-4 text-center text-2xl font-bold"
-      use:onViewportEnter={() => {
-        changeSelection(d.id)
-      }}
-    >
-      {d.label}
-    </h2>
-    <div class="grid grid-cols-[repeat(auto-fill,minmax(350px,1fr))] gap-2">
-      {#each d.row as row}
-        {@render card(row)}
-      {/each}
-    </div>
-  {/each}
+  <div class=" flex flex-col gap-3 container mx-auto">
+    {#each data as d}
+      <div class="flex flex-col">
+        <div
+          id={d.id}
+          class="divider my-4 py-4 text-center text-2xl font-bold"
+          use:onViewportEnter={() => {
+            changeSelection(d.id)
+          }}
+        >
+          {d.label}
+        </div>
+        <div class=" flex flex-wrap ">
+          {#each d.row as row}
+            {@render card(row)}
+          {/each}
+        </div>
+      </div>
+    {/each}
+  </div>
 </main>
 
 <style>

@@ -2,9 +2,14 @@
   import Cardapio from '$lib/components/Cardapio.svelte'
   import Modal from '$lib/components/Modal.svelte'
   import ThemeSwiter from '$lib/components/ThemeSwiter.svelte'
+  import Card1 from '$lib/components/cards/Card1.svelte'
+  import Card2 from '$lib/components/cards/Card2.svelte'
+  import Card3 from '$lib/components/cards/Card3.svelte'
   import Carousel from '$lib/components/landing-page/Carousel.svelte'
   import Carousel2 from '$lib/components/landing-page/Carousel2.svelte'
-
+  import MapContact from '$lib/components/landing-page/contact/MapContact.svelte'
+  import Hero from '$lib/components/landing-page/hero/Hero.svelte'
+  import { toast } from 'svelte-sonner'
   let testData = [
     {
       id: '1',
@@ -209,17 +214,27 @@
           nome: 'Bebida 20',
           descricao: 'Descrição da bebida 20',
         },
-        {
-          id: '30',
-          nome: 'Bebida 21',
-          descricao: 'Descrição da bebida 21',
-        },
       ],
     },
     {
       id: '11',
       label: 'Bebidas',
       row: [
+        {
+          id: '31',
+          nome: 'Bebida 22',
+          descricao: 'Descrição da bebida 22',
+        },
+        {
+          id: '32',
+          nome: 'Bebida 23',
+          descricao: 'Descrição da bebida 23',
+        },
+        {
+          id: '33',
+          nome: 'Bebida 24',
+          descricao: 'Descrição da bebida 24',
+        },
         {
           id: '31',
           nome: 'Bebida 22',
@@ -247,31 +262,18 @@
 </p>
 
 <Modal onClose={console.log} onOpen={console.log}>Teste Modal</Modal> -->
+<main class="flex flex-col gap-5">
+  <Hero />
 
-<Carousel />
+  <MapContact />
 
-<Carousel2 />
+  <Carousel />
+
+  <Carousel2 />
+</main>
 
 <Cardapio data={testData}>
   {#snippet card(d)}
-    <div class="card w-96 bg-base-100 shadow-xl">
-      <figure>
-        <img
-          src="https://img.daisyui.com/images/stock/photo-1606107557195-0e29a4b5b4aa.jpg"
-          alt="Shoes"
-        />
-      </figure>
-      <div class="card-body">
-        <h2 class="card-title">
-          {d.nome}
-          <div class="badge badge-secondary">NEW</div>
-        </h2>
-        <p>{d.descricao}</p>
-        <div class="card-actions justify-end">
-          <div class="badge badge-outline">Fashion</div>
-          <div class="badge badge-outline">Products</div>
-        </div>
-      </div>
-    </div>
+    <Card2 {...d} />
   {/snippet}
 </Cardapio>

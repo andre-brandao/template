@@ -3,11 +3,11 @@
     nome,
     descricao,
     image = 'https://dummyimage.com/420x260',
-
+    ...rest
   } = $props()
 </script>
 
-<div class="w-full p-4 md:w-1/2 lg:w-1/4">
+<div class="w-full p-4 md:w-1/2 lg:w-1/4" {...rest}>
   <a class="relative block h-48 overflow-hidden rounded">
     <img
       alt="ecommerce"

@@ -24,7 +24,7 @@
     <a
       href="#"
       class="hover:gray-800 mb-1 text-gray-500 transition duration-100 lg:text-lg"
-      >Timely Watch</a
+      >{nome}</a
     >
 
     <div class="flex items-end gap-2">

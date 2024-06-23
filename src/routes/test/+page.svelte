@@ -1,87 +1,62 @@
 <script>
-  import DnDContainer from '$lib/dnd/DnDContainer.svelte'
+  import Board from '$lib/components/dnd/DnDBoard.svelte'
 
-  let containers = [
+  let columnsData = [
     {
-      id: '1',
-      label: 'Entradas',
-      isDraggingOver: false,
-      row: [
-        {
-          id: '1',
-          nome: 'Entrada 1',
-          descricao: 'Descrição da entrada 1',
-        },
-        {
-          id: '2',
-          nome: 'Entrada 2',
-          descricao: 'Descrição da entrada 2',
-        },
-        {
-          id: '3',
-          nome: 'Entrada 3',
-          descricao: 'Descrição da entrada 3',
-        },
+      id: 'c1',
+      label: 'TODO',
+      items: [
+        { id: 1, name: 'item41' },
+        { id: 2, name: 'item42' },
+        { id: 3, name: 'item43' },
+        { id: 4, name: 'item44' },
+        { id: 5, name: 'item45' },
+        { id: 6, name: 'item46' },
+        { id: 7, name: 'item47' },
+        { id: 8, name: 'item48' },
+        { id: 9, name: 'item49' },
       ],
     },
     {
-      id: '2',
-      label: 'Pratos Principais',
-      isDraggingOver: false,
-      row: [
-        {
-          id: '4',
-          nome: 'Prato Principal 1',
-          descricao: 'Descrição do prato principal 1',
-        },
-        {
-          id: '5',
-          nome: 'Prato Principal 2',
-          descricao: 'Descrição do prato principal 2',
-        },
-        {
-          id: '6',
-          nome: 'Prato Principal 3',
-          descricao: 'Descrição do prato principal 3',
-        },
+      id: 'c2',
+      label: 'DOING',
+      items: [
+        { id: 10, name: 'item50' },
+        { id: 11, name: 'item51' },
       ],
     },
     {
-      id: '3',
-      label: 'Sobremesas',
-      isDraggingOver: false,
-      row: [
-        {
-          id: '7',
-          nome: 'Sobremesa 1',
-          descricao: 'Descrição da sobremesa 1',
-        },
-        {
-          id: '8',
-          nome: 'Sobremesa 2',
-          descricao: 'Descrição da sobremesa 2',
-        },
-        {
-          id: '9',
-          nome: 'Sobremesa 3',
-          descricao: 'Descrição da sobremesa 3',
-        },
-      ],
+      id: 'c3',
+      label: 'DONE',
+      items: [{ id: 13, name: 'item52' }],
     },
+    {
+      id: 'c4',
+      label: 'REVIEW',
+      items: [{ id: 14, name: 'item53' }],
+    },
+    {
+      id: 'c5',
+      label: 'ARCHIVE',
+      items: [{ id: 15, name: 'item54' }],
+    }
   ]
+  function handleBoardUpdated(newColumnsData) {
+    columnsData = newColumnsData
+  }
 </script>
 
-<DnDContainer {containers}>
+<Board columns={columnsData} onFinalUpdate={handleBoardUpdated}>
   {#snippet card(c)}
-   
-  <div class='bg-red-50 w-full'>
-    <p>
-      {c.nome}
-
-    </p>
-    <p>
-      {c.descricao}
-    </p>
-  </div>
+    <div class="card w-96 bg-neutral text-neutral-content glass">
+      <div class="card-body items-center text-center">
+        <h2 class="card-title">Cookies!</h2>
+        <p>We are using cookies for no reason.</p>
+        <div class="card-actions justify-end">
+          <button class="btn btn-primary">Accept</button>
+          <button class="btn btn-ghost">Deny</button>
+        </div>
+      </div>
+    </div>
   {/snippet}
-</DnDContainer>
+</Board>

@@ -25,6 +25,9 @@ devDependencies:
   '@types/eslint':
     specifier: ^8.56.7
     version: 8.56.10
+  '@vincjo/datatables':
+    specifier: 2.0.0-runes.21
+    version: 2.0.0-runes.21(svelte@5.0.0-next.163)
   autoprefixer:
     specifier: ^10.4.19
     version: 10.4.19(postcss@8.4.38)
@@ -801,6 +804,14 @@ packages:
     dependencies:
       '@typescript-eslint/types': 8.0.0-alpha.30
       eslint-visitor-keys: 3.4.3
+    dev: true
+
+  /@vincjo/datatables@2.0.0-runes.21(svelte@5.0.0-next.163):
+    resolution: {integrity: sha512-5tcVIcOWMGsLMyNcKtg0+NSFKHXt3+ydJj7iHq7oPK0VUwIIzgP2zl1StUmd8z2DxENcygjY5H7PB1S0BG1IXg==}
+    peerDependencies:
+      svelte: ^5.0.0-next.120
+    dependencies:
+      svelte: 5.0.0-next.163
     dev: true
 
   /@vitest/expect@1.6.0:

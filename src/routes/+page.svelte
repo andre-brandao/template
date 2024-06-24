@@ -9,7 +9,7 @@
   import Carousel2 from '$lib/components/landing-page/Carousel2.svelte'
   import MapContact from '$lib/components/landing-page/contact/MapContact.svelte'
   import Hero from '$lib/components/landing-page/hero/Hero.svelte'
-  import Dnd from '$lib/dnd/DnDContainer.svelte'
+  import Dnd from '$lib/components/dnd/dnd-no-deps/DnDContainer.svelte'
   import { toast } from 'svelte-sonner'
   let testData = [
     {

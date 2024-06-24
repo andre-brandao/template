@@ -9,19 +9,20 @@
   import NavBar from '$lib/components/NavBar.svelte'
   import type { LayoutData } from './$types'
 
-  export let data: LayoutData
-  let { user } = data
-  $: ({ user } = data)
+  import { user } from '$lib/stores/user'
 
-  let defaultTheme = 'bumblebee'
+  export let data: LayoutData
+  $user = data.user
+  $: $user = data.user
 
   onMount(() => {
+    let defaultTheme = 'bumblebee'
     changeTheme(defaultTheme)
   })
 </script>
 
 <Toaster richColors closeButton />
-<NavBar {user} />
+<NavBar />
 {#if $navigating}
   <div class="flex h-full items-center justify-center">
     <span class="loading loading-infinity loading-lg"></span>

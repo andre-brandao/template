@@ -1,7 +1,8 @@
 <script lang="ts">
   import type { User } from 'lucia'
   import ThemeSwiter from './ThemeSwiter.svelte'
-  export let user: User | null
+
+  import { user } from '$lib/stores/user'
 </script>
 
 <div class="navbar sticky top-0 z-10 bg-base-100">
@@ -51,10 +52,10 @@
         /></svg
       >
     </button>
-    {#if user}
+    {#if $user}
       <form method="post" action="?/signout">
         <button type="submit">
-          {user.username}
+          {$user.username}
         </button>
       </form>
     {:else}

@@ -32,8 +32,11 @@ export const themes =  [
     "dim",
     "nord",
     "sunset",
-]
+] as const
 
-export function changeTheme(theme:string) {
+type Theme = (typeof themes)[number]
+
+
+export function changeTheme(theme: Theme) {
     document.documentElement.setAttribute('data-theme', theme);
 }

@@ -27,9 +27,9 @@
         tabindex="0"
         class="menu dropdown-content menu-sm z-[777] mt-3 w-52 rounded-box bg-base-100 p-2 shadow"
       >
-        <li><a>Homepage</a></li>
-        <li><a>Portfolio</a></li>
-        <li><a>About</a></li>
+        <li><a href="/">Homepage</a></li>
+        <li><a href="/test">DND</a></li>
+        <li><a href="/datatable">Teste</a></li>
       </ul>
     </div>
   </div>
@@ -53,7 +53,7 @@
       >
     </button>
     {#if $user}
-      <form method="post" action="?/signout">
+      <form method="post" action="/?/signout">
         <button type="submit">
           {$user.username}
         </button>

@@ -3,6 +3,15 @@ import { drizzle } from 'drizzle-orm/libsql'
 import { createClient } from '@libsql/client'
 import { env } from '$env/dynamic/private'
 
+import { DefaultLogger, type LogWriter } from 'drizzle-orm/logger'
+
+class MyLogWriter implements LogWriter {
+  write(message: string) {
+    console.log(message)
+  }
+}
+const logger = new DefaultLogger({ writer: new MyLogWriter() })
+
 if (!env.DATABASE_URL) throw new Error('DATABASE_URL is not set')
 
 if (!dev && !env.DATABASE_AUTH_TOKEN)
@@ -13,4 +22,4 @@ export const libsqlClient = createClient({
   authToken: env.DATABASE_AUTH_TOKEN,
 })
 
-export const db = drizzle(libsqlClient)
+export const db = drizzle(libsqlClient, { logger })

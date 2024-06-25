@@ -16,8 +16,7 @@
   $: $user = data.user
 
   onMount(() => {
-    let defaultTheme = 'bumblebee'
-    changeTheme(defaultTheme)
+    changeTheme('bumblebee')
   })
 </script>
 

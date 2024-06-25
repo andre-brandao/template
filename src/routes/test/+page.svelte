@@ -39,7 +39,7 @@
       id: 'c5',
       label: 'ARCHIVE',
       items: [{ id: 15, name: 'item54' }],
-    }
+    },
   ]
   function handleBoardUpdated(newColumnsData) {
     columnsData = newColumnsData
@@ -48,7 +48,7 @@
 
 <Board columns={columnsData} onFinalUpdate={handleBoardUpdated}>
   {#snippet card(c)}
-    <div class="card w-96 bg-neutral text-neutral-content glass">
+    <div class="card glass w-96 bg-neutral text-neutral-content">
       <div class="card-body items-center text-center">
         <h2 class="card-title">Cookies!</h2>
         <p>We are using cookies for no reason.</p>

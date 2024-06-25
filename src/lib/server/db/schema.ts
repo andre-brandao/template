@@ -1,15 +1,26 @@
-import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core'
+import { sqliteTable, text, integer, blob } from 'drizzle-orm/sqlite-core'
+import { sql } from 'drizzle-orm'
 
+// import { generateId } from 'lucia'
 export interface DatabaseUser {
   id: string
   username: string
 }
 
-export const userTable = sqliteTable('user', {
+const userTable = sqliteTable('user', {
   id: text('id').notNull().primaryKey(),
+  // .$defaultFn(() => generateId(15)),
+
+  created_at: text('created_at').default(sql`(CURRENT_TIMESTAMP)`),
+
   username: text('username').notNull().unique(),
   password_hash: text('password_hash').notNull(),
 })
+
+type SelectUser = typeof userTable.$inferSelect
+type InsertUser = typeof userTable.$inferInsert
+
+export { userTable, type SelectUser, type InsertUser }
 
 export const sessionTable = sqliteTable('session', {
   id: text('id').notNull().primaryKey(),
@@ -17,4 +28,12 @@ export const sessionTable = sqliteTable('session', {
     .notNull()
     .references(() => userTable.id),
   expiresAt: integer('expires_at').notNull(),
+})
+
+export const productTable = sqliteTable('product', {
+  id: text('id').notNull().primaryKey(),
+  created_at: text('created_at').default(sql`(CURRENT_TIMESTAMP)`),
+  name: text('name').notNull(),
+  price: integer('price').notNull(),
+  image: blob('image').notNull(),
 })

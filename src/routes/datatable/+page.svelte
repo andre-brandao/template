@@ -9,6 +9,10 @@
     TableHandler,
     Datatable,
     ThSort,
+    Search,
+    Pagination,
+    RowCount,
+    RowsPerPage,
   } from '@vincjo/datatables/server'
 
   const table = new TableHandler([], { rowsPerPage: 10 })
@@ -20,51 +24,35 @@
   table.invalidate()
 </script>
 
-<div class="container card mx-auto bg-base-200 p-2">
+<div class="container mx-auto p-2">
   <Datatable {table}>
-    <input
-      type="search"
-      class="input"
-      bind:value={search.value}
-      placeholder="Search..."
-      oninput={() => {
-        search.set()
-      }}
-    />
+    {#snippet header()}
+      <Search {table} />
+      <RowsPerPage {table} />
+    {/snippet}
+
     <table class="table">
       <thead>
         <tr>
-          <ThSort {table} field="name">Name</ThSort>
-          <ThSort {table} field="company_name">Company Name</ThSort>
-          <ThSort {table} field="email">Email</ThSort>
+          <ThSort {table} field="username">Name</ThSort>
+          <!-- <ThSort {table} field="company_name">Company Name</ThSort> -->
+          <!-- <ThSort {table} field="email">Email</ThSort> -->
         </tr>
       </thead>
       <tbody>
         {#each table.rows as row}
           <tr>
-            <td>{row.name}</td>
-            <td>{row.company.name}</td>
-            <td>{row.email}</td>
+            <td>{row.username}</td>
+            <!-- <td>{row.company.name}</td> -->
+            <!-- <td>{row.email}</td> -->
           </tr>
         {/each}
       </tbody>
     </table>
 
-    <aside class="flex justify-center gap-3">
-      <button onclick={() => table.setPage(1)}>First page</button>
-      <button onclick={() => table.setPage('previous')}>Previous</button>
-
-      {#each table.pagesWithEllipsis as page}
-        <button
-          class:active={page === table.currentPage}
-          onclick={() => table.setPage(page)}
-        >
-          {page ?? '...'}
-        </button>
-      {/each}
-
-      <button onclick={() => table.setPage('next')}>Next</button>
-      <button onclick={() => table.setPage('last')}>Last page</button>
-    </aside>
+    {#snippet footer()}
+      <RowCount {table} />
+      <Pagination {table} />
+    {/snippet}
   </Datatable>
 </div>

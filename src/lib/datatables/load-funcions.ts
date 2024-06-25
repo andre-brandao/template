@@ -1,14 +1,15 @@
 import type { State } from '@vincjo/datatables/server'
 
-export const myLoadFunction = async (state: State) => {
-  console.log(state)
+export async function myLoadFunction(state: State) {
+  console.log(state.sort)
 
-  //   const response = await fetch(
-  //     `/users?${getParams(state)}`,
-  //   )
-  const response = await fetch('/api/datatables/teste').then(res => res.json())
-  state.setTotalRows(response.length)
-  return response
+  const response = await fetch(`/api/datatables/user?${getParams(state)}`, {
+    method: 'POST',
+  }).then(res => res.json())
+  const { total, rows } = response
+
+  state.setTotalRows(total)
+  return rows
 }
 
 const getParams = ({ offset, rowsPerPage, search, sort, filters }: State) => {

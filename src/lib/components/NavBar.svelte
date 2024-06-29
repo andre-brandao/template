@@ -53,11 +53,7 @@
       >
     </button>
     {#if $user}
-      <form method="post" action="/?/signout">
-        <button type="submit">
-          {$user.username}
-        </button>
-      </form>
+      <a href="/myprofile">{$user.username}</a>
     {:else}
       <a href="/login">Login</a>
     {/if}

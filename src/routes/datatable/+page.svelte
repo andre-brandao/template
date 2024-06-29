@@ -31,7 +31,7 @@
       <RowsPerPage {table} />
     {/snippet}
 
-    <table class="table">
+    <table class="table table-zebra">
       <thead>
         <tr>
           <ThSort {table} field="username">Name</ThSort>

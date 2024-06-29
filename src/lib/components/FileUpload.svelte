@@ -2,14 +2,16 @@
   import { toast } from 'svelte-sonner'
 
   interface FileUploadProps {
+    id?: string
     size?: number
     class?: string
     onFileChange?: (file: File, previewUrl: string, resizedBlob: Blob) => void
   }
 
   let {
+    id,
     size: maxSize = 400,
-    class: className = 'file-input',
+    class: className = 'file-input w-full input-bordered file-input-sm ',
     onFileChange = (f, p, b) => {},
   }: FileUploadProps = $props()
 
@@ -119,6 +121,7 @@
 </script>
 
 <input
+  {id}
   type="file"
   class={className}
   accept="image/*"

@@ -28,13 +28,14 @@
         class="menu dropdown-content menu-sm z-[777] mt-3 w-52 rounded-box bg-base-100 p-2 shadow"
       >
         <li><a href="/">Homepage</a></li>
-        <li><a href="/test">DND</a></li>
-        <li><a href="/datatable">Teste</a></li>
+        <li><a href="/dnd">DND</a></li>
+        <li><a href="/datatable">Datatable</a></li>
+        <li><a href="/tanstack">tanstack</a></li>
       </ul>
     </div>
   </div>
   <div class="navbar-center">
-    <a class="btn btn-ghost text-xl">DedsTemplate</a>
+    <a href="/" class="btn btn-ghost text-xl">DedsTemplate</a>
   </div>
   <div class="navbar-end">
     <button class="btn btn-circle btn-ghost">

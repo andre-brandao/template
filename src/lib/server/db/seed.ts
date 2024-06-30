@@ -8,6 +8,8 @@ import { createClient } from '@libsql/client'
 
 import { DefaultLogger, type LogWriter } from 'drizzle-orm/logger'
 
+import fs from 'fs'
+
 class MyLogWriter implements LogWriter {
   write(message: string) {
     console.log(message)
@@ -25,6 +27,7 @@ const main = async () => {
   await seedProducts()
 }
 main()
+
 
 async function seedUsers() {
   const users: (typeof userTable.$inferInsert)[] = []
@@ -68,7 +71,6 @@ async function seedProducts() {
         price: Number(faker.commerce.price()),
         category_id: i + 1,
         description: faker.commerce.productDescription(),
-        image: faker.image.imageUrl(),
       })
     }
   }

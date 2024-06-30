@@ -41,6 +41,9 @@ export const sessionTable = sqliteTable('session', {
 const imageTable = sqliteTable('image', {
   id: integer('id', { mode: 'number' }).primaryKey({ autoIncrement: true }),
   created_at: text('created_at').default(sql`(CURRENT_TIMESTAMP)`),
+  uploaded_by: text('uploaded_by')
+    .notNull()
+    .references(() => userTable.id),
   name: text('name').notNull(),
   data: blob('data', { mode: 'buffer' }).notNull(),
 })
@@ -71,7 +74,8 @@ const productTable = sqliteTable('product', {
   name: text('name').notNull(),
   description: text('description').notNull(),
   price: integer('price').notNull(),
-  image: blob('image').notNull(),
+  // image: blob('image').notNull(),
+  image_id: integer('image_id').references(() => imageTable.id),
 })
 type SelectProduct = typeof productTable.$inferSelect
 type InsertProduct = typeof productTable.$inferInsert

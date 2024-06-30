@@ -32,14 +32,26 @@ export const GET: RequestHandler = async ({ params }) => {
   })
 }
 
-export const POST: RequestHandler = async ({ request }) => {
-  try {
-    const { name, image } = await request.json()
+export const POST: RequestHandler = async ({ request, locals }) => {
+  const { user } = locals
 
-    const imageBuffer = Buffer.from(image, 'base64')
+  if (!user) {
+    return new Response('Unauthorized', { status: 401 })
+  }
+
+  try {
+    const formData = await request.formData()
+    const name = formData.get('name')
+    const image = formData.get('image')
+
+    if (typeof name !== 'string' || !(image instanceof File)) {
+      return new Response('Invalid form data', { status: 400 })
+    }
+
+    const imageBuffer = Buffer.from(await image.arrayBuffer())
 
     const processedImage = await sharp(imageBuffer)
-      .resize({ width: 400, fit: 'cover' }) // Resize the image
+      .resize({ width: 400, height: 400, fit: 'cover' })
       .toBuffer()
 
     const [{ img_id }] = await db
@@ -47,13 +59,14 @@ export const POST: RequestHandler = async ({ request }) => {
       .values({
         name,
         data: processedImage,
+        uploaded_by: user.id,
       })
       .returning({
         img_id: imageTable.id,
       })
 
     return new Response(JSON.stringify({ img_id }), {
-      status: 201,
+      status: 200,
     })
   } catch (error) {
     console.error('Error creating image: ', error)

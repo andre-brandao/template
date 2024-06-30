@@ -13,6 +13,10 @@
 
 <Cardapio data={products}>
   {#snippet card(c)}
-    <Card1 nome={c.name} descricao={c.description}  image={c.image}/>
+    <Card1
+      nome={c.name}
+      descricao={c.description}
+      image="/image/{c.image_id}"
+    />
   {/snippet}
 </Cardapio>

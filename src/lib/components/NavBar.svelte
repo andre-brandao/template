@@ -34,6 +34,7 @@
         <li><a href="/datatable">Datatable</a></li>
         <li><a href="/tanstack">tanstack</a></li>
         <li><a href="/cardapio">Cardapio</a></li>
+        <li><a href="/img">image</a></li>
       </ul>
     </div>
   </div>

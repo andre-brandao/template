@@ -12,10 +12,18 @@ export async function myLoadFunction(state: State) {
   return rows
 }
 
-const getParams = ({ offset, rowsPerPage, search, sort, filters }: State) => {
+const getParams = ({
+  offset,
+  rowsPerPage,
+  search,
+  sort,
+  filters,
+  currentPage,
+}: State) => {
   let params = `offset=${offset}&limit=${rowsPerPage}`
   if (search) params += `&q=${search}`
   if (sort) params += `&sort=${sort.field}&order=${sort.direction}`
+  if (currentPage) params += `&page=${currentPage}`
   if (filters) {
     params += filters.map(({ field, value }) => `&${field}=${value}`).join()
   }

@@ -16,7 +16,7 @@
     <Card1
       nome={c.name}
       descricao={c.description}
-      image="/image/{c.image_id}"
+      image="/api/image/{c.image_id}"
     />
   {/snippet}
 </Cardapio>

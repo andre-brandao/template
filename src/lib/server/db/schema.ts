@@ -1,4 +1,10 @@
-import { sqliteTable, text, integer, blob } from 'drizzle-orm/sqlite-core'
+import {
+  sqliteTable,
+  text,
+  integer,
+  blob,
+  // customType,
+} from 'drizzle-orm/sqlite-core'
 import { sql } from 'drizzle-orm'
 
 // import { generateId } from 'lucia'
@@ -30,10 +36,43 @@ export const sessionTable = sqliteTable('session', {
   expiresAt: integer('expires_at').notNull(),
 })
 
-export const productTable = sqliteTable('product', {
-  id: text('id').notNull().primaryKey(),
+// =-=-==--=-=-=-==--=-==
+
+const imageTable = sqliteTable('image', {
+  id: integer('id', { mode: 'number' }).primaryKey({ autoIncrement: true }),
   created_at: text('created_at').default(sql`(CURRENT_TIMESTAMP)`),
   name: text('name').notNull(),
+  data: blob('data').notNull(),
+})
+
+type SelectImage = typeof imageTable.$inferSelect
+type InsertImage = typeof imageTable.$inferInsert
+export { imageTable, type SelectImage, type InsertImage }
+
+const productCategoryTable = sqliteTable('product_category', {
+  id: integer('id', { mode: 'number' }).primaryKey({ autoIncrement: true }),
+  name: text('name').notNull(),
+  created_at: text('created_at').default(sql`(CURRENT_TIMESTAMP)`),
+})
+type SelectProductCategory = typeof productCategoryTable.$inferSelect
+type InsertProductCategory = typeof productCategoryTable.$inferInsert
+export {
+  productCategoryTable,
+  type SelectProductCategory,
+  type InsertProductCategory,
+}
+
+const productTable = sqliteTable('product', {
+  id: integer('id', { mode: 'number' }).primaryKey({ autoIncrement: true }),
+  category_id: integer('category_id')
+    .notNull()
+    .references(() => productCategoryTable.id),
+  created_at: text('created_at').default(sql`(CURRENT_TIMESTAMP)`),
+  name: text('name').notNull(),
+  description: text('description').notNull(),
   price: integer('price').notNull(),
   image: blob('image').notNull(),
 })
+type SelectProduct = typeof productTable.$inferSelect
+type InsertProduct = typeof productTable.$inferInsert
+export { productTable, type SelectProduct, type InsertProduct }

@@ -1,15 +1,19 @@
 <script lang="ts" generics="T">
   import type { Snippet } from 'svelte'
 
-  interface CardapioProps {
-    data: {
-      id: string
-      label: string
-      row: T[]
-    }[]
-    card: Snippet<[T]>
-  }
+  // interface CardapioProps {
+  //   data: {
+  //     id: string
+  //     label: string
+  //     row: T[]
+  //   }[]
+  //   card: Snippet<[T]>
+  // }
 
+  interface CardapioProps {
+    data: Record<string, T[]>
+    card: (row: T) => any
+  }
   let { data, card }: CardapioProps = $props()
 
   let selected = $state('')
@@ -40,7 +44,7 @@
       })
     }
   }
-  let timeoutId: number | null = null
+  let timeoutId: NodeJS.Timeout | null = null
 
   function scrollIntoView(event: {
     preventDefault: () => void
@@ -51,7 +55,7 @@
     const link = event.currentTarget
     const anchorId = new URL(link.href).hash.replace('#', '')
     const anchor = document.getElementById(anchorId)
-    anchor?.scrollIntoView({ behavior: 'smooth' })
+    anchor?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 
     selected = anchorId
 
@@ -92,7 +96,7 @@
       class="hide-scrollbar flex w-full gap-3 overflow-y-hidden overflow-x-scroll rounded-box bg-base-100 p-2 shadow-xl"
       bind:this={scrollContainer}
     >
-      {#each data as d}
+      <!-- {#each data as d}
         <a
           id="head-{d.id}"
           class="btn hover:-translate-x-1 hover:translate-y-1 {selected === d.id
@@ -103,11 +107,24 @@
         >
           {d.label}
         </a>
+      {/each} -->
+
+      {#each Object.keys(data) as d}
+        <a
+          id="head-{d}"
+          class="btn hover:-translate-x-1 hover:translate-y-1 {selected === d
+            ? 'btn-primary'
+            : ''}"
+          href="#{d}"
+          onclick={scrollIntoView}
+        >
+          {d}
+        </a>
       {/each}
     </div>
   </div>
-  <div class=" flex flex-col gap-3 container mx-auto">
-    {#each data as d}
+  <div class=" container mx-auto flex flex-col gap-3">
+    <!-- {#each data as d}
       <div class="flex flex-col">
         <div
           id={d.id}
@@ -118,8 +135,27 @@
         >
           {d.label}
         </div>
-        <div class=" flex flex-wrap ">
+        <div class=" flex flex-wrap">
           {#each d.row as row}
+            {@render card(row)}
+          {/each}
+        </div>
+      </div>
+    {/each} -->
+
+    {#each Object.keys(data) as d}
+      <div class="flex flex-col">
+        <div
+          id={d}
+          class="divider my-4 py-4 text-center text-2xl font-bold"
+          use:onViewportEnter={() => {
+            changeSelection(d)
+          }}
+        >
+          {d}
+        </div>
+        <div class=" flex flex-wrap justify-around gap-4">
+          {#each data[d] as row}
             {@render card(row)}
           {/each}
         </div>

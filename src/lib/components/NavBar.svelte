@@ -2,6 +2,8 @@
   import type { User } from 'lucia'
   import ThemeSwiter from './ThemeSwiter.svelte'
 
+  import { website } from '$lib/config'
+
   import { user } from '$lib/stores/user'
 </script>
 
@@ -31,11 +33,12 @@
         <li><a href="/dnd">DND</a></li>
         <li><a href="/datatable">Datatable</a></li>
         <li><a href="/tanstack">tanstack</a></li>
+        <li><a href="/cardapio">Cardapio</a></li>
       </ul>
     </div>
   </div>
   <div class="navbar-center">
-    <a href="/" class="btn btn-ghost text-xl">DedsTemplate</a>
+    <a href="/" class="btn btn-ghost text-xl">{website.siteShortTitle}</a>
   </div>
   <div class="navbar-end">
     <button class="btn btn-circle btn-ghost">

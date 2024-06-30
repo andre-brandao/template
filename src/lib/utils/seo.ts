@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { website } from '$lib/config'
 
 export function getSEOProps(params: {

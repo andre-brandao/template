@@ -42,7 +42,7 @@ const imageTable = sqliteTable('image', {
   id: integer('id', { mode: 'number' }).primaryKey({ autoIncrement: true }),
   created_at: text('created_at').default(sql`(CURRENT_TIMESTAMP)`),
   name: text('name').notNull(),
-  data: blob('data').notNull(),
+  data: blob('data', { mode: 'buffer' }).notNull(),
 })
 
 type SelectImage = typeof imageTable.$inferSelect

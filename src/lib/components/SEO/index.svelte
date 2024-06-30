@@ -5,7 +5,7 @@
   import defaultTwitterImage from '$lib/assets/home/home-twitter.jpg'
 
   import { website } from '$lib/config'
-  import { VERTICAL_LINE_ENTITY } from '$lib/constants/entities'
+  import { VERTICAL_LINE_ENTITY } from '$lib/utils/entities'
   import OpenGraph from './OpenGraph.svelte'
   import SchemaOrg from './SchemaOrg.svelte'
   import Twitter from './Twitter.svelte'

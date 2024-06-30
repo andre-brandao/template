@@ -5,7 +5,7 @@ import {
   productCategoryTable,
   productTable,
   type SelectProduct,
-  type SelectProductCategory,
+  // type SelectProductCategory,
 } from '$lib/server/db/schema'
 import { eq } from 'drizzle-orm'
 

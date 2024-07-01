@@ -26,7 +26,7 @@
   })}
 />
 
-<Modal onClose={console.log} onOpen={console.log}>Teste Modal</Modal> -->
+<!-- <Modal onClose={console.log} onOpen={console.log}>Teste Modal</Modal> -->
 <main class="flex flex-col gap-5">
   <Hero />
 

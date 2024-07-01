@@ -1,8 +1,14 @@
 <script lang="ts">
-  import { myLoadFunction } from '$lib/datatables/load-funcions'
+  import { onMount } from 'svelte'
   import type { PageData } from './$types'
+  import type { SelectProduct } from '$lib/server/db/schema'
 
-  export let data: PageData
+  // export let data: PageData
+
+  interface PageProps {
+    data: PageData
+  }
+  let { data }: PageProps = $props()
 
   import {
     type State,
@@ -15,44 +21,89 @@
     RowsPerPage,
   } from '@vincjo/datatables/server'
 
-  const table = new TableHandler([], { rowsPerPage: 10 })
+  async function myLoadFunction(state: State) {
+    console.log(state.sort)
 
+    const response = await fetch(`/datatable?${getParams(state)}`, {
+      method: 'POST',
+    }).then(res => res.json())
+    const { total, rows } = response
+
+    state.setTotalRows(total)
+    return rows
+  }
+
+  const getParams = ({
+    offset,
+    rowsPerPage,
+    search,
+    sort,
+    filters,
+    currentPage,
+  }: State) => {
+    let params = `offset=${offset}&limit=${rowsPerPage}`
+    if (search) params += `&q=${search}`
+    if (sort) params += `&sort=${sort.field}&order=${sort.direction}`
+    if (currentPage) params += `&page=${currentPage}`
+    if (filters) {
+      params += filters.map(({ field, value }) => `&${field}=${value}`).join()
+    }
+    return params
+  }
+
+  const table = new TableHandler<SelectProduct>([], { rowsPerPage: 10 })
   table.load((state: State) => myLoadFunction(state))
+
+  // table.load((state: State) => myLoadFunction(state))
 
   let search = table.createSearch()
 
   table.invalidate()
 </script>
 
-<div class="container mx-auto p-2">
+<div class="container mx-auto border p-2">
   <Datatable {table}>
     {#snippet header()}
-      <Search {table} />
-      <RowsPerPage {table} />
+      <Search {table}></Search>
+      <RowsPerPage {table}></RowsPerPage>
     {/snippet}
 
-    <table class="table table-zebra">
-      <thead>
-        <tr>
-          <ThSort {table} field="username">Name</ThSort>
-          <!-- <ThSort {table} field="company_name">Company Name</ThSort> -->
-          <!-- <ThSort {table} field="email">Email</ThSort> -->
-        </tr>
-      </thead>
-      <tbody>
-        {#each table.rows as row}
+    {#snippet children()}
+      <div class="spinner" class:active={table.isLoading}></div>
+      <table class="table table-zebra table-xs table-auto">
+        <thead class="">
           <tr>
-            <td>{row.username}</td>
-            <!-- <td>{row.company.name}</td> -->
-            <!-- <td>{row.email}</td> -->
+            <ThSort {table} field="created_at">Created At</ThSort>
+            <ThSort {table} field="name">Name</ThSort>
+            <ThSort {table} field="description">description</ThSort>
+            <ThSort {table} field="price">Price</ThSort>
           </tr>
-        {/each}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {#each table.rows as row}
+            <tr>
+              <td>{row.created_at}</td>
+              <td>{row.name}</td>
+              <td>{row.description}</td>
+              <td>{row.price}</td>
+            </tr>
+          {/each}
+        </tbody>
+      </table>
+    {/snippet}
 
     {#snippet footer()}
-      <RowCount {table} />
-      <Pagination {table} />
+      <RowCount {table}></RowCount>
+      <Pagination {table}></Pagination>
     {/snippet}
   </Datatable>
 </div>
+
+<style>
+  div.spinner {
+    display: none;
+  }
+  div.spinner.active {
+    display: block;
+  }
+</style>

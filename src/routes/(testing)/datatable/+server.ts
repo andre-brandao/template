@@ -3,7 +3,7 @@ import { json } from '@sveltejs/kit'
 import type { RequestHandler } from './$types'
 
 import { db } from '$lib/server/db'
-import { userTable } from '$lib/server/db/schema'
+import { productTable } from '$lib/server/db/schema'
 import { count, like, asc, desc } from 'drizzle-orm'
 
 import { withOrderBy, withPagination, withSearch } from '$lib/server/db/utils'
@@ -18,25 +18,25 @@ export const POST: RequestHandler = async ({ url }) => {
 
   console.log(pageNumber, limit, sort, order, search)
 
-  const query = db.select().from(userTable)
+  const query = db.select().from(productTable)
   let dynamicQuery = query.$dynamic()
 
   if (sort && order) {
-    dynamicQuery = withOrderBy(dynamicQuery, userTable, sort, order)
+    dynamicQuery = withOrderBy(dynamicQuery, productTable, sort, order)
   }
 
   if (search) {
-    dynamicQuery = withSearch(dynamicQuery, userTable, search, 'username')
+    dynamicQuery = withSearch(dynamicQuery, productTable, search, 'name')
   }
 
-  const [users, total] = await Promise.all([
-    // await db.select().from(userTable),
+  const [products, total] = await Promise.all([
+    // await db.select().from(productTable),
     await withPagination(dynamicQuery, pageNumber, limit),
-    await db.select({ count: count() }).from(userTable),
+    await db.select({ count: count() }).from(productTable),
   ])
 
   return json({
-    rows: users,
+    rows: products,
     total: total[0].count,
   })
 }

@@ -52,9 +52,8 @@
   }
 
   const table = new TableHandler<SelectProduct>([], { rowsPerPage: 10 })
-  table.load((state: State) => myLoadFunction(state))
 
-  // table.load((state: State) => myLoadFunction(state))
+  table.load((state: State) => myLoadFunction(state))
 
   let search = table.createSearch()
 
@@ -62,17 +61,18 @@
 </script>
 
 <div class="container mx-auto border p-2">
-  <Datatable {table}>
+  <Datatable basic {table}>
     {#snippet header()}
       <Search {table}></Search>
       <RowsPerPage {table}></RowsPerPage>
     {/snippet}
 
     {#snippet children()}
-      <div class="spinner" class:active={table.isLoading}></div>
-      <table class="table table-zebra table-xs table-auto">
+      <!-- <div class="spinner" class:active={table.isLoading}></div> -->
+      <table class="table table-xs table-auto">
         <thead class="">
           <tr>
+            <td class=""> </td>
             <ThSort {table} field="created_at">Created At</ThSort>
             <ThSort {table} field="name">Name</ThSort>
             <ThSort {table} field="description">description</ThSort>
@@ -81,7 +81,14 @@
         </thead>
         <tbody>
           {#each table.rows as row}
-            <tr>
+            <tr class:selected={table.selected.includes(row.id)}>
+              <td>
+                <input
+                  type="checkbox"
+                  checked={table.selected.includes(row.id)}
+                  onclick={() => table.select(row.id)}
+                />
+              </td>
               <td>{row.created_at}</td>
               <td>{row.name}</td>
               <td>{row.description}</td>
@@ -105,5 +112,9 @@
   }
   div.spinner.active {
     display: block;
+  }
+
+  .selected {
+    @apply bg-primary;
   }
 </style>

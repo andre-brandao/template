@@ -35,6 +35,7 @@
         <li><a href="/tanstack">tanstack</a></li>
         <li><a href="/cardapio">Cardapio</a></li>
         <li><a href="/img">image</a></li>
+        <li><a href="/modal">modal</a></li>
       </ul>
     </div>
   </div>

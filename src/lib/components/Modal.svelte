@@ -3,8 +3,8 @@
   import type { Snippet } from 'svelte'
 
   interface ModalProps {
-    onClose: () => void
-    onOpen: () => void
+    onClose?: () => void
+    onOpen?: () => void
     children: Snippet
     closeOnOutsideClick?: boolean
   }

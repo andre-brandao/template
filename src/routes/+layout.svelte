@@ -11,6 +11,8 @@
 
   import { user } from '$lib/stores/user'
 
+  import { ModalContainer } from '$lib/components/modal'
+
   export let data: LayoutData
   $user = data.user
   $: $user = data.user
@@ -20,6 +22,7 @@
   })
 </script>
 
+<ModalContainer />
 <Toaster richColors closeButton />
 <NavBar />
 {#if $navigating}

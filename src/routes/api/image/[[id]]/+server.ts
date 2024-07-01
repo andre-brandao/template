@@ -54,6 +54,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
       .resize({ width: 400, height: 400, fit: 'cover' })
       .toBuffer()
 
+
     const [{ img_id }] = await db
       .insert(imageTable)
       .values({

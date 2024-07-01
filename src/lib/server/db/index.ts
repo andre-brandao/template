@@ -2,6 +2,7 @@ import { dev } from '$app/environment'
 import { drizzle } from 'drizzle-orm/libsql'
 import { createClient } from '@libsql/client'
 import { env } from '$env/dynamic/private'
+import * as schema from './schema'
 
 import { DefaultLogger, type LogWriter } from 'drizzle-orm/logger'
 
@@ -22,4 +23,4 @@ export const libsqlClient = createClient({
   authToken: env.DATABASE_AUTH_TOKEN,
 })
 
-export const db = drizzle(libsqlClient, { logger })
+export const db = drizzle(libsqlClient, { logger, schema })

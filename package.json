@@ -54,8 +54,11 @@
     "@lucia-auth/adapter-drizzle": "^1.0.7",
     "@node-rs/argon2": "^1.8.3",
     "@tanstack/svelte-query": "^5.49.1",
+    "@trpc/client": "^10.45.2",
+    "@trpc/server": "^10.45.2",
     "drizzle-orm": "^0.31.2",
     "sharp": "^0.33.4",
-    "svelte-sonner": "^0.3.24"
+    "svelte-sonner": "^0.3.24",
+    "trpc-sveltekit": "^3.6.2"
   }
 }

@@ -35,6 +35,9 @@ dependencies:
   trpc-sveltekit:
     specifier: ^3.6.2
     version: 3.6.2(@sveltejs/adapter-node@5.2.0)(@trpc/client@10.45.2)(@trpc/server@10.45.2)(ws@8.17.1)
+  zod:
+    specifier: ^3.23.8
+    version: 3.23.8
 
 devDependencies:
   '@faker-js/faker':
@@ -4712,3 +4715,7 @@ packages:
 
   /zimmerframe@1.1.2:
     resolution: {integrity: sha512-rAbqEGa8ovJy4pyBxZM70hg4pE6gDgaQ0Sl9M3enG3I0d6H4XSAM3GeNGLKnsBpuijUow064sf7ww1nutC5/3w==}
+
+  /zod@3.23.8:
+    resolution: {integrity: sha512-XBx9AXhXktjUqnepgTiE5flcKIYWi/rme0Eaj+5Y0lftuGBq+jyRu/md4WnuxqgP1ubdpNCsYEYPxrzVHD8d6g==}
+    dev: false

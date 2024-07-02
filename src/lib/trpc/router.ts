@@ -1,14 +1,19 @@
 // lib/trpc/router.ts
-import type { Context } from '$lib/trpc/context'
-import { initTRPC } from '@trpc/server'
 
 import { t } from './t'
 
-export const t = initTRPC.context<Context>().create()
+import { z } from 'zod'
 
 export const router = t.router({
-  greeting: t.procedure.query(async () => {
-    return `Hello tRPC v10 @ ${new Date().toLocaleTimeString()}`
+  greeting: t.procedure.query(async opts => {
+    const { user } = opts.ctx
+    return `Hello tRPC v10 @ ${new Date().toLocaleTimeString()}  ${user?.username ?? 'guest'}`
+  }),
+
+  greetPerson: t.procedure.input(z.string()).query(async opts => {
+    const { user } = opts.ctx
+    const input = opts.input
+    return `Hello ${input}! ${user?.username ?? 'guest'}`
   }),
 })
 

@@ -59,6 +59,7 @@
     "drizzle-orm": "^0.31.2",
     "sharp": "^0.33.4",
     "svelte-sonner": "^0.3.24",
-    "trpc-sveltekit": "^3.6.2"
+    "trpc-sveltekit": "^3.6.2",
+    "zod": "^3.23.8"
   }
 }

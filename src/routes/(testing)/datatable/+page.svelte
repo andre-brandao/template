@@ -13,6 +13,8 @@
 
   import { getParams } from '$utils/datatable'
 
+  import Loading from '$components/Loading.svelte'
+
   let isLoading = false
 
   async function myLoadFunction(state: State) {
@@ -46,7 +48,7 @@
   table.invalidate()
 </script>
 
-<div class="container mx-auto border p-2">
+<div class="container mx-auto h-[70vh] border p-2">
   <Datatable basic {table}>
     {#snippet header()}
       <Search {table}></Search>
@@ -55,18 +57,13 @@
 
     {#snippet children()}
       {#if isLoading}
-        <div class="spinner" class:active={isLoading}>
-          <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Loading...</span>
-            
-          </div>
-        </div>
+        <Loading />
       {:else}
-        <table class="table table-xs h-[50vh] table-auto">
+        <table class="table table-xs ">
           <thead class="">
-            <tr>
+            <tr class="bg-primary ">
               <td class=""> </td>
-              <ThSort {table} field="created_at">Created At</ThSort>
+              <ThSort {table}  field="created_at">Created At</ThSort>
               <ThSort {table} field="name">Name</ThSort>
               <ThSort {table} field="description">description</ThSort>
               <ThSort {table} field="price">Price</ThSort>
@@ -87,7 +84,7 @@
                 </td>
                 <td>{row.created_at}</td>
                 <td>{row.name}</td>
-                <td class="table-cell">{row.description}</td>
+                <td class="">{row.description}</td>
                 <td>{row.price}</td>
               </tr>
             {/each}

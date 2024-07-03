@@ -5,7 +5,7 @@
   export let data: PageData
 
   import { page } from '$app/stores'
-  import { trpc } from '$lib/trpc/client'
+  import { trpc } from '../../../trpc/client'
   import { tokenizeCard } from '$lib/utils/pagarme'
   let test: any
   let loading = false

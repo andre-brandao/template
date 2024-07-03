@@ -5,7 +5,7 @@
   import { website } from '$lib/config'
 
   import { user } from '$lib/stores/user'
-  import { trpc } from '$lib/trpc/client'
+  import { trpc } from '../../trpc/client'
   import { page } from '$app/stores'
 
   async function logout() {

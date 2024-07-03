@@ -18,6 +18,8 @@
       "$queries": ["./src/lib/server/db/queries"],
       "$utils": ["./src/lib/utils"],
       "$utils/*": ["./src/lib/utils/*"],
+      "$trpc": ["./src/trpc"],
+      "$trpc/*": ["./src/trpc/*"]
     }
   }
   // Path aliases are handled by https://kit.svelte.dev/docs/configuration#alias

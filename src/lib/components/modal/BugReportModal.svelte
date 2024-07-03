@@ -35,7 +35,7 @@
 
   <svelte:fragment slot="footer">
     <button class="btn bg-primary" on:click={save}>Enviar</button>
-    <button class="btn bg-red-400" on:click={close}>Cancel</button>
+    <button class="btn bg-red-400" on:click={modal.close}>Cancel</button>
   </svelte:fragment>
 </Modal>
 

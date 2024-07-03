@@ -19,3 +19,7 @@ export async function uploadImage(image: File, name: string) {
     return { error: 'Error uploading image', img_id: null }
   }
 }
+
+export function getImagePath(id?: number | null) {
+  return `/api/image/${id}`
+}

@@ -31,8 +31,6 @@ async function getProductsByCategory() {
     )
     .all()
 
-
-
   const products = rows.reduce<Record<string, SelectProduct[]>>((acc, row) => {
     const category = row.product_category
     const product = row.product
@@ -59,7 +57,21 @@ function findProductByCategory() {
 }
 
 function getProductFromID(id: SelectProduct['id']) {
-  return db.select().from(productTable).where(eq(productTable.id, id)).limit(1)
+  return db.query.productTable.findFirst({
+    with: {
+      category: true,
+    },
+    where: eq(productTable.id, id),
+  })
+  // return db
+  //   .select()
+  //   .from(productTable)
+  //   .where(eq(productTable.id, id))
+  //   .leftJoin(
+  //     productCategoryTable,
+  //     eq(productTable.category_id, productCategoryTable.id),
+  //   )
+  //   .limit(1)
 }
 
 function insertProduct(data: InsertProduct) {

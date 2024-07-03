@@ -5,7 +5,7 @@
   export let data: PageData
 
   import { page } from '$app/stores'
-  import { trpc } from '../../../trpc/client'
+  import { trpc } from '$trpc/client'
   import { tokenizeCard } from '$lib/utils/pagarme'
   let test: any
   let loading = false
@@ -13,12 +13,6 @@
   // const loadData = async () => {
   //   loading = true
   //   greeting = await trpc($page).greeting.query()
-  //   loading = false
-  // }
-
-  // const loadData2 = async () => {
-  //   loading = true
-  //   greeting = await trpc($page).greetPerson.query(`John`)
   //   loading = false
   // }
 

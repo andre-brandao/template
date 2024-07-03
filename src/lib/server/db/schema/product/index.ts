@@ -24,6 +24,7 @@ const productCategoryTable = sqliteTable('product_category', {
   name: text('name').notNull(),
   created_at: text('created_at').default(sql`(CURRENT_TIMESTAMP)`),
 })
+
 const productCategoryRelations = relations(
   productCategoryTable,
   ({ many }) => ({
@@ -74,8 +75,14 @@ const productTable = sqliteTable('product', {
 })
 
 const productRelations = relations(productTable, ({ one }) => ({
-  category: one(productCategoryTable),
-  image: one(imageTable),
+  category: one(productCategoryTable, {
+    fields: [productTable.category_id],
+    references: [productCategoryTable.id],
+  }),
+  image: one(imageTable, {
+    fields: [productTable.image_id],
+    references: [imageTable.id],
+  }),
 }))
 
 type SelectProduct = typeof productTable.$inferSelect

@@ -81,63 +81,7 @@ export const pagarme = router({
       try {
         const { data } = await axios.post(
           'https://api.pagar.me/core/v5/orders',
-          {
-            "closed": true,
-            "customer": {
-                "name": "Tony Stark",
-                "type": "individual",
-                "email": "avengerstark@ligadajustica.com.br",
-                "document": "03154435026",
-                "address": {
-                    "line_1": "7221, Avenida Dra Ruth Cardoso, Pinheiro",
-                    "line_2": "Prédio",
-                    "zip_code": "05425070",
-                    "city": "São Paulo",
-                    "state": "SP",
-                    "country": "BR"
-                },
-                "phones": {
-                    "home_phone": {
-                        "country_code": "55",
-                        "area_code": "11",
-                        "number": "000000000"
-                    },
-                    "mobile_phone": {
-                        "country_code": "55",
-                        "area_code": "11",
-                        "number": "000000000"
-                    }
-                }
-            },
-            "items": [
-                {
-                    "amount": 2990,
-                    "description": "Chaveiro do Tesseract",
-                    "quantity": 1,
-                    "code": 123
-                }
-            ],
-            "payments": [
-                {
-                    "payment_method": "credit_card",
-                    "credit_card": {
-                        "operation_type": "auth_and_capture",
-                        "installments": 1,
-                        "statement_descriptor": "AVENGERS", //Máximo de 13 caracteres
-                        "card_token": "{{card_token}}",
-                        "card": {
-                            "billing_address": {
-                                "line_1": "7221, Avenida Dra Ruth Cardoso, Pinheiro",
-                                "zip_code": "05425070",
-                                "city": "São Paulo",
-                                "state": "SP",
-                                "country": "BR"
-                            }
-                        }
-                    }
-                }
-            ]
-        },
+          input,
           {
             headers: {
               'Content-Type': 'application/json',

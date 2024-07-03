@@ -31,6 +31,8 @@ async function getProductsByCategory() {
     )
     .all()
 
+
+
   const products = rows.reduce<Record<string, SelectProduct[]>>((acc, row) => {
     const category = row.product_category
     const product = row.product
@@ -64,6 +66,10 @@ function insertProduct(data: InsertProduct) {
   return db.insert(productTable).values(data)
 }
 
+function updateProduct(id: SelectProduct['id'], data: Partial<InsertProduct>) {
+  return db.update(productTable).set(data).where(eq(productTable.id, id))
+}
+
 export const product = {
   getProducts,
   getProductFromID,
@@ -72,4 +78,5 @@ export const product = {
   getProductCategories,
   insertProductCategory,
   insertProduct,
+  updateProduct,
 }

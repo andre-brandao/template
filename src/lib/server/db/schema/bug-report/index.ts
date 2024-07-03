@@ -19,16 +19,16 @@ const bugReportTable = sqliteTable('bugReport', {
   text: text('name').notNull(),
 })
 
-const bugReportRelations = relations(bugReportTable, ({ one }) => ({
-  reporter: one(userTable),
-}))
+// const bugReportRelations = relations(bugReportTable, ({ one }) => ({
+//   reporter: one(userTable),
+// }))
 
 type SelectBugReport = typeof bugReportTable.$inferSelect
 type InsertBugReport = typeof bugReportTable.$inferInsert
 
 export {
   bugReportTable,
-  bugReportRelations,
+  // bugReportRelations,
   type SelectBugReport,
   type InsertBugReport,
 }

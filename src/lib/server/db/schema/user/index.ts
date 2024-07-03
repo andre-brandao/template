@@ -7,8 +7,6 @@ import {
 } from 'drizzle-orm/sqlite-core'
 import { sql } from 'drizzle-orm'
 
-export { userTable, type SelectUser, type InsertUser }
-
 export const sessionTable = sqliteTable('session', {
   id: text('id').notNull().primaryKey(),
   userId: text('user_id')
@@ -35,3 +33,6 @@ const userTable = sqliteTable('user', {
   username: text('username').notNull().unique(),
   password_hash: text('password_hash').notNull(),
 })
+
+export { userTable, type SelectUser, type InsertUser }
+

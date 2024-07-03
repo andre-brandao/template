@@ -5,3 +5,7 @@ import { initTRPC } from '@trpc/server';
 export const t = initTRPC.context<Context>().create(
     // { transformer }
 );
+
+
+export const router = t.router;
+export const publicProcedure = t.procedure;

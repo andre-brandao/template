@@ -1,11 +1,10 @@
 import { lucia } from '$lib/server/auth'
 import { fail, redirect } from '@sveltejs/kit'
 import { verify } from '@node-rs/argon2'
-import { db } from '$lib/server/db'
 
 import type { Actions, PageServerLoad } from './$types'
-import { userTable } from '$lib/server/db/schema'
-import { eq } from 'drizzle-orm'
+
+import { usernameExists } from '$lib/server/db/queries'
 
 export const load: PageServerLoad = async event => {
   if (event.locals.user) {
@@ -40,18 +39,11 @@ export const actions: Actions = {
       })
     }
 
-    // const existingUser = db
-    //   .prepare('SELECT * FROM user WHERE username = ?')
-    //   .get(username) as DatabaseUser | undefined
-    const [existingUser] = await db
-      .select()
-      .from(userTable)
-      .where(eq(userTable.username, username))
-      .limit(1)
+    const [existingUser] = await usernameExists(username)
 
     if (!existingUser) {
       return fail(400, {
-        message: 'Incorrect username or password',
+        message: 'Incorrect username',
       })
     }
 
@@ -72,7 +64,7 @@ export const actions: Actions = {
       // it is crucial your implementation is protected against brute-force attacks with login throttling, 2FA, etc.
       // If usernames are public, you can outright tell the user that the username is invalid.
       return fail(400, {
-        message: 'Incorrect username or password',
+        message: 'Incorrect password',
       })
     }
 

@@ -1,9 +1,10 @@
-import { asc, desc,  like,  type AnyColumn } from 'drizzle-orm'
+import { asc, count, desc, like, type AnyColumn } from 'drizzle-orm'
 import {
   SQLiteTable,
   getTableConfig,
   type SQLiteSelect,
 } from 'drizzle-orm/sqlite-core'
+import { db } from '.'
 
 export function withPagination<T extends SQLiteSelect>(
   qb: T,
@@ -50,4 +51,8 @@ export function withSearch<T extends SQLiteSelect>(
     return qb.where(like(column, `%${search}%`))
   }
   return qb
+}
+
+export function getRowCount(table: SQLiteTable) {
+  return db.select({ count: count() }).from(table)
 }

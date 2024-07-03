@@ -15,6 +15,9 @@ const config = {
     alias: {
       $lib: './src/lib',
       $components: './src/lib/components',
+      $queries: './src/lib/server/db/queries.ts',
+      $utils: './src/lib/utils',
+      $db: './src/lib/server/db',
     },
   },
 }

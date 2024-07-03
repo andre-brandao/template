@@ -5,6 +5,13 @@
   import { website } from '$lib/config'
 
   import { user } from '$lib/stores/user'
+  import { trpc } from '$lib/trpc/client'
+  import { page } from '$app/stores'
+
+  async function logout() {
+    user.set(null)
+    await trpc($page).auth.logOut.query()
+  }
 </script>
 
 <div class="navbar sticky top-0 z-10 bg-base-100">
@@ -60,7 +67,17 @@
       >
     </button>
     {#if $user}
-      <a href="/myprofile">{$user.username}</a>
+      <div class="dropdown">
+        <div tabindex="0" role="button" class="btn m-1">{$user.username}</div>
+        <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+        <ul
+          tabindex="0"
+          class="menu dropdown-content z-[1] w-52 rounded-box bg-base-100 p-2 shadow"
+        >
+          <li><a href="/myprofile">Meu Perfil</a></li>
+          <li><button onclick={logout}>Logout</button></li>
+        </ul>
+      </div>
     {:else}
       <a href="/login">Login</a>
     {/if}

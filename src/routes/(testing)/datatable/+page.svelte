@@ -1,15 +1,5 @@
 <script lang="ts">
-  import { onMount } from 'svelte'
-  import type { PageData } from './$types'
   import type { SelectProduct } from '$lib/server/db/schema'
-
-  // export let data: PageData
-
-  interface PageProps {
-    data: PageData
-  }
-  let { data }: PageProps = $props()
-
   import {
     type State,
     TableHandler,
@@ -21,37 +11,33 @@
     RowsPerPage,
   } from '@vincjo/datatables/server'
 
+  import { getParams } from '$utils/datatable'
+
+  let isLoading = false
+
   async function myLoadFunction(state: State) {
-    console.log(state.sort)
+    isLoading = true
 
-    const response = await fetch(`/datatable?${getParams(state)}`, {
-      method: 'POST',
-    }).then(res => res.json())
-    const { total, rows } = response
+    try {
+      await new Promise(resolve => setTimeout(resolve, 1000))
 
-    state.setTotalRows(total)
-    return rows
-  }
+      const response = await fetch(`/datatable?${getParams(state)}`, {
+        method: 'POST',
+      }).then(res => res.json())
+      const { total, rows } = response
 
-  const getParams = ({
-    offset,
-    rowsPerPage,
-    search,
-    sort,
-    filters,
-    currentPage,
-  }: State) => {
-    let params = `offset=${offset}&limit=${rowsPerPage}`
-    if (search) params += `&q=${search}`
-    if (sort) params += `&sort=${sort.field}&order=${sort.direction}`
-    if (currentPage) params += `&page=${currentPage}`
-    if (filters) {
-      params += filters.map(({ field, value }) => `&${field}=${value}`).join()
+      state.setTotalRows(total)
+      isLoading = false
+      return rows
+    } catch (error) {
+      isLoading = false
     }
-    return params
   }
 
-  const table = new TableHandler<SelectProduct>([], { rowsPerPage: 10 })
+  const table = new TableHandler<SelectProduct>([], {
+    rowsPerPage: 10,
+    totalRows: 0,
+  })
 
   table.load((state: State) => myLoadFunction(state))
 
@@ -68,35 +54,46 @@
     {/snippet}
 
     {#snippet children()}
-      <!-- <div class="spinner" class:active={table.isLoading}></div> -->
-      <table class="table table-xs table-auto">
-        <thead class="">
-          <tr>
-            <td class=""> </td>
-            <ThSort {table} field="created_at">Created At</ThSort>
-            <ThSort {table} field="name">Name</ThSort>
-            <ThSort {table} field="description">description</ThSort>
-            <ThSort {table} field="price">Price</ThSort>
-          </tr>
-        </thead>
-        <tbody>
-          {#each table.rows as row}
-            <tr class:selected={table.selected.includes(row.id)}>
-              <td>
-                <input
-                  type="checkbox"
-                  checked={table.selected.includes(row.id)}
-                  onclick={() => table.select(row.id)}
-                />
-              </td>
-              <td>{row.created_at}</td>
-              <td>{row.name}</td>
-              <td>{row.description}</td>
-              <td>{row.price}</td>
+      {#if isLoading}
+        <div class="spinner" class:active={isLoading}>
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+            
+          </div>
+        </div>
+      {:else}
+        <table class="table table-xs h-[50vh] table-auto">
+          <thead class="">
+            <tr>
+              <td class=""> </td>
+              <ThSort {table} field="created_at">Created At</ThSort>
+              <ThSort {table} field="name">Name</ThSort>
+              <ThSort {table} field="description">description</ThSort>
+              <ThSort {table} field="price">Price</ThSort>
             </tr>
-          {/each}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {#each table.rows as row}
+              <tr
+                class:selected={table.selected.includes(row.id)}
+                class="table-row"
+              >
+                <td>
+                  <input
+                    type="checkbox"
+                    checked={table.selected.includes(row.id)}
+                    onclick={() => table.select(row.id)}
+                  />
+                </td>
+                <td>{row.created_at}</td>
+                <td>{row.name}</td>
+                <td class="table-cell">{row.description}</td>
+                <td>{row.price}</td>
+              </tr>
+            {/each}
+          </tbody>
+        </table>
+      {/if}
     {/snippet}
 
     {#snippet footer()}
@@ -115,6 +112,9 @@
   }
 
   .selected {
+    @apply bg-primary;
+  }
+  .selected:hover {
     @apply bg-primary;
   }
 </style>

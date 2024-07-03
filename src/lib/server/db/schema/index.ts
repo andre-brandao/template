@@ -7,6 +7,11 @@ export { imageTable } from './image'
 export type { InsertImage, SelectImage } from './image'
 
 // PRODUCT
-export { productTable, productCategoryTable } from './product'
+export {
+  productTable,
+  productRelations,
+  productCategoryTable,
+  productCategoryRelations,
+} from './product'
 export type { SelectProduct, InsertProduct } from './product'
 export type { SelectProductCategory, InsertProductCategory } from './product'

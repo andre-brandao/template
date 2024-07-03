@@ -5,7 +5,22 @@ import {
 
   // customType,
 } from 'drizzle-orm/sqlite-core'
-import { sql } from 'drizzle-orm'
+import { eq, sql } from 'drizzle-orm'
+import { db } from '..'
+
+
+export { userTable, type SelectUser, type InsertUser }
+
+export const sessionTable = sqliteTable('session', {
+  id: text('id').notNull().primaryKey(),
+  userId: text('user_id')
+    .notNull()
+    .references(() => userTable.id),
+  expiresAt: integer('expires_at').notNull(),
+})
+
+type SelectUser = typeof userTable.$inferSelect
+type InsertUser = typeof userTable.$inferInsert
 
 // import { generateId } from 'lucia'
 export interface DatabaseUser {
@@ -23,15 +38,15 @@ const userTable = sqliteTable('user', {
   password_hash: text('password_hash').notNull(),
 })
 
-type SelectUser = typeof userTable.$inferSelect
-type InsertUser = typeof userTable.$inferInsert
 
-export { userTable, type SelectUser, type InsertUser }
+export function usernameExists(username: string) {
+  return db
+    .select()
+    .from(userTable)
+    .where(eq(userTable.username, username))
+    .limit(1)
+}
 
-export const sessionTable = sqliteTable('session', {
-  id: text('id').notNull().primaryKey(),
-  userId: text('user_id')
-    .notNull()
-    .references(() => userTable.id),
-  expiresAt: integer('expires_at').notNull(),
-})
+export function insertUser(user: InsertUser) {
+  return db.insert(userTable).values(user).run()
+}

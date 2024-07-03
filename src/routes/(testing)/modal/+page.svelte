@@ -8,10 +8,6 @@
   import ExampleModal from './ExempleModal.svelte'
 </script>
 
-<DaisyModal>
-  <div>Ola mundo</div>
-</DaisyModal>
-
 <button
   on:click={() =>
     modal.open(ExampleModal, {

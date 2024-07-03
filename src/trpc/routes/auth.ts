@@ -2,11 +2,11 @@ import { publicProcedure, router } from '../t'
 
 import { z } from 'zod'
 
-import { usernameExists } from '$queries'
+import { user } from '$db/controller'
 import { lucia } from '$lib/server/auth'
 import { redirect } from '@sveltejs/kit'
 import { hash, verify } from '@node-rs/argon2'
-import { insertUser } from '$lib/server/db/schema/user'
+
 import { generateId } from 'lucia'
 import { LibsqlError } from '@libsql/client'
 
@@ -26,7 +26,7 @@ export const auth = router({
       const { cookies } = ctx.event
       const { username, password } = input
 
-      const [existingUser] = await usernameExists(username)
+      const [existingUser] = await user.usernameExists(username)
 
       if (!existingUser) {
         return {
@@ -71,7 +71,7 @@ export const auth = router({
       const { cookies } = ctx.event
       const { username, password } = input
 
-      const [existingUser] = await usernameExists(username)
+      const [existingUser] = await user.usernameExists(username)
 
       if (!existingUser) {
         return {
@@ -101,7 +101,7 @@ export const auth = router({
       const userId = generateId(15)
 
       try {
-        insertUser({
+        user.insertUser({
           id: userId,
           username,
           password_hash: passwordHash,

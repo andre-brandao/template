@@ -5,7 +5,7 @@ import { hash } from '@node-rs/argon2'
 import { LibsqlError } from '@libsql/client'
 
 import type { Actions, PageServerLoad } from './$types'
-import { insertUser } from '$lib/server/db/schema/user'
+import { user } from '$db/controller'
 
 export const load: PageServerLoad = async event => {
   if (event.locals.user) {
@@ -49,7 +49,7 @@ export const actions: Actions = {
     const userId = generateId(15)
 
     try {
-      insertUser({
+      user.insertUser({
         id: userId,
         username,
         password_hash: passwordHash,

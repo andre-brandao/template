@@ -2,7 +2,7 @@
   import SEO from '$lib/components/SEO/index.svelte'
   import Cardapio from '$lib/components/Cardapio.svelte'
   import Modal from '$lib/components/Modal.svelte'
-  import ThemeSwiter from '$lib/components/ThemeSwiter.svelte'
+  import ThemeSwiter from '$lib/components/navbar/ThemeSwiter.svelte'
 
   import Carousel from '$lib/components/landing-page/Carousel.svelte'
   import Carousel2 from '$lib/components/landing-page/Carousel2.svelte'

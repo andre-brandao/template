@@ -2,16 +2,17 @@
   import '../app.css'
 
   import { themes, changeTheme } from '$lib'
-  import ThemeSwiter from '$lib/components/ThemeSwiter.svelte'
+  import ThemeSwiter from '$lib/components/navbar/ThemeSwiter.svelte'
   import { onMount } from 'svelte'
   import { Toaster, toast } from 'svelte-sonner'
   import { navigating } from '$app/stores'
-  import NavBar from '$lib/components/NavBar.svelte'
+  import NavBar from '$lib/components/navbar/NavBar.svelte'
   import type { LayoutData } from './$types'
 
   import { user } from '$lib/stores/user'
 
   import { ModalContainer } from '$lib/components/modal'
+  import Loading from '$lib/components/Loading.svelte'
 
   export let data: LayoutData
   $user = data.user
@@ -24,13 +25,12 @@
 
 <ModalContainer />
 <Toaster richColors closeButton />
-<NavBar />
-{#if $navigating}
-  <div class="flex h-full items-center justify-center">
-    <span class="loading loading-infinity loading-lg"></span>
-  </div>
-{:else}
-  <slot></slot>
-{/if}
+<NavBar>
+  {#if $navigating}
+    <Loading />
+  {:else}
+    <slot></slot>
+  {/if}
+</NavBar>
 
 <style></style>

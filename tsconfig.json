@@ -15,11 +15,12 @@
       "$lib": ["./src/lib"],
       "$components/*": ["./src/lib/components/*"],
       "$components": ["./src/lib/components"],
-      "$queries": ["./src/lib/server/db/queries"],
       "$utils": ["./src/lib/utils"],
       "$utils/*": ["./src/lib/utils/*"],
       "$trpc": ["./src/trpc"],
-      "$trpc/*": ["./src/trpc/*"]
+      "$trpc/*": ["./src/trpc/*"],
+      "$db": ["./src/lib/server/db"],
+      "$db/*": ["./src/lib/server/db/*"]
     }
   }
   // Path aliases are handled by https://kit.svelte.dev/docs/configuration#alias

@@ -38,11 +38,11 @@ type InsertProductCategory = typeof productCategoryTable.$inferInsert
 const insertProductCategorySchema = createInsertSchema(productCategoryTable)
 const selectProductCategorySchema = createSelectSchema(productCategoryTable)
 
-export function getProductCategories() {
+function getProductCategories() {
   return db.select().from(productCategoryTable)
 }
 
-export function insertProductCategory(data: InsertProductCategory) {
+function insertProductCategory(data: InsertProductCategory) {
   return db.insert(productCategoryTable).values(data)
 }
 
@@ -90,11 +90,11 @@ const productRelations = relations(productTable, ({ one }) => ({
 type SelectProduct = typeof productTable.$inferSelect
 type InsertProduct = typeof productTable.$inferInsert
 
-export function getProducts() {
+function getProducts() {
   return db.select().from(productTable)
 }
 
-export async function getProductsByCategory() {
+async function getProductsByCategory() {
   const rows = await db
     .select()
     .from(productCategoryTable)
@@ -121,7 +121,7 @@ export async function getProductsByCategory() {
   return products
 }
 
-export function findProductByCategory() {
+function findProductByCategory() {
   return db.query.productCategoryTable.findMany({
     with: {
       products: true,
@@ -134,4 +134,12 @@ export {
   productRelations,
   type SelectProduct,
   type InsertProduct,
+}
+
+export const product = {
+  getProducts,
+  getProductsByCategory,
+  findProductByCategory,
+  getProductCategories,
+  insertProductCategory,
 }

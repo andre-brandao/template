@@ -12,13 +12,12 @@ import {
 
 import { getDataTableState } from '$utils/datatable'
 
-import { getProducts } from '$queries'
+import { product } from '$db/controller'
 
 export const POST: RequestHandler = async ({ url }) => {
   const { pageNumber, limit, sort, order, search } = getDataTableState(url)
 
-  let query = getProducts().$dynamic()
-
+  let query = product.getProducts().$dynamic()
 
   if (sort && order) {
     query = withOrderBy(query, productTable, sort, order)

@@ -5,8 +5,9 @@
   import { website } from '$lib/config'
 
   import { user } from '$lib/stores/user'
-  import { trpc } from '../../trpc/client'
+  import { trpc } from '$trpc/client'
   import { page } from '$app/stores'
+  import NavItems from './NavItems.svelte'
 
   async function logout() {
     user.set(null)
@@ -14,7 +15,77 @@
   }
 </script>
 
-<div class="navbar sticky top-0 z-10 bg-base-100">
+<div class="drawer">
+  <input id="nav-drawer" type="checkbox" class="drawer-toggle" />
+  <div class="drawer-content flex flex-col">
+    <!-- Navbar -->
+    <div class="navbar sticky top-0 z-20 w-full bg-base-100">
+      <div class="flex-none lg:hidden">
+        <label
+          for="nav-drawer"
+          aria-label="open sidebar"
+          class="btn btn-square btn-ghost"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            class="inline-block h-6 w-6 stroke-current"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M4 6h16M4 12h16M4 18h16"
+            ></path>
+          </svg>
+        </label>
+      </div>
+      <div class="mx-2 flex-1 px-2">
+        <a href="/" class="btn btn-ghost text-xl">{website.siteTitle}</a>
+      </div>
+
+      <div class="hidden flex-none lg:block">
+        <ul class="menu menu-horizontal">
+          <!-- Navbar menu content here -->
+          <NavItems />
+        </ul>
+      </div>
+
+      <div class="flex-none">
+        {#if $user}
+          <div class="dropdown dropdown-end">
+            <div tabindex="0" role="button" class="btn m-1">
+              {$user.username}
+            </div>
+            <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+            <ul
+              tabindex="0"
+              class="menu dropdown-content z-[1] w-52 rounded-box bg-base-300 p-2 shadow-lg"
+            >
+              <li><a href="/myprofile">Meu Perfil</a></li>
+              <li><button onclick={logout}>Logout</button></li>
+            </ul>
+          </div>
+        {:else}
+          <a href="/login">Login</a>
+        {/if}
+
+        <ThemeSwiter />
+      </div>
+    </div>
+    <slot>Page content here</slot>
+  </div>
+  <div class="drawer-side z-30">
+    <label for="nav-drawer" aria-label="close sidebar" class="drawer-overlay"
+    ></label>
+    <ul class="menu min-h-full w-80 bg-base-200 p-4">
+      <!-- Sidebar content here -->
+      <NavItems />
+    </ul>
+  </div>
+</div>
+<!-- <div class="navbar sticky top-0 z-10 bg-base-100">
   <div class="navbar-start">
     <div class="dropdown">
       <div tabindex="0" role="button" class="btn btn-circle btn-ghost">
@@ -69,7 +140,6 @@
     {#if $user}
       <div class="dropdown">
         <div tabindex="0" role="button" class="btn m-1">{$user.username}</div>
-        <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
         <ul
           tabindex="0"
           class="menu dropdown-content z-[1] w-52 rounded-box bg-base-100 p-2 shadow"
@@ -83,23 +153,6 @@
     {/if}
 
     <ThemeSwiter />
-    <!-- <button class="btn btn-circle btn-ghost">
-        <div class="indicator">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-5 w-5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            ><path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-            /></svg
-          >
-          <span class="badge indicator-item badge-primary badge-xs"></span>
-        </div>
-      </button> -->
+
   </div>
-</div>
+</div> -->

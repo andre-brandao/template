@@ -1,10 +1,6 @@
 import type { RequestHandler } from './$types'
 
-import { db } from '$lib/server/db'
-import { imageTable } from '$lib/server/db/schema'
-import { eq } from 'drizzle-orm'
-
-import sharp from 'sharp'
+import { image } from '$db/controller'
 
 export const GET: RequestHandler = async ({ params }) => {
   const id = Number(params.id)
@@ -13,13 +9,7 @@ export const GET: RequestHandler = async ({ params }) => {
     return new Response('Not found', { status: 404 })
   }
 
-  const [{ img }] = await db
-    .select({
-      img: imageTable.data,
-    })
-    .from(imageTable)
-    .where(eq(imageTable.id, id))
-    .limit(1)
+  const [{ img }] = await image.getImageByID(id)
 
   if (!img) {
     return new Response('Not found', { status: 404 })
@@ -42,30 +32,20 @@ export const POST: RequestHandler = async ({ request, locals }) => {
   try {
     const formData = await request.formData()
     const name = formData.get('name')
-    const image = formData.get('image')
+    const imageFile = formData.get('image')
 
-    if (typeof name !== 'string' || !(image instanceof File)) {
+    if (typeof name !== 'string' || !(imageFile instanceof File)) {
       return new Response('Invalid form data', { status: 400 })
     }
 
-    const imageBuffer = Buffer.from(await image.arrayBuffer())
-
-    const processedImage = await sharp(imageBuffer)
-      .resize({ width: 400, height: 400, fit: 'cover' })
-      .toBuffer()
+    const imageBuffer = Buffer.from(await imageFile.arrayBuffer())
 
 
-    const [{ img_id }] = await db
-      .insert(imageTable)
-      .values({
-        name,
-        data: processedImage,
-        uploaded_by: user.id,
-      })
-      .returning({
-        img_id: imageTable.id,
-      })
-
+    const [{ img_id }] = await image.insertImage({
+      buff: imageBuffer,
+      name,
+      uploaded_by: user.id,
+    })
     return new Response(JSON.stringify({ img_id }), {
       status: 200,
     })

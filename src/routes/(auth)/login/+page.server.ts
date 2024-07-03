@@ -4,7 +4,7 @@ import { verify } from '@node-rs/argon2'
 
 import type { Actions, PageServerLoad } from './$types'
 
-import { usernameExists } from '$lib/server/db/queries'
+import { user } from '$db/controller'
 
 export const load: PageServerLoad = async event => {
   if (event.locals.user) {
@@ -39,7 +39,7 @@ export const actions: Actions = {
       })
     }
 
-    const [existingUser] = await usernameExists(username)
+    const [existingUser] = await user.usernameExists(username)
 
     if (!existingUser) {
       return fail(400, {

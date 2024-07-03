@@ -39,7 +39,7 @@ const userTable = sqliteTable('user', {
 })
 
 
-export function usernameExists(username: string) {
+ function usernameExists(username: string) {
   return db
     .select()
     .from(userTable)
@@ -47,6 +47,12 @@ export function usernameExists(username: string) {
     .limit(1)
 }
 
-export function insertUser(user: InsertUser) {
+ function insertUser(user: InsertUser) {
   return db.insert(userTable).values(user).run()
+}
+
+
+export const user = {
+  usernameExists,
+  insertUser
 }

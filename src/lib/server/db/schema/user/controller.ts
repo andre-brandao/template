@@ -6,8 +6,7 @@ import {
   // customType,
 } from 'drizzle-orm/sqlite-core'
 import { eq, sql } from 'drizzle-orm'
-import { db } from '..'
-
+import { db } from '$db'
 
 export { userTable, type SelectUser, type InsertUser }
 
@@ -38,8 +37,7 @@ const userTable = sqliteTable('user', {
   password_hash: text('password_hash').notNull(),
 })
 
-
- function usernameExists(username: string) {
+function usernameExists(username: string) {
   return db
     .select()
     .from(userTable)
@@ -47,12 +45,11 @@ const userTable = sqliteTable('user', {
     .limit(1)
 }
 
- function insertUser(user: InsertUser) {
+function insertUser(user: InsertUser) {
   return db.insert(userTable).values(user).run()
 }
 
-
 export const user = {
   usernameExists,
-  insertUser
+  insertUser,
 }

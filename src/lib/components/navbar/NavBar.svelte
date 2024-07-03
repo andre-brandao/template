@@ -9,6 +9,9 @@
   import { page } from '$app/stores'
   import NavItems from './NavItems.svelte'
 
+  import { modal } from '$lib/components/modal'
+  import BugReportModal from '$lib/components/modal/BugReportModal.svelte'
+
   async function logout() {
     user.set(null)
     await trpc($page).auth.logOut.query()
@@ -52,7 +55,11 @@
         </ul>
       </div>
 
-      <div class="flex-none">
+      <div class="flex-none gap-2">
+        <button class="btn" onclick={() => modal.open(BugReportModal)}>
+          Reportar Bug
+        </button>
+
         {#if $user}
           <div class="dropdown dropdown-end">
             <div tabindex="0" role="button" class="btn m-1">
@@ -68,7 +75,7 @@
             </ul>
           </div>
         {:else}
-          <a href="/login">Login</a>
+          <a class="btn" href="/login">Login</a>
         {/if}
 
         <ThemeSwiter />

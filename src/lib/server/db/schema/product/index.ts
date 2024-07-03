@@ -4,21 +4,20 @@ import {
   integer,
   // customType,
 } from 'drizzle-orm/sqlite-core'
-import { eq, sql, relations } from 'drizzle-orm'
-import { imageTable } from '.'
+import { sql, relations } from 'drizzle-orm'
+import { imageTable } from '../image'
 
-import { db } from '$lib/server/db'
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod'
 
 /*                  _            _               _                              
-                   | |          | |             | |                             
-_ __  _ __ ___   __| |_   _  ___| |_    ___ __ _| |_ ___  __ _  ___  _ __ _   _ 
-| '_ \| '__/ _ \ / _` | | | |/ __| __|  / __/ _` | __/ _ \/ _` |/ _ \| '__| | | |
-| |_) | | | (_) | (_| | |_| | (__| |_  | (_| (_| | ||  __/ (_| | (_) | |  | |_| |
-| .__/|_|  \___/ \__,_|\__,_|\___|\__|  \___\__,_|\__\___|\__, |\___/|_|   \__, |
-| |                                                        __/ |            __/ |
-|_|                                                       |___/            |___/ 
-*/
+                     | |          | |             | |                             
+  _ __  _ __ ___   __| |_   _  ___| |_    ___ __ _| |_ ___  __ _  ___  _ __ _   _ 
+  | '_ \| '__/ _ \ / _` | | | |/ __| __|  / __/ _` | __/ _ \/ _` |/ _ \| '__| | | |
+  | |_) | | | (_) | (_| | |_| | (__| |_  | (_| (_| | ||  __/ (_| | (_) | |  | |_| |
+  | .__/|_|  \___/ \__,_|\__,_|\___|\__|  \___\__,_|\__\___|\__, |\___/|_|   \__, |
+  | |                                                        __/ |            __/ |
+  |_|                                                       |___/            |___/ 
+  */
 
 const productCategoryTable = sqliteTable('product_category', {
   id: integer('id', { mode: 'number' }).primaryKey({ autoIncrement: true }),
@@ -37,14 +36,6 @@ type InsertProductCategory = typeof productCategoryTable.$inferInsert
 
 const insertProductCategorySchema = createInsertSchema(productCategoryTable)
 const selectProductCategorySchema = createSelectSchema(productCategoryTable)
-
-function getProductCategories() {
-  return db.select().from(productCategoryTable)
-}
-
-function insertProductCategory(data: InsertProductCategory) {
-  return db.insert(productCategoryTable).values(data)
-}
 
 export {
   productCategoryTable,
@@ -90,61 +81,9 @@ const productRelations = relations(productTable, ({ one }) => ({
 type SelectProduct = typeof productTable.$inferSelect
 type InsertProduct = typeof productTable.$inferInsert
 
-function getProducts() {
-  return db.select().from(productTable)
-}
-
-async function getProductsByCategory() {
-  const rows = await db
-    .select()
-    .from(productCategoryTable)
-    .leftJoin(
-      productTable,
-      eq(productCategoryTable.id, productTable.category_id),
-    )
-    .all()
-
-  const products = rows.reduce<Record<string, SelectProduct[]>>((acc, row) => {
-    const category = row.product_category
-    const product = row.product
-
-    if (!acc[category.name]) {
-      acc[category.name] = []
-    }
-
-    if (product) {
-      acc[category.name].push(product)
-    }
-    return acc
-  }, {})
-
-  return products
-}
-
-function findProductByCategory() {
-  return db.query.productCategoryTable.findMany({
-    with: {
-      products: true,
-    },
-  })
-}
-
-function getProductFromID(id: SelectProduct['id']) {
-  return db.select().from(productTable).where(eq(productTable.id, id)).limit(1)
-}
-
 export {
   productTable,
   productRelations,
   type SelectProduct,
   type InsertProduct,
-}
-
-export const product = {
-  getProducts,
-  getProductFromID,
-  getProductsByCategory,
-  findProductByCategory,
-  getProductCategories,
-  insertProductCategory,
 }

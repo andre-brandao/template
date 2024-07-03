@@ -1,29 +1,9 @@
-import {
-  sqliteTable,
-  text,
-  integer,
-  blob,
-  // customType,
-} from 'drizzle-orm/sqlite-core'
-import { eq, sql } from 'drizzle-orm'
-import { userTable } from '.'
-import { db } from '..'
+import { eq } from 'drizzle-orm'
+import { db } from '$db'
+
+import { type InsertImage, imageTable, type SelectImage } from '.'
 
 import sharp from 'sharp'
-
-const imageTable = sqliteTable('image', {
-  id: integer('id', { mode: 'number' }).primaryKey({ autoIncrement: true }),
-  created_at: text('created_at').default(sql`(CURRENT_TIMESTAMP)`),
-  uploaded_by: text('uploaded_by')
-    // .notNull()
-    .references(() => userTable.id, { onDelete: 'set null' }),
-  name: text('name').notNull(),
-  data: blob('data', { mode: 'buffer' }).notNull(),
-})
-
-type SelectImage = typeof imageTable.$inferSelect
-type InsertImage = typeof imageTable.$inferInsert
-export { imageTable, type SelectImage, type InsertImage }
 
 async function insertImage(img: {
   buff: Buffer

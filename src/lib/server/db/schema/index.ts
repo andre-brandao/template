@@ -15,3 +15,10 @@ export {
 } from './product'
 export type { SelectProduct, InsertProduct } from './product'
 export type { SelectProductCategory, InsertProductCategory } from './product'
+
+export {
+  bugReportTable,
+  bugReportRelations,
+  type InsertBugReport,
+  type SelectBugReport,
+} from './bug-report'

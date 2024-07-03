@@ -18,6 +18,7 @@ const config = {
       $utils: './src/lib/utils',
       $db: './src/lib/server/db',
       $trpc: './src/trpc',
+      $modal: './src/lib/components/modal',
     },
   },
 }

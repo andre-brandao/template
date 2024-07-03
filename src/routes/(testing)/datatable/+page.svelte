@@ -59,11 +59,11 @@
       {#if isLoading}
         <Loading />
       {:else}
-        <table class="table table-xs ">
+        <table class="table table-xs">
           <thead class="">
-            <tr class="bg-primary ">
+            <tr class="bg-primary">
               <td class=""> </td>
-              <ThSort {table}  field="created_at">Created At</ThSort>
+              <ThSort {table} field="created_at">Created At</ThSort>
               <ThSort {table} field="name">Name</ThSort>
               <ThSort {table} field="description">description</ThSort>
               <ThSort {table} field="price">Price</ThSort>
@@ -106,12 +106,5 @@
   }
   div.spinner.active {
     display: block;
-  }
-
-  .selected {
-    @apply bg-primary;
-  }
-  .selected:hover {
-    @apply bg-primary;
   }
 </style>

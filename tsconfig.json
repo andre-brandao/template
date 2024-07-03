@@ -20,7 +20,9 @@
       "$trpc": ["./src/trpc"],
       "$trpc/*": ["./src/trpc/*"],
       "$db": ["./src/lib/server/db"],
-      "$db/*": ["./src/lib/server/db/*"]
+      "$db/*": ["./src/lib/server/db/*"],
+      "$modal": ["./src/lib/components/modal"],
+      "$modal/*": ["./src/lib/components/modal/*"]
     }
   }
   // Path aliases are handled by https://kit.svelte.dev/docs/configuration#alias

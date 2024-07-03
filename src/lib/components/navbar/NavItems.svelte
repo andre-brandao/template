@@ -10,3 +10,6 @@
 <li><a href="/img">image</a></li>
 <li><a href="/modal">modal</a></li>
 <li><a href="/trpc">trpc</a></li>
+<li>
+  <a href="/bug_report"> bug board </a>
+</li>

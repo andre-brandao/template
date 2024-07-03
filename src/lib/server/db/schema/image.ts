@@ -25,10 +25,6 @@ type SelectImage = typeof imageTable.$inferSelect
 type InsertImage = typeof imageTable.$inferInsert
 export { imageTable, type SelectImage, type InsertImage }
 
-export const image = {
-  insertImage,
-  getImageByID,
-}
 async function insertImage(img: {
   buff: Buffer
   name: string
@@ -38,7 +34,7 @@ async function insertImage(img: {
     .resize({ width: 400, height: 400, fit: 'cover' })
     .toBuffer()
 
-  return db
+  return await db
     .insert(imageTable)
     .values({
       name: img.name,
@@ -58,4 +54,17 @@ function getImageByID(id: SelectImage['id']) {
     .from(imageTable)
     .where(eq(imageTable.id, id))
     .limit(1)
+}
+function getImagesFromUser(userID: string) {
+  return db
+    .select({
+      img: imageTable.data,
+    })
+    .from(imageTable)
+    .where(eq(imageTable.uploaded_by, userID))
+}
+export const image = {
+  insertImage,
+  getImageByID,
+  getImagesFromUser,
 }

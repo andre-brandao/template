@@ -75,7 +75,7 @@
     height: 56px;
     border-top: 1px solid #eee;
     display: flex;
-    justify-content: flex-end;
+    justify-content: center;
     align-items: center;
     gap: 12px;
     padding: 0;

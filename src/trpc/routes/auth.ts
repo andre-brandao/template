@@ -23,7 +23,7 @@ export const auth = router({
       }),
     )
     .query(async ({ ctx, input }) => {
-      const { cookies } = ctx.event
+      const { cookies } = ctx
       const { username, password } = input
 
       const [existingUser] = await user.usernameExists(username)
@@ -68,7 +68,7 @@ export const auth = router({
       }),
     )
     .query(async ({ ctx, input }) => {
-      const { cookies } = ctx.event
+      const { cookies } = ctx
       const { username, password } = input
 
       const [existingUser] = await user.usernameExists(username)
@@ -129,8 +129,8 @@ export const auth = router({
     }),
 
   logOut: publicProcedure.query(async ({ ctx }) => {
-    const { cookies } = ctx.event
-    const { session } = ctx
+    const { cookies } = ctx
+    const { session } = ctx.locals
     if (!session) {
       return {
         error: 'Not authenticated',

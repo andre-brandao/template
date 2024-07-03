@@ -1,41 +1,51 @@
 import { writable } from 'svelte/store'
 
-export { default as Modal } from './Modal.svelte'
-export { default as ModalContainer } from './ModalContainer.svelte'
+export { default as Modal } from './base/Modal.svelte'
+export { default as ModalContainer } from './base/ModalContainer.svelte'
+
+import Alert from './base/Alert.svelte'
 
 export const isActive = writable(false)
 import type { ComponentProps, Component } from 'svelte'
 
-// type Component = __sveltets_2_IsomorphicComponent | null
-// // type Props = Record<string, unknown> | null
-// // eslint-disable-next-line @typescript-eslint/no-explicit-any
-// type Props = Record<string, any> | null
+export interface BaseModalProps {
+  close: () => void
+}
 
 function createModal() {
   const { subscribe, set } = writable<{
     component: null | Component
     props: null | ComponentProps<Component>
   }>({ component: null, props: null })
+
+  const open = <T extends __sveltets_2_IsomorphicComponent>(
+    component: T,
+    props: ComponentProps<T> | null = null,
+  ) => {
+    isActive.set(true)
+    set({
+      component: component,
+      props: props,
+    })
+  }
+
+  const close = () => {
+    isActive.set(false)
+    set({
+      component: null,
+      props: null,
+    })
+  }
+
+  const alert = (args: ComponentProps<Alert>) => {
+    open(Alert, args)
+  }
   return {
     subscribe,
     set,
-    open: <T extends __sveltets_2_IsomorphicComponent>(
-      component: T,
-      props: Omit<ComponentProps<T>, 'close'> | null = null,
-    ) => {
-      isActive.set(true)
-      modal.set({
-        component: component,
-        props: props,
-      })
-    },
-    close: () => {
-      isActive.set(false)
-      modal.set({
-        component: null,
-        props: null,
-      })
-    },
+    open,
+    alert,
+    close,
   }
 }
 export const modal = createModal()

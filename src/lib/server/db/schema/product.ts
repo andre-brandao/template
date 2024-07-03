@@ -129,6 +129,10 @@ function findProductByCategory() {
   })
 }
 
+function getProductFromID(id: SelectProduct['id']) {
+  return db.select().from(productTable).where(eq(productTable.id, id)).limit(1)
+}
+
 export {
   productTable,
   productRelations,
@@ -138,6 +142,7 @@ export {
 
 export const product = {
   getProducts,
+  getProductFromID,
   getProductsByCategory,
   findProductByCategory,
   getProductCategories,

@@ -24,7 +24,7 @@
       }}
       class="modal-box"
     >
-      <svelte:component this={$modal.component} props={$modal.props} {close} />
+      <svelte:component this={$modal.component} {...$modal.props}  />
     </article>
   </section>
 {/if}

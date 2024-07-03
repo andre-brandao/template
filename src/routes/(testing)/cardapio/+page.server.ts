@@ -1,8 +1,8 @@
 import type { PageServerLoad } from './$types'
 
-import { getProductsByCategory } from '$queries'
+import { product } from '$db/controller'
 
 export const load = (async () => {
-  const products = await getProductsByCategory()
+  const products = await product.getProductsByCategory()
   return { products }
 }) satisfies PageServerLoad

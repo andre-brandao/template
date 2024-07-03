@@ -13,6 +13,8 @@
 
   import { ModalContainer } from '$lib/components/modal'
   import Loading from '$lib/components/Loading.svelte'
+  import { fade } from 'svelte/transition'
+  import Transition from '$lib/components/Transition.svelte'
 
   export let data: LayoutData
   $user = data.user
@@ -26,11 +28,9 @@
 <ModalContainer />
 <Toaster richColors closeButton />
 <NavBar>
-  {#if $navigating}
-    <Loading />
-  {:else}
+  <Transition>
     <slot></slot>
-  {/if}
+  </Transition>
 </NavBar>
 
 <style></style>

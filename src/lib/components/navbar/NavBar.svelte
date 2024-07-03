@@ -20,7 +20,7 @@
 
 <div class="drawer">
   <input id="nav-drawer" type="checkbox" class="drawer-toggle" />
-  <div class="drawer-content flex flex-col">
+  <div class="drawer-content flex h-screen flex-col overflow-hidden">
     <!-- Navbar -->
     <div class="navbar sticky top-0 z-20 w-full bg-base-100">
       <div class="flex-none lg:hidden">

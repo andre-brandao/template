@@ -17,6 +17,17 @@ main()
 async function seedUsers() {
   console.log('userTable seed START')
 
+  user.insertUser({
+    id: generateId(15),
+    username: 'administrator',
+    password_hash: await hash('senha123', {
+      memoryCost: 19456,
+      timeCost: 2,
+      outputLen: 32,
+      parallelism: 1,
+    }),
+  })
+
   for (let i = 0; i < 20; i++) {
     user.insertUser({
       id: generateId(15),

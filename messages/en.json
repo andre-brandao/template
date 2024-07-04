@@ -1,5 +1,14 @@
 {
     "$schema": "https://inlang.com/schema/inlang-message-format",
     "hero_title": "Hello there",
-    "hero_description": "Provident cupiditate voluptatem et in. Quaerat fugiat ut assumenda\n        excepturi exercitationem quasi. In deleniti eaque aut repudiandae et a\n        id nisi."
+    "hero_description": "Provident cupiditate voluptatem et in. Quaerat fugiat ut assumenda\n        excepturi exercitationem quasi. In deleniti eaque aut repudiandae et a\n        id nisi.",
+    "title_sign_in": "Sign in",
+    "username": "Username",
+    "password": "Password",
+    "dont_have_acc": "Don't have an account?",
+    "create_an_acc": "Create an account",
+    "create_an_account": "Create an account",
+    "continu": "Continue",
+    "already_have_acc": "Already have an account? ",
+    "sign_in": "Sign in"
 }

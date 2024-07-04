@@ -1,32 +1,45 @@
 <script lang="ts">
   import { enhance } from '$app/forms'
+  import * as m from '$msgs'
 
   import type { ActionData } from './$types'
 
   export let form: ActionData
 </script>
 
-<main class="flex min-h-screen items-center justify-center bg-gray-100">
-  <div class="w-full max-w-sm p-8 bg-white rounded-lg shadow-lg">
-    <h1 class="text-2xl font-semibold text-center text-gray-700">Sign in</h1>
-    <form
-      method="post"
-      use:enhance
-      class="mt-6 flex flex-col gap-4"
-    >
+<main class="flex min-h-screen items-center justify-center">
+  <div class="w-full max-w-sm rounded-lg p-8 shadow-lg">
+    <h1 class="text-center text-2xl font-semibold">{m.title_sign_in()}</h1>
+    <form method="post" use:enhance class="mt-6 flex flex-col gap-4">
       <div>
-        <label for="username" class="block text-sm font-medium text-gray-700">Username</label>
-        <input class="input input-bordered w-full mt-1" name="username" id="username" />
+        <label for="username" class="block text-sm font-medium">
+          {m.username()}
+        </label>
+        <input
+          class="input input-bordered mt-1 w-full"
+          name="username"
+          id="username"
+        />
       </div>
       <div>
-        <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
-        <input class="input input-bordered w-full mt-1" type="password" name="password" id="password" />
+        <label for="password" class="block text-sm font-medium">
+          {m.password()}
+        </label>
+        <input
+          class="input input-bordered mt-1 w-full"
+          type="password"
+          name="password"
+          id="password"
+        />
       </div>
-      <button class="btn btn-primary w-full mt-4">Continue</button>
-      <p class="text-red-500 text-sm text-center mt-2">{form?.message ?? ''}</p>
+      <button class="btn btn-secondary mt-4 w-full">{m.continu()}</button>
+      <p class=" mt-2 text-center text-sm">{form?.message ?? ''}</p>
     </form>
-    <p class="mt-4 text-sm text-center text-gray-600">
-      Don't have an account? <a href="/signup" class="text-primary hover:underline">Create an account</a>
+    <p class="mt-4 text-center text-sm">
+      {m.dont_have_acc()}
+      <a href="/signup" class="text-primary hover:underline">
+        {m.create_an_acc()}
+      </a>
     </p>
   </div>
 </main>

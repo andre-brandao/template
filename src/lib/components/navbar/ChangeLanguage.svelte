@@ -7,6 +7,7 @@
   } from '$lib/paraglide/runtime'
 
   import { goto } from '$app/navigation'
+  import { icons } from '$lib/utils/icons'
 
   function changeLanguage(l: (typeof availableLanguageTags)[number]) {
     setLanguageTag(l)
@@ -16,38 +17,11 @@
       goto(`/${l}`)
     }
   }
-
-  function getEmojiFlag(lang: string) {
-    switch (lang) {
-      case 'en':
-        return '🇺🇸'
-      case 'pt':
-        return '🇧🇷'
-      case 'zh':
-        return '🇨🇳'
-      case 'es':
-        return '🇪🇸'
-      case 'fr':
-        return '🇫🇷'
-      case 'de':
-        return '🇩🇪'
-      case 'ja':
-        return '🇯🇵'
-      case 'ko':
-        return '🇰🇷'
-      case 'pt':
-        return '🇵🇹'
-      case 'ru':
-        return '🇷🇺'
-      default:
-        return '🌐'
-    }
-  }
 </script>
 
 <div class="dropdown dropdown-end">
   <div tabindex="0" role="button" class="btn m-1">
-    {getEmojiFlag(languageTag())}
+    {icons.flags.getEmojiFlag(languageTag())}
   </div>
   <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
   <ul
@@ -58,7 +32,7 @@
       {#if languageTag() !== lang}
         <li>
           <button class="btn" onclick={() => changeLanguage(lang)}>
-            {getEmojiFlag(lang)}
+            {icons.flags.getEmojiFlag(lang)}
           </button>
         </li>
       {/if}

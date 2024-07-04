@@ -14,7 +14,7 @@
   import { user } from '$lib/stores/user'
   // COMPONENTS
   import { ModalContainer } from '$lib/components/modal'
-  import Transition from '$lib/components/Transition.svelte'
+  import Transition from './Transition.svelte'
   import PreLoadingIndicator from './PreLoadingIndicator.svelte'
 
 

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Modal } from '$lib/components/modal'
   import { modal } from '$lib/components/modal'
-
+  import { icons } from '$lib/utils/icons'
   import { page } from '$app/stores'
   import { trpc } from '$trpc/client'
   import { toast } from 'svelte-sonner'
@@ -38,8 +38,16 @@
   </main>
 
   <svelte:fragment slot="footer">
-    <button class="btn bg-primary" on:click={save}>Enviar</button>
-    <button class="btn bg-red-400" on:click={modal.close}>Cancel</button>
+    <div class="flex w-full justify-between">
+      <a href="/bug_report" class="btn btn-primary">
+        {@html icons.bug()} Ver Bugs Table
+      </a>
+
+      <div class="flex">
+        <button class="btn btn-success" on:click={save}>Enviar</button>
+        <button class="btn btn-error" on:click={modal.close}>Cancel</button>
+      </div>
+    </div>
   </svelte:fragment>
 </Modal>
 

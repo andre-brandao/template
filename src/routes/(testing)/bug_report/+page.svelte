@@ -12,6 +12,7 @@
 
   import { page } from '$app/stores'
   import { trpc } from '$trpc/client'
+  import { TRPCClientError } from '@trpc/client'
 
   let columnsData = [
     {
@@ -30,7 +31,7 @@
       items: bugs.filter(bug => bug.status === 'DONE'),
     },
   ]
-  function handleBoardUpdated(newColumnsData: typeof columnsData) {
+  async function handleBoardUpdated(newColumnsData: typeof columnsData) {
     if (!$user?.permissions.isAdmin) {
       return toast.error(
         'Você não tem permissão para alterar o status dos bugs',
@@ -45,12 +46,21 @@
           // @ts-ignore
           row.status = col.label
 
-          const foo = trpc().updateBugStatus.createQuery({
-            id: row.id,
-            // @ts-ignore
-            status: col.label,
-          })
-        
+          try {
+            const resp = await trpc().updateBugStatus.query({
+              id: row.id,
+              // @ts-ignore
+              status: col.label,
+            })
+            toast(resp)
+          } catch (err) {
+            if (err instanceof TRPCClientError) {
+              toast.error(err.message)
+            } else {
+              toast.error('Erro ao atualizar o status do bug')
+            }
+            columnsData = old_cols
+          }
         }
       }
     }

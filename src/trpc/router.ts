@@ -8,7 +8,9 @@ import { z } from 'zod'
 import { auth } from './routes/auth'
 
 import { bugReport } from '$lib/server/db/controller'
+import { TRPCError } from '@trpc/server'
 
+import { middleware } from './middleware'
 export const router = t.router({
   // greeting: publicProcedure.query(async opts => {
   //   const { user } = opts.ctx
@@ -32,23 +34,26 @@ export const router = t.router({
     .query(async ({ input, ctx }) => {
       const { user } = ctx.locals
       if (!user) {
-        return 'You must be logged in to report a bug'
+        return {
+          error: 'You must be logged in to report a bug',
+        }
       }
       try {
-        await bugReport.insertBugReport({
+        const [id] = await bugReport.insertBugReport({
           text: input.text,
           created_by: user.id,
           page_data: input.page_data,
         })
 
-        return 'Bug reported'
+        return { data: 'Bug reported #' + id }
       } catch (e) {
         console.error(e)
-        return 'Error reporting bug'
+        return { error: 'Error reporting bug' }
       }
     }),
 
   updateBugStatus: publicProcedure
+    .use(middleware.admin)
     .input(
       z.object({
         id: z.number(),
@@ -56,9 +61,16 @@ export const router = t.router({
       }),
     )
     .query(async ({ input }) => {
-      await bugReport.updateBugReportStatus(input.id, input.status)
-      return {
-        data: 'Bug status updated',
+      try {
+        await bugReport.updateBugReportStatus(input.id, input.status)
+
+        return `Bug #${input.id} status updated to ${input.status}`
+      } catch (error) {
+        console.error(error)
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Error updating bug status',
+        })
       }
     }),
   // pagarme,

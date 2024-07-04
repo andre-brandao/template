@@ -41,6 +41,9 @@ dependencies:
   svelte-sonner:
     specifier: ^0.3.24
     version: 0.3.24(svelte@5.0.0-next.167)
+  trpc-svelte-query-adapter:
+    specifier: ^2.3.4
+    version: 2.3.4(@tanstack/svelte-query@5.49.1)(@trpc/client@10.45.2)(@trpc/server@10.45.2)(svelte@5.0.0-next.167)(typescript@5.5.3)
   trpc-sveltekit:
     specifier: ^3.6.2
     version: 3.6.2(@sveltejs/adapter-node@5.2.0)(@trpc/client@10.45.2)(@trpc/server@10.45.2)(ws@8.17.1)
@@ -4630,6 +4633,10 @@ packages:
       react-is: 18.3.1
     dev: true
 
+  /proxy-deep@3.1.1:
+    resolution: {integrity: sha512-kppbvLUNJ4IOMZds9/4gz/rtT5OFiesy3XosLsgMKlF3vb6GA5Y3ptyDlzKLcOcUBW+zaY+RiMINTsgE+O6e+Q==}
+    dev: false
+
   /proxy-from-env@1.1.0:
     resolution: {integrity: sha512-D+zkORCbA9f1tdWRK0RaCR3GPv50cMxcrz4X8k5LTSUD1Dkw47mKJEZQNunItRTkWwgtaUSo1RVFRIG9ZXiFYg==}
 
@@ -5155,6 +5162,23 @@ packages:
     resolution: {integrity: sha512-sf4i37nQ2LBx4m3wB74y+ubopq6W/dIzXg0FDGjsYnZHVa1Da8FH853wlL2gtUhg+xJXjfk3kUZS3BRoQeoQBQ==}
     engines: {node: '>=6'}
 
+  /trpc-svelte-query-adapter@2.3.4(@tanstack/svelte-query@5.49.1)(@trpc/client@10.45.2)(@trpc/server@10.45.2)(svelte@5.0.0-next.167)(typescript@5.5.3):
+    resolution: {integrity: sha512-TnqMV6h7gYbTtkXbnonZ+aGbRrZzmCGQ66J4fqoQz2at6z4xZPUtAT4KaoZruFpegXoKQQQfBLV9We6JkVXedw==}
+    peerDependencies:
+      '@tanstack/svelte-query': ^5.8.2
+      '@trpc/client': ^10.43.3
+      '@trpc/server': ^10.43.3
+      svelte: ^4.2.3
+      typescript: ^5.2.2
+    dependencies:
+      '@tanstack/svelte-query': 5.49.1(svelte@5.0.0-next.167)
+      '@trpc/client': 10.45.2(@trpc/server@10.45.2)
+      '@trpc/server': 10.45.2
+      proxy-deep: 3.1.1
+      svelte: 5.0.0-next.167
+      typescript: 5.5.3
+    dev: false
+
   /trpc-sveltekit@3.6.2(@sveltejs/adapter-node@5.2.0)(@trpc/client@10.45.2)(@trpc/server@10.45.2)(ws@8.17.1):
     resolution: {integrity: sha512-wfcUGpasdSQjNaMnbaaHs4gnh5580oNoOYBsnWujE8+tXyyYAxYA2z6vrQmuG4/rOLdbiEns5ISfsejZz9l+2Q==}
     peerDependencies:
@@ -5225,7 +5249,6 @@ packages:
     resolution: {integrity: sha512-/hreyEujaB0w76zKo6717l3L0o/qEUtRgdvUBvlkhoWeOVMjMuHNHk0BRBzikzuGDqNmPQbg5ifMEqsHLiIUcQ==}
     engines: {node: '>=14.17'}
     hasBin: true
-    dev: true
 
   /ufo@1.5.3:
     resolution: {integrity: sha512-Y7HYmWaFwPUmkoQCUIAYpKqkOf+SbVj/2fJJZ4RJMCfZp0rTGwRbzQD+HghfnhKOjL9E01okqz+ncJskGYfBNw==}

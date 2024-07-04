@@ -1,21 +1,24 @@
 <script lang="ts">
+  import '../app.css'
+  // INLANG
   import { ParaglideJS } from '@inlang/paraglide-sveltekit'
   import { i18n } from '$lib/i18n'
-
-  import '../app.css'
-
+  // DAISY THEMES
   import { themes, changeTheme } from '$lib'
   import { onMount } from 'svelte'
+  // TOASTER
   import { Toaster, toast } from 'svelte-sonner'
-  import { navigating } from '$app/stores'
   import NavBar from '$lib/components/navbar/NavBar.svelte'
-  import type { LayoutData } from './$types'
-
+  // STORE
+  import { navigating } from '$app/stores'
   import { user } from '$lib/stores/user'
-
+  // COMPONENTS
   import { ModalContainer } from '$lib/components/modal'
   import Transition from '$lib/components/Transition.svelte'
   import PreLoadingIndicator from './PreLoadingIndicator.svelte'
+
+
+  import type { LayoutData } from './$types'
 
   export let data: LayoutData
   $user = data.user
@@ -27,7 +30,7 @@
 </script>
 
 {#if $navigating}
-	<PreLoadingIndicator />
+  <PreLoadingIndicator />
 {/if}
 
 <ParaglideJS {i18n}>

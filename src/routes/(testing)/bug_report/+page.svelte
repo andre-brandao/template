@@ -45,11 +45,12 @@
           // @ts-ignore
           row.status = col.label
 
-          trpc($page).updateBugStatus.query({
+          const foo = trpc().updateBugStatus.createQuery({
             id: row.id,
             // @ts-ignore
             status: col.label,
           })
+        
         }
       }
     }
@@ -64,18 +65,20 @@
       class:inprogress={bug.status === 'IN_PROGRESS'}
       class:done={bug.status === 'DONE'}
     >
-    <div class="m-2  rounded-lg p-3 shadow-md bg-white dark:bg-gray-800">
-      <h3 class="text-xl font-semibold">{bug.text}</h3>
-    
-      <hr class="my-2" />
-    
-      <p class="text-gray-600 dark:text-gray-400">Reportado: {bug.created_by_name}</p>
-    
-      <div class="mt-2">
-        Pagina do bug:
-        {bug.page_data}
+      <div class="m-2 rounded-lg bg-white p-3 shadow-md dark:bg-gray-800">
+        <h3 class="text-xl font-semibold">{bug.text}</h3>
+
+        <hr class="my-2" />
+
+        <p class="text-gray-600 dark:text-gray-400">
+          Reportado: {bug.created_by_name}
+        </p>
+
+        <div class="mt-2">
+          Pagina do bug:
+          {bug.page_data}
+        </div>
       </div>
-    </div>
     </div>
   {/snippet}
 </Board>

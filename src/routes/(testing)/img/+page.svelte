@@ -1,18 +1,20 @@
-<script>
+<script lang="ts">
   import { onMount } from 'svelte'
 
-  import { uploadImage } from '$lib/utils/image'
+  import { getImagePath, uploadImage } from '$lib/utils/image'
 
   let name = ''
-  /**
-   * @type {File | null}
-   */
-  let image = null
+
+  let image: File | null = null
   let responseMessage = ''
 
-  const handleFileChange = event => {
-    const files = event.target.files
-    if (files.length > 0) {
+  const handleFileChange = (
+    event: Event & {
+      currentTarget: EventTarget & HTMLInputElement
+    },
+  ) => {
+    const files = (event.target as HTMLInputElement).files
+    if (files && files.length > 0) {
       image = files[0]
     }
   }
@@ -23,14 +25,16 @@
       return
     }
 
-    const { img_id, error } = await uploadImage(image, name)
+    const { data, error } = await uploadImage(image, name)
+    console.log(data)
 
-    console.log( error)
+    console.log(error)
 
     if (error) {
+    
       responseMessage = error
     } else {
-      responseMessage = img_id
+      responseMessage = data
     }
   }
 </script>
@@ -48,7 +52,7 @@
         id="image"
         type="file"
         accept="image/*"
-        on:change={handleFileChange}
+        on:change={e => handleFileChange(e)}
         required
       />
     </div>
@@ -59,7 +63,7 @@
   {/if}
 </main>
 
-<img src="/api/image/{responseMessage}" alt="" />
+<img src={getImagePath(responseMessage)} alt="" />
 
 <style>
   main {

@@ -53,6 +53,7 @@ export const actions: Actions = {
         id: userId,
         username,
         password_hash: passwordHash,
+        permissions: user.DEFAULT_PERMISSIONS,
       })
 
       const session = await lucia.createSession(userId, {})

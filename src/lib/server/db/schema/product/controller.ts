@@ -17,6 +17,16 @@ function insertProductCategory(data: InsertProductCategory) {
   return db.insert(productCategoryTable).values(data)
 }
 
+function updateProductCategory(
+  id: number,
+  data: Partial<InsertProductCategory>,
+) {
+  return db
+    .update(productCategoryTable)
+    .set(data)
+    .where(eq(productCategoryTable.id, id))
+}
+
 function getProducts() {
   return db.select().from(productTable)
 }
@@ -89,6 +99,7 @@ export const product = {
   findProductByCategory,
   getProductCategories,
   insertProductCategory,
+  updateProductCategory,
   insertProduct,
   updateProduct,
 }

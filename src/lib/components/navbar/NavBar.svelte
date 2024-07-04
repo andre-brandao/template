@@ -82,7 +82,6 @@
         <ThemeSwiter />
 
         <ChangeLanguage />
-
       </div>
     </div>
     <slot>Page content here</slot>

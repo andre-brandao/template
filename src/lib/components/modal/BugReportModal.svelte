@@ -4,13 +4,17 @@
 
   import { page } from '$app/stores'
   import { trpc } from '$trpc/client'
+  import { toast } from 'svelte-sonner'
 
   let bugReport = ''
 
   async function reportBug() {
-    const resp = await trpc($page).reportBug.query({ text: bugReport })
+    const resp = await trpc($page).reportBug.query({
+      text: bugReport,
+      page_data: JSON.stringify($page.url),
+    })
 
-    console.log(resp)
+    toast(resp)
   }
 
   const save = () => {

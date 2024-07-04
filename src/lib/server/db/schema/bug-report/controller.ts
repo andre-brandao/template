@@ -9,6 +9,7 @@ import { db } from '$db'
 function insertBugReport(report: {
   text: string
   created_by: InsertBugReport['created_by']
+  page_data: InsertBugReport['page_data']
 }) {
   return db
     .insert(bugReportTable)
@@ -16,6 +17,7 @@ function insertBugReport(report: {
       text: report.text,
       created_by: report.created_by,
       status: 'TODO',
+      page_data: report.page_data,
     })
     .returning({
       id: bugReportTable.id,
@@ -42,6 +44,7 @@ function getBugReports() {
       status: bugReportTable.status,
       created_at: bugReportTable.created_at,
       created_by_name: userTable.username,
+      page_data: bugReportTable.page_data,
     })
     .from(bugReportTable)
     .leftJoin(userTable, eq(bugReportTable.created_by, userTable.id))

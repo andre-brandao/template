@@ -26,6 +26,17 @@ async function insertImage(img: {
     })
 }
 
+async function updateImage(
+  imageID: SelectImage['id'],
+  img: Partial<InsertImage>,
+) {
+  return await db
+    .update(imageTable)
+    .set(img)
+    .where(eq(imageTable.id, imageID))
+    .run()
+}
+
 function getImageByID(id: SelectImage['id']) {
   return db
     .select({
@@ -45,6 +56,7 @@ function getImagesFromUser(userID: string) {
 }
 export const image = {
   insertImage,
+  updateImage,
   getImageByID,
   getImagesFromUser,
 }

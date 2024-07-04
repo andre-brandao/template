@@ -15,6 +15,7 @@ const bugReportTable = sqliteTable('bugReport', {
   created_by: text('created_by').references(() => userTable.id, {
     onDelete: 'set null',
   }),
+  page_data: text('page_data'),
   status: text('status', { enum: ['DONE', 'IN_PROGRESS', 'TODO'] }).notNull(),
   text: text('name').notNull(),
 })

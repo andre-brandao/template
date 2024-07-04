@@ -26,20 +26,25 @@ export const router = t.router({
     .input(
       z.object({
         text: z.string(),
+        page_data: z.string(),
       }),
     )
     .query(async ({ input, ctx }) => {
       const { user } = ctx.locals
       if (!user) {
-        return { error: 'You must be logged in to report a bug' }
+        return 'You must be logged in to report a bug'
       }
+      try {
+        await bugReport.insertBugReport({
+          text: input.text,
+          created_by: user.id,
+          page_data: input.page_data,
+        })
 
-      await bugReport.insertBugReport({
-        text: input.text,
-        created_by: user.id,
-      })
-      return {
-        data: 'Bug reported',
+        return 'Bug reported'
+      } catch (e) {
+        console.error(e)
+        return 'Error reporting bug'
       }
     }),
 

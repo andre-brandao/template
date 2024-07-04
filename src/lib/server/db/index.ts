@@ -19,12 +19,11 @@ if (!dev && !env.DATABASE_AUTH_TOKEN)
   throw new Error('DATABASE_AUTH_TOKEN is not set')
 
 export const libsqlClient = createClient({
-  url: env.DATABASE_URL,
+  url: dev ? 'file:local.db' : env.DATABASE_URL,
   authToken: env.DATABASE_AUTH_TOKEN,
 })
 
-//**Uncomment the following line when seeding */
-
+//*! Uncomment the following line when seeding */
 // export const libsqlClient = createClient({
 //   url: 'file:local.db',
 // })

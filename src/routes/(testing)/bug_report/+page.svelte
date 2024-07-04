@@ -41,6 +41,10 @@
 
       <hr />
       <p>Reportado: {bug.created_by_name}</p>
+
+      <div class="">
+        {bug.page_data}
+      </div>
     </div>
   {/snippet}
 </Board>

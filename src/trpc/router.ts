@@ -2,7 +2,7 @@
 
 import { t, publicProcedure } from './t'
 
-import { pagarme } from './routes/pagarme'
+// import { pagarme } from './routes/pagarme'
 
 import { z } from 'zod'
 import { auth } from './routes/auth'
@@ -56,7 +56,7 @@ export const router = t.router({
         data: 'Bug status updated',
       }
     }),
-  pagarme,
+  // pagarme,
   auth,
 })
 

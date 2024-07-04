@@ -46,7 +46,8 @@
     "typescript": "^5.5.3",
     "typescript-eslint": "8.0.0-alpha.37",
     "vite": "^5.3.3",
-    "vitest": "^1.6.0"
+    "vitest": "^1.6.0",
+    "@inlang/paraglide-js": "1.11.0"
   },
   "type": "module",
   "dependencies": {
@@ -62,6 +63,7 @@
     "sharp": "^0.33.4",
     "svelte-sonner": "^0.3.24",
     "trpc-sveltekit": "^3.6.2",
-    "zod": "^3.23.8"
+    "zod": "^3.23.8",
+    "@inlang/paraglide-sveltekit": "0.10.9"
   }
 }

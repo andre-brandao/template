@@ -1,3 +1,4 @@
+import { i18n } from '$lib/i18n'
 import { lucia } from '$lib/server/auth'
 import type { Handle } from '@sveltejs/kit'
 import { sequence } from '@sveltejs/kit/hooks'
@@ -46,4 +47,4 @@ const handleTRPC = createTRPCHandle({
     ),
 })
 
-export const handle: Handle = sequence(handleSession, handleTRPC)
+export const handle: Handle = sequence(i18n.handle(), handleSession, handleTRPC)

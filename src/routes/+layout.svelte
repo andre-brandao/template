@@ -1,4 +1,7 @@
 <script lang="ts">
+  import { ParaglideJS } from '@inlang/paraglide-sveltekit'
+  import { i18n } from '$lib/i18n'
+
   import '../app.css'
 
   import { themes, changeTheme } from '$lib'
@@ -25,12 +28,14 @@
   })
 </script>
 
-<ModalContainer />
-<Toaster richColors closeButton />
-<NavBar>
-  <Transition>
-    <slot></slot>
-  </Transition>
-</NavBar>
+<ParaglideJS {i18n}>
+  <ModalContainer />
+  <Toaster richColors closeButton />
+  <NavBar>
+    <Transition>
+      <slot></slot>
+    </Transition>
+  </NavBar>
+</ParaglideJS>
 
 <style></style>

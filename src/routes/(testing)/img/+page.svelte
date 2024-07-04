@@ -34,7 +34,7 @@
     
       responseMessage = error
     } else {
-      responseMessage = data
+      responseMessage = `${data}`
     }
   }
 </script>

@@ -1,4 +1,4 @@
-<script lang="ts">
+<!-- <script lang="ts">
   import type { PageData } from './$types'
   import { toast } from 'svelte-sonner'
 
@@ -119,4 +119,4 @@
   {:else}
     <button class="btn" disabled={loading} on:click={pagarmeTest}>Test</button>
   {/if}
-</div>
+</div> -->

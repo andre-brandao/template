@@ -1,7 +1,6 @@
 <script lang="ts">
   import type { PageData } from './$types'
   import { user } from '$lib/stores/user'
-  import FileUploader from '$lib/components/FileUpload.svelte'
   import { applyAction, enhance } from '$app/forms'
   import { goto } from '$app/navigation'
 
@@ -61,13 +60,13 @@
     <div class="space-y-2">
       <label for="profile-pic">Picture</label>
 
-      <FileUploader
+      <!-- <FileUploader
         id="profile-pic"
         onFileChange={(file, previewUrl, resizedBlob) => {
           console.log(resizedBlob)
           user_form.profile_pic = resizedBlob
         }}
-      />
+      /> -->
     </div>
     <div class="space-y-2">
       <label

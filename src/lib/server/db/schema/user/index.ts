@@ -13,6 +13,9 @@ export const sessionTable = sqliteTable('session', {
     .notNull()
     .references(() => userTable.id),
   expiresAt: integer('expires_at').notNull(),
+  permissions: text('permissions', { mode: 'json' })
+    .notNull()
+    .$type<UserPermissions>()
 })
 
 type SelectUser = typeof userTable.$inferSelect
@@ -22,6 +25,10 @@ type InsertUser = typeof userTable.$inferInsert
 export interface DatabaseUser {
   id: string
   username: string
+}
+
+export type UserPermissions = {
+  isAdmin: boolean
 }
 
 const userTable = sqliteTable('user', {
@@ -35,4 +42,3 @@ const userTable = sqliteTable('user', {
 })
 
 export { userTable, type SelectUser, type InsertUser }
-

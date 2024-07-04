@@ -11,21 +11,12 @@ dependencies:
   '@libsql/client':
     specifier: ^0.6.2
     version: 0.6.2
-  '@lucia-auth/adapter-drizzle':
-    specifier: ^1.0.7
-    version: 1.0.7(lucia@3.2.0)
   '@node-rs/argon2':
     specifier: ^1.8.3
     version: 1.8.3
-  '@tanstack/svelte-query':
-    specifier: ^5.49.1
-    version: 5.49.1(svelte@5.0.0-next.167)
   '@trpc/client':
     specifier: ^10.45.2
     version: 10.45.2(@trpc/server@10.45.2)
-  '@trpc/server':
-    specifier: ^10.45.2
-    version: 10.45.2
   axios:
     specifier: ^1.7.2
     version: 1.7.2
@@ -41,9 +32,6 @@ dependencies:
   svelte-sonner:
     specifier: ^0.3.24
     version: 0.3.24(svelte@5.0.0-next.167)
-  trpc-svelte-query-adapter:
-    specifier: ^2.3.4
-    version: 2.3.4(@tanstack/svelte-query@5.49.1)(@trpc/client@10.45.2)(@trpc/server@10.45.2)(svelte@5.0.0-next.167)(typescript@5.5.3)
   trpc-sveltekit:
     specifier: ^3.6.2
     version: 3.6.2(@sveltejs/adapter-node@5.2.0)(@trpc/client@10.45.2)(@trpc/server@10.45.2)(ws@8.17.1)
@@ -58,6 +46,9 @@ devDependencies:
   '@inlang/paraglide-js':
     specifier: 1.11.0
     version: 1.11.0
+  '@lucia-auth/adapter-drizzle':
+    specifier: ^1.0.7
+    version: 1.0.7(lucia@3.2.0)
   '@playwright/test':
     specifier: ^1.45.1
     version: 1.45.1
@@ -70,6 +61,9 @@ devDependencies:
   '@sveltejs/vite-plugin-svelte':
     specifier: ^3.1.1
     version: 3.1.1(svelte@5.0.0-next.167)(vite@5.3.3)
+  '@trpc/server':
+    specifier: ^10.45.2
+    version: 10.45.2
   '@types/eslint':
     specifier: ^8.56.10
     version: 8.56.10
@@ -159,6 +153,7 @@ packages:
     requiresBuild: true
     dependencies:
       tslib: 2.6.3
+    dev: true
     optional: true
 
   /@emnapi/core@1.2.0:
@@ -175,6 +170,7 @@ packages:
     requiresBuild: true
     dependencies:
       tslib: 2.6.3
+    dev: true
     optional: true
 
   /@emnapi/runtime@1.2.0:
@@ -1391,7 +1387,7 @@ packages:
       lucia: 3.x
     dependencies:
       lucia: 3.2.0
-    dev: false
+    dev: true
 
   /@napi-rs/wasm-runtime@0.2.4:
     resolution: {integrity: sha512-9zESzOO5aDByvhIAsOy9TbpZ0Ur2AJbUI7UT73kcUTS2mxAMHOBaa1st/jAymNoCtvrit99kkzT1FZuXVcgfIQ==}
@@ -1413,6 +1409,7 @@ packages:
     cpu: [arm]
     os: [android]
     requiresBuild: true
+    dev: true
     optional: true
 
   /@node-rs/argon2-android-arm-eabi@1.8.3:
@@ -1430,6 +1427,7 @@ packages:
     cpu: [arm64]
     os: [android]
     requiresBuild: true
+    dev: true
     optional: true
 
   /@node-rs/argon2-android-arm64@1.8.3:
@@ -1447,6 +1445,7 @@ packages:
     cpu: [arm64]
     os: [darwin]
     requiresBuild: true
+    dev: true
     optional: true
 
   /@node-rs/argon2-darwin-arm64@1.8.3:
@@ -1464,6 +1463,7 @@ packages:
     cpu: [x64]
     os: [darwin]
     requiresBuild: true
+    dev: true
     optional: true
 
   /@node-rs/argon2-darwin-x64@1.8.3:
@@ -1481,6 +1481,7 @@ packages:
     cpu: [x64]
     os: [freebsd]
     requiresBuild: true
+    dev: true
     optional: true
 
   /@node-rs/argon2-freebsd-x64@1.8.3:
@@ -1498,6 +1499,7 @@ packages:
     cpu: [arm]
     os: [linux]
     requiresBuild: true
+    dev: true
     optional: true
 
   /@node-rs/argon2-linux-arm-gnueabihf@1.8.3:
@@ -1515,6 +1517,7 @@ packages:
     cpu: [arm64]
     os: [linux]
     requiresBuild: true
+    dev: true
     optional: true
 
   /@node-rs/argon2-linux-arm64-gnu@1.8.3:
@@ -1532,6 +1535,7 @@ packages:
     cpu: [arm64]
     os: [linux]
     requiresBuild: true
+    dev: true
     optional: true
 
   /@node-rs/argon2-linux-arm64-musl@1.8.3:
@@ -1549,6 +1553,7 @@ packages:
     cpu: [x64]
     os: [linux]
     requiresBuild: true
+    dev: true
     optional: true
 
   /@node-rs/argon2-linux-x64-gnu@1.8.3:
@@ -1566,6 +1571,7 @@ packages:
     cpu: [x64]
     os: [linux]
     requiresBuild: true
+    dev: true
     optional: true
 
   /@node-rs/argon2-linux-x64-musl@1.8.3:
@@ -1587,6 +1593,7 @@ packages:
       '@emnapi/runtime': 0.45.0
       '@tybys/wasm-util': 0.8.3
       memfs-browser: 3.5.10302
+    dev: true
     optional: true
 
   /@node-rs/argon2-wasm32-wasi@1.8.3:
@@ -1605,6 +1612,7 @@ packages:
     cpu: [arm64]
     os: [win32]
     requiresBuild: true
+    dev: true
     optional: true
 
   /@node-rs/argon2-win32-arm64-msvc@1.8.3:
@@ -1622,6 +1630,7 @@ packages:
     cpu: [ia32]
     os: [win32]
     requiresBuild: true
+    dev: true
     optional: true
 
   /@node-rs/argon2-win32-ia32-msvc@1.8.3:
@@ -1639,6 +1648,7 @@ packages:
     cpu: [x64]
     os: [win32]
     requiresBuild: true
+    dev: true
     optional: true
 
   /@node-rs/argon2-win32-x64-msvc@1.8.3:
@@ -1668,6 +1678,7 @@ packages:
       '@node-rs/argon2-win32-arm64-msvc': 1.7.0
       '@node-rs/argon2-win32-ia32-msvc': 1.7.0
       '@node-rs/argon2-win32-x64-msvc': 1.7.0
+    dev: true
 
   /@node-rs/argon2@1.8.3:
     resolution: {integrity: sha512-sf/QAEI59hsMEEE2J8vO4hKrXrv4Oplte3KI2N4MhMDYpytH0drkVfErmHBfWFZxxIEK03fX1WsBNswS2nIZKg==}
@@ -1695,6 +1706,7 @@ packages:
     cpu: [arm]
     os: [android]
     requiresBuild: true
+    dev: true
     optional: true
 
   /@node-rs/bcrypt-android-arm64@1.9.0:
@@ -1703,6 +1715,7 @@ packages:
     cpu: [arm64]
     os: [android]
     requiresBuild: true
+    dev: true
     optional: true
 
   /@node-rs/bcrypt-darwin-arm64@1.9.0:
@@ -1711,6 +1724,7 @@ packages:
     cpu: [arm64]
     os: [darwin]
     requiresBuild: true
+    dev: true
     optional: true
 
   /@node-rs/bcrypt-darwin-x64@1.9.0:
@@ -1719,6 +1733,7 @@ packages:
     cpu: [x64]
     os: [darwin]
     requiresBuild: true
+    dev: true
     optional: true
 
   /@node-rs/bcrypt-freebsd-x64@1.9.0:
@@ -1727,6 +1742,7 @@ packages:
     cpu: [x64]
     os: [freebsd]
     requiresBuild: true
+    dev: true
     optional: true
 
   /@node-rs/bcrypt-linux-arm-gnueabihf@1.9.0:
@@ -1735,6 +1751,7 @@ packages:
     cpu: [arm]
     os: [linux]
     requiresBuild: true
+    dev: true
     optional: true
 
   /@node-rs/bcrypt-linux-arm64-gnu@1.9.0:
@@ -1743,6 +1760,7 @@ packages:
     cpu: [arm64]
     os: [linux]
     requiresBuild: true
+    dev: true
     optional: true
 
   /@node-rs/bcrypt-linux-arm64-musl@1.9.0:
@@ -1751,6 +1769,7 @@ packages:
     cpu: [arm64]
     os: [linux]
     requiresBuild: true
+    dev: true
     optional: true
 
   /@node-rs/bcrypt-linux-x64-gnu@1.9.0:
@@ -1759,6 +1778,7 @@ packages:
     cpu: [x64]
     os: [linux]
     requiresBuild: true
+    dev: true
     optional: true
 
   /@node-rs/bcrypt-linux-x64-musl@1.9.0:
@@ -1767,6 +1787,7 @@ packages:
     cpu: [x64]
     os: [linux]
     requiresBuild: true
+    dev: true
     optional: true
 
   /@node-rs/bcrypt-wasm32-wasi@1.9.0:
@@ -1779,6 +1800,7 @@ packages:
       '@emnapi/runtime': 0.45.0
       '@tybys/wasm-util': 0.8.3
       memfs-browser: 3.5.10302
+    dev: true
     optional: true
 
   /@node-rs/bcrypt-win32-arm64-msvc@1.9.0:
@@ -1787,6 +1809,7 @@ packages:
     cpu: [arm64]
     os: [win32]
     requiresBuild: true
+    dev: true
     optional: true
 
   /@node-rs/bcrypt-win32-ia32-msvc@1.9.0:
@@ -1795,6 +1818,7 @@ packages:
     cpu: [ia32]
     os: [win32]
     requiresBuild: true
+    dev: true
     optional: true
 
   /@node-rs/bcrypt-win32-x64-msvc@1.9.0:
@@ -1803,6 +1827,7 @@ packages:
     cpu: [x64]
     os: [win32]
     requiresBuild: true
+    dev: true
     optional: true
 
   /@node-rs/bcrypt@1.9.0:
@@ -1823,6 +1848,7 @@ packages:
       '@node-rs/bcrypt-win32-arm64-msvc': 1.9.0
       '@node-rs/bcrypt-win32-ia32-msvc': 1.9.0
       '@node-rs/bcrypt-win32-x64-msvc': 1.9.0
+    dev: true
 
   /@nodelib/fs.scandir@2.1.5:
     resolution: {integrity: sha512-vq24Bq3ym5HEQm2NKCr3yXDwjc7vTsEThRDnkp2DK9p1uqLR+DHurm/NOTo0KG7HYHU7eppKZj3MyqYuMBf62g==}
@@ -2373,19 +2399,6 @@ packages:
     transitivePeerDependencies:
       - supports-color
 
-  /@tanstack/query-core@5.49.1:
-    resolution: {integrity: sha512-JnC9ndmD1KKS01Rt/ovRUB1tmwO7zkyXAyIxN9mznuJrcNtOrkmOnQqdJF2ib9oHzc2VxHomnEG7xyfo54Npkw==}
-    dev: false
-
-  /@tanstack/svelte-query@5.49.1(svelte@5.0.0-next.167):
-    resolution: {integrity: sha512-tTt+3wGE+zHE+21VusMuBeVHOnbGUqvCADoww+BZ2y1sxbpGwucVmUCxM0ieOG0VCw58lxcbMxmg+acYYvhp3A==}
-    peerDependencies:
-      svelte: ^3.54.0 || ^4.0.0 || ^5.0.0-next.0
-    dependencies:
-      '@tanstack/query-core': 5.49.1
-      svelte: 5.0.0-next.167
-    dev: false
-
   /@trpc/client@10.45.2(@trpc/server@10.45.2):
     resolution: {integrity: sha512-ykALM5kYWTLn1zYuUOZ2cPWlVfrXhc18HzBDyRhoPYN0jey4iQHEFSEowfnhg1RvYnrAVjNBgHNeSAXjrDbGwg==}
     peerDependencies:
@@ -2396,13 +2409,13 @@ packages:
 
   /@trpc/server@10.45.2:
     resolution: {integrity: sha512-wOrSThNNE4HUnuhJG6PfDRp4L2009KDVxsd+2VYH8ro6o/7/jwYZ8Uu5j+VaW+mOmc8EHerHzGcdbGNQSAUPgg==}
-    dev: false
 
   /@tybys/wasm-util@0.8.3:
     resolution: {integrity: sha512-Z96T/L6dUFFxgFJ+pQtkPpne9q7i6kIPYCFnQBHSgSPV9idTsKfIhCss0h5iM9irweZCatkrdeP8yi5uM1eX6Q==}
     requiresBuild: true
     dependencies:
       tslib: 2.6.3
+    dev: true
     optional: true
 
   /@tybys/wasm-util@0.9.0:
@@ -3664,6 +3677,7 @@ packages:
   /fs-monkey@1.0.6:
     resolution: {integrity: sha512-b1FMfwetIKymC0eioW7mTywihSQE4oLzQn1dB6rZB5fx/3NpNEdAWeCSMB+60/AeT0TCXsxzAlcYVEFCTAksWg==}
     requiresBuild: true
+    dev: true
     optional: true
 
   /fs.realpath@1.0.0:
@@ -4094,6 +4108,7 @@ packages:
     resolution: {integrity: sha512-eXMxXwk6hqtjRTj4W/x3EnTUtAztLPm0p2N2TEBMDEbakDLXiYnDQ9z/qahjPdPdhPguQc+vwO0/88zIWxlpuw==}
     dependencies:
       oslo: 1.2.0
+    dev: true
 
   /magic-string@0.30.10:
     resolution: {integrity: sha512-iIRwTIf0QKV3UAnYK4PU8uiEc4SRh5jX0mwpIwETPpHdhVM4f53RSwS/vXvN1JhGX+Cs7B8qIq3d6AH49O5fAQ==}
@@ -4105,6 +4120,7 @@ packages:
     requiresBuild: true
     dependencies:
       memfs: 3.5.3
+    dev: true
     optional: true
 
   /memfs@3.5.3:
@@ -4113,6 +4129,7 @@ packages:
     requiresBuild: true
     dependencies:
       fs-monkey: 1.0.6
+    dev: true
     optional: true
 
   /merge-stream@2.0.0:
@@ -4310,6 +4327,7 @@ packages:
     dependencies:
       '@node-rs/argon2': 1.7.0
       '@node-rs/bcrypt': 1.9.0
+    dev: true
 
   /p-limit@3.1.0:
     resolution: {integrity: sha512-TYOanM3wGwNGsZN2cVTYPArw454xnXj5qmWF1bEoAc4+cU/ol7GVh7odevjp1FNHduHc3KZMcFduxU5Xc6uJRQ==}
@@ -4632,10 +4650,6 @@ packages:
       ansi-styles: 5.2.0
       react-is: 18.3.1
     dev: true
-
-  /proxy-deep@3.1.1:
-    resolution: {integrity: sha512-kppbvLUNJ4IOMZds9/4gz/rtT5OFiesy3XosLsgMKlF3vb6GA5Y3ptyDlzKLcOcUBW+zaY+RiMINTsgE+O6e+Q==}
-    dev: false
 
   /proxy-from-env@1.1.0:
     resolution: {integrity: sha512-D+zkORCbA9f1tdWRK0RaCR3GPv50cMxcrz4X8k5LTSUD1Dkw47mKJEZQNunItRTkWwgtaUSo1RVFRIG9ZXiFYg==}
@@ -5162,23 +5176,6 @@ packages:
     resolution: {integrity: sha512-sf4i37nQ2LBx4m3wB74y+ubopq6W/dIzXg0FDGjsYnZHVa1Da8FH853wlL2gtUhg+xJXjfk3kUZS3BRoQeoQBQ==}
     engines: {node: '>=6'}
 
-  /trpc-svelte-query-adapter@2.3.4(@tanstack/svelte-query@5.49.1)(@trpc/client@10.45.2)(@trpc/server@10.45.2)(svelte@5.0.0-next.167)(typescript@5.5.3):
-    resolution: {integrity: sha512-TnqMV6h7gYbTtkXbnonZ+aGbRrZzmCGQ66J4fqoQz2at6z4xZPUtAT4KaoZruFpegXoKQQQfBLV9We6JkVXedw==}
-    peerDependencies:
-      '@tanstack/svelte-query': ^5.8.2
-      '@trpc/client': ^10.43.3
-      '@trpc/server': ^10.43.3
-      svelte: ^4.2.3
-      typescript: ^5.2.2
-    dependencies:
-      '@tanstack/svelte-query': 5.49.1(svelte@5.0.0-next.167)
-      '@trpc/client': 10.45.2(@trpc/server@10.45.2)
-      '@trpc/server': 10.45.2
-      proxy-deep: 3.1.1
-      svelte: 5.0.0-next.167
-      typescript: 5.5.3
-    dev: false
-
   /trpc-sveltekit@3.6.2(@sveltejs/adapter-node@5.2.0)(@trpc/client@10.45.2)(@trpc/server@10.45.2)(ws@8.17.1):
     resolution: {integrity: sha512-wfcUGpasdSQjNaMnbaaHs4gnh5580oNoOYBsnWujE8+tXyyYAxYA2z6vrQmuG4/rOLdbiEns5ISfsejZz9l+2Q==}
     peerDependencies:
@@ -5249,6 +5246,7 @@ packages:
     resolution: {integrity: sha512-/hreyEujaB0w76zKo6717l3L0o/qEUtRgdvUBvlkhoWeOVMjMuHNHk0BRBzikzuGDqNmPQbg5ifMEqsHLiIUcQ==}
     engines: {node: '>=14.17'}
     hasBin: true
+    dev: true
 
   /ufo@1.5.3:
     resolution: {integrity: sha512-Y7HYmWaFwPUmkoQCUIAYpKqkOf+SbVj/2fJJZ4RJMCfZp0rTGwRbzQD+HghfnhKOjL9E01okqz+ncJskGYfBNw==}

@@ -1,25 +1,30 @@
+import axios from 'axios'
+
+/**
+ * POSTs an image to the server /api/image
+ * The server will save the image and return the image id
+ *
+ * returns {data: number} if successful
+ *
+ * @param image {File}
+ * @param name {string}
+ * @returns {Promise<{data: number} | {error: string}>}
+ */
 export async function uploadImage(image: File, name: string) {
   const formData = new FormData()
   formData.append('name', name)
   formData.append('image', image)
 
   try {
-    const resp = await fetch('/api/image', {
-      method: 'POST',
-      body: formData,
-    })
+    const { data } = await axios.post('/api/image', formData)
 
-    if (resp.status === 200) {
-      const { img_id } = await resp.json()
-      return { img_id, error: null }
-    }
-    return { error: await resp.text(), img_id: null }
+    return { data: Number(data.img_id) }
   } catch (error) {
     console.error(error)
-    return { error: 'Error uploading image', img_id: null }
+    return { error: 'Error uploading image' }
   }
 }
 
-export function getImagePath(id?: number | null) {
+export function getImagePath(id?: number | string | null) {
   return `/api/image/${id}`
 }

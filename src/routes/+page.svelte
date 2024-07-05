@@ -15,6 +15,7 @@
   import Pricing from '$lib/components/landing-page/pricing/Pricing.svelte'
   import Features4 from '$lib/components/landing-page/features/Features4.svelte'
   import Footer from '$lib/components/landing-page/Footer.svelte'
+  import Payment from '$lib/components/Payment.svelte'
 </script>
 
 <SEO
@@ -39,6 +40,7 @@
   <Features3></Features3>
 
   <Pricing />
+
   <Features4></Features4>
 
   <Carousel />

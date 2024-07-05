@@ -16,9 +16,10 @@
     items: T[]
     card: Snippet<[T]>
     onDrop: (items: T[]) => void
+    disabled?: boolean
   }
 
-  let { label, items, card, onDrop }: DnDColumnProps = $props()
+  let { label, items, card, onDrop, disabled }: DnDColumnProps = $props()
 
   function handleDndConsiderCards(e: CustomEvent<DndEvent<T>>) {
     console.warn('got consider', label)
@@ -35,7 +36,12 @@
   </div>
   <div
     class="column-content"
-    use:dndzone={{ items, flipDurationMs: FILP_DURATION, zoneTabIndex: -1 }}
+    use:dndzone={{
+      items,
+      flipDurationMs: FILP_DURATION,
+      zoneTabIndex: -1,
+      dragDisabled: disabled,
+    }}
     onconsider={handleDndConsiderCards}
     onfinalize={handleDndFinalizeCards}
   >

@@ -82,16 +82,16 @@ export const icons = {
   logout: (cfg?: SVGoptions) =>
     svgTemplate(
       `<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-    <polyline points="16 17 21 12 16 7" />
-    <line x1="21" x2="9" y1="12" y2="12" />`,
+      <polyline points="16 17 21 12 16 7" />
+      <line x1="21" x2="9" y1="12" y2="12" />`,
       cfg,
     ),
 
   login: (cfg?: SVGoptions) =>
     svgTemplate(
-      ` <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
-  <polyline points="10 17 15 12 10 7" />
-  <line x1="15" x2="3" y1="12" y2="12" />`,
+      `<path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+      <polyline points="10 17 15 12 10 7" />
+      <line x1="15" x2="3" y1="12" y2="12" />`,
       cfg,
     ),
 
@@ -116,33 +116,40 @@ export const icons = {
 
   table: (cfg?: SVGoptions) =>
     svgTemplate(
-      ` <path d="M12 3v18" />
-  <rect width="18" height="18" x="3" y="3" rx="2" />
-  <path d="M3 9h18" />
-  <path d="M3 15h18" />`,
+      `<path d="M12 3v18" />
+      <rect width="18" height="18" x="3" y="3" rx="2" />
+      <path d="M3 9h18" />
+      <path d="M3 15h18" />`,
       cfg,
     ),
 
   search: (cfg?: SVGoptions) =>
     svgTemplate(
-      `   <circle cx="11" cy="11" r="8" />
-  <path d="m21 21-4.3-4.3" />`,
-
+      `<circle cx="11" cy="11" r="8" />
+      <path d="m21 21-4.3-4.3" />`,
       cfg,
     ),
 
   chart: {
     bar: (cfg?: SVGoptions) =>
       svgTemplate(
-        `  <path d="M3 3v18h18" />
-  <path d="M18 17V9" />
-  <path d="M13 17V5" />
-  <path d="M8 17v-3" />`,
+        `<path d="M3 3v18h18" />
+        <path d="M18 17V9" />
+        <path d="M13 17V5" />
+        <path d="M8 17v-3" />`,
         cfg,
       ),
     line: (cfg?: SVGoptions) =>
       svgTemplate(`<path d="M3 3v18h18" /><path d="m19 9-5 5-4-4-3 3" />`, cfg),
   },
+
+  warning: (cfg?: SVGoptions) =>
+    svgTemplate(
+      `<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/>
+      <path d="M12 9v4" />
+      <path d="M12 17h.01" />`,
+      cfg,
+    ),
 
   flags: {
     getEmojiFlag: (lang: string) => {

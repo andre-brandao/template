@@ -22,10 +22,21 @@
   interface DnDContainerProps {
     columns: DnDColum[]
     onFinalUpdate: (columns: DnDColum[]) => void
+    onItemFinalUpdate?: (columnIdx: number, newItems: T[]) => void
     card: Snippet<[T]>
+    disabled?: {
+      column?: boolean
+      card?: boolean
+    }
   }
 
-  let { columns, onFinalUpdate, card }: DnDContainerProps = $props()
+  let {
+    columns,
+    onFinalUpdate,
+    onItemFinalUpdate = (c, i) => {},
+    card,
+    disabled,
+  }: DnDContainerProps = $props()
   // will be called any time a card or a column gets dropped to update the parent data
   function handleDndConsiderColumns(e: CustomEvent<DndEvent<DnDColum>>) {
     columns = e.detail.items
@@ -35,6 +46,7 @@
   }
   function handleItemFinalize(columnIdx: number, newItems: T[]) {
     columns[columnIdx].items = newItems
+    onItemFinalUpdate(columnIdx, newItems)
     onFinalUpdate([...columns])
   }
 </script>
@@ -45,6 +57,7 @@
     items: columns,
     flipDurationMs: FLIP_DURATION,
     type: 'column',
+    dragDisabled: disabled?.column,
   }}
   onconsider={handleDndConsiderColumns}
   onfinalize={handleDndFinalizeColumns}
@@ -56,6 +69,7 @@
       animate:flip={{ duration: FLIP_DURATION }}
     >
       <Column
+        disabled={disabled?.card}
         {label}
         {items}
         {card}

@@ -12,9 +12,11 @@
     {
       name: 'Home',
       href: '/',
+      icon: icons.home(),
     },
     {
       name: 'Testing',
+      icon: icons.warning(),
       subItems: [
         {
           name: 'Datatable',
@@ -45,8 +47,9 @@
       ],
     },
     {
-      name: 'Item 3',
-      href: '/item-3',
+      name: 'Checkout',
+      href: '/checkout',
+      icon: icons.cart(),
     },
   ]
 </script>
@@ -57,21 +60,37 @@
   <li>
     {#if navItem.subItems}
       <details>
-        <summary>{name}</summary>
+        <summary>
+          {#if navItem.icon}
+            {@html icon}
+          {/if}
+          {name}
+        </summary>
         <ul>
           {#each navItem.subItems as subItem}
             {#if subItem.subItems}
               <svelte:self navItems={[subItem]} />
             {:else}
               <li>
-                <a href={subItem.href}>{subItem.name}</a>
+                <a href={subItem.href}>
+                  {#if subItem.icon}
+                    {@html icon}
+                  {/if}
+
+                  {subItem.name}
+                </a>
               </li>
             {/if}
           {/each}
         </ul>
       </details>
     {:else}
-      <a href={navItem.href}>{name}</a>
+      <a href={navItem.href}>
+        {#if navItem.icon}
+          {@html icon}
+        {/if}
+        {name}
+      </a>
     {/if}
   </li>
 {/each}

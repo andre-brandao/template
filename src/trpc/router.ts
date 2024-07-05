@@ -40,7 +40,7 @@ export const router = t.router({
         })
       }
       try {
-        const [id] = await bugReport.insertBugReport({
+        const [{ id }] = await bugReport.insertBugReport({
           text: input.text,
           created_by: user.id,
           page_data: input.page_data,

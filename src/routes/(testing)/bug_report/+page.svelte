@@ -37,15 +37,10 @@
         'Você não tem permissão para alterar o status dos bugs',
       )
     }
-
-    const old_cols = columnsData
     columnsData = newColumnsData
     for (const col of newColumnsData) {
       for (const row of col.items) {
         if (col.label !== row.status) {
-          // @ts-ignore
-          row.status = col.label
-
           try {
             const resp = await trpc().updateBugStatus.query({
               id: row.id,
@@ -59,7 +54,6 @@
             } else {
               toast.error('Erro ao atualizar o status do bug')
             }
-            columnsData = old_cols
           }
         }
       }
@@ -67,7 +61,14 @@
   }
 </script>
 
-<Board columns={columnsData} onFinalUpdate={handleBoardUpdated}>
+<Board
+  columns={columnsData}
+  onFinalUpdate={handleBoardUpdated}
+  disabled={{
+    card: !$user?.permissions.isAdmin,
+    column: !$user?.permissions.isAdmin,
+  }}
+>
   {#snippet card(bug)}
     <div
       class=" m-2 w-full rounded-lg p-3 shadow-md"

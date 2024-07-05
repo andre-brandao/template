@@ -1,19 +1,19 @@
 <script lang="ts" generics="T">
   import type { Snippet } from 'svelte'
 
-  // interface CardapioProps {
-  //   data: {
-  //     id: string
-  //     label: string
-  //     row: T[]
-  //   }[]
-  //   card: Snippet<[T]>
-  // }
-
   interface CardapioProps {
-    data: Record<string, T[]>
-    card: (row: T) => any
+    data: {
+      id: any
+      name: string
+      products: T[]
+    }[]
+    card: Snippet<[T]>
   }
+
+  // interface CardapioProps {
+  //   data: Record<string, T[]>
+  //   card: (row: T) => any
+  // }
   let { data, card }: CardapioProps = $props()
 
   let selected = $state('')
@@ -96,35 +96,22 @@
       class="hide-scrollbar flex w-full gap-3 overflow-y-hidden overflow-x-scroll rounded-box bg-base-100 p-2 shadow-xl"
       bind:this={scrollContainer}
     >
-      <!-- {#each data as d}
+      {#each data as d}
         <a
-          id="head-{d.id}"
+          id="head-{d}"
           class="btn hover:-translate-x-1 hover:translate-y-1 {selected === d.id
             ? 'btn-primary'
             : ''}"
           href="#{d.id}"
           onclick={scrollIntoView}
         >
-          {d.label}
-        </a>
-      {/each} -->
-
-      {#each Object.keys(data) as d}
-        <a
-          id="head-{d}"
-          class="btn hover:-translate-x-1 hover:translate-y-1 {selected === d
-            ? 'btn-primary'
-            : ''}"
-          href="#{d}"
-          onclick={scrollIntoView}
-        >
-          {d}
+          {d.name}
         </a>
       {/each}
     </div>
   </div>
   <div class=" container mx-auto flex flex-col gap-3">
-    <!-- {#each data as d}
+    {#each data as d}
       <div class="flex flex-col">
         <div
           id={d.id}
@@ -133,29 +120,10 @@
             changeSelection(d.id)
           }}
         >
-          {d.label}
-        </div>
-        <div class=" flex flex-wrap">
-          {#each d.row as row}
-            {@render card(row)}
-          {/each}
-        </div>
-      </div>
-    {/each} -->
-
-    {#each Object.keys(data) as d}
-      <div class="flex flex-col">
-        <div
-          id={d}
-          class="divider my-4 py-4 text-center text-2xl font-bold"
-          use:onViewportEnter={() => {
-            changeSelection(d)
-          }}
-        >
-          {d}
+          {d.name}
         </div>
         <div class=" flex flex-wrap justify-around gap-4">
-          {#each data[d] as row}
+          {#each d.products as row}
             {@render card(row)}
           {/each}
         </div>

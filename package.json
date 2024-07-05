@@ -17,7 +17,10 @@
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
     "db:seed": "npx tsx ./src/lib/server/db/seed.ts",
-    "db:generate": "drizzle-kit generate"
+    "db:generate": "drizzle-kit generate",
+    "db:drop": "drizzle-kit drop",
+    "db:up": "drizzle-kit up",
+    "db:check": "drizzle-kit check"
   },
   "devDependencies": {
     "@faker-js/faker": "^8.4.1",

@@ -32,6 +32,11 @@
           href: '/products',
         },
         {
+          name: 'Checkout',
+          href: '/checkout',
+          icon: icons.cart(),
+        },
+        {
           name: 'Inner Parent',
           subItems: [
             {
@@ -45,11 +50,6 @@
           ],
         },
       ],
-    },
-    {
-      name: 'Checkout',
-      href: '/checkout',
-      icon: icons.cart(),
     },
   ]
 </script>

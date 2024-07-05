@@ -7,16 +7,12 @@
   const { products } = data
 </script>
 
-<!-- <pre>
-  {JSON.stringify(data.products, null, 2)} 
-</pre> -->
-
 <Cardapio data={products}>
   {#snippet card(c)}
-    <a href="/products/{c.id}">
+    <a href="/products/{c.product.id}">
       <Card1
-        nome={c.name}
-        descricao={c.description}
+        nome={c.product.name}
+        descricao={c.product.description}
         image="/api/image/{c.image_id}"
       />
     </a>

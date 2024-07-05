@@ -29,9 +29,6 @@
   })
 </script>
 
-{#if $navigating}
-  <PreLoadingIndicator />
-{/if}
 
 <ParaglideJS {i18n}>
   <Toaster richColors closeButton />

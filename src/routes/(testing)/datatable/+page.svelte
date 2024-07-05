@@ -66,7 +66,7 @@
               <ThSort {table} field="created_at">Created At</ThSort>
               <ThSort {table} field="name">Name</ThSort>
               <ThSort {table} field="description">description</ThSort>
-              <ThSort {table} field="price">Price</ThSort>
+              <!-- <ThSort {table} field="">Price</ThSort> -->
             </tr>
           </thead>
           <tbody>
@@ -85,7 +85,7 @@
                 <td>{row.created_at}</td>
                 <td>{row.name}</td>
                 <td class="">{row.description}</td>
-                <td>{row.price}</td>
+                <!-- <td>{row.price}</td> -->
               </tr>
             {/each}
           </tbody>

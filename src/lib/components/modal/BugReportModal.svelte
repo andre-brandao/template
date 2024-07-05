@@ -5,16 +5,22 @@
   import { page } from '$app/stores'
   import { trpc } from '$trpc/client'
   import { toast } from 'svelte-sonner'
+  import { TRPCClientError } from '@trpc/client'
 
   let bugReport = ''
 
   async function reportBug() {
-    const resp = await trpc($page).reportBug.query({
-      text: bugReport,
-      page_data: JSON.stringify($page.url),
-    })
-
-    toast(resp)
+    try {
+      const resp = await trpc($page).reportBug.query({
+        text: bugReport,
+        page_data: JSON.stringify($page.url),
+      })
+      toast(resp)
+    } catch (error) {
+      if (error instanceof TRPCClientError) {
+        toast.error(error.message)
+      }
+    }
   }
 
   const save = () => {
@@ -38,14 +44,14 @@
   </main>
 
   <svelte:fragment slot="footer">
-    <div class="flex w-full justify-between">
-      <a href="/bug_report" class="btn btn-primary">
+    <div class="mt-4 flex w-full justify-between">
+      <a href="/bug_report" class="btn btn-primary" onclick={modal.close}>
         {@html icons.bug()} Ver Bugs Table
       </a>
 
-      <div class="flex">
-        <button class="btn btn-success" on:click={save}>Enviar</button>
-        <button class="btn btn-error" on:click={modal.close}>Cancel</button>
+      <div class="flex gap-3">
+        <button class="btn btn-success" onclick={save}>Enviar</button>
+        <button class="btn btn-error" onclick={modal.close}>Cancel</button>
       </div>
     </div>
   </svelte:fragment>

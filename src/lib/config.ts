@@ -6,8 +6,8 @@ export const website = {
 
   entity: 'Deds',
 
-  ogLanguage: 'pt_BR',
-  siteLanguage: 'pt_BR',
+  ogLanguage: 'en',
+  siteLanguage: 'en',
 
   siteUrl: 'https://andrebrandao.dev',
 

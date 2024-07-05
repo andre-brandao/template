@@ -34,9 +34,10 @@ export const router = t.router({
     .query(async ({ input, ctx }) => {
       const { user } = ctx.locals
       if (!user) {
-        return {
-          error: 'You must be logged in to report a bug',
-        }
+        throw new TRPCError({
+          code: 'UNAUTHORIZED',
+          message: 'You must be logged in to report a bug',
+        })
       }
       try {
         const [id] = await bugReport.insertBugReport({
@@ -45,10 +46,13 @@ export const router = t.router({
           page_data: input.page_data,
         })
 
-        return { data: 'Bug reported #' + id }
+        return 'Bug reported #' + id
       } catch (e) {
         console.error(e)
-        return { error: 'Error reporting bug' }
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Error reporting bug',
+        })
       }
     }),
 

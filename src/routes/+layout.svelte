@@ -14,9 +14,9 @@
   import { user } from '$lib/stores/user'
   // COMPONENTS
   import { ModalContainer } from '$lib/components/modal'
+  import DrawerContainer from '$lib/components/drawer/base/DrawerContainer.svelte'
   import Transition from './Transition.svelte'
   import PreLoadingIndicator from './PreLoadingIndicator.svelte'
-
 
   import type { LayoutData } from './$types'
 
@@ -34,13 +34,15 @@
 {/if}
 
 <ParaglideJS {i18n}>
-  <ModalContainer />
-  <Toaster richColors closeButton  />
-  <NavBar>
-    <Transition>
-      <slot></slot>
-    </Transition>
-  </NavBar>
+  <Toaster richColors closeButton />
+  <!-- <DrawerContainer> -->
+    <NavBar>
+      <ModalContainer />
+      <Transition>
+        <slot></slot>
+      </Transition>
+    </NavBar>
+  <!-- </DrawerContainer> -->
 </ParaglideJS>
 
 <style></style>

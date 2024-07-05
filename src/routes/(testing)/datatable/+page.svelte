@@ -48,7 +48,7 @@
   table.invalidate()
 </script>
 
-<div class="container mx-auto h-[70vh] border p-2">
+<div class="container mx-auto h-[70vh] border p-2 overflow-x-auto">
   <Datatable basic {table}>
     {#snippet header()}
       <Search {table}></Search>
@@ -59,7 +59,7 @@
       {#if isLoading}
         <Loading />
       {:else}
-        <table class="table table-xs">
+        <table class="table table-xs table-pin-cols">
           <thead class="">
             <tr class="bg-primary">
               <td class=""> </td>
@@ -73,7 +73,7 @@
             {#each table.rows as row}
               <tr
                 class:selected={table.selected.includes(row.id)}
-                class="table-row"
+                class=""
               >
                 <td>
                   <input

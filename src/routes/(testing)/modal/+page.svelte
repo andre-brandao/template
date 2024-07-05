@@ -2,10 +2,11 @@
   import type { PageData } from './$types'
   export let data: PageData
 
-  import DaisyModal from '$lib/components/Modal.svelte'
-
   import { modal } from '$lib/components/modal'
   import ExampleModal from '$components/modal/ExempleModal.svelte'
+
+  import { drawer } from '$lib/components/drawer'
+  import ExempleDrawer from '$lib/components/drawer/ExempleDrawer.svelte'
 </script>
 
 <button
@@ -34,4 +35,15 @@
   class="btn"
 >
   Alert
+</button>
+
+<button
+  class="btn"
+  onclick={() => {
+    drawer.open(ExempleDrawer, {
+      title: 'Drawer',
+    })
+  }}
+>
+  Drawer
 </button>

@@ -11,6 +11,10 @@
   import Dnd from '$lib/components/dnd/dnd-no-deps/DnDContainer.svelte'
   import { toast } from 'svelte-sonner'
   import { getSEOProps } from '$lib/utils/seo'
+  import Features3 from '$lib/components/landing-page/features/Features3.svelte'
+  import Pricing from '$lib/components/landing-page/pricing/Pricing.svelte'
+  import Features4 from '$lib/components/landing-page/features/Features4.svelte'
+  import Footer from '$lib/components/landing-page/Footer.svelte'
 </script>
 
 <SEO
@@ -32,7 +36,14 @@
 
   <MapContact />
 
+  <Features3></Features3>
+
+  <Pricing />
+  <Features4></Features4>
+
   <Carousel />
 
   <Carousel2 />
+
+  <Footer></Footer>
 </main>

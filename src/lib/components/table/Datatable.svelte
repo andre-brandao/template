@@ -7,6 +7,7 @@
     getCoreRowModel,
   } from '@tanstack/svelte-table'
   import type { ColumnDef, TableOptions } from '@tanstack/svelte-table'
+  import type { TableState } from '.'
 
   // import { type TableState } from '.'
 
@@ -21,26 +22,9 @@
     >
   }
 
-  type TableState = {
-    currentPage: number
-    rowsPerPage: number
-    search: string | undefined
-    sort?: {
-      field: string
-      direction: 'asc' | 'desc' | string
-    }
-
-    filters?: Record<string, string>
-
-    totalRows: number
-
-    isLoading?: boolean
-  }
-
   let { columns, load }: DatatableProps = $props()
 
   let datatableState = $state<TableState>({
-    
     currentPage: 1,
     rowsPerPage: 20,
     search: undefined,
@@ -92,6 +76,8 @@
   }
 
   const setSort = (field: string, direction: 'asc' | 'desc' | string) => {
+    console.log(field, direction)
+
     datatableState.sort = {
       field,
       direction,
@@ -100,7 +86,9 @@
   }
 
   function getSortIcon(direction: 'asc' | 'desc' | string) {
-    return direction == 'asc' ? '^' : 'v'
+    return direction == 'asc'
+      ? '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-up-narrow-wide"><path d="m3 8 4-4 4 4"/><path d="M7 4v16"/><path d="M11 12h4"/><path d="M11 16h7"/><path d="M11 20h10"/></svg>'
+      : '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-down-wide-narrow"><path d="m3 16 4 4 4-4"/><path d="M7 20V4"/><path d="M11 4h10"/><path d="M11 8h7"/><path d="M11 12h4"/></svg>'
   }
 
   const options = $state<TableOptions<T>>({
@@ -117,7 +105,9 @@
 
 <section>
   <header>
-    <div class="mb-2">
+    <div
+      class="mb-2 flex items-center justify-between rounded-box bg-base-300 p-2"
+    >
       <input
         bind:value={datatableState.search}
         oninput={() => setSearch(datatableState.search)}
@@ -125,6 +115,15 @@
         class="input input-sm input-bordered"
         placeholder="Search ..."
       />
+
+      <div>
+        <span>
+          Total:
+          {datatableState.totalRows}
+        </span>
+
+        <button class="btn btn-primary">+ Add</button>
+      </div>
     </div>
   </header>
   <article class="thin-scrollbar">
@@ -139,17 +138,48 @@
                 <th colspan={header.colSpan}>
                   {#if !header.isPlaceholder}
                     <button
+                      class="flex items-center gap-2"
                       disabled={!header.column.getCanSort()}
-                      onclick={header.column.getToggleSortingHandler()}
+                      onclick={() => {
+                        console.log(header.column.getIsSorted())
+                        header.column
+                        setSort(
+                          header.column.id,
+                          datatableState.sort?.direction == 'asc' &&
+                            datatableState.sort?.field == header.column.id
+                            ? 'desc'
+                            : 'asc',
+                        )
+                      }}
                     >
                       <FlexRender
                         content={header.column.columnDef.header}
                         context={header.getContext()}
                       />
 
-                      <span>
-                        {getSortIcon(header.column.getIsSorted().toString())}
-                      </span>
+                      {#if datatableState.sort?.field == header.column.id}
+                        <span>
+                          {@html getSortIcon(datatableState.sort?.direction)}
+                        </span>
+                      {:else}
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          class="lucide lucide-arrow-down-up"
+                        >
+                          <path d="m3 16 4 4 4-4" />
+                          <path d="M7 20V4" />
+                          <path d="m21 8-4-4-4 4" />
+                          <path d="M17 4v16" />
+                        </svg>
+                      {/if}
                     </button>
                   {/if}
                 </th>

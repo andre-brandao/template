@@ -3,16 +3,9 @@
 
   export let data: PageData
 
-  import { writable } from 'svelte/store'
-  import {
-    createTable,
-    FlexRender,
-    getCoreRowModel,
-  } from '@tanstack/svelte-table'
   import type { ColumnDef, TableOptions } from '@tanstack/svelte-table'
   import Datatable from '$lib/components/table/Datatable.svelte'
-  import { getParams } from '$lib/utils/datatable'
-  import { onMount } from 'svelte'
+  import { getParams, type TableState } from '$lib/components/table'
 
   type Product = {
     id: number
@@ -22,11 +15,7 @@
     description: string
   }
 
-  let isLoading = false
-
-  async function myLoadFunction(state: any) {
-    isLoading = true
-
+  async function myLoadFunction(state: TableState) {
     try {
       await new Promise(resolve => setTimeout(resolve, 1000))
 
@@ -35,22 +24,18 @@
       }).then(res => res.json())
       const { total, rows } = response
 
-      max_rows = total
-      defaultData = rows
-      // state.setTotalRows(total)
-      isLoading = false
       return {
         data: rows as Product[],
         count: total,
       }
     } catch (error) {
-      isLoading = false
+      console.error(error)
+      return {
+        data: [],
+        count: 0,
+      }
     }
   }
-
-  let defaultData: Product[] = []
-
-  let max_rows = 0
 
   const defaultColumns: ColumnDef<Product>[] = [
     {
@@ -69,8 +54,5 @@
 </script>
 
 <div class="container mx-auto h-[70vh] overflow-x-auto border p-2">
-  <Datatable
-    columns={defaultColumns}
-    load={s => myLoadFunction(s)}
-  />
+  <Datatable columns={defaultColumns} load={s => myLoadFunction(s)} />
 </div>

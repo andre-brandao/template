@@ -20,6 +20,8 @@ export const POST: RequestHandler = async ({ url }) => {
   let query = product.getProducts().$dynamic()
 
   if (sort && order) {
+    console.log(sort, order);
+    
     query = withOrderBy(query, productTable, sort, order)
   }
 

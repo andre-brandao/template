@@ -19,7 +19,7 @@
   }
 </script>
 
-<div class="dropdown dropdown-end">
+<div class="dropdown dropdown-end dropdown-hover">
   <div tabindex="0" role="button" class="btn m-1">
     {icons.flags.getEmojiFlag(languageTag())}
   </div>

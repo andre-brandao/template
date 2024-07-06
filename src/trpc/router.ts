@@ -6,9 +6,11 @@ import { t, publicProcedure } from './t'
 
 import { z } from 'zod'
 import { auth } from './routes/auth'
+import { product } from './routes/product'
 
 import { bugReport } from '$lib/server/db/controller'
 import { TRPCError } from '@trpc/server'
+import type { inferRouterInputs, inferRouterOutputs } from '@trpc/server';
 
 import { middleware } from './middleware'
 export const router = t.router({
@@ -79,6 +81,9 @@ export const router = t.router({
     }),
   // pagarme,
   auth,
+  product,
 })
 
 export type Router = typeof router
+export type RouterInputs = inferRouterInputs<Router>;
+export type RouterOutputs = inferRouterOutputs<Router>;

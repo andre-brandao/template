@@ -29,6 +29,10 @@ import type {
 function getProducts() {
   return db.select().from(productTable)
 }
+import { getRowCount } from '$db/utils'
+function getProductCount(){
+  return getRowCount(productTable)
+}
 
 function insertProduct(data: InsertProduct) {
   return db.insert(productTable).values(data)
@@ -162,6 +166,7 @@ function getProductFromID(id: number) {
 
 export const product = {
   getProducts,
+  getProductCount,
   insertProduct,
   updateProduct,
   getBrands,

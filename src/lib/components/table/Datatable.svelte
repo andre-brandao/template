@@ -1,4 +1,4 @@
-<script lang="ts" generics="T">
+<script lang="ts" generics="T extends {id:any}">
   import { writable } from 'svelte/store'
   import Loading from '../Loading.svelte'
   import {
@@ -7,12 +7,14 @@
     getCoreRowModel,
   } from '@tanstack/svelte-table'
   import type { ColumnDef, TableOptions } from '@tanstack/svelte-table'
-  import type { TableState } from '.'
+  import { type TableState, createRowChanges } from '.'
 
+  const rowChanges = createRowChanges<T>()
   // import { type TableState } from '.'
 
   interface DatatableProps {
     columns: ColumnDef<T>[]
+    save?: (changes: { [key: string]: T }) => void
     load: (state: TableState) => Promise<
       | {
           data: T[]
@@ -22,20 +24,23 @@
     >
   }
 
-  let { columns, load }: DatatableProps = $props()
+  let { columns, load, save }: DatatableProps = $props()
 
   let datatableState = $state<TableState>({
-    currentPage: 1,
-    rowsPerPage: 20,
+    page: 1,
+    pageSize: 20,
     search: undefined,
-    totalRows: 0,
   })
+
+  let totalRows = $state(0)
+  let isLoading = $state(false)
+
   let maxPages = $derived(
-    Math.ceil(datatableState.totalRows / datatableState.rowsPerPage),
+    Math.ceil(totalRows / (datatableState?.pageSize ?? 10)),
   )
 
   async function invalidate(state: TableState) {
-    datatableState.isLoading = true
+    isLoading = true
     console.log(true)
 
     const resp = await load(state)
@@ -43,11 +48,11 @@
 
     if (resp) {
       options.data = resp.data ?? []
-      datatableState.totalRows = resp.count ?? 0
+      totalRows = resp.count ?? 0
     }
     console.log(false)
 
-    datatableState.isLoading = false
+    isLoading = false
   }
 
   let timer: NodeJS.Timeout
@@ -56,22 +61,22 @@
     // depounce input
     clearTimeout(timer)
     timer = setTimeout(async () => {
-      datatableState.currentPage = 1
+      datatableState.page = 1
       datatableState.search = newSearch
       invalidate(datatableState)
     }, 250)
   }
-  const setFilter = (col: string, newFilter: string) => {
-    datatableState.currentPage = 1
-    if (!datatableState.filters) {
-      datatableState.filters = {}
-    }
-    datatableState.filters[col] = newFilter
-    invalidate(datatableState)
-  }
+  // const setFilter = (col: string, newFilter: string) => {
+  //   datatableState.page = 1
+  //   if (!datatableState.filters) {
+  //     datatableState.filters = {}
+  //   }
+  //   datatableState.filters[col] = newFilter
+  //   invalidate(datatableState)
+  // }
 
   const setPagination = (page: number) => {
-    datatableState.currentPage = page
+    datatableState.page = page
     invalidate(datatableState)
   }
 
@@ -101,6 +106,15 @@
   invalidate(datatableState)
 
   let rowsPerPageOptions = [10, 20, 50, 100]
+
+  async function saveChanges() {
+    isLoading = true
+    console.log($rowChanges)
+    if (save) {
+      await save($rowChanges)
+    }
+    isLoading = false
+  }
 </script>
 
 <section>
@@ -117,20 +131,19 @@
       />
 
       <div>
-        <span>
-          Total:
-          {datatableState.totalRows}
-        </span>
-
+        {#if save}
+          <!-- content here -->
+          <button class="btn btn-primary" onclick={saveChanges}>Save</button>
+        {/if}
         <button class="btn btn-primary">+ Add</button>
       </div>
     </div>
   </header>
   <article class="thin-scrollbar">
-    {#if datatableState.isLoading}
+    {#if isLoading}
       <Loading />
     {:else}
-      <table class="table table-pin-cols table-xs">
+      <table class="table table-zebra table-pin-cols">
         <thead>
           {#each table.getHeaderGroups() as headerGroup}
             <tr>
@@ -139,9 +152,9 @@
                   {#if !header.isPlaceholder}
                     <button
                       class="flex items-center gap-2"
+                      class:btn={header.column.getCanSort()}
                       disabled={!header.column.getCanSort()}
                       onclick={() => {
-                        console.log(header.column.getIsSorted())
                         header.column
                         setSort(
                           header.column.id,
@@ -157,28 +170,32 @@
                         context={header.getContext()}
                       />
 
-                      {#if datatableState.sort?.field == header.column.id}
-                        <span>
-                          {@html getSortIcon(datatableState.sort?.direction)}
-                        </span>
-                      {:else}
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="24"
-                          height="24"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          stroke-width="2"
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          class="lucide lucide-arrow-down-up"
-                        >
-                          <path d="m3 16 4 4 4-4" />
-                          <path d="M7 20V4" />
-                          <path d="m21 8-4-4-4 4" />
-                          <path d="M17 4v16" />
-                        </svg>
+                      {#if header.column.getCanSort()}
+                        {#if datatableState.sort?.field == header.column.id}
+                          <span>
+                            {@html getSortIcon(datatableState.sort?.direction)}
+                          </span>
+                        {:else}
+                          <span>
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="24"
+                              height="24"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="2"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              class="lucide lucide-arrow-down-up"
+                            >
+                              <path d="m3 16 4 4 4-4" />
+                              <path d="M7 20V4" />
+                              <path d="m21 8-4-4-4 4" />
+                              <path d="M17 4v16" />
+                            </svg>
+                          </span>
+                        {/if}
                       {/if}
                     </button>
                   {/if}
@@ -188,9 +205,9 @@
           {/each}
         </thead>
         <tbody>
-          {#each table.getRowModel().rows as row}
+          {#each table.getRowModel().rows as row (row.id)}
             <tr>
-              {#each row.getVisibleCells() as cell}
+              {#each row.getVisibleCells() as cell (cell.id)}
                 <td>
                   <FlexRender
                     content={cell.column.columnDef.cell}
@@ -223,9 +240,9 @@
   <footer class="mt-2 flex justify-between">
     <div class="flex items-center">
       Showing
-      <div class="dropdown dropdown-top">
+      <div class="dropdown dropdown-top dropdown-hover">
         <div tabindex="0" role="button" class="btn m-1">
-          {datatableState.rowsPerPage}
+          {datatableState.pageSize}
         </div>
         <ul
           tabindex="0"
@@ -236,7 +253,7 @@
               <button
                 class=""
                 onclick={() => {
-                  datatableState.rowsPerPage = opt
+                  datatableState.pageSize = opt
                   setPagination(1)
                 }}
               >
@@ -247,41 +264,44 @@
         </ul>
       </div>
 
-      Entries
+      <span>
+        Total:
+        {totalRows}
+      </span>
     </div>
     <div class="flex items-center gap-1">
       <div class="join">
         <button
           class="btn join-item"
-          disabled={datatableState.currentPage <= 1}
+          disabled={datatableState.page <= 1}
           onclick={() => setPagination(1)}
         >
           {`<<`}
         </button>
         <button
           class="btn join-item"
-          disabled={datatableState.currentPage <= 1}
-          onclick={() => setPagination(datatableState.currentPage - 1)}
+          disabled={datatableState.page <= 1}
+          onclick={() => setPagination(datatableState.page - 1)}
         >
           Previous
         </button>
       </div>
 
       <span class="">
-        Page {datatableState.currentPage} / {maxPages}
+        Page {datatableState.page} / {maxPages}
       </span>
 
       <div class="join">
         <button
           class="btn join-item"
-          disabled={datatableState.currentPage >= maxPages}
-          onclick={() => setPagination(datatableState.currentPage + 1)}
+          disabled={datatableState.page >= maxPages}
+          onclick={() => setPagination(datatableState.page + 1)}
         >
           Next
         </button>
         <button
           class="btn join-item"
-          disabled={datatableState.currentPage >= maxPages}
+          disabled={datatableState.page >= maxPages}
           onclick={() => setPagination(maxPages)}
         >
           {`>>`}

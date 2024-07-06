@@ -55,7 +55,6 @@
         },
       ],
     },
-
   ]
 </script>
 
@@ -66,7 +65,7 @@
     {#if navItem.subItems}
       <details>
         <summary>
-          {#if navItem.icon}
+          {#if typeof navItem.icon === 'string'}
             {@html icon}
           {/if}
           {name}
@@ -78,7 +77,7 @@
             {:else}
               <li>
                 <a href={subItem.href}>
-                  {#if subItem.icon}
+                  {#if typeof navItem.icon === 'string'}
                     {@html icon}
                   {/if}
 
@@ -91,7 +90,7 @@
       </details>
     {:else}
       <a href={navItem.href}>
-        {#if navItem.icon}
+        {#if typeof navItem.icon === 'string'}
           {@html icon}
         {/if}
         {name}

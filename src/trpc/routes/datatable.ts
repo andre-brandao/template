@@ -2,14 +2,8 @@ import { publicProcedure, router } from '../t'
 
 import { z } from 'zod'
 
-import { product as productController } from '$db/controller'
+import { product } from '$db/controller'
 
-import {
-  withOrderBy,
-  withSearch,
-  withPagination,
-} from '$db/utils'
-import { paramsSchema } from '$lib/components/table'
 import {
   insertProductCategorySchema,
   brandInsertSchema,
@@ -17,74 +11,48 @@ import {
   categoryInsertSchema,
   productEntryInsertSchema,
   productPriceInsertSchema,
-  productTable,
 } from '$db/schema/product'
 
-export const product = router({
+export const auth = router({
   getProduct: publicProcedure.input(z.number()).query(async ({ input }) => {
-    return await productController.getProductFromID(input)
+    return await product.getProductFromID(input)
   }),
-  paginatedProducts: publicProcedure
-    .input(paramsSchema)
-    .query(async ({ input }) => {
-      const { page = 1, pageSize = 15, sort: order, search } = input
-
-      let query = productController.getProducts().$dynamic()
-
-      if (order) {
-        query = withOrderBy(query, productTable, order.field, order.direction)
-      }
-
-      if (search) {
-        query = withSearch(query, productTable, search, 'name')
-      }
-
-      const [products, total] = await Promise.all([
-        await withPagination(query, page, pageSize),
-        await productController.getProductCount(),
-      ])
-
-      return {
-        rows: products,
-        total: total[0].count,
-      }
-    }),
   insertProduct: publicProcedure
     .input(insertProductCategorySchema)
     .query(async ({ input }) => {
-      return await productController.insertProduct(input)
+      return await product.insertProduct(input)
     }),
 
   getBrands: publicProcedure.query(async () => {
-    return await productController.getBrands()
+    return await product.getBrands()
   }),
   insertBrand: publicProcedure
     .input(brandInsertSchema)
     .query(async ({ input }) => {
-      return await productController.insertBrand(input)
+      return await product.insertBrand(input)
     }),
   insertCategory: publicProcedure
     .input(categoryInsertSchema)
     .query(async ({ input }) => {
-      return await productController.insertCategory(input)
+      return await product.insertCategory(input)
     }),
   getCategories: publicProcedure.query(async () => {
-    return await productController.getCategories()
+    return await product.getCategories()
   }),
   insertPrices: publicProcedure
     .input(pricesInsertSchema)
     .query(async ({ input }) => {
-      return await productController.insertPrices(input)
+      return await product.insertPrices(input)
     }),
   insertProductPrice: publicProcedure
     .input(productPriceInsertSchema)
     .query(async ({ input }) => {
-      return await productController.insertProductPrice(input)
+      return await product.insertProductPrice(input)
     }),
   insertProductEntry: publicProcedure
     .input(productEntryInsertSchema)
     .query(async ({ input }) => {
-      return await productController.insertProductEntry(input)
+      return await product.insertProductEntry(input)
     }),
   updateProduct: publicProcedure
     .input(
@@ -98,13 +66,13 @@ export const product = router({
     )
     .query(async ({ input }) => {
       const { id, prod } = input
-      return await productController.updateProduct(id, prod)
+      return await product.updateProduct(id, prod)
     }),
   updateProductPrice: publicProcedure
     .input(z.object({ id: z.number(), price: z.number() }))
     .query(async ({ input }) => {
       const { id, price } = input
-      return await productController.updateProductPrice(id, {
+      return await product.updateProductPrice(id, {
         price: price,
       })
     }),

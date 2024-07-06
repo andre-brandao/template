@@ -20,10 +20,11 @@
 
   export let data: LayoutData
 
-  createUserContext(data.user)
+  const user = createUserContext(data.user)
+  $: user.set(data.user)
 
   onMount(() => {
-    changeTheme('sunset')
+    changeTheme('retro')
   })
 </script>
 

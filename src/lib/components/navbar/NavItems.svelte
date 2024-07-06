@@ -16,7 +16,7 @@
     },
     {
       name: 'Testing',
-      icon: icons.warning(),
+      // icon: icons.warning(),
       subItems: [
         {
           name: 'Datatable',
@@ -30,6 +30,10 @@
         {
           name: 'Cardapio',
           href: '/products',
+        },
+        {
+          name: 'Tanner',
+          href: '/tanstack',
         },
         {
           name: 'Checkout',
@@ -51,6 +55,7 @@
         },
       ],
     },
+
   ]
 </script>
 

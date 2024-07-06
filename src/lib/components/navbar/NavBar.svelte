@@ -4,7 +4,7 @@
 
   import { website } from '$lib/config'
 
-  import { user } from '$lib/stores/user'
+  import { getUserContext } from '$lib/stores/user'
   import { trpc } from '$trpc/client'
   import { page } from '$app/stores'
   import NavItems from './NavItems.svelte'
@@ -13,6 +13,8 @@
   import BugReportModal from '$lib/components/modal/BugReportModal.svelte'
   import ChangeLanguage from './ChangeLanguage.svelte'
   import { icons } from '$lib/utils/icons'
+
+  const user = getUserContext()
 
   async function logout() {
     user.set(null)

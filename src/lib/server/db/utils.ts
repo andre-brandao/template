@@ -6,6 +6,31 @@ import {
 } from 'drizzle-orm/sqlite-core'
 import { db } from '.'
 
+import type { TableState } from '$components/table'
+
+export async function tableHelper<T extends SQLiteSelect>(
+  qb: T,
+  table: SQLiteTable,
+  seach_column: string,
+  state: TableState,
+) {
+  const { page = 1, pageSize = 15, sort: order, search } = state
+  if (order) {
+    qb = withOrderBy(qb, table, order.field, order.direction)
+  }
+  if (search) {
+    qb = withSearch(qb, table, search, seach_column)
+  }
+  const [rows, total] = await Promise.all([
+    await withPagination(qb, page, pageSize),
+    await getRowCount(table),
+  ])
+  return {
+    rows,
+    total: total[0].count,
+  }
+}
+
 export function withPagination<T extends SQLiteSelect>(
   qb: T,
   page: number = 1,

@@ -21,11 +21,20 @@
       return currState
     })
   }
+
+  $: {
+    if ($rowChanges[id]) {
+      isEdit = true
+    } else {
+      isEdit = false
+    }
+  }
 </script>
 
 <input
   type="checkbox"
   class="toggle"
+  bind:checked={isEdit}
   on:change={e => {
     const input = e.target as HTMLInputElement
     const checked = input.checked

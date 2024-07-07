@@ -1,5 +1,13 @@
 <script lang="ts">
   import { icons } from '$lib/utils/icons'
+  import {
+    setLanguageTag,
+    sourceLanguageTag,
+    availableLanguageTags,
+    languageTag,
+  } from '$lib/paraglide/runtime'
+
+  import { page } from '$app/stores'
 
   type NavItem = {
     name: string
@@ -56,9 +64,17 @@
       ],
     },
   ]
+
+  function isActive(href?: string) {
+    // TODO: Fix translation home not working
+
+    return (
+      $page.url.pathname === href ||
+      $page.url.pathname === '/' + languageTag() + href
+    )
+  }
 </script>
 
-<!-- <SubItem {navItems} /> -->
 {#each navItems as navItem, i}
   {@const { name, icon } = navItem}
   <li>
@@ -76,7 +92,10 @@
               <svelte:self navItems={[subItem]} />
             {:else}
               <li>
-                <a href={subItem.href}>
+                <a
+                  href={subItem.href}
+                  class:bg-primary={isActive(subItem.href)}
+                >
                   {#if typeof navItem.icon === 'string'}
                     {@html icon}
                   {/if}
@@ -89,7 +108,7 @@
         </ul>
       </details>
     {:else}
-      <a href={navItem.href}>
+      <a href={navItem.href} class:bg-primary={isActive(navItem.href)}>
         {#if typeof navItem.icon === 'string'}
           {@html icon}
         {/if}

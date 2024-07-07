@@ -112,7 +112,9 @@
     console.log($rowChanges)
     if (save) {
       await save($rowChanges)
+      $rowChanges = {}
     }
+    invalidate(datatableState)
     isLoading = false
   }
 </script>

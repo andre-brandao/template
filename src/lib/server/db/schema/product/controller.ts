@@ -30,7 +30,7 @@ function getProducts() {
   return db.select().from(productTable)
 }
 import { getRowCount } from '$db/utils'
-function getProductCount(){
+function getProductCount() {
   return getRowCount(productTable)
 }
 
@@ -164,7 +164,9 @@ function getProductFromID(id: number) {
   })
 }
 
+
 export const product = {
+  tables: { productTable },
   getProducts,
   getProductCount,
   insertProduct,
@@ -179,5 +181,6 @@ export const product = {
   updateProductPrice,
   getProductsByCategory,
   insertProductEntry,
+  
   getProductFromID,
 }

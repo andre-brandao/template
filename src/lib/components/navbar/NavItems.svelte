@@ -23,6 +23,11 @@
       icon: icons.home(),
     },
     {
+      name: 'Chart',
+      href: '/chart',
+      icon: icons.chart.bar(),
+    },
+    {
       name: 'Testing',
       // icon: icons.warning(),
       subItems: [
@@ -75,7 +80,7 @@
   }
 </script>
 
-{#each navItems as navItem, i}
+{#each navItems as navItem, i (navItem.href)}
   {@const { name, icon } = navItem}
   <li>
     {#if navItem.subItems}
@@ -87,7 +92,7 @@
           {name}
         </summary>
         <ul>
-          {#each navItem.subItems as subItem}
+          {#each navItem.subItems as subItem , i (subItem.href)}
             {#if subItem.subItems}
               <svelte:self navItems={[subItem]} />
             {:else}

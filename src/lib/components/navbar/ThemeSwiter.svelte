@@ -4,24 +4,29 @@
 </script>
 
 <div class="dropdown dropdown-end dropdown-bottom">
-  <button tabindex="0" class="btn">
+  <div title="Themes" role="button" tabindex="0" class="btn">
     {@html icons.pallete()}
-  </button>
-  <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-  <ul
-    tabindex="0"
-    class="dropdown-content z-[50] max-h-[450px] w-52 overflow-y-scroll rounded-box bg-base-300 p-2 shadow-2xl"
+  </div>
+
+  <!-- Themes -->
+  <div
+    class="dropdown-content z-10 mt-2 flex h-72 w-64 flex-col gap-2 overflow-y-scroll rounded-box bg-base-200 p-4 shadow-2xl"
   >
-    {#each themes as t}
-      <li>
-        <input
-          type="radio"
-          name="theme-dropdown"
-          class="theme-controller btn btn-ghost btn-sm btn-block justify-start"
-          aria-label={t}
-          value={t}
-        />
-      </li>
+    {#each themes as theme}
+      <button
+        data-theme={theme}
+        data-set-theme={theme}
+        class="btn btn-sm flex justify-between bg-base-100"
+        onclick={() => changeTheme(theme)}
+      >
+        <span>{theme}</span>
+
+        <div class="flex items-center gap-2">
+          {#each ['bg-primary', 'bg-secondary', 'bg-accent', 'bg-neutral'] as bg}
+            <span class="{bg} h-4 w-2 rounded-box"></span>
+          {/each}
+        </div>
+      </button>
     {/each}
-  </ul>
+  </div>
 </div>

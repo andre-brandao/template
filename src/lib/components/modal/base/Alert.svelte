@@ -1,6 +1,5 @@
 <script lang="ts">
-  import { Modal } from '$lib/components/modal'
-  import { modal } from '$lib/components/modal'
+  import { Modal, modal } from '$lib/components/modal'
 
   interface Props {
     title?: string

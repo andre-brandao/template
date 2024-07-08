@@ -14,6 +14,7 @@
 
   interface DatatableProps {
     columns: ColumnDef<T>[]
+    add?: () => void
     save?: (changes: { [key: string]: T }) => void
     load: (state: TableState) => Promise<
       | {
@@ -24,7 +25,7 @@
     >
   }
 
-  let { columns, load, save }: DatatableProps = $props()
+  let { columns, load, save, add }: DatatableProps = $props()
 
   let datatableState = $state<TableState>({
     page: 1,
@@ -134,10 +135,11 @@
 
       <div>
         {#if save}
-          <!-- content here -->
           <button class="btn btn-primary" onclick={saveChanges}>Save</button>
         {/if}
-        <button class="btn btn-primary">+ Add</button>
+        {#if add}
+          <button class="btn btn-primary" onclick={add}>+ Add</button>
+        {/if}
       </div>
     </div>
   </header>

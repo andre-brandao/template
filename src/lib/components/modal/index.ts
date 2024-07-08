@@ -2,6 +2,7 @@ import { writable } from 'svelte/store'
 
 export { default as Modal } from './base/Modal.svelte'
 export { default as ModalContainer } from './base/ModalContainer.svelte'
+export { default as FormModal } from './FormModal.svelte'
 
 import Alert from './base/Alert.svelte'
 
@@ -18,13 +19,14 @@ function createModal() {
     props: null | ComponentProps<Component>
   }>({ component: null, props: null })
 
-  const open = <T extends __sveltets_2_IsomorphicComponent>(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const open = <T extends Component<any, object, string>>(
     component: T,
     props: ComponentProps<T> | null = null,
   ) => {
     isActive.set(true)
     set({
-      component: component,
+      component,
       props: props,
     })
   }

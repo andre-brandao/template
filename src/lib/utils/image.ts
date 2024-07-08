@@ -1,4 +1,3 @@
-import axios from 'axios'
 
 /**
  * POSTs an image to the server /api/image
@@ -16,9 +15,18 @@ export async function uploadImage(image: File, name: string) {
   formData.append('image', image)
 
   try {
-    const { data } = await axios.post('/api/image', formData)
+    const response = await fetch('/api/image', {
+      method: 'POST',
+      body: formData
+    })
 
-    return { data: Number(data.img_id) }
+    if (response.ok) {
+      const data = await response.json()
+      return { data: Number(data.img_id) }
+    } else {
+      console.error(response.statusText)
+      return { error: 'Error uploading image' }
+    }
   } catch (error) {
     console.error(error)
     return { error: 'Error uploading image' }

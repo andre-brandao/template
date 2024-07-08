@@ -11,6 +11,8 @@
     RowsPerPage,
   } from '@vincjo/datatables/server'
 
+  import {modal} from '$components/modal'
+
   import { getParams } from '$utils/datatable'
 
   import Loading from '$components/Loading.svelte'

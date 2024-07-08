@@ -1,6 +1,6 @@
 {
-  "name": "temp-daisy",
-  "version": "0.0.1",
+  "name": "deds-template",
+  "version": "0.6.9",
   "private": true,
   "scripts": {
     "dev": "vite dev",
@@ -31,6 +31,7 @@
     "@sveltejs/kit": "^2.5.18",
     "@sveltejs/vite-plugin-svelte": "^3.1.1",
     "@trpc/server": "^10.45.2",
+    "@types/chart.js": "^2.9.41",
     "@types/eslint": "^8.56.10",
     "@vincjo/datatables": "2.0.0-runes.21",
     "autoprefixer": "^10.4.19",
@@ -62,7 +63,7 @@
     "@node-rs/argon2": "^1.8.3",
     "@tanstack/svelte-table": "9.0.0-alpha.10",
     "@trpc/client": "^10.45.2",
-    "axios": "^1.7.2",
+    "chart.js": "^4.4.3",
     "drizzle-orm": "^0.31.2",
     "drizzle-zod": "^0.5.1",
     "sharp": "^0.33.4",

@@ -1,10 +1,9 @@
 <script lang="ts">
-  import type { PageData } from './$types'
-
   import { toast } from 'svelte-sonner'
-  export let data: PageData
   import { trpc } from '$trpc/client'
   import { page } from '$app/stores'
+
+  import { modal, FormModal } from '$lib/components/modal'
 
   import {
     renderComponent,
@@ -89,8 +88,50 @@
       success: true,
     }
   }
+
+  function add() {
+    modal.open(FormModal, {
+      title: 'Add Product',
+
+      fields: [
+        {
+          name: 'name',
+          type: 'text',
+          required: true,
+          label: 'Name',
+        },
+        {
+          label: 'Description',
+          name: 'description',
+          type: 'textarea',
+          required: true,
+          anotation: 'Product description',
+        },
+        {
+          label: 'Price',
+          name: 'price',
+          type: 'number',
+        },
+        {
+          label: 'Stock',
+          name: 'stock',
+          type: 'checkbox',
+        },
+        {
+          label: 'Email',
+          name: 'email',
+          type: 'email',
+          required: true,
+        },
+      ],
+      save: async toSave => {
+        console.log(toSave)
+        toast(JSON.stringify(toSave))
+      },
+    })
+  }
 </script>
 
 <div class="container mx-auto h-[70vh] overflow-x-auto border p-2">
-  <Datatable columns={defaultColumns} {load} {save} />
+  <Datatable columns={defaultColumns} {load} {save} {add} />
 </div>

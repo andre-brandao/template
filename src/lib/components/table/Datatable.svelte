@@ -14,7 +14,7 @@
 
   interface DatatableProps {
     columns: ColumnDef<T>[]
-    add?: () => void
+    add?: (invalidate: Function) => void
     save?: (changes: { [key: string]: T }) => void
     load: (state: TableState) => Promise<
       | {
@@ -40,11 +40,11 @@
     Math.ceil(totalRows / (datatableState?.pageSize ?? 10)),
   )
 
-  async function invalidate(state: TableState) {
+  async function invalidate() {
     isLoading = true
     console.log(true)
 
-    const resp = await load(state)
+    const resp = await load(datatableState)
     console.log(resp)
 
     if (resp) {
@@ -64,7 +64,7 @@
     timer = setTimeout(async () => {
       datatableState.page = 1
       datatableState.search = newSearch
-      invalidate(datatableState)
+      invalidate()
     }, 250)
   }
   // const setFilter = (col: string, newFilter: string) => {
@@ -73,12 +73,12 @@
   //     datatableState.filters = {}
   //   }
   //   datatableState.filters[col] = newFilter
-  //   invalidate(datatableState)
+  //   invalidate()
   // }
 
   const setPagination = (page: number) => {
     datatableState.page = page
-    invalidate(datatableState)
+    invalidate()
   }
 
   const setSort = (field: string, direction: 'asc' | 'desc' | string) => {
@@ -88,7 +88,7 @@
       field,
       direction,
     }
-    invalidate(datatableState)
+    invalidate()
   }
 
   function getSortIcon(direction: 'asc' | 'desc' | string) {
@@ -104,18 +104,16 @@
   })
 
   const table = $state(createTable(options))
-  invalidate(datatableState)
+  invalidate()
 
   let rowsPerPageOptions = [10, 20, 50, 100]
 
   async function saveChanges() {
     isLoading = true
-    console.log($rowChanges)
-    if (save) {
-      await save($rowChanges)
+    if (save && Object.keys($rowChanges).length > 0) {
+      save($rowChanges)
       $rowChanges = {}
     }
-    invalidate(datatableState)
     isLoading = false
   }
 </script>
@@ -125,7 +123,6 @@
     <div
       class="mb-2 flex items-center justify-between rounded-box bg-base-300 p-2"
     >
-
       <label class="input input-bordered flex items-center gap-2">
         <input
           type="text"
@@ -150,10 +147,18 @@
 
       <div>
         {#if save}
-          <button class="btn btn-primary" onclick={saveChanges}>Save</button>
+          <button
+            class="btn btn-primary"
+            disabled={Object.keys($rowChanges).length < 1}
+            onclick={saveChanges}
+          >
+            Save
+          </button>
         {/if}
         {#if add}
-          <button class="btn btn-primary" onclick={add}>+ Add</button>
+          <button class="btn btn-primary" onclick={() => add(invalidate)}>
+            + Add
+          </button>
         {/if}
       </div>
     </div>
@@ -167,29 +172,29 @@
           {#each table.getHeaderGroups() as headerGroup}
             <tr>
               {#each headerGroup.headers as header}
+                {@const isSortable = header.column.getCanSort()}
+                {@const sortDirection =
+                  datatableState.sort?.direction == 'asc' &&
+                  datatableState.sort?.field == header.column.id
+                    ? 'desc'
+                    : 'asc'}
                 <th colspan={header.colSpan}>
                   {#if !header.isPlaceholder}
                     <button
                       class="flex items-center gap-2"
-                      class:btn={header.column.getCanSort()}
-                      disabled={!header.column.getCanSort()}
-                      onclick={() => {
-                        header.column
-                        setSort(
-                          header.column.id,
-                          datatableState.sort?.direction == 'asc' &&
-                            datatableState.sort?.field == header.column.id
-                            ? 'desc'
-                            : 'asc',
-                        )
-                      }}
+                      class:btn={isSortable}
+                      class:btn-info={isSortable}
+                      class:badge={!isSortable}
+                      class:badge-info={!isSortable}
+                      disabled={!isSortable}
+                      onclick={() => setSort(header.column.id, sortDirection)}
                     >
                       <FlexRender
                         content={header.column.columnDef.header}
                         context={header.getContext()}
                       />
 
-                      {#if header.column.getCanSort()}
+                      {#if isSortable}
                         {#if datatableState.sort?.field == header.column.id}
                           <span>
                             {@html getSortIcon(datatableState.sort?.direction)}
@@ -351,9 +356,7 @@
     align-items: center;
     width: 100%;
   }
-  footer.container {
-    border-top: 1px solid var(--grey, #e0e0e0);
-  }
+
   article {
     position: relative;
     height: 100%;
@@ -364,15 +367,6 @@
   article::-webkit-scrollbar {
     width: 6px;
     height: 6px;
-  }
-  article::-webkit-scrollbar-track {
-    background: #f5f5f5;
-  }
-  article::-webkit-scrollbar-thumb {
-    background: #c2c2c2;
-  }
-  article::-webkit-scrollbar-thumb:hover {
-    background: #9e9e9e;
   }
 
   article :global(table) {
@@ -405,16 +399,16 @@
     background: inherit;
   }
   article :global(tbody tr:hover) {
-    background: var(--grey-lighten-3, #fafafa);
+    /* background: var(--grey-lighten-3, #fafafa); */
   }
   article :global(tbody td) {
     padding: 4px 20px;
-    border-right: 1px solid var(--grey-lighten, #eee);
-    border-bottom: 1px solid var(--grey-lighten, #eee);
+    /* border-right: 1px solid var(--grey-lighten, #eee); */
+    /* border-bottom: 1px solid var(--grey-lighten, #eee); */
     background: inherit;
   }
   article :global(tbody td:first-child) {
-    border-left: 1px solid var(--grey-lighten, #eee);
+    /* border-left: 1px solid var(--grey-lighten, #eee); */
   }
 
   article :global(.hidden) {

@@ -40,11 +40,16 @@ import { createTRPCHandle } from 'trpc-sveltekit'
 const handleTRPC = createTRPCHandle({
   router,
   createContext,
-  onError: ({ type, path, error }) =>
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  onError: ({ error, type, path, input, ctx, req }) => {
     console.error(
       `Encountered error while trying to process ${type} @ ${path}:`,
       error,
-    ),
+    )
+    if (error.code === 'INTERNAL_SERVER_ERROR') {
+      // send to bug reporting
+    }
+  },
 })
 
 export const handle: Handle = sequence(i18n.handle(), handleSession, handleTRPC)

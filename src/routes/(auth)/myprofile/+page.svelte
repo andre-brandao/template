@@ -1,8 +1,9 @@
 <script lang="ts">
   import type { PageData } from './$types'
-  import { user } from '$lib/stores/user'
+  import { getUserContext } from '$lib/stores/user'
   import { applyAction, enhance } from '$app/forms'
   import { goto } from '$app/navigation'
+  const user = getUserContext()
 
   export let data: PageData
 
@@ -80,7 +81,7 @@
 
     <!-- button -->
     <div class="flex justify-center">
-      <button type="submit" class="btn btn-primary w-full"> Save </button>
+      <button type="submit" class="btn btn-primary w-full">Save</button>
     </div>
   </div>
 </form>

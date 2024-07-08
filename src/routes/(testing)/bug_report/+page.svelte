@@ -3,7 +3,8 @@
 
   export let data: PageData
 
-  import { user } from '$lib/stores/user'
+  import { getUserContext } from '$lib/stores/user'
+  const user = getUserContext()
   const { bugs } = data
   import { toast } from 'svelte-sonner'
 

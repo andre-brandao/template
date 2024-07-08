@@ -18,7 +18,7 @@
     EditRowInput,
   } from '$lib/components/table'
 
-  import type { RouterOutputs } from '$trpc/router'
+  import type { RouterOutputs, RouterInputs } from '$trpc/router'
 
   type Products = RouterOutputs['product']['paginatedProducts']['rows'][0]
 
@@ -89,51 +89,49 @@
     }
   }
 
-  function add() {
-    modal.open(FormModal, {
+  function add(invalidate: Function) {
+    console.log('add')
+
+    modal.open(FormModal<RouterInputs['product']['insertProduct']>, {
       title: 'Add Product',
 
       fields: [
         {
           name: 'name',
           type: 'text',
-          
           label: 'Name',
+          validate: (value: string) => {
+            if (value.length < 3) {
+              return {
+                valid: false,
+                message: 'Name must be at least 3 characters',
+              }
+            }
+            return { valid: true, message: '' }
+          },
         },
         {
           label: 'Description',
           name: 'description',
           type: 'textarea',
           required: true,
-          anotation: 'Product description',
+          annotation: 'Product description',
         },
-        {
-          label: 'Price',
-          name: 'price',
-          type: 'number',
-          
-        },
-        {
-          label: 'Stock',
-          name: 'stock',
-          type: 'checkbox',
-        },
-        {
-          label: 'Email',
-          name: 'email',
-          type: 'email',
-          required: true,
-        },
-        {
-          label: "senha",
-          name:'password',
-          type: 'password',
-          required: true
-        }
       ],
       save: async toSave => {
         console.log(toSave)
         toast(JSON.stringify(toSave))
+        try {
+          const resp = await trpc($page).product.insertProduct.query(toSave)
+
+          if (resp) {
+            toast.success('Product created')
+            invalidate()
+          }
+        } catch (error) {
+          toast.error('Product creation failed')
+          return 'Product creation failed'
+        }
       },
     })
   }

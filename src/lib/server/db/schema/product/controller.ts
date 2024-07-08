@@ -131,39 +131,22 @@ function getProductsByCategory() {
 }
 
 function getProductFromID(id: number) {
-  return db.query.productTable.findFirst({
-    where: (p, { eq }) => eq(p.id, id),
-    with: {
-      entry: {
-        columns: {
-          id: true,
-          image_id: true,
-          quantity: true,
-        },
-        with: {
-          category: true,
-          brand: true,
-          prices: {
-            columns: {
-              id: true,
-              price: true,
-            },
-            // where: (p, { eq, sql }) => eq(p.price_id, sql`${}`),
-            with: {
-              price_label: {
-                columns: {
-                  label: true,
-                  is_retail: true,
-                },
-              },
-            },
-          },
-        },
-      },
-    },
-  })
+  return db
+    .select()
+    .from(productEntryTable)
+    .where(eq(productEntryTable.product_id, id))
+    .innerJoin(productTable, eq(productEntryTable.product_id, productTable.id))
+    .innerJoin(
+      categoryTable,
+      eq(productEntryTable.category_id, categoryTable.id),
+    )
+    .innerJoin(brandTable, eq(productEntryTable.brand_id, brandTable.id))
+    .leftJoin(
+      productPriceTable,
+      eq(productEntryTable.id, productPriceTable.product_id),
+    )
+    .leftJoin(pricesTable, eq(pricesTable.id, productPriceTable.price_id))
 }
-
 
 export const product = {
   tables: { productTable },
@@ -181,6 +164,6 @@ export const product = {
   updateProductPrice,
   getProductsByCategory,
   insertProductEntry,
-  
+
   getProductFromID,
 }

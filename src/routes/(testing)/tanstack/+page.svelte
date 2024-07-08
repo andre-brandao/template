@@ -97,7 +97,7 @@
         {
           name: 'name',
           type: 'text',
-          required: true,
+          
           label: 'Name',
         },
         {
@@ -111,6 +111,7 @@
           label: 'Price',
           name: 'price',
           type: 'number',
+          
         },
         {
           label: 'Stock',
@@ -123,6 +124,12 @@
           type: 'email',
           required: true,
         },
+        {
+          label: "senha",
+          name:'password',
+          type: 'password',
+          required: true
+        }
       ],
       save: async toSave => {
         console.log(toSave)

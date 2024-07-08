@@ -1,5 +1,4 @@
 <script lang="ts" generics="T extends {id: any}">
-  import { onDestroy } from 'svelte'
   import { type EditableTypes, getRowChanges } from '.'
   const rowChanges = getRowChanges<T>()
 
@@ -21,6 +20,8 @@
       changedRow = <T>{}
     }
   }
+
+  const className = 'input input-sm input-bordered w-full '
 </script>
 
 {#if rInEdit !== true}
@@ -28,17 +29,9 @@
     {value}
   </span>
 {:else if editT === 'text'}
-  <input
-    class="input input-sm input-bordered w-full"
-    type="text"
-    bind:value={changedRow[colID]}
-  />
+  <input class={className} type="text" bind:value={changedRow[colID]} />
 {:else if editT === 'number'}
-  <input
-    class="input input-sm input-bordered w-full"
-    type="number"
-    bind:value={changedRow[colID]}
-  />
+  <input class={className} type="number" bind:value={changedRow[colID]} />
 {:else}
   <span>
     {value}

@@ -33,4 +33,4 @@
   </div>
 {/key}
 
-<slot><!-- optional fallback --></slot>
+<slot></slot>

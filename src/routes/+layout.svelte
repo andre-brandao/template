@@ -39,5 +39,3 @@
   </NavBar>
   <!-- </DrawerContainer> -->
 </ParaglideJS>
-
-<style></style>

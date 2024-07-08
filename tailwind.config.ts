@@ -16,5 +16,6 @@ export default {
   plugins: [daysyui],
   daisyui: {
     themes,
+    logs: false,
   },
 } as Config

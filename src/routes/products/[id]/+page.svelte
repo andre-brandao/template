@@ -11,20 +11,20 @@
 
   let activePrice = 0
 
-  let variants = produto.entry.map(entry => {
-    return {
-      id: entry.id,
-      brand: entry.brand,
-      category: entry.category,
-      price: entry.prices
-        // .filter(p => !p.price_label.is_retail)
-        .map(p => ({
-          price_label: p.price_label.label,
-          price_value: p.price,
-        })),
-      image: entry.image_id,
-    }
-  })
+  // let variants = produto.entry.map(entry => {
+  //   return {
+  //     id: entry.id,
+  //     brand: entry.brand,
+  //     category: entry.category,
+  //     price: entry.prices
+  //       // .filter(p => !p.price_label.is_retail)
+  //       .map(p => ({
+  //         price_label: p.price_label.label,
+  //         price_value: p.price,
+  //       })),
+  //     image: entry.image_id,
+  //   }
+  // })
 
   let quantity = 1
   function increment() {
@@ -35,20 +35,20 @@
     quantity -= 1
   }
 
-  let total = tweened(
-    (variants[activeEntry].price[activePrice]?.price_value ?? 0) * quantity,
-    {
-      duration: 300,
-    },
-  )
+  // let total = tweened(
+  //   (variants[activeEntry].price[activePrice]?.price_value ?? 0) * quantity,
+  //   {
+  //     duration: 300,
+  //   },
+  // )
 
-  $: {
-    $total =
-      (variants[activeEntry].price[activePrice]?.price_value ?? 0) * quantity
-  }
+  // $: {
+  //   $total =
+  //     (variants[activeEntry].price[activePrice]?.price_value ?? 0) * quantity
+  // }
 </script>
 
-<section class="body-font overflow-hidden">
+<!-- <section class="body-font overflow-hidden">
   <div class="container mx-auto px-5 py-24">
     <button onclick={() => history.back()} class="btn btn-primary mb-3">
       {@html icons.arrows.left_line()} Back
@@ -113,12 +113,7 @@
           </span>
         </div>
 
-        <!-- <div class="flex border-t border-gray-200 py-2">
-          <span class="">Brand</span>
-          <span class="ml-auto">
-            {variants[activeEntry].brand.name}
-          </span>
-        </div> -->
+  
 
         <div class="mb-6 flex border-b border-t border-gray-200 py-2">
           <span class="">Quantity</span>
@@ -160,4 +155,4 @@
       />
     </div>
   </div>
-</section>
+</section> -->

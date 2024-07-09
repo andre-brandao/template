@@ -3,7 +3,12 @@
   import Modal from './base/Modal.svelte'
   import { toast } from 'svelte-sonner'
 
-  interface Field<T = any> {
+  import { type Component, type ComponentProps } from 'svelte'
+
+  interface Field<
+    T = any,
+    C extends Component<any, object> = Component<any, object>,
+  > {
     name: keyof T
     value?: any
     label: string
@@ -15,6 +20,11 @@
       | 'textarea'
       | 'select'
       | 'checkbox'
+      | 'component'
+    component?: {
+      ref: C
+      props: ComponentProps<C>
+    }
     required?: boolean
     annotation?: string
     placeholder?: string
@@ -56,7 +66,9 @@
       {} as Record<keyof Item, string>,
     )
     console.log(erros)
+
     if (Object.keys(erros).length) {
+      
       return
     }
 
@@ -141,7 +153,14 @@
             required={field.required}
             bind:checked={field.value}
           />
+        {:else if field.type === 'component' && field.component}
+          <svelte:component
+            this={field.component.ref}
+            bind:value={field.value}
+            {...field.component.props}
+          />
         {/if}
+
         {#if field.annotation && !erros?.[field.name]}
           <div class="label">
             <span class="label-text-alt">{field.annotation}</span>

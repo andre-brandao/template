@@ -5,6 +5,7 @@
 
   import { modal, FormModal } from '$lib/components/modal'
 
+  import SuperSelect from '$lib/components/input/Select.svelte'
   import {
     renderComponent,
     type ColumnDef,
@@ -17,7 +18,7 @@
     EditRowButton,
     EditRowInput,
   } from '$lib/components/table'
-
+  import type { ComponentProps } from 'svelte'
   import type { RouterOutputs, RouterInputs } from '$trpc/router'
 
   type Products = RouterOutputs['product']['paginatedProducts']['rows'][0]
@@ -88,7 +89,6 @@
       success: true,
     }
   }
-
   function add(invalidate: Function) {
     console.log('add')
 
@@ -101,7 +101,7 @@
           type: 'text',
           label: 'Name',
           validate: (value: string) => {
-            if (value.length < 3) {
+            if (!value || value.length < 3) {
               return {
                 valid: false,
                 message: 'Name must be at least 3 characters',
@@ -116,6 +116,28 @@
           type: 'textarea',
           required: true,
           annotation: 'Product description',
+        },
+        {
+          label: 'check',
+          name: 'created_at',
+          type: 'checkbox',
+        },
+        {
+          label: 'Select ID',
+          name: 'id',
+          type: 'component',
+          component: {
+            ref: SuperSelect,
+            props: {
+              options: [
+                { value: 1, label: '1' },
+                { value: 2, label: '2' },
+                { value: 3, label: '3' },
+                { value: 5, label: 'Cinco' },
+              ],
+              add: (v: string) => Promise.resolve({ value: v, label: v }),
+            },
+          },
         },
       ],
       save: async toSave => {

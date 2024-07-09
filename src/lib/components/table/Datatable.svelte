@@ -13,6 +13,7 @@
   // import { type TableState } from '.'
 
   interface DatatableProps {
+    data?: T[]
     columns: ColumnDef<T>[]
     add?: (invalidate: Function) => void
     save?: (changes: { [key: string]: T }) => void
@@ -25,7 +26,7 @@
     >
   }
 
-  let { columns, load, save, add }: DatatableProps = $props()
+  let { data, columns, load, save, add }: DatatableProps = $props()
 
   let datatableState = $state<TableState>({
     page: 1,
@@ -67,6 +68,7 @@
       invalidate()
     }, 250)
   }
+
   // const setFilter = (col: string, newFilter: string) => {
   //   datatableState.page = 1
   //   if (!datatableState.filters) {
@@ -98,7 +100,7 @@
   }
 
   const options = $state<TableOptions<T>>({
-    data: [],
+    data: data ?? [],
     columns,
     getCoreRowModel: getCoreRowModel(),
   })
@@ -170,7 +172,7 @@
       <table class="table table-zebra table-pin-cols">
         <thead>
           {#each table.getHeaderGroups() as headerGroup}
-            <tr>
+            <tr >
               {#each headerGroup.headers as header}
                 {@const isSortable = header.column.getCanSort()}
                 {@const sortDirection =
@@ -230,7 +232,7 @@
         </thead>
         <tbody>
           {#each table.getRowModel().rows as row (row.id)}
-            <tr>
+            <tr class="hover">
               {#each row.getVisibleCells() as cell (cell.id)}
                 <td>
                   <FlexRender
@@ -398,25 +400,15 @@
     transition: background, 0.2s;
     background: inherit;
   }
-  article :global(tbody tr:hover) {
-    /* background: var(--grey-lighten-3, #fafafa); */
-  }
+
   article :global(tbody td) {
     padding: 4px 20px;
     /* border-right: 1px solid var(--grey-lighten, #eee); */
     /* border-bottom: 1px solid var(--grey-lighten, #eee); */
     background: inherit;
   }
-  article :global(tbody td:first-child) {
-    /* border-left: 1px solid var(--grey-lighten, #eee); */
-  }
 
   article :global(.hidden) {
     display: none;
-  }
-  article :global(u.highlight) {
-    text-decoration: none;
-    background: rgba(251, 192, 45, 0.6);
-    border-radius: 2px;
   }
 </style>

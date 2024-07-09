@@ -92,15 +92,12 @@
           {name}
         </summary>
         <ul>
-          {#each navItem.subItems as subItem , i (subItem.href)}
+          {#each navItem.subItems as subItem, i (subItem.href)}
             {#if subItem.subItems}
               <svelte:self navItems={[subItem]} />
             {:else}
               <li>
-                <a
-                  href={subItem.href}
-                  class:bg-primary={isActive(subItem.href)}
-                >
+                <a href={subItem.href} class:active={isActive(subItem.href)}>
                   {#if typeof navItem.icon === 'string'}
                     {@html icon}
                   {/if}
@@ -113,7 +110,7 @@
         </ul>
       </details>
     {:else}
-      <a href={navItem.href} class:bg-primary={isActive(navItem.href)}>
+      <a href={navItem.href} class:active={isActive(navItem.href)}>
         {#if typeof navItem.icon === 'string'}
           {@html icon}
         {/if}

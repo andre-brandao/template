@@ -1,10 +1,12 @@
 <script lang="ts">
-  import type { PageData } from './$types'
+  import Area from '$components/chart/Area.svelte'
+  import Bar from '$lib/components/chart/Bar.svelte'
 
-  import Chart from '$components/Chart.svelte'
-
-  import SuperSelect from '$lib/components/input/Select.svelte'
-  export let data: PageData
+  import { area_test_data } from '$components/chart/data'
+  import Scatter from '$lib/components/chart/Scatter.svelte'
 </script>
 
-<Chart />
+<Area data={area_test_data} />
+<Bar data={area_test_data} />
+
+<Scatter data={area_test_data} />

@@ -90,7 +90,6 @@
     }
   }
   function add(invalidate: Function) {
-    console.log('add')
 
     modal.open(FormModal<RouterInputs['product']['insertProduct']>, {
       title: 'Add Product',
@@ -118,7 +117,7 @@
           annotation: 'Product description',
         },
         {
-          label: 'check',
+          label: 'Essa é a checkbox',
           name: 'created_at',
           type: 'checkbox',
         },

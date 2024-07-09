@@ -68,7 +68,6 @@
     console.log(erros)
 
     if (Object.keys(erros).length) {
-      
       return
     }
 
@@ -101,10 +100,19 @@
       <label class="form-control w-full max-w-xs">
         <div class="label">
           <span class="label-text">{field.label}</span>
-          {#if !field.required}
+          {#if !field.required && field.type !== 'checkbox'}
             <span class="badge badge-info label-text-alt text-info-content">
               Optional
             </span>
+          {/if}
+
+          {#if field.type === 'checkbox'}
+            <input
+              class="checkbox"
+              type="checkbox"
+              required={field.required}
+              bind:checked={field.value}
+            />
           {/if}
         </div>
         {#if field.type === 'text'}
@@ -146,13 +154,6 @@
             required={field.required}
             bind:value={field.value}
           ></textarea>
-        {:else if field.type === 'checkbox'}
-          <input
-            class="checkbox"
-            type="checkbox"
-            required={field.required}
-            bind:checked={field.value}
-          />
         {:else if field.type === 'component' && field.component}
           <svelte:component
             this={field.component.ref}

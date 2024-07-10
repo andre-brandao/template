@@ -1,5 +1,3 @@
-BLOG CONTACT CONTENT CTA ECOMMERCE FEATURE FOOTER GALLERY HEADER HERO PRICING
-STATISTIC STEP TEAM TESTIMONIAL Copied!
 <section class="  body-font">
   <div class="container mx-auto px-5 py-24">
     <div

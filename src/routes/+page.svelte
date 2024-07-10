@@ -16,6 +16,9 @@
   import Features4 from '$lib/components/landing-page/features/Features4.svelte'
   import Footer from '$lib/components/landing-page/Footer.svelte'
   import Payment from '$lib/components/Payment.svelte'
+
+  import ShareButton from '$components/share/index.svelte'
+  import RotatingGlobe from '$lib/components/landing-page/globe/RotatingGlobe.svelte'
 </script>
 
 <SEO
@@ -35,17 +38,25 @@
 <main class="flex flex-col gap-5">
   <Hero />
 
-  <MapContact />
+  <div class="h-60 w-60">
+    <RotatingGlobe></RotatingGlobe>
+  </div>
+  <ShareButton title="Home" url="https://example.com" />
 
-  <Features3></Features3>
-
-  <Pricing />
-
-  <Features4></Features4>
-
-  <Carousel />
-
-  <Carousel2 />
+  <!--
+    <MapContact />
+ 
+     <Features3></Features3>
+ 
+     <Pricing />
+ 
+     <Features4></Features4>
+ 
+     <Carousel />
+ 
+     <Carousel2 />
+  
+   -->
 
   <Footer></Footer>
 </main>

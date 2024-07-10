@@ -4,9 +4,11 @@
 
   import { area_test_data } from '$components/chart/data'
   import Scatter from '$lib/components/chart/Scatter.svelte'
+
+  const data = area_test_data.map(d => ({ ...d, date: new Date(d.date) }))
 </script>
 
-<Area data={area_test_data} />
-<Bar data={area_test_data} />
+<Area data={data} />
+<Bar data={data} />
 
-<Scatter data={area_test_data} />
+<Scatter data={data} />

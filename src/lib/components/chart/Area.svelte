@@ -34,12 +34,10 @@
   >
     <Svg>
       <Axis placement="left" grid rule />
-      <Axis
-        placement="bottom"
-        format={d => new Date(d).getDay()}
-        rule
-
+      <Axis placement="bottom" grid rule 
+      
       />
+      <!-- format={d => new Date(d).getDay()} -->
       <Area
         line={{ class: 'stroke-2 stroke-primary' }}
         class="fill-primary/30"
@@ -51,5 +49,3 @@
     </Tooltip>
   </Chart>
 </div>
-
-

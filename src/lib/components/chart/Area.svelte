@@ -33,16 +33,22 @@
     tooltip={{ mode: 'bisect-x' }}
   >
     <Svg>
+      <LinearGradient
+        id="tw-1"
+        class="from-primary to-base-100"
+        vertical
+        let:url
+      >
       <Axis placement="left" grid rule />
-      <Axis placement="bottom" grid rule 
-      
-      />
+      <Axis placement="bottom" grid rule />
       <!-- format={d => new Date(d).getDay()} -->
       <Area
         line={{ class: 'stroke-2 stroke-primary' }}
-        class="fill-primary/30"
+        
+        fill={url}
       />
       <Highlight points lines />
+      </LinearGradient>
     </Svg>
     <Tooltip header={data => JSON.stringify(data)} let:data>
       <TooltipItem label="value" value={data.value} />

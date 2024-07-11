@@ -2,6 +2,20 @@
   import { website } from '$lib/config'
   import { tweened } from 'svelte/motion'
 
+  import { trpc } from '$trpc/client'
+  import { page } from '$app/stores'
+  import { tokenizeCard } from '$lib/utils/pagarme'
+  import { toast } from 'svelte-sonner'
+
+  let form = {
+    full_name: 'Tony Stark',
+    card_number: '4000000000000010',
+    expiration: {
+      month: 2,
+      year: 30,
+    },
+    cvv: '123',
+  }
   let items: {
     id: string
     name: string
@@ -34,11 +48,87 @@
     duration: 500,
   })
 
+  async function handleCheckout() {
+    const cardToken = await tokenizeCard({
+      number: '4000000000000010',
+      holder_name: 'Tony Stark',
+      exp_month: 2,
+      cvv: '123',
+      exp_year: 2030,
+    })
+
+    console.log(cardToken)
+
+    if (cardToken.error) {
+      toast.error(JSON.stringify(cardToken.error))
+      return
+    }
+
+    const address = {
+      line_1: '7221, Avenida Dra Ruth Cardoso, Pinheiro',
+      line_2: 'Prédio',
+      zip_code: '05425070',
+      city: 'São Paulo',
+      state: 'SP',
+      country: 'BR',
+    }
+
+    const resp = await trpc($page).pagarme.cardToken.mutate({
+      customer: {
+        name: 'Tony Stark',
+        type: 'individual',
+        email: 'avengerstark@ligadajustica.com.br',
+        document: '03154435026',
+        address,
+        phones: {
+          home_phone: {
+            country_code: '55',
+            area_code: '11',
+            number: '000000000',
+          },
+          mobile_phone: {
+            country_code: '55',
+            area_code: '11',
+            number: '000000000',
+          },
+        },
+      },
+      items: [
+        {
+          amount: 2990,
+
+          code: 123,
+          description: 'Chaveiro do Tesseract',
+          quantity: 2,
+        },
+      ],
+
+      payments: [
+        {
+          credit_card: {
+            operation_type: 'auth_and_capture',
+            installments: 1,
+            statement_descriptor: 'Pagamento',
+            card_token: cardToken.data.id,
+            card: {
+              billing_address: address,
+            },
+          },
+        },
+      ],
+    })
+
+    if (resp.error) {
+      toast.error(JSON.stringify(resp.error))
+      return
+    }
+    console.log(resp)
+  }
+
   $: {
     total.set(items?.reduce((acc, item) => acc + item.price * item.quantity, 0))
   }
 </script>
-
 
 <section class=" py-8 antialiased md:py-16">
   <div class="mx-auto max-w-screen-xl px-4 2xl:px-0">
@@ -47,15 +137,17 @@
 
       <div class="mt-6 sm:mt-8 lg:flex lg:items-start lg:gap-12">
         <form
+          on:submit|preventDefault={handleCheckout}
           action="#"
           class="w-full rounded-lg border border-primary p-4 shadow-sm sm:p-6 lg:max-w-xl lg:p-8"
         >
           <div class="mb-6 grid grid-cols-2 gap-4">
             <div class="col-span-2 sm:col-span-1">
               <label for="full_name" class="mb-2 block text-sm font-medium">
-                Full name 
+                Full name
               </label>
               <input
+                bind:value={form.full_name}
                 type="text"
                 id="full_name"
                 class="input block w-full rounded-lg border border-primary text-sm focus:border-primary focus:ring-primary"
@@ -72,13 +164,14 @@
                 Card number*
               </label>
               <input
+                bind:value={form.card_number}
                 type="text"
                 id="card-number-input"
                 class="input block w-full rounded-lg border border-primary text-sm focus:border-primary focus:ring-primary"
                 placeholder="xxxx-xxxx-xxxx-xxxx"
-                pattern="^4[0-9]{12}(?:[0-9]{3})?$"
                 required
               />
+              <!-- pattern="^4[0-9]{12}(?:[0-9]{3})?$" -->
             </div>
 
             <div>
@@ -94,7 +187,18 @@
                 ></div>
                 <!-- datepicker -->
                 <input
-                  
+                  on:change={e => {
+                    // @ts-ignore
+                    const val = e.target.value.split('/')
+
+                    if (val.length < 2) {
+                      return
+                    }
+
+                    const month = val[0]
+                    const year = val[1]
+                    form.expiration = { month, year }
+                  }}
                   id="card-expiration-input"
                   type="text"
                   class="input block w-full rounded-lg border border-primary text-sm focus:border-primary focus:ring-primary"
@@ -138,6 +242,7 @@
                 </div>
               </label>
               <input
+                bind:value={form.cvv}
                 type="number"
                 id="cvv-input"
                 aria-describedby="helper-text-explanation"
@@ -162,7 +267,7 @@
               {#each items as item}
                 <!-- content here -->
                 <dl class="flex items-center justify-between gap-4">
-                  <dt class=" text-base font-normal ">
+                  <dt class=" text-base font-normal">
                     {item.name}
                   </dt>
                   <dd

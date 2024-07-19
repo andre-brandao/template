@@ -36,7 +36,9 @@
 
 <!-- <Modal onClose={console.log} onOpen={console.log}>Teste Modal</Modal> -->
 <main class="flex flex-col gap-5">
+  <!--
   <Hero />
+  -->
 
   <div class="h-60 w-60">
     <RotatingGlobe></RotatingGlobe>

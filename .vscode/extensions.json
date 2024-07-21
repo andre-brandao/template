@@ -1,5 +1,10 @@
 {
   "recommendations": [
-    "inlang.vs-code-extension"
+    "inlang.vs-code-extension",
+    "usernamehw.errorlens",
+    "1YiB.svelte-bundle",
+    "bradlc.vscode-tailwindcss",
+    "esbenp.prettier-vscode",
+    "dbaeumer.vscode-eslint"
   ]
 }

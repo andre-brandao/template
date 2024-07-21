@@ -90,7 +90,7 @@
         <ChangeLanguage />
       </div>
     </div>
-    <slot>Page content here</slot>
+    <slot/>
   </div>
   <div class="drawer-side z-30">
     <label

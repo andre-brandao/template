@@ -35,7 +35,7 @@
 />
 
 <!-- <Modal onClose={console.log} onOpen={console.log}>Teste Modal</Modal> -->
-<main class="flex flex-col gap-5">
+<main class="flex flex-col gap-5 overflow-auto">
   <Hero />
 
   <!-- <div class="h-60 w-60">

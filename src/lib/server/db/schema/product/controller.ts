@@ -130,8 +130,8 @@ function getProductsByCategory() {
   })
 }
 
-function getProductFromID(id: number) {
-  return db
+async function getProductFromID(id: number) {
+  return await db
     .select()
     .from(productEntryTable)
     .where(eq(productEntryTable.product_id, id))
@@ -149,7 +149,7 @@ function getProductFromID(id: number) {
 }
 
 export const product = {
-  tables: { productTable },
+  tables: { productTable, productEntryTable },
   getProducts,
   getProductCount,
   insertProduct,

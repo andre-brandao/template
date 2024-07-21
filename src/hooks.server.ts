@@ -47,7 +47,7 @@ const handleTRPC = createTRPCHandle({
       error,
     )
     if (error.code === 'INTERNAL_SERVER_ERROR') {
-      // send to bug reporting
+      // TODO: send to bug reporting
     }
   },
 })

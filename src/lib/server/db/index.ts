@@ -26,7 +26,8 @@ const logger = new DefaultLogger({ writer: new MyLogWriter() })
 // *! Uncomment the following line when seeding */
 
 export const libsqlClient = createClient({
-  url: 'file:local.db',
+  url: process.env.DATABASE_URL || 'file:local.db',
+  authToken: process.env.DATABASE_AUTH_TOKEN,
 })
 
 export const db = drizzle(libsqlClient, { logger, schema })

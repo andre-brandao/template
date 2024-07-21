@@ -8,7 +8,9 @@ Clone the repository and install the dependencies:
 
 ```bash
 git clone https://github.com/andre-brandao/template
+
 cd deds-template
+
 npm install
 # or
 pnpm install
@@ -56,9 +58,6 @@ Once you've cloned the project and installed dependencies with `npm install` (or
 
 ```bash
 npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
 ```
 
 ## Building

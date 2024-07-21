@@ -32,7 +32,6 @@
     "@sveltejs/vite-plugin-svelte": "^3.1.1",
     "@trpc/server": "^10.45.2",
     "@types/eslint": "^8.56.10",
-    "@vincjo/datatables": "2.0.0-runes.21",
     "autoprefixer": "^10.4.19",
     "daisyui": "^4.12.10",
     "drizzle-kit": "^0.22.8",

@@ -12,7 +12,7 @@
 
     return new Promise(resolve => {
       // @ts-expect-error
-      document.startViewTransition(async () => {
+      document.startViewTransition?.(async () => {
         resolve()
         await navigation.complete
       })
@@ -20,13 +20,11 @@
   })
 </script>
 
+ 
 {#key $navigating}
-  {#if $navigating}
-    <PreLoadingIndicator />
-  {/if}
   <div
-    in:fly={{ duration: 200, easing: cubicIn, x: -300, y: 0 }}
-    out:fly={{ duration: 200, easing: cubicOut, x: 300, y: 0 }}
+    in:fly={{ delay: 200, duration: 200, easing: cubicIn, x: -300, y: 0 }}
+    out:fly={{ delay: 200, duration: 200, easing: cubicOut, x: 300, y: 0 }}
     class="h-full overflow-scroll overflow-x-auto"
   >
     <slot />

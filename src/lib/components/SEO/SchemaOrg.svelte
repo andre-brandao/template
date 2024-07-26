@@ -1,5 +1,5 @@
 <script>
-//   import hash from 'object-hash'
+  //   import hash from 'object-hash'
   export let article = false
   export let author
 

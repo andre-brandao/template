@@ -40,7 +40,6 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 
     const imageBuffer = Buffer.from(await imageFile.arrayBuffer())
 
-
     const [{ img_id }] = await image.insertImage({
       buff: imageBuffer,
       name,

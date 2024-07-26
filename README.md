@@ -1,6 +1,7 @@
 # Deds Template
 
-My opinionated template for creating fast marketing websites that can have some more flavour if you put in the work
+My opinionated template for creating fast marketing websites that can have some
+more flavour if you put in the work
 
 ### Installation
 
@@ -24,12 +25,14 @@ bun install
 
 - [DaisyUI](https://daisyui.com/components/) component library
 - [SvelteAnimations](https://animation-svelte.vercel.app/) component library
-- [Tailwind](https://tailwindcomponents.com/cheatsheet/) css classes but simple sometimes too simple
+- [Tailwind](https://tailwindcomponents.com/cheatsheet/) css classes but simple
+  sometimes too simple
 - [Drizzle](https://orm.drizzle.team/) sql orm
 - [Lucia Auth](https://lucia-auth.com/) auth helper for sessions
 - [TRPC](https://trpc.io/docs) typesafe api
-- [TRPC SvelteKit](https://icflorescu.github.io/trpc-sveltekit/) trpc svelte adapter
-- [Zod](https://zod.dev/)  Type Validations
+- [TRPC SvelteKit](https://icflorescu.github.io/trpc-sveltekit/) trpc svelte
+  adapter
+- [Zod](https://zod.dev/) Type Validations
 - [LayerCHart](https://www.layerchart.com/) Beutiful Charts
 
 - [Svelte5](https://svelte-5-preview.vercel.app/docs/introduction)
@@ -37,6 +40,7 @@ bun install
 - [Svelte Tutorial](https://learn.svelte.dev/tutorial/introducing-sveltekit)
 
 ## Project Structure
+
 Briefly explain the main directories and files in your project:
 
 - src/: Source code for your application.
@@ -51,6 +55,7 @@ Briefly explain the main directories and files in your project:
 - src/trpc: Server side trpc routes
 - messages: translation definition
 - migrations: sql migrations
+
 ## Developing
 
 Once you've cloned the project and installed dependencies with `npm install` (or
@@ -68,13 +73,14 @@ To create a production version of your app:
 npm run build
 ```
 
-## Testing 
+## Testing
+
 TODO
 
 ## Drizzle
 
-Drizzle ORM Commands The following commands help manage the database schema and migrations, refer to 
-[Commands Docs](https://orm.drizzle.team/kit-docs/commands)
+Drizzle ORM Commands The following commands help manage the database schema and
+migrations, refer to [Commands Docs](https://orm.drizzle.team/kit-docs/commands)
 
 Push changes to the development database:
 
@@ -125,4 +131,5 @@ npm run db:check
 ```
 
 # Contributing
+
 Feel free to submit issues or pull requests. Contributions are welcome!

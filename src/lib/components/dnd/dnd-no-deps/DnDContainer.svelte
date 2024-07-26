@@ -1,5 +1,4 @@
 <script lang="ts" generics="T extends {id: any}">
-
   import { flip } from 'svelte/animate'
   import type { Snippet } from 'svelte'
 

@@ -8,7 +8,7 @@
   const data = area_test_data.map(d => ({ ...d, date: new Date(d.date) }))
 </script>
 
-<Area data={data} />
-<Bar data={data} />
+<Area {data} />
+<Bar {data} />
 
-<Scatter data={data} />
+<Scatter {data} />

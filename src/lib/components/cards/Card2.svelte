@@ -16,7 +16,7 @@
     />
   </a>
   <div class="mt-4">
-    <h3 class="title-font mb-1 text-xs tracking-widest ">
+    <h3 class="title-font mb-1 text-xs tracking-widest">
       {descricao}
     </h3>
     <h2 class="title-font text-lg font-medium text-primary">{nome}</h2>

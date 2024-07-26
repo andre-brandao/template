@@ -38,7 +38,7 @@
     left: 0;
     top: 0;
     height: 100%;
-    
+
     transition: width 0.4s;
   }
 

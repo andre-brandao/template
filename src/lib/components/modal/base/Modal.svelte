@@ -13,8 +13,10 @@
   <button
     type="button"
     on:click={() => modal.close()}
-    class="btn btn-circle btn-ghost btn-sm absolute right-1">✕</button
+    class="btn btn-circle btn-ghost btn-sm absolute right-1"
   >
+    ✕
+  </button>
 </header>
 
 <section>

@@ -1,12 +1,12 @@
-import type { AvailableLanguageTag } from "../../lib/paraglide/runtime"
-import type { ParaglideLocals } from "@inlang/paraglide-sveltekit"
+import type { AvailableLanguageTag } from '../../lib/paraglide/runtime'
+import type { ParaglideLocals } from '@inlang/paraglide-sveltekit'
 // See https://kit.svelte.dev/docs/types#app
 // for information about these interfaces
 declare global {
   namespace App {
     // interface Error {}
     interface Locals {
-    paraglide: ParaglideLocals<AvailableLanguageTag>,
+      paraglide: ParaglideLocals<AvailableLanguageTag>
 
       user: import('lucia').User | null
       session: import('lucia').Session | null
@@ -18,8 +18,6 @@ declare global {
 }
 
 export {}
-
-
 
 // SVELTE DND ACTION
 declare type Item = import('svelte-dnd-action').Item

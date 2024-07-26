@@ -16,16 +16,18 @@
 
     <span
       class="absolute left-0 top-0 rounded-br-lg bg-red-500 px-3 py-1.5 text-sm uppercase tracking-wider text-white"
-      >sale</span
     >
+      sale
+    </span>
   </a>
 
   <div>
     <a
       href="#"
       class="hover:gray-800 mb-1 text-gray-500 transition duration-100 lg:text-lg"
-      >{nome}</a
     >
+      {nome}
+    </a>
 
     <div class="flex items-end gap-2">
       <span class="font-bold text-gray-800 lg:text-lg">$15.00</span>

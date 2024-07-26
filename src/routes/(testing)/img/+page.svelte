@@ -31,7 +31,6 @@
     console.log(error)
 
     if (error) {
-    
       responseMessage = error
     } else {
       responseMessage = `${data}`

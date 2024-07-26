@@ -1,4 +1,3 @@
-
 /**
  * POSTs an image to the server /api/image
  * The server will save the image and return the image id
@@ -17,7 +16,7 @@ export async function uploadImage(image: File, name: string) {
   try {
     const response = await fetch('/api/image', {
       method: 'POST',
-      body: formData
+      body: formData,
     })
 
     if (response.ok) {

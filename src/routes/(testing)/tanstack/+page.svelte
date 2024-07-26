@@ -90,7 +90,6 @@
     }
   }
   function add(invalidate: Function) {
-
     modal.open(FormModal<RouterInputs['product']['insertProduct']>, {
       title: 'Add Product',
 

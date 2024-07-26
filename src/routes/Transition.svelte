@@ -20,11 +20,12 @@
   })
 </script>
 
- 
-{#key $navigating}
+<!-- TODO: fix duplicating page bug -->
+<!-- or $navigating -->
+{#key $page.url.pathname}
   <div
-    in:fly={{ delay: 200, duration: 200, easing: cubicIn, x: -300, y: 0 }}
-    out:fly={{ delay: 200, duration: 200, easing: cubicOut, x: 300, y: 0 }}
+    in:fly={{ delay: 250, duration: 200, easing: cubicIn, x: -300, y: 0 }}
+    out:fly={{ duration: 200, easing: cubicOut, x: 300, y: 0 }}
     class="h-full overflow-scroll overflow-x-auto"
   >
     <slot />

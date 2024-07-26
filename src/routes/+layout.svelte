@@ -34,7 +34,7 @@
   <NavBar>
     <ModalContainer />
     <!-- <Transition> -->
-      <slot/>
+    <slot />
     <!-- </Transition> -->
   </NavBar>
   <!-- </DrawerContainer> -->

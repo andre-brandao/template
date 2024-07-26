@@ -12,9 +12,9 @@
     products: T[]
   }[]
 
-//   onMount(() => {
-//     data = trpc($page).product
-//   })
+  //   onMount(() => {
+  //     data = trpc($page).product
+  //   })
 </script>
 
 <Modal title="Produtos">

@@ -1,11 +1,11 @@
 {
-    "$schema": "https://inlang.com/schema/inlang-message-format",
-    "hero_title": "Olá",
-    "title_sign_in": "Entrar",
-    "username": "Usuario",
-    "password": "Senha",
-    "dont_have_acc": "Ainda não tem uma conta?",
-    "create_an_acc": "Criar uma conta!",
-    "create_an_account": "Criar uma conta!",
-    "continu": "Continuar"
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "hero_title": "Olá",
+  "title_sign_in": "Entrar",
+  "username": "Usuario",
+  "password": "Senha",
+  "dont_have_acc": "Ainda não tem uma conta?",
+  "create_an_acc": "Criar uma conta!",
+  "create_an_account": "Criar uma conta!",
+  "continu": "Continuar"
 }

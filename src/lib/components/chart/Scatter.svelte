@@ -35,11 +35,8 @@
   >
     <Svg>
       <Axis placement="left" grid rule />
-      <Axis
-        placement="bottom"
-        rule
-        />
-        <!-- format={d => new Date(d).getDay().toString()} -->
+      <Axis placement="bottom" rule />
+      <!-- format={d => new Date(d).getDay().toString()} -->
       <Points class="fill-primary/10 stroke-primary" />
       <Highlight points lines />
     </Svg>

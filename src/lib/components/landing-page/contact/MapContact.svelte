@@ -1,6 +1,4 @@
 <script>
-
-
 </script>
 
 <section class="body-font relative">
@@ -44,8 +42,9 @@
       </div>
       <button
         class="btn btn-primary rounded border-0 px-6 py-2 text-lg focus:outline-none"
-        >Button</button
       >
+        Button
+      </button>
       <p class="mt-3 text-xs text-gray-500">
         Chicharrones blog helvetica normcore iceland tousled brook viral
         artisan.

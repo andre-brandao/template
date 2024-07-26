@@ -25,7 +25,6 @@
     value = new_option.value
     input = new_option.label
   }
-
 </script>
 
 <div class="dropdown">
@@ -34,12 +33,11 @@
     bind:value={input}
     class="input input-bordered w-full"
     type="text"
-  
   />
   <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
   <ul
     tabindex="0"
-    class="menu dropdown-content z-[999] rounded-box bg-base-100 p-2 shadow "
+    class="menu dropdown-content z-[999] rounded-box bg-base-100 p-2 shadow"
   >
     <ul class="menu">
       {#each options as item}
@@ -60,7 +58,13 @@
     {#if add}
       <div class="flex gap-2 rounded-box bg-base-300 p-1">
         <input type="text" class="input" bind:value={new_input} />
-        <button class="btn btn-primary" onclick={handleAdd} disabled={isLoading}>+</button>
+        <button
+          class="btn btn-primary"
+          onclick={handleAdd}
+          disabled={isLoading}
+        >
+          +
+        </button>
       </div>
     {/if}
   </ul>

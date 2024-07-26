@@ -172,7 +172,7 @@
       <table class="table table-zebra table-pin-cols">
         <thead>
           {#each table.getHeaderGroups() as headerGroup}
-            <tr >
+            <tr>
               {#each headerGroup.headers as header}
                 {@const isSortable = header.column.getCanSort()}
                 {@const sortDirection =

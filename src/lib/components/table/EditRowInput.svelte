@@ -7,8 +7,6 @@
   export let editT: EditableTypes
   export let value: any
 
-  
-
   let rInEdit = false
 
   let changedRow = <T>{}

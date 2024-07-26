@@ -39,15 +39,11 @@
         vertical
         let:url
       >
-      <Axis placement="left" grid rule />
-      <Axis placement="bottom" grid rule />
-      <!-- format={d => new Date(d).getDay()} -->
-      <Area
-        line={{ class: 'stroke-2 stroke-primary' }}
-        
-        fill={url}
-      />
-      <Highlight points lines />
+        <Axis placement="left" grid rule />
+        <Axis placement="bottom" grid rule />
+        <!-- format={d => new Date(d).getDay()} -->
+        <Area line={{ class: 'stroke-2 stroke-primary' }} fill={url} />
+        <Highlight points lines />
       </LinearGradient>
     </Svg>
     <Tooltip header={data => JSON.stringify(data)} let:data>

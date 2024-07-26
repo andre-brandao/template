@@ -38,7 +38,7 @@
       urlWithParameters,
       '',
       Object.keys(config)
-      // @ts-expect-error
+        // @ts-expect-error
         .map(key => `${key}=${config[key]}`)
         .join(','),
     )

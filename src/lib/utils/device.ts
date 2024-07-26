@@ -3,5 +3,5 @@
  * @returns {boolean}
  */
 export function isMobileOrTablet() {
-	return /(android|iphone|ipad|mobile)/i.test(navigator.userAgent);
+  return /(android|iphone|ipad|mobile)/i.test(navigator.userAgent)
 }

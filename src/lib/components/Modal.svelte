@@ -38,9 +38,9 @@
 <dialog bind:this={dialog} id="my_modal_2" class="modal">
   <div class="modal-box">
     <form method="dialog">
-      <button class="btn btn-circle btn-ghost btn-sm absolute right-2 top-2"
-        >✕</button
-      >
+      <button class="btn btn-circle btn-ghost btn-sm absolute right-2 top-2">
+        ✕
+      </button>
     </form>
     {#if children}
       {@render children()}

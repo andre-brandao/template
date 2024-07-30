@@ -6,6 +6,8 @@
   import { onNavigate } from '$app/navigation'
   import PreLoadingIndicator from './PreLoadingIndicator.svelte'
 
+  export let key
+
   onNavigate(navigation => {
     // @ts-expect-error
     if (!document.startViewTransition) return
@@ -22,11 +24,11 @@
 
 <!-- TODO: fix duplicating page bug -->
 <!-- or $navigating -->
-{#key $page.url.pathname}
+{#key key}
   <div
-    in:fly={{ delay: 250, duration: 200, easing: cubicIn, x: -300, y: 0 }}
-    out:fly={{ duration: 200, easing: cubicOut, x: 300, y: 0 }}
-    class="h-full overflow-scroll overflow-x-auto"
+    in:fly={{ delay: 300, duration: 300, easing: cubicOut, x: 0, y: 240 }}
+    out:fly={{ duration: 300, easing: cubicIn, x: 0, y: -240 }}
+    class="h-full overflow-scroll overflow-x-auto transition-all"
   >
     <slot />
   </div>

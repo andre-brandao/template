@@ -1,10 +1,11 @@
 <script>
   import * as m from '$msgs'
+  let image_url = 'https://via.placeholder.com/672x448'
 </script>
 
 <div
   class="hero min-h-screen"
-  style="background-image: url(https://img.daisyui.com/images/stock/photo-1507358522600-9f71e620c44e.jpg);"
+  style="background-image: url({image_url});"
 >
   <div class="hero-overlay bg-opacity-60"></div>
   <div class="hero-content text-center text-neutral-content">

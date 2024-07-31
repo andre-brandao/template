@@ -52,7 +52,7 @@ export const product = router({
     )
     .mutation(async ({ input }) => {
       const { id, prod } = input
-      return await productController.updateProduct(id, prod)
+      return await productController.updateProduct(id, prod).returning()
     }),
   deleteProduct: publicProcedure
     .input(z.number())

@@ -1,4 +1,4 @@
-<script lang="ts" generics="T extends {id:any}">
+<script lang="ts" generics="T extends {id:any}, K extends{id:any} ">
   import {
     dndzone,
     type DndEvent,
@@ -12,17 +12,19 @@
   const FILP_DURATION = 150
 
   interface DnDColumnProps {
-    label: string
+    category: K
     items: T[]
     card: Snippet<[T]>
+    collum: Snippet<[K]>
     onDrop: (items: T[]) => void
     disabled?: boolean
   }
 
-  let { label, items, card, onDrop, disabled }: DnDColumnProps = $props()
+  let { category, items, card, collum, onDrop, disabled }: DnDColumnProps =
+    $props()
 
   function handleDndConsiderCards(e: CustomEvent<DndEvent<T>>) {
-    console.warn('got consider', label)
+    console.warn('got consider', category)
     items = e.detail.items
   }
   function handleDndFinalizeCards(e: CustomEvent<DndEvent<T>>) {
@@ -32,7 +34,11 @@
 
 <div class="wrapper">
   <div class="column-title divider text-2xl">
-    {label}
+    {#if collum}
+      {@render collum(category)}
+    {:else}
+      <h1>{JSON.stringify(category)}</h1>
+    {/if}
   </div>
   <div
     class="column-content"

@@ -28,7 +28,8 @@
       icon: icons.chart.bar(),
     },
     {
-      name:"Admin",
+      name: 'Admin',
+      href: '/admin',
       subItems: [
         {
           name: 'Products',
@@ -44,12 +45,13 @@
           name: 'Orders',
           href: '/admin/orders',
           icon: icons.cart(),
-        }
-      ]
+        },
+      ],
     },
     {
       name: 'Testing',
-      // icon: icons.warning(),
+      icon: icons.warning(),
+      href: '/testing',
       subItems: [
         {
           name: 'Datatable',
@@ -75,6 +77,7 @@
         },
         {
           name: 'Inner Parent',
+          href: '/inner-parent',
           subItems: [
             {
               name: 'Item 1',
@@ -106,9 +109,9 @@
     {#if navItem.subItems}
       <details>
         <summary>
-          {#if typeof navItem.icon === 'string'}
+          <!-- {#if typeof navItem.icon === 'string'}
             {@html icon}
-          {/if}
+          {/if} -->
           {name}
         </summary>
         <ul>
@@ -118,9 +121,9 @@
             {:else}
               <li>
                 <a href={subItem.href} class:active={isActive(subItem.href)}>
-                  {#if typeof navItem.icon === 'string'}
+                  <!-- {#if typeof navItem.icon === 'string'}
                     {@html icon}
-                  {/if}
+                  {/if} -->
 
                   {subItem.name}
                 </a>
@@ -131,9 +134,9 @@
       </details>
     {:else}
       <a href={navItem.href} class:active={isActive(navItem.href)}>
-        {#if typeof navItem.icon === 'string'}
+        <!-- {#if typeof navItem.icon === 'string'}
           {@html icon}
-        {/if}
+        {/if} -->
         {name}
       </a>
     {/if}

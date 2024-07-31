@@ -19,6 +19,7 @@
 
   import ShareButton from '$components/share/index.svelte'
   import RotatingGlobe from '$lib/components/landing-page/globe/RotatingGlobe.svelte'
+  import HeroGlobe from '$lib/components/landing-page/hero/HeroGlobe.svelte'
 </script>
 
 <SEO
@@ -36,14 +37,14 @@
 
 <!-- <Modal onClose={console.log} onOpen={console.log}>Teste Modal</Modal> -->
 <main class="flex flex-col gap-5 overflow-auto">
-  <Hero />
+  <HeroGlobe />
 
   <!-- <div class="h-60 w-60">
     <RotatingGlobe></RotatingGlobe>
   </div> -->
   <!-- <ShareButton title="Home" url="https://example.com" /> -->
 
-  <MapContact />
+  <!-- <MapContact /> -->
 
   <Features3></Features3>
 

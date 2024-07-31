@@ -1,4 +1,4 @@
-<script lang="ts" generics="T extends {id:any},K">
+<script lang="ts" generics="T extends {id:any},K extends {id:any}">
   import { flip } from 'svelte/animate'
   import {
     dndzone,
@@ -14,8 +14,8 @@
   const FLIP_DURATION = 300
 
   interface DnDColum {
-    id: K
-    label: string
+    id: any,
+    category: K
     items: T[]
   }
 
@@ -24,6 +24,7 @@
     onFinalUpdate: (columns: DnDColum[]) => void
     onItemFinalUpdate?: (columnIdx: number, newItems: T[]) => void
     card: Snippet<[T]>
+    collum: Snippet<[K]>
     disabled?: {
       column?: boolean
       card?: boolean
@@ -35,6 +36,7 @@
     onFinalUpdate,
     onItemFinalUpdate = (c, i) => {},
     card,
+    collum,
     disabled,
   }: DnDContainerProps = $props()
   // will be called any time a card or a column gets dropped to update the parent data
@@ -63,15 +65,15 @@
   onfinalize={handleDndFinalizeColumns}
 >
   {#each columns as col, idx (col.id)}
-    {@const { id, label, items } = col}
     <div
       class="column rounded-lg bg-base-300 bg-opacity-40"
       animate:flip={{ duration: FLIP_DURATION }}
     >
       <Column
         disabled={disabled?.card}
-        {label}
-        {items}
+        category={col.category}
+        {collum}
+        items={col.items}
         {card}
         onDrop={newItems => handleItemFinalize(idx, newItems)}
       />

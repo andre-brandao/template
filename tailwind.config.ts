@@ -37,8 +37,15 @@ export default {
         // 'text-gradient': 'text-gradient 1.5s linear infinite',
         'background-shine': 'background-shine 2s linear infinite',
         'pulse-slow': 'pulse 6s infinite cubic-bezier(0.4, 0, 0.6, 1)',
+        grid: "grid 15s linear infinite",
+
       },
       keyframes: {
+        grid: {
+          "0%": { transform: "translateY(-50%)" },
+          "100%": { transform: "translateY(0)" },
+        },
+
         spin: {
           '0%': { transform: 'rotate(0deg)' },
           '100%': { transform: 'rotate(360deg)' },

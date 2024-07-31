@@ -75,7 +75,10 @@
       try {
         const resp = await trpc($page).product.updateProduct.mutate({
           id: Number(key),
-          prod: changes[key],
+          prod: {
+            name: changes[key].name,
+            description: changes[key].description,
+          },
         })
 
         if (resp) {
@@ -142,7 +145,7 @@
         console.log(toSave)
         toast(JSON.stringify(toSave))
         try {
-          const resp = await trpc($page).product.insertProduct.query(toSave)
+          const resp = await trpc($page).product.insertProduct.mutate(toSave)
 
           if (resp) {
             toast.success('Product created')

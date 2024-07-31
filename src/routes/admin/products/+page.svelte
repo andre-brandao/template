@@ -121,7 +121,7 @@
   }}
 >
   {#snippet collum(cat)}
-    <div class="flex items-center justify-center justify-between gap-4">
+    <div class="flex items-center  justify-between gap-4">
       <p>
         {cat.name}
       </p>

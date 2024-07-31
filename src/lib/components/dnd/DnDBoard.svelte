@@ -1,4 +1,4 @@
-<script lang="ts" generics="T extends {id:any}">
+<script lang="ts" generics="T extends {id:any},K">
   import { flip } from 'svelte/animate'
   import {
     dndzone,
@@ -14,7 +14,7 @@
   const FLIP_DURATION = 300
 
   interface DnDColum {
-    id: string
+    id: K
     label: string
     items: T[]
   }

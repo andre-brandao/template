@@ -33,9 +33,9 @@
   <!-- <DrawerContainer> -->
   <NavBar>
     <ModalContainer />
-    <Transition key={data.transition_key}>
+    <!-- <Transition key={data.transition_key}> -->
       <slot />
-    </Transition>
+    <!-- </Transition> -->
   </NavBar>
   <!-- </DrawerContainer> -->
 </ParaglideJS>

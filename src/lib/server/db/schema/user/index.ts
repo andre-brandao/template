@@ -7,7 +7,7 @@ import {
 } from 'drizzle-orm/sqlite-core'
 import { sql } from 'drizzle-orm'
 
-const userTable = sqliteTable('user', {
+export const userTable = sqliteTable('user', {
   id: text('id').notNull().primaryKey(),
   // .$defaultFn(() => generateId(15)),
 
@@ -22,8 +22,8 @@ const userTable = sqliteTable('user', {
     .default({ isAdmin: false }),
 })
 
-type SelectUser = typeof userTable.$inferSelect
-type InsertUser = typeof userTable.$inferInsert
+export type SelectUser = typeof userTable.$inferSelect
+export type InsertUser = typeof userTable.$inferInsert
 
 // import { generateId } from 'lucia'
 export interface DatabaseUser {
@@ -35,8 +35,6 @@ export interface DatabaseUser {
 export type UserPermissions = {
   isAdmin: boolean
 }
-
-export { userTable, type SelectUser, type InsertUser }
 
 export const sessionTable = sqliteTable('session', {
   id: text('id').notNull().primaryKey(),

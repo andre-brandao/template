@@ -4,21 +4,16 @@ import { z } from 'zod'
 
 import { product as productController } from '$db/controller'
 
-import { tableHelper } from '$db/utils'
-import { paramsSchema } from '$lib/components/table'
 import {
   insertProductCategorySchema,
-  brandInsertSchema,
-  pricesInsertSchema,
-  categoryInsertSchema,
-  productEntryInsertSchema,
-  productPriceInsertSchema,
-} from '$db/schema/product'
+  insertProductItemSchema,
+  insertProductSchema,
+} from '$db/schema'
+
+import { tableHelper } from '$db/utils'
+import { paramsSchema } from '$lib/components/table'
 
 export const product = router({
-  getProduct: publicProcedure.input(z.number()).query(async ({ input }) => {
-    return await productController.getProductFromID(input)
-  }),
   paginatedProducts: publicProcedure
     .input(paramsSchema)
     .query(async ({ input }) => {
@@ -29,42 +24,21 @@ export const product = router({
         input,
       )
     }),
-  insertProduct: publicProcedure
-    .input(insertProductCategorySchema)
+  paginatedProductItems: publicProcedure
+    .input(paramsSchema)
     .query(async ({ input }) => {
-      return await productController.insertProduct(input)
+      return await tableHelper(
+        productController.getProductItems().$dynamic(),
+        productController.tables.productItemTable,
+        'name',
+        input,
+      )
     }),
 
-  getBrands: publicProcedure.query(async () => {
-    return await productController.getBrands()
-  }),
-  insertBrand: publicProcedure
-    .input(brandInsertSchema)
-    .query(async ({ input }) => {
-      return await productController.insertBrand(input)
-    }),
-  insertCategory: publicProcedure
-    .input(categoryInsertSchema)
-    .query(async ({ input }) => {
-      return await productController.insertCategory(input)
-    }),
-  getCategories: publicProcedure.query(async () => {
-    return await productController.getCategories()
-  }),
-  insertPrices: publicProcedure
-    .input(pricesInsertSchema)
-    .query(async ({ input }) => {
-      return await productController.insertPrices(input)
-    }),
-  insertProductPrice: publicProcedure
-    .input(productPriceInsertSchema)
-    .query(async ({ input }) => {
-      return await productController.insertProductPrice(input)
-    }),
-  insertProductEntry: publicProcedure
-    .input(productEntryInsertSchema)
-    .query(async ({ input }) => {
-      return await productController.insertProductEntry(input)
+  insertProduct: publicProcedure
+    .input(insertProductSchema)
+    .mutation(async ({ input }) => {
+      return await productController.insertProduct(input)
     }),
   updateProduct: publicProcedure
     .input(
@@ -76,16 +50,65 @@ export const product = router({
         }),
       }),
     )
-    .query(async ({ input }) => {
+    .mutation(async ({ input }) => {
       const { id, prod } = input
       return await productController.updateProduct(id, prod)
     }),
-  updateProductPrice: publicProcedure
-    .input(z.object({ id: z.number(), price: z.number() }))
-    .query(async ({ input }) => {
-      const { id, price } = input
-      return await productController.updateProductPrice(id, {
-        price: price,
-      })
+  deleteProduct: publicProcedure
+    .input(z.number())
+    .mutation(async ({ input }) => {
+      return await productController.deleteProduct(input)
+    }),
+
+  insertProductItem: publicProcedure
+    .input(insertProductItemSchema)
+    .mutation(async ({ input }) => {
+      return await productController.insertProductItem(input)
+    }),
+  updateProductItem: publicProcedure
+    .input(
+      z.object({
+        id: z.number(),
+        prod: z.object({
+          name: z.string(),
+          sku: z.string(),
+          quantity: z.number(),
+          retail_price: z.number(),
+          wholesale_price: z.number(),
+        }),
+      }),
+    )
+    .mutation(async ({ input }) => {
+      const { id, prod } = input
+      return await productController.updateProductItem(id, prod)
+    }),
+  deleteProductItem: publicProcedure
+    .input(z.number())
+    .mutation(async ({ input }) => {
+      return await productController.deleteProductItem(input)
+    }),
+
+  insertProductCategory: publicProcedure
+    .input(insertProductCategorySchema)
+    .mutation(async ({ input }) => {
+      return await productController.insertProductCategory(input)
+    }),
+  updateProductCategory: publicProcedure
+    .input(
+      z.object({
+        id: z.number(),
+        prod: z.object({
+          name: z.string(),
+        }),
+      }),
+    )
+    .mutation(async ({ input }) => {
+      const { id, prod } = input
+      return await productController.updateProductCategory(id, prod)
+    }),
+  deleteProductCategory: publicProcedure
+    .input(z.number())
+    .mutation(async ({ input }) => {
+      return await productController.deleteProductCategory(input)
     }),
 })

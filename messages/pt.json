@@ -1,6 +1,7 @@
 {
   "$schema": "https://inlang.com/schema/inlang-message-format",
   "hero_title": "Olá",
+  "hero_description": "Loram Jordam hero",
   "title_sign_in": "Entrar",
   "username": "Usuario",
   "password": "Senha",

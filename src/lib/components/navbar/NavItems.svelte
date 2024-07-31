@@ -28,6 +28,26 @@
       icon: icons.chart.bar(),
     },
     {
+      name:"Admin",
+      subItems: [
+        {
+          name: 'Products',
+          href: '/admin/products',
+          // icon: icons.cube(),
+        },
+        {
+          name: 'Users',
+          href: '/admin/users',
+          // icon: icons.users(),
+        },
+        {
+          name: 'Orders',
+          href: '/admin/orders',
+          icon: icons.cart(),
+        }
+      ]
+    },
+    {
       name: 'Testing',
       // icon: icons.warning(),
       subItems: [

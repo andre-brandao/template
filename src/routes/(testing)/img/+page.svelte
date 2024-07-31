@@ -19,7 +19,7 @@
     }
   }
 
-  const handleSubmit = async event => {
+  const handleSubmit = async (event:Event) => {
     event.preventDefault()
     if (!image) {
       return

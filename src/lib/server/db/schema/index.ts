@@ -9,3 +9,5 @@ export * from './product'
 
 // BUG-REPORT
 export * from './bug-report'
+
+export * from './stock'

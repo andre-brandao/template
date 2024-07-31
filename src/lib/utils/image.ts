@@ -24,6 +24,10 @@ export async function uploadImage(image: File, name: string) {
       return { data: Number(data.img_id) }
     } else {
       console.error(response.statusText)
+
+      if (response.statusText === 'Unauthorized') {
+        return { error: 'Unauthorized' }
+      }
       return { error: 'Error uploading image' }
     }
   } catch (error) {
@@ -33,5 +37,8 @@ export async function uploadImage(image: File, name: string) {
 }
 
 export function getImagePath(id?: number | string | null) {
+  if (!id) {
+    return 'https://placehold.co/400x400?text=Upload+Image'
+  }
   return `/api/image/${id}`
 }

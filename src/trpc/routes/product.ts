@@ -45,8 +45,9 @@ export const product = router({
       z.object({
         id: z.number(),
         prod: z.object({
-          name: z.string(),
-          description: z.string(),
+          name: z.string().optional(),
+          description: z.string().optional(),
+          image: z.number().optional(),
         }),
       }),
     )
@@ -70,11 +71,12 @@ export const product = router({
       z.object({
         id: z.number(),
         prod: z.object({
-          name: z.string(),
-          sku: z.string(),
-          quantity: z.number(),
-          retail_price: z.number(),
-          wholesale_price: z.number(),
+          name: z.string().optional(),
+          sku: z.string().optional(),
+          quantity: z.number().optional(),
+          retail_price: z.number().optional(),
+          wholesale_price: z.number().optional(),
+          image: z.number().optional(),
         }),
       }),
     )

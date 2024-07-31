@@ -31,7 +31,13 @@ export const product = {
     return db.delete(productTable).where(eq(productTable.id, id))
   },
   getProductByID: (id: SelectProduct['id']) => {
-    return db.select().from(productTable).where(eq(productTable.id, id))
+    return db.query.productTable.findFirst({
+      where: eq(productTable.id, id),
+      with: {
+        items: true,
+        category: true,
+      },
+    })
   },
   getProducts: () => {
     return db.select().from(productTable)
@@ -39,7 +45,7 @@ export const product = {
 
   // Product Item
   insertProductItem: (data: InsertProductItem) => {
-    return db.insert(productItemTable).values(data)
+    return db.insert(productItemTable).values(data).returning()
   },
   updateProductItem: (
     id: SelectProductItem['id'],

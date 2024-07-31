@@ -73,7 +73,7 @@
   async function save(changes: { [key: string]: Products }) {
     for (const key in changes) {
       try {
-        const resp = await trpc($page).product.updateProduct.query({
+        const resp = await trpc($page).product.updateProduct.mutate({
           id: Number(key),
           prod: changes[key],
         })

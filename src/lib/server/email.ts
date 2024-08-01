@@ -50,5 +50,12 @@ export const emailTemplate = {
       text: `Your verification code is: ${code}`,
       html: `<p>Your verification code is: ${code}</p>`,
     }
-  }
+  },
+  resetPassword: function (reset_link: string): EmailOptions {
+    return {
+      subject: `Password reset for ${website.siteShortTitle}`,
+      text: `Click the link to reset your password: ${reset_link}`,
+      html: `<p>Click the link to reset your password: <a href="${reset_link}">${reset_link}</a></p>`,
+    }
+  },
 }

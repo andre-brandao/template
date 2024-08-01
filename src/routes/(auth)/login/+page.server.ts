@@ -16,19 +16,31 @@ export const load: PageServerLoad = async event => {
 export const actions: Actions = {
   default: async event => {
     const formData = await event.request.formData()
-    const username = formData.get('username')
+    // const username = formData.get('username')
     const password = formData.get('password')
+    const email = formData.get('email')
 
+    // if (
+    //   typeof username !== 'string' ||
+    //   username.length < 3 ||
+    //   username.length > 31 ||
+    //   !/^[a-z0-9_-]+$/.test(username)
+    // ) {
+    //   return fail(400, {
+    //     message: 'Invalid username',
+    //   })
+    // }
     if (
-      typeof username !== 'string' ||
-      username.length < 3 ||
-      username.length > 31 ||
-      !/^[a-z0-9_-]+$/.test(username)
+      typeof email !== 'string' ||
+      email.length < 3 ||
+      email.length > 255 ||
+      !/.+@.+/.test(email)
     ) {
       return fail(400, {
-        message: 'Invalid username',
+        message: 'Invalid email',
       })
     }
+
     if (
       typeof password !== 'string' ||
       password.length < 6 ||
@@ -39,7 +51,8 @@ export const actions: Actions = {
       })
     }
 
-    const [existingUser] = await user.usernameExists(username)
+    // const [existingUser] = await user.usernameExists(username)
+    const [existingUser] = await user.emailExists(email)
 
     if (!existingUser) {
       return fail(400, {
@@ -74,6 +87,10 @@ export const actions: Actions = {
       path: '.',
       ...sessionCookie.attributes,
     })
+
+    if (!existingUser.emailVerified) {
+      return redirect(302, '/verify-email')
+    }
 
     return redirect(302, '/')
   },

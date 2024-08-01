@@ -7,15 +7,11 @@
 
   export let data: PageData
 
-  let user_form = {
-    username: $user?.username ?? '',
-    profile_pic: null,
-  }
+  const sessions = data.user_sessions
 </script>
 
-<form
+<div
   class="bg-card text-card-foreground mx-auto w-full max-w-md rounded-lg border shadow-sm"
-
 >
   <div class="flex flex-col space-y-1.5 p-6">
     <h3
@@ -35,35 +31,30 @@
           src="https://generated.vusercontent.net/placeholder-user.jpg"
         />
       </span>
-      <div class="text-muted-foreground text-sm">
-        Update your profile picture
-      </div>
+      <p>
+        {$user?.username}
+      </p>
+      <p>
+        {$user?.email}
+      </p>
+      <p>
+        {$user?.email_verified ? 'verified' : 'not verified'}
+      </p>
     </div>
 
-    <div class="space-y-2">
-      <label for="profile-pic">Picture</label>
+    <div class="flex flex-col gap-3">
+      <h1>Sessions</h1>
 
-      <!-- <FileUploader
-        id="profile-pic"
-        onFileChange={(file, previewUrl, resizedBlob) => {
-          console.log(resizedBlob)
-          user_form.profile_pic = resizedBlob
-        }}
-      /> -->
-    </div>
-    <div class="space-y-2">
-      <label
-        class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-        for="username"
-      >
-        Username
-      </label>
-      <input class="input input-bordered flex h-10 w-full" id="username" />
-    </div>
-
-    <!-- button -->
-    <div class="flex justify-center">
-      <button type="submit" class="btn btn-primary w-full">Save</button>
+      {#each sessions as s}
+        <div class="rounded bg-base-300 p-1">
+          <p>
+            id: {s.id}
+          </p>
+          <p>
+            expiration: {new Date(s.expiresAt)}
+          </p>
+        </div>
+      {/each}
     </div>
   </div>
-</form>
+</div>

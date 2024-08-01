@@ -14,6 +14,10 @@ export const userTable = sqliteTable('user', {
   created_at: text('created_at').default(sql`(CURRENT_TIMESTAMP)`),
 
   username: text('username').notNull().unique(),
+  email: text('email').notNull().unique(),
+  emailVerified: integer('email_verified', { mode: 'boolean' })
+    .notNull()
+    .default(false),
   password_hash: text('password_hash').notNull(),
 
   permissions: text('permissions', { mode: 'json' })
@@ -29,6 +33,8 @@ export type InsertUser = typeof userTable.$inferInsert
 export interface DatabaseUser {
   id: string
   username: string
+  email: string
+  emailVerified: boolean
   permissions: UserPermissions
 }
 
@@ -42,4 +48,14 @@ export const sessionTable = sqliteTable('session', {
     .notNull()
     .references(() => userTable.id),
   expiresAt: integer('expires_at').notNull(),
+})
+
+export const userVerificationCodeTable = sqliteTable('user_verification_code', {
+  id: integer('id').notNull().primaryKey({ autoIncrement: true }),
+  code: text('code').notNull(),
+  userId: text('user_id')
+    .notNull()
+    .references(() => userTable.id),
+  email: text('email').notNull(),
+  expiresAt: integer('expires_at', { mode: 'timestamp' }).notNull(),
 })

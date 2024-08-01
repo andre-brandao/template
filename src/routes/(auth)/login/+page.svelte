@@ -11,7 +11,7 @@
   <div class="w-full max-w-sm rounded-lg p-8 shadow-lg">
     <h1 class="text-center text-2xl font-semibold">{m.title_sign_in()}</h1>
     <form method="post" use:enhance class="mt-6 flex flex-col gap-4">
-      <div>
+      <!-- <div>
         <label for="username" class="block text-sm font-medium">
           {m.username()}
         </label>
@@ -19,6 +19,15 @@
           class="input input-bordered mt-1 w-full"
           name="username"
           id="username"
+        />
+      </div> -->
+      <div>
+        <label for="email" class="block text-sm font-medium">Email</label>
+        <input
+          class="input input-bordered mt-1 w-full"
+          name="email"
+          id="email"
+          type="email"
         />
       </div>
       <div>

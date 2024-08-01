@@ -23,6 +23,17 @@
         />
       </div>
       <div>
+        <label for="email" class="block text-sm font-medium">
+         Email
+        </label>
+        <input
+          class="input input-bordered mt-1 w-full"
+          name="email"
+          id="email"
+          type="email"
+        />
+      </div>
+      <div>
         <label for="password" class="block text-sm font-medium">
           {m.password()}
         </label>

@@ -5,6 +5,8 @@ import { hash } from '@node-rs/argon2'
 import { LibsqlError } from '@libsql/client'
 
 import type { Actions, PageServerLoad } from './$types'
+import { emailTemplate, sendMail } from '$lib/server/email'
+
 import { user } from '$db/controller'
 
 export const load: PageServerLoad = async event => {
@@ -19,6 +21,7 @@ export const actions: Actions = {
     const formData = await event.request.formData()
     const username = formData.get('username')
     const password = formData.get('password')
+    const email = formData.get('email')
     if (
       typeof username !== 'string' ||
       username.length < 3 ||
@@ -38,6 +41,16 @@ export const actions: Actions = {
         message: 'Invalid password',
       })
     }
+    if (
+      typeof email !== 'string' ||
+      email.length < 3 ||
+      email.length > 255 ||
+      !email.includes('@')
+    ) {
+      return fail(400, {
+        message: 'Invalid email',
+      })
+    }
 
     const passwordHash = await hash(password, {
       // recommended minimum parameters
@@ -52,9 +65,17 @@ export const actions: Actions = {
       user.insertUser({
         id: userId,
         username,
+        email,
+        emailVerified: false,
         password_hash: passwordHash,
         permissions: user.DEFAULT_PERMISSIONS,
       })
+
+      const verificationCode = await user.generateEmailVerificationCode(
+        userId,
+        email,
+      )
+      await sendMail(email, emailTemplate.verificationCode(verificationCode))
 
       const session = await lucia.createSession(userId, {})
       const sessionCookie = lucia.createSessionCookie(session.id)
@@ -73,6 +94,6 @@ export const actions: Actions = {
         message: 'An unknown error occurred',
       })
     }
-    return redirect(302, '/')
+    return redirect(302, '/verify-email')
   },
 }

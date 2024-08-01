@@ -50,5 +50,13 @@
         {m.create_an_acc()}
       </a>
     </p>
+
+    {#if form?.message}
+      <p class="mt-2 text-center text-sm">
+        Forgot your password?
+
+        <a href="/reset-password" class="link">Reset it here</a>
+      </p>
+    {/if}
   </div>
 </main>

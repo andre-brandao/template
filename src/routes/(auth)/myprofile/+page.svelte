@@ -11,7 +11,7 @@
 </script>
 
 <div
-  class="bg-card text-card-foreground mx-auto w-full max-w-md rounded-lg border shadow-sm"
+  class="bg-base-200  mx-auto w-full max-w-md rounded-lg border border-primary shadow-sm"
 >
   <div class="flex flex-col space-y-1.5 p-6">
     <h3
@@ -43,7 +43,7 @@
     </div>
 
     <div class="flex flex-col gap-3">
-      <h1>Sessions</h1>
+      <h1>Sessions:</h1>
 
       {#each sessions as s}
         <div class="rounded bg-base-300 p-1">

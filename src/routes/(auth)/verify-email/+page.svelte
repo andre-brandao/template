@@ -89,7 +89,7 @@
             type="text"
           /> -->
           <div class="flex items-center justify-center">
-            <OTP bind:value={code} numOfInputs={8} inputClass="" />
+            <OTP bind:value={code} numOfInputs={8} inputClass="" numberOnly />
           </div>
 
           <button

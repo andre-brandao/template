@@ -59,3 +59,11 @@ export const userVerificationCodeTable = sqliteTable('user_verification_code', {
   email: text('email').notNull(),
   expiresAt: integer('expires_at', { mode: 'timestamp' }).notNull(),
 })
+
+export const passwordResetCodeTable = sqliteTable('password_reset_code', {
+  token_hash: text('token_hash').notNull(),
+  userId: text('user_id')
+    .notNull()
+    .references(() => userTable.id),
+  expiresAt: integer('expires_at', { mode: 'timestamp' }).notNull(),
+})

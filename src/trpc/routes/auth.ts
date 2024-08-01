@@ -13,132 +13,6 @@ import { redirect } from '@sveltejs/kit'
 import { emailTemplate, sendMail } from '$lib/server/email'
 
 export const auth = router({
-  // login: publicProcedure
-  //   .input(
-  //     z.object({
-  //       username: z
-  //         .string()
-  //         .min(3)
-  //         .max(31)
-  //         .regex(/^[a-z0-9_-]+$/),
-  //       password: z.string().min(6).max(255),
-  //     }),
-  //   )
-  //   .query(async ({ ctx, input }) => {
-  //     const { cookies } = ctx
-  //     const { username, password } = input
-
-  //     const [existingUser] = await user.usernameExists(username)
-
-  //     if (!existingUser) {
-  //       return {
-  //         error: 'Incorrect username',
-  //       }
-  //     }
-
-  //     const validPassword = await verify(existingUser.password_hash, password, {
-  //       memoryCost: 19456,
-  //       timeCost: 2,
-  //       outputLen: 32,
-  //       parallelism: 1,
-  //     })
-  //     if (!validPassword) {
-  //       return {
-  //         error: 'Incorrect  password',
-  //       }
-  //     }
-
-  //     const session = await lucia.createSession(existingUser.id, {})
-  //     const sessionCookie = lucia.createSessionCookie(session.id)
-  //     cookies.set(sessionCookie.name, sessionCookie.value, {
-  //       path: '.',
-  //       ...sessionCookie.attributes,
-  //     })
-
-  //     redirect(302, '/')
-  //   }),
-
-  // signup: publicProcedure
-  //   .input(
-  //     z.object({
-  //       username: z
-  //         .string()
-  //         .min(3)
-  //         .max(31)
-  //         .regex(/^[a-z0-9_-]+$/),
-  //       email: z.string().email(),
-  //       password: z.string().min(6).max(255),
-  //     }),
-  //   )
-  //   .query(async ({ ctx, input }) => {
-  //     const { cookies } = ctx
-  //     const { username, password, email } = input
-
-  //     const [existingUser] = await user.usernameExists(username)
-
-  //     if (!existingUser) {
-  //       return {
-  //         error: 'Incorrect username',
-  //       }
-  //     }
-
-  //     const validPassword = await verify(existingUser.password_hash, password, {
-  //       memoryCost: 19456,
-  //       timeCost: 2,
-  //       outputLen: 32,
-  //       parallelism: 1,
-  //     })
-  //     if (!validPassword) {
-  //       return {
-  //         error: 'Incorrect  password',
-  //       }
-  //     }
-
-  //     const passwordHash = await hash(password, {
-  //       // recommended minimum parameters
-  //       memoryCost: 19456,
-  //       timeCost: 2,
-  //       outputLen: 32,
-  //       parallelism: 1,
-  //     })
-  //     const userId = generateId(15)
-
-  //     try {
-  //       user.insertUser({
-  //         id: userId,
-  //         username,
-  //         email,
-  //         emailVerified: false,
-  //         password_hash: passwordHash,
-  //       })
-
-  //       const verificationCode = await user.generateEmailVerificationCode(
-  //         userId,
-  //         email,
-  //       )
-  //       await sendMail(email, emailTemplate.verificationCode(verificationCode))
-
-  //       const session = await lucia.createSession(userId, {})
-  //       const sessionCookie = lucia.createSessionCookie(session.id)
-  //       cookies.set(sessionCookie.name, sessionCookie.value, {
-  //         path: '.',
-  //         ...sessionCookie.attributes,
-  //       })
-  //     } catch (e) {
-  //       if (e instanceof LibsqlError && e.code === 'SQLITE_CONSTRAINT_UNIQUE') {
-  //         return {
-  //           error: {
-  //             message: 'Username already used',
-  //           },
-  //         }
-  //       }
-  //       console.error(e)
-  //       return {
-  //         error: 'An error occurred',
-  //       }
-  //     }
-  //   }),
-
   logOut: publicProcedure.query(async ({ ctx }) => {
     const { cookies } = ctx
     const { session } = ctx.locals
@@ -234,6 +108,35 @@ export const auth = router({
           message: 'Email verified',
           success: true,
         },
+        error: null,
+      }
+    }),
+  resetPassword: publicProcedure
+    .input(z.object({ email: z.string().email() }))
+    .query(async ({ input, ctx }) => {
+      const { email } = input
+      const { url } = ctx
+
+      // const user = await db.table('user').where('email', '=', email).get()
+      const [{ id: userID }] = await user.emailExists(email)
+      if (!userID) {
+        // If you want to avoid disclosing valid emails,
+        // this can be a normal 200 response.
+        return {
+          error: 'Invalid email',
+          data: null,
+        }
+      }
+
+      const verificationToken = await user.createPasswordResetToken(userID)
+      // const verificationLink =
+      //   'http://localhost:3000/reset-password/' + verificationToken
+      const verificationLink = `${url.origin}/reset-password/${verificationToken}`
+
+      // await sendPasswordResetToken(email, verificationLink)
+      await sendMail(email, emailTemplate.resetPassword(verificationLink))
+      return {
+        data: 'Password reset email sent, Check your email',
         error: null,
       }
     }),

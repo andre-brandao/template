@@ -4,7 +4,6 @@
 
   import { trpc } from '$trpc/client'
   import { page } from '$app/stores'
-  import { tokenizeCard } from '$lib/utils/pagarme'
   import { toast } from 'svelte-sonner'
 
   let form = {
@@ -48,82 +47,82 @@
     duration: 500,
   })
 
-  async function handleCheckout() {
-    const cardToken = await tokenizeCard({
-      number: '4000000000000010',
-      holder_name: 'Tony Stark',
-      exp_month: 2,
-      cvv: '123',
-      exp_year: 2030,
-    })
+  // async function handleCheckout() {
+  //   const cardToken = await tokenizeCard({
+  //     number: '4000000000000010',
+  //     holder_name: 'Tony Stark',
+  //     exp_month: 2,
+  //     cvv: '123',
+  //     exp_year: 2030,
+  //   })
 
-    console.log(cardToken)
+  //   console.log(cardToken)
 
-    if (cardToken.error) {
-      toast.error(JSON.stringify(cardToken.error))
-      return
-    }
+  //   if (cardToken.error) {
+  //     toast.error(JSON.stringify(cardToken.error))
+  //     return
+  //   }
 
-    const address = {
-      line_1: '7221, Avenida Dra Ruth Cardoso, Pinheiro',
-      line_2: 'Prédio',
-      zip_code: '05425070',
-      city: 'São Paulo',
-      state: 'SP',
-      country: 'BR',
-    }
+  //   const address = {
+  //     line_1: '7221, Avenida Dra Ruth Cardoso, Pinheiro',
+  //     line_2: 'Prédio',
+  //     zip_code: '05425070',
+  //     city: 'São Paulo',
+  //     state: 'SP',
+  //     country: 'BR',
+  //   }
 
-    const resp = await trpc($page).pagarme.cardToken.mutate({
-      customer: {
-        name: 'Tony Stark',
-        type: 'individual',
-        email: 'avengerstark@ligadajustica.com.br',
-        document: '03154435026',
-        address,
-        phones: {
-          home_phone: {
-            country_code: '55',
-            area_code: '11',
-            number: '000000000',
-          },
-          mobile_phone: {
-            country_code: '55',
-            area_code: '11',
-            number: '000000000',
-          },
-        },
-      },
-      items: [
-        {
-          amount: 2990,
+  //   const resp = await trpc($page).pagarme.cardToken.mutate({
+  //     customer: {
+  //       name: 'Tony Stark',
+  //       type: 'individual',
+  //       email: 'avengerstark@ligadajustica.com.br',
+  //       document: '03154435026',
+  //       address,
+  //       phones: {
+  //         home_phone: {
+  //           country_code: '55',
+  //           area_code: '11',
+  //           number: '000000000',
+  //         },
+  //         mobile_phone: {
+  //           country_code: '55',
+  //           area_code: '11',
+  //           number: '000000000',
+  //         },
+  //       },
+  //     },
+  //     items: [
+  //       {
+  //         amount: 2990,
 
-          code: 123,
-          description: 'Chaveiro do Tesseract',
-          quantity: 2,
-        },
-      ],
+  //         code: 123,
+  //         description: 'Chaveiro do Tesseract',
+  //         quantity: 2,
+  //       },
+  //     ],
 
-      payments: [
-        {
-          credit_card: {
-            operation_type: 'auth_and_capture',
-            installments: 1,
-            statement_descriptor: 'Pagamento',
-            card_token: cardToken.data.id,
-            card: {
-              billing_address: address,
-            },
-          },
-        },
-      ],
-    })
+  //     payments: [
+  //       {
+  //         credit_card: {
+  //           operation_type: 'auth_and_capture',
+  //           installments: 1,
+  //           statement_descriptor: 'Pagamento',
+  //           card_token: cardToken.data.id,
+  //           card: {
+  //             billing_address: address,
+  //           },
+  //         },
+  //       },
+  //     ],
+  //   })
 
-    if (resp.error) {
-      toast.error(JSON.stringify(resp.error))
-      return
-    }
-    console.log(resp)
-  }
+  //   if (resp.error) {
+  //     toast.error(JSON.stringify(resp.error))
+  //     return
+  //   }
+  //   console.log(resp)
+  // }
 
   $: {
     total.set(items?.reduce((acc, item) => acc + item.price * item.quantity, 0))
@@ -137,7 +136,7 @@
 
       <div class="mt-6 sm:mt-8 lg:flex lg:items-start lg:gap-12">
         <form
-          on:submit|preventDefault={handleCheckout}
+          on:submit|preventDefault={()=>(console.log('submit'))}
           action="#"
           class="w-full rounded-lg border border-primary p-4 shadow-sm sm:p-6 lg:max-w-xl lg:p-8"
         >

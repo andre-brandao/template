@@ -2,8 +2,6 @@
 
 import { t, publicProcedure } from './t'
 
-import { pagarme } from './routes/pagarme'
-
 import { z } from 'zod'
 import { auth } from './routes/auth'
 import { product } from './routes/product'
@@ -79,7 +77,6 @@ export const router = t.router({
         })
       }
     }),
-  pagarme,
   auth,
   product,
 })

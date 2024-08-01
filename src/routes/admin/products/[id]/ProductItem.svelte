@@ -24,9 +24,9 @@
   <ImageInput
     image_id={item.image}
     name={item.name}
-    save={image_id => {
+    save={async image_id => {
       item.image = image_id
-      trpc($page).product.updateProductItem.mutate({
+      await trpc($page).product.updateProductItem.mutate({
         id: item.id,
         prod: {
           image: image_id,

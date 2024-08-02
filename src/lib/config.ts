@@ -29,4 +29,7 @@ export const website = {
   linkedinPage: 'https://www.linkedin.com/in/deds',
   youtubePageName: 'Deds',
   youtubePage: 'https://www.youtube.com/deds',
+
+  emailCoverUrl: 'https://raw.githubusercontent.com/andrebrandao/template/main/src/lib/assets/home/bg-email.jpg',
+  emailColor: '#007bff'
 }

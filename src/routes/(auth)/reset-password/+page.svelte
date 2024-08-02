@@ -36,7 +36,7 @@
       </p>
     </div>
     <div
-      class="bg-surface-100 text-card-foreground rounded-lg border border-primary shadow-sm"
+      class="text-card-foreground rounded-lg border border-primary bg-surface-100 shadow-sm"
     >
       <div class="space-y-4 p-6">
         <div class="space-y-2">
@@ -52,7 +52,6 @@
             id="email"
             type="email"
           />
-          
 
           <button
             disabled={isLoading}
@@ -61,6 +60,9 @@
           >
             Request Password Reset
           </button>
+          <div class="flex items-center justify-center">
+            <a href="/login" class="link link-hover">Back to login</a>
+          </div>
         </div>
       </div>
     </div>

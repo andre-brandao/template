@@ -2,7 +2,7 @@ import { publicProcedure, router } from '../t'
 
 import { z } from 'zod'
 
-import { user } from '$db/controller'
+import { user as userController } from '$db/controller'
 import { lucia } from '$lib/server/auth'
 import { redirect } from '@sveltejs/kit'
 // import { hash, verify } from '@node-rs/argon2'
@@ -42,7 +42,7 @@ export const auth = router({
       }
     }
 
-    const verificationCode = await user.generateEmailVerificationCode(
+    const verificationCode = await userController.generateEmailVerificationCode(
       localUser.id,
       localUser.email,
     )
@@ -74,15 +74,18 @@ export const auth = router({
         }
       }
 
-      const { user: lucia_user } = await lucia.validateSession(sessionId)
-      if (!lucia_user) {
+      const { user } = await lucia.validateSession(sessionId)
+      if (!user) {
         return {
           error: 'Not authenticated',
           data: null,
         }
       }
 
-      const validCode = await user.verifyVerificationCode(lucia_user, code)
+      const validCode = await userController.verifyVerificationCode(
+        user,
+        code,
+      )
 
       if (!validCode) {
         return {
@@ -91,12 +94,12 @@ export const auth = router({
         }
       }
 
-      await lucia.invalidateUserSessions(lucia_user.id)
-      await user.updateUser(lucia_user.id, {
+      await lucia.invalidateUserSessions(user.id)
+      await userController.updateUser(user.id, {
         emailVerified: true,
       })
 
-      const session = await lucia.createSession(lucia_user.id, {})
+      const session = await lucia.createSession(user.id, {})
       const sessionCookie = lucia.createSessionCookie(session.id)
       cookies.set(sessionCookie.name, sessionCookie.value, {
         path: '.',
@@ -118,7 +121,7 @@ export const auth = router({
       const { url } = ctx
 
       // const user = await db.table('user').where('email', '=', email).get()
-      const [{ id: userID }] = await user.emailExists(email)
+      const [{ id: userID }] = await userController.getUserByEmail(email)
       if (!userID) {
         // If you want to avoid disclosing valid emails,
         // this can be a normal 200 response.
@@ -128,7 +131,8 @@ export const auth = router({
         }
       }
 
-      const verificationToken = await user.createPasswordResetToken(userID)
+      const verificationToken =
+        await userController.createPasswordResetToken(userID)
       // const verificationLink =
       //   'http://localhost:3000/reset-password/' + verificationToken
       const verificationLink = `${url.origin}/reset-password/${verificationToken}`
@@ -138,6 +142,32 @@ export const auth = router({
       return {
         data: 'Password reset email sent, Check your email',
         error: null,
+      }
+    }),
+  sendMagicLink: publicProcedure
+    .input(z.object({ email: z.string().email() }))
+    .query(async ({ input, ctx }) => {
+      const { email } = input
+      const { url } = ctx
+
+      const [{ id: userId }] = await userController.getUserByEmail(email)
+
+      if (!userId) {
+        return {
+          message: 'Invalid email',
+          success: false,
+        }
+      }
+
+      const verificationToken = await userController.createMagicLinkToken(
+        userId,
+        email,
+      )
+      const verificationLink = `${url.origin}/login/${verificationToken}`
+      await sendMail(email, emailTemplate.magicLink(verificationLink))
+      return {
+        message: 'Magic link sent, Check your email',
+        success: true,
       }
     }),
 })

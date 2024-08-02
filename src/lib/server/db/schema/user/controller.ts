@@ -5,6 +5,7 @@ import {
   userTable,
   userVerificationCodeTable,
   passwordResetCodeTable,
+  magicLinkTable,
   type UserPermissions,
   type SelectUser,
   sessionTable,
@@ -20,7 +21,7 @@ const DEFAULT_PERMISSIONS: UserPermissions = {
   isAdmin: false,
 }
 
-function usernameExists(username: string) {
+function getUserByUsername(username: string) {
   return db
     .select()
     .from(userTable)
@@ -31,7 +32,7 @@ function usernameExists(username: string) {
 function getUserById(userId: string) {
   return db.select().from(userTable).where(eq(userTable.id, userId)).limit(1)
 }
-function emailExists(email: string) {
+function getUserByEmail(email: string) {
   return db.select().from(userTable).where(eq(userTable.email, email)).limit(1)
 }
 
@@ -108,22 +109,12 @@ async function verifyVerificationCode(
 }
 
 async function createPasswordResetToken(userId: string): Promise<string> {
-  // optionally invalidate all existing tokens
-  // await db
-  //   .table('password_reset_token')
-  //   .where('user_id', '=', userId)
-  //   .deleteAll()
   await db
     .delete(passwordResetCodeTable)
     .where(eq(passwordResetCodeTable.userId, userId))
     .all()
   const tokenId = generateIdFromEntropySize(25) // 40 character
   const tokenHash = encodeHex(await sha256(new TextEncoder().encode(tokenId)))
-  // await db.table('password_reset_token').insert({
-  //   token_hash: tokenHash,
-  //   user_id: userId,
-  //   expires_at: createDate(new TimeSpan(2, 'h')),
-  // })
   await db.insert(passwordResetCodeTable).values({
     token_hash: tokenHash,
     userId,
@@ -146,9 +137,37 @@ async function deletePasswordResetToken(token: string) {
     .where(eq(passwordResetCodeTable.token_hash, token))
     .run()
 }
+
+async function createMagicLinkToken(
+  userId: string,
+  email: string,
+): Promise<string> {
+  await db.delete(magicLinkTable).where(eq(magicLinkTable.userId, userId)).all()
+  const tokenId = generateIdFromEntropySize(25) // 40 characters long
+  await db.insert(magicLinkTable).values({
+    id: tokenId,
+    userId,
+    email,
+    expiresAt: createDate(new TimeSpan(2, 'h')),
+  })
+  return tokenId
+}
+
+async function getMagicLinkToken(token: string) {
+  return db
+    .select()
+    .from(magicLinkTable)
+    .where(eq(magicLinkTable.id, token))
+    .limit(1)
+}
+
+async function deleteMagicLinkToken(token: string) {
+  return db.delete(magicLinkTable).where(eq(magicLinkTable.id, token)).run()
+}
+
 export const user = {
-  usernameExists,
-  emailExists,
+  getUserByUsername,
+  getUserByEmail,
   getUserById,
   insertUser,
   updateUser,
@@ -159,5 +178,8 @@ export const user = {
   createPasswordResetToken,
   getPasswordResetToken,
   deletePasswordResetToken,
+  createMagicLinkToken,
+  getMagicLinkToken,
+  deleteMagicLinkToken,
   DEFAULT_PERMISSIONS,
 }

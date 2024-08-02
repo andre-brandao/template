@@ -314,4 +314,11 @@ export const emailTemplate = {
       `,
     }
   },
+  magicLink: function (magic_link: string): EmailOptions {
+    return {
+      subject: `Login para ${website.siteShortTitle}`,
+      text: `Clique no link para fazer login: ${magic_link}`,
+      html: `Clique no link para fazer login: <a href="${magic_link}">${magic_link}</a>`,
+    }
+  },
 }

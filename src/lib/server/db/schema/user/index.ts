@@ -42,6 +42,7 @@ export type UserPermissions = {
   isAdmin: boolean
 }
 
+// AUTH TABLES
 export const sessionTable = sqliteTable('session', {
   id: text('id').notNull().primaryKey(),
   userId: text('user_id')
@@ -65,5 +66,15 @@ export const passwordResetCodeTable = sqliteTable('password_reset_code', {
   userId: text('user_id')
     .notNull()
     .references(() => userTable.id),
+  expiresAt: integer('expires_at', { mode: 'timestamp' }).notNull(),
+})
+
+
+export const magicLinkTable = sqliteTable('magic_link', {
+  id: text('id').notNull().primaryKey(),
+  userId: text('user_id')
+    .notNull()
+    .references(() => userTable.id),
+  email: text('email').notNull(),
   expiresAt: integer('expires_at', { mode: 'timestamp' }).notNull(),
 })

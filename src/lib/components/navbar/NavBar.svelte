@@ -13,12 +13,14 @@
   import BugReportModal from '$lib/components/modal/BugReportModal.svelte'
   import ChangeLanguage from './ChangeLanguage.svelte'
   import { icons } from '$lib/utils/icons'
+  import { goto } from '$app/navigation'
 
   const user = getUserContext()
 
   async function logout() {
     user.set(null)
     await trpc($page).auth.logOut.query()
+    goto("/")
   }
 </script>
 

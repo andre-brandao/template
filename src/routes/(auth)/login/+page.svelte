@@ -5,6 +5,7 @@
   import { page } from '$app/stores'
 
   let isRequested = false
+  let isLoading = false
   let message = {
     success: false,
     message: '',
@@ -12,9 +13,18 @@
 
   let email = ''
   async function sendMagicLink() {
-  
-    message = await trpc($page).auth.sendMagicLink.query({ email })
+    isLoading = true
+
+    try {
+      message = await trpc($page).auth.sendMagicLink.query({ email })
+    } catch (error) {
+      message = {
+        success: false,
+        message: 'An error occurred',
+      }
+    }
     isRequested = true
+    isLoading = false
   }
 </script>
 
@@ -41,7 +51,7 @@
         />
       </div>
 
-      <button class="btn btn-secondary mt-4 w-full" onclick={sendMagicLink}>
+      <button class="btn btn-secondary mt-4 w-full" onclick={sendMagicLink} disabled={isLoading}>
         Get Magic Link
       </button>
     </div>

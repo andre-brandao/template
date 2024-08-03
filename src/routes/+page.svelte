@@ -1,24 +1,15 @@
 <script>
   import SEO from '$lib/components/SEO/index.svelte'
-  import Cardapio from '$lib/components/Cardapio.svelte'
-  import Modal from '$lib/components/Modal.svelte'
-  import ThemeSwiter from '$lib/components/navbar/ThemeSwiter.svelte'
 
   import Carousel from '$lib/components/landing-page/Carousel.svelte'
   import Carousel2 from '$lib/components/landing-page/Carousel2.svelte'
-  import MapContact from '$lib/components/landing-page/contact/MapContact.svelte'
-  import Hero from '$lib/components/landing-page/hero/Hero.svelte'
-  import Dnd from '$lib/components/dnd/dnd-no-deps/DnDContainer.svelte'
-  import { toast } from 'svelte-sonner'
   import { getSEOProps } from '$lib/utils/seo'
   import Features3 from '$lib/components/landing-page/features/Features3.svelte'
   import Pricing from '$lib/components/landing-page/pricing/Pricing.svelte'
   import Features4 from '$lib/components/landing-page/features/Features4.svelte'
   import Footer from '$lib/components/landing-page/Footer.svelte'
-  import Payment from '$lib/components/Payment.svelte'
-
+  
   import ShareButton from '$components/share/index.svelte'
-  import RotatingGlobe from '$lib/components/landing-page/globe/RotatingGlobe.svelte'
   import HeroGlobe from '$lib/components/landing-page/hero/HeroGlobe.svelte'
 </script>
 

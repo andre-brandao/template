@@ -42,7 +42,6 @@ import { createTRPCHandle } from 'trpc-sveltekit'
 const handleTRPC = createTRPCHandle({
   router,
   createContext,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onError: ({ error, type, path, input, ctx, req }) => {
     console.error(
       `Encountered error while trying to process ${type} @ ${path}:`,
@@ -50,9 +49,11 @@ const handleTRPC = createTRPCHandle({
     )
     if (error.code === 'INTERNAL_SERVER_ERROR') {
       // TODO: send to bug reporting
+      const userId = ctx?.locals.user?.id
       bugReport.insertBugReport({
         status: 'TODO',
         text: 'Internal server error',
+        created_by: userId,
         metadata: {
           path,
           type,

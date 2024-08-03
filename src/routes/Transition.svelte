@@ -8,18 +8,18 @@
 
   export let key
 
-  onNavigate(navigation => {
-    // @ts-expect-error
-    if (!document.startViewTransition) return
+  // onNavigate(navigation => {
+  //   // @ts-expect-error
+  //   if (!document.startViewTransition) return
 
-    return new Promise(resolve => {
-      // @ts-expect-error
-      document.startViewTransition?.(async () => {
-        resolve()
-        await navigation.complete
-      })
-    })
-  })
+  //   return new Promise(resolve => {
+  //     // @ts-expect-error
+  //     document.startViewTransition?.(async () => {
+  //       resolve()
+  //       await navigation.complete
+  //     })
+  //   })
+  // })
 </script>
 
 <!-- TODO: fix duplicating page bug -->

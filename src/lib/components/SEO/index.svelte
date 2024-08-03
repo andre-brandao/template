@@ -115,7 +115,7 @@
     alt: defaultAlt,
   }
 
-  const pageTitle = `${siteTitle} ${VERTICAL_LINE_ENTITY} ${title}`
+  const pageTitle = `${title} ${VERTICAL_LINE_ENTITY} ${siteTitle}`
   const url = `${siteUrl}/${slug}`
   const openGraphProps = {
     article,

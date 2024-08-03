@@ -24,12 +24,12 @@
 
 <!-- TODO: fix duplicating page bug -->
 <!-- or $navigating -->
-<!-- {#key key} -->
-<div class="h-full overflow-scroll overflow-x-auto transition-all">
-  <!-- in:fly={{ delay: 300, duration: 300, easing: cubicOut, x: 0, y: 240 }}
-  out:fly={{ duration: 300, easing: cubicIn, x: 0, y: -240 }} -->
-  <slot />
-</div>
-<!-- {/key} -->
-
-<slot></slot>
+{#key key}
+  <div
+    class="h-full overflow-scroll overflow-x-auto transition-all"
+    in:fly={{ delay: 300, duration: 300, easing: cubicOut, x: 0, y: 240 }}
+    out:fly={{ duration: 300, easing: cubicIn, x: 0, y: -240 }}
+  >
+    <slot />
+  </div>
+{/key}

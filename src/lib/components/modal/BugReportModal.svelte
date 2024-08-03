@@ -13,7 +13,9 @@
     try {
       const resp = await trpc($page).reportBug.query({
         text: bugReport,
-        page_data: JSON.stringify($page.url),
+        metadata: {
+          page: $page,
+        },
       })
       toast(resp)
     } catch (error) {

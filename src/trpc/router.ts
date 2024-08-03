@@ -28,7 +28,7 @@ export const router = t.router({
     .input(
       z.object({
         text: z.string(),
-        page_data: z.string(),
+        metadata: z.any(),
       }),
     )
     .query(async ({ input, ctx }) => {
@@ -43,7 +43,8 @@ export const router = t.router({
         const [{ id }] = await bugReport.insertBugReport({
           text: input.text,
           created_by: user.id,
-          page_data: input.page_data,
+          metadata: input.metadata,
+          status: 'TODO',
         })
 
         return 'Bug reported #' + id

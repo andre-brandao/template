@@ -9,27 +9,22 @@ import {
 import { eq, relations, sql } from 'drizzle-orm'
 import { userTable } from '../user'
 
-const bugReportTable = sqliteTable('bugReport', {
+export const bugReportTable = sqliteTable('bugReport', {
   id: integer('id', { mode: 'number' }).primaryKey({ autoIncrement: true }),
   created_at: text('created_at').default(sql`(CURRENT_TIMESTAMP)`),
-  created_by: text('created_by').references(() => userTable.id, {
-    onDelete: 'set null',
-  }),
-  page_data: text('page_data'),
+  created_by: text('created_by')
+    .references(() => userTable.id, {
+      onDelete: 'set null',
+    })
+    .default(''),
   status: text('status', { enum: ['DONE', 'IN_PROGRESS', 'TODO'] }).notNull(),
   text: text('name').notNull(),
+  metadata: text('metadata', { mode: 'json' }),
 })
 
 // const bugReportRelations = relations(bugReportTable, ({ one }) => ({
 //   reporter: one(userTable),
 // }))
 
-type SelectBugReport = typeof bugReportTable.$inferSelect
-type InsertBugReport = typeof bugReportTable.$inferInsert
-
-export {
-  bugReportTable,
-  // bugReportRelations,
-  type SelectBugReport,
-  type InsertBugReport,
-}
+export type SelectBugReport = typeof bugReportTable.$inferSelect
+export type InsertBugReport = typeof bugReportTable.$inferInsert

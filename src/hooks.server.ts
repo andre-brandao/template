@@ -3,6 +3,8 @@ import { lucia } from '$lib/server/auth'
 import type { Handle } from '@sveltejs/kit'
 import { sequence } from '@sveltejs/kit/hooks'
 
+import { bugReport } from '$db/controller'
+
 const handleSession: Handle = async ({ event, resolve }) => {
   const sessionId = event.cookies.get(lucia.sessionCookieName)
   if (!sessionId) {
@@ -48,6 +50,17 @@ const handleTRPC = createTRPCHandle({
     )
     if (error.code === 'INTERNAL_SERVER_ERROR') {
       // TODO: send to bug reporting
+      bugReport.insertBugReport({
+        status: 'TODO',
+        text: 'Internal server error',
+        metadata: {
+          path,
+          type,
+          error,
+          input,
+          req,
+        },
+      })
     }
   },
 })

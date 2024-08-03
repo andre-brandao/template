@@ -1,4 +1,6 @@
 <script lang="ts">
+  import SEO, { getSEOProps } from '$lib/components/SEO/index.svelte'
+
   import type { PageData } from './$types'
   import { getUserContext } from '$lib/stores/user'
   import { applyAction, enhance } from '$app/forms'
@@ -10,8 +12,15 @@
   const sessions = data.user_sessions
 </script>
 
+<SEO
+  {...getSEOProps({
+    title: 'My Profile',
+    description: 'Edit your profile',
+  })}
+/>
+
 <div
-  class="bg-base-200  mx-auto w-full max-w-md rounded-lg border border-primary shadow-sm"
+  class="mx-auto w-full max-w-md rounded-lg border border-primary bg-base-200 shadow-sm"
 >
   <div class="flex flex-col space-y-1.5 p-6">
     <h3
@@ -27,7 +36,6 @@
       >
         <img
           class="aspect-square h-full w-full"
-          alt="@shadcn"
           src="https://generated.vusercontent.net/placeholder-user.jpg"
         />
       </span>

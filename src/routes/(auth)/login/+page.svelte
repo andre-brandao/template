@@ -1,5 +1,6 @@
 <script lang="ts">
   import * as m from '$msgs'
+  import SEO, { getSEOProps } from '$lib/components/SEO/index.svelte'
 
   import { trpc } from '$trpc/client'
   import { page } from '$app/stores'
@@ -28,6 +29,13 @@
   }
 </script>
 
+<SEO
+  {...getSEOProps({
+    title: m.title_sign_in(),
+    description: 'Sign in to your account',
+  })}
+/>
+
 <main class="flex min-h-screen items-center justify-center">
   <div class="w-full max-w-sm rounded-lg p-8 shadow-lg">
     <h1 class="text-center text-2xl font-semibold">{m.title_sign_in()}</h1>
@@ -51,7 +59,11 @@
         />
       </div>
 
-      <button class="btn btn-secondary mt-4 w-full" onclick={sendMagicLink} disabled={isLoading}>
+      <button
+        class="btn btn-secondary mt-4 w-full"
+        onclick={sendMagicLink}
+        disabled={isLoading}
+      >
         Get Magic Link
       </button>
     </div>

@@ -1,10 +1,61 @@
+<script context="module">
+  import { website } from '$lib/config'
+
+  export function getSEOProps({
+    title = website.siteTitle,
+    description = website.description,
+    // TODO: Add default values for featuredImage, ogImage, ogSquareImage, twitterImage
+    featuredImage = {
+      url: '',
+      alt: '',
+      width: 0,
+      height: 0,
+      caption: '',
+    },
+    ogImage = {
+      url: '',
+      alt: '',
+    },
+    ogSquareImage = {
+      url: '',
+      alt: '',
+    },
+    twitterImage = {
+      url: '',
+      alt: '',
+    },
+  }) {
+    const breadcrumbs = [
+      {
+        name: 'Home',
+        slug: '',
+      },
+    ]
+
+    const entityMeta = null
+    return {
+      title,
+      slug: '',
+      entityMeta,
+      datePublished: '2024-07-07T14:19:33.000+0100',
+      lastUpdated: '2024-07-07T14:19:33.000+0100',
+      breadcrumbs,
+      metadescription: description,
+      featuredImage,
+      ogImage,
+      ogSquareImage,
+      twitterImage,
+    }
+  }
+</script>
+
 <script>
   import defaultFeaturedImage from '$lib/assets/home/home.jpg'
   import defaultOgImage from '$lib/assets/home/home-open-graph.jpg'
   import defaultOgSquareImage from '$lib/assets/home/home-open-graph-square.jpg'
   import defaultTwitterImage from '$lib/assets/home/home-twitter.jpg'
 
-  import { website } from '$lib/config'
+  // import { website } from '$lib/config'
   import { VERTICAL_LINE_ENTITY } from '$lib/utils/entities'
   import OpenGraph from './OpenGraph.svelte'
   import SchemaOrg from './SchemaOrg.svelte'

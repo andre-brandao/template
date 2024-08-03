@@ -8,10 +8,7 @@
 
   export let data: PageData
 
-  import { trpc } from '$trpc/client'
-  import { page } from '$app/stores'
-  import { toast } from 'svelte-sonner'
-  import { goto } from '$app/navigation'
+  import SEO, { getSEOProps } from '$lib/components/SEO/index.svelte'
 
   let password = ''
 
@@ -20,6 +17,12 @@
   $: isValid = password === password_confirm && password.length >= 6
 </script>
 
+<SEO
+  {...getSEOProps({
+    title: 'Reset Password',
+    description: 'Enter your new password',
+  })}
+/>
 <div class="bg-background flex h-full flex-col items-center justify-center">
   <div class="mx-auto w-full max-w-md space-y-6">
     <div class="text-center">

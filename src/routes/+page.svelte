@@ -1,14 +1,13 @@
 <script>
-  import SEO from '$lib/components/SEO/index.svelte'
+  import SEO, { getSEOProps } from '$lib/components/SEO/index.svelte'
 
   import Carousel from '$lib/components/landing-page/Carousel.svelte'
   import Carousel2 from '$lib/components/landing-page/Carousel2.svelte'
-  import { getSEOProps } from '$lib/utils/seo'
   import Features3 from '$lib/components/landing-page/features/Features3.svelte'
   import Pricing from '$lib/components/landing-page/pricing/Pricing.svelte'
   import Features4 from '$lib/components/landing-page/features/Features4.svelte'
   import Footer from '$lib/components/landing-page/Footer.svelte'
-  
+
   import ShareButton from '$components/share/index.svelte'
   import HeroGlobe from '$lib/components/landing-page/hero/HeroGlobe.svelte'
 </script>
@@ -17,12 +16,12 @@
   {...getSEOProps({
     title: 'Home',
     featuredImage: {
-      src: 'https://via.placeholder.com/672x448',
+      url: 'https://via.placeholder.com/672x448',
       alt: 'Placeholder image',
+      width: 672,
+      height: 448,
+      caption: 'Home page',
     },
-    ogImageSrc: 'https://via.placeholder.com/1200x627',
-    ogSquareImageSrc: 'https://via.placeholder.com/400x400',
-    twitterImageSrc: 'https://via.placeholder.com/1200x675',
   })}
 />
 

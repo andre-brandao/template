@@ -2,6 +2,8 @@
   import type { PageData } from './$types'
   import OTP from '$components/input/otp/OTP.svelte'
 
+  import SEO, { getSEOProps } from '$lib/components/SEO/index.svelte'
+
   export let data: PageData
 
   import { trpc } from '$trpc/client'
@@ -57,6 +59,14 @@
     }, 1000)
   }
 </script>
+
+<SEO
+  {...getSEOProps({
+    title: 'Verify Email',
+    description:
+      'Enter the 8-digit verification code sent to your email address.',
+  })}
+/>
 
 <div class="bg-background flex h-full flex-col items-center justify-center">
   <div class="mx-auto w-full max-w-md space-y-6">

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import SEO, { getSEOProps } from '$lib/components/SEO/index.svelte'
   import { enhance } from '$app/forms'
   import * as m from '$msgs'
 
@@ -7,20 +8,17 @@
   export let form: ActionData
 </script>
 
+<SEO
+  {...getSEOProps({
+    title: m.title_sign_in(),
+    description: 'Sign in using password',
+  })}
+/>
+
 <main class="flex min-h-screen items-center justify-center">
   <div class="w-full max-w-sm rounded-lg p-8 shadow-lg">
     <h1 class="text-center text-2xl font-semibold">{m.title_sign_in()}</h1>
     <form method="post" use:enhance class="mt-6 flex flex-col gap-4">
-      <!-- <div>
-        <label for="username" class="block text-sm font-medium">
-          {m.username()}
-        </label>
-        <input
-          class="input input-bordered mt-1 w-full"
-          name="username"
-          id="username"
-        />
-      </div> -->
       <div>
         <label for="email" class="block text-sm font-medium">Email</label>
         <input

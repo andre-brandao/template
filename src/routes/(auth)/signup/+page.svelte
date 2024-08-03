@@ -1,12 +1,21 @@
 <script lang="ts">
   import { enhance } from '$app/forms'
 
+  import SEO, { getSEOProps } from '$lib/components/SEO/index.svelte'
+
   import * as m from '$msgs'
 
   import type { ActionData } from './$types'
 
   export let form: ActionData
 </script>
+
+<SEO
+  {...getSEOProps({
+    title: m.create_an_account(),
+    description: 'Create an account',
+  })}
+/>
 
 <main class="flex min-h-screen items-center justify-center">
   <div class="w-full max-w-sm rounded-lg p-8 shadow-lg">
@@ -23,9 +32,7 @@
         />
       </div>
       <div>
-        <label for="email" class="block text-sm font-medium">
-         Email
-        </label>
+        <label for="email" class="block text-sm font-medium">Email</label>
         <input
           class="input input-bordered mt-1 w-full"
           name="email"

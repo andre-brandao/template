@@ -6,6 +6,8 @@
   import { toast } from 'svelte-sonner'
   import { goto } from '$app/navigation'
 
+  import SEO, { getSEOProps } from '$lib/components/SEO/index.svelte'
+
   // export let data: PageData
   let email = ''
   let isLoading = false
@@ -26,6 +28,13 @@
     }
   }
 </script>
+
+<SEO
+  {...getSEOProps({
+    title: 'Password Reset',
+    description: 'Enter your email address to receive a password reset code',
+  })}
+/>
 
 <div class="bg-background flex h-full flex-col items-center justify-center">
   <div class="mx-auto w-full max-w-md space-y-6">
@@ -61,7 +70,7 @@
             Request Password Reset
           </button>
           <div class="flex items-center justify-center">
-            <a href="/login" class="link link-hover">Back to login</a>
+            <a href="/login" class="link-hover link">Back to login</a>
           </div>
         </div>
       </div>

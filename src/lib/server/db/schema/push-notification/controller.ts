@@ -5,7 +5,7 @@ import {
   pushNotificationDeviceTable,
   pushNotificationLogTable,
   type SelectPushNotificationDevice,
-} from './index'
+} from '../index'
 import { db } from '$db'
 import { count, desc, eq } from 'drizzle-orm'
 

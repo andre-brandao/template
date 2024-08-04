@@ -7,7 +7,7 @@ import { auth } from './routes/auth'
 import { product } from './routes/product'
 
 import { bugReport } from '$lib/server/db/controller'
-import { pushNotification } from '$db/schema/user/notification'
+import { pushNotification } from '$db/schema/push-notification/controller'
 import { TRPCError } from '@trpc/server'
 import type { inferRouterInputs, inferRouterOutputs } from '@trpc/server'
 

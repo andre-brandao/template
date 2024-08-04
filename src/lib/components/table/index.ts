@@ -37,7 +37,6 @@ export const getParams = ({
   return params
 }
 
-export { default as Datatable } from './Datatable.svelte'
 export { default as EditRowButton } from './EditRowButton.svelte'
 export { default as EditRowInput } from './EditRowInput.svelte'
 

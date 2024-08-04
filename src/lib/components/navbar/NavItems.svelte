@@ -98,7 +98,8 @@
 
     return (
       $page.url.pathname === href ||
-      $page.url.pathname === '/' + languageTag() + href
+      $page.url.pathname === '/' + languageTag() + href ||
+      ($page.url.pathname === '/' + languageTag() && href === '/')
     )
   }
 </script>
@@ -120,7 +121,11 @@
               <svelte:self navItems={[subItem]} />
             {:else}
               <li>
-                <a href={subItem.href} class:active={isActive(subItem.href)}>
+                <a
+                  href={subItem.href}
+                  aria-current={isActive(subItem.href) ? 'page' : undefined}
+                  class:active={isActive(subItem.href)}
+                >
                   <!-- {#if typeof navItem.icon === 'string'}
                     {@html icon}
                   {/if} -->
@@ -133,7 +138,11 @@
         </ul>
       </details>
     {:else}
-      <a href={navItem.href} class:active={isActive(navItem.href)}>
+      <a
+        href={navItem.href}
+        aria-current={isActive(navItem.href) ? 'page' : undefined}
+        class:active={isActive(navItem.href)}
+      >
         <!-- {#if typeof navItem.icon === 'string'}
           {@html icon}
         {/if} -->
@@ -142,3 +151,10 @@
     {/if}
   </li>
 {/each}
+
+<style>
+  a[aria-current='page']::before {
+    view-transition-name: active-page;
+    content: '●';
+  }
+</style>

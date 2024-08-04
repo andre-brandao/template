@@ -7,6 +7,7 @@ import { auth } from './routes/auth'
 import { product } from './routes/product'
 
 import { bugReport } from '$lib/server/db/controller'
+import { pushNotification } from '$db/schema/user/notification'
 import { TRPCError } from '@trpc/server'
 import type { inferRouterInputs, inferRouterOutputs } from '@trpc/server'
 
@@ -78,6 +79,59 @@ export const router = t.router({
         })
       }
     }),
+  addPushNotificationDevice: publicProcedure
+    .use(middleware.auth)
+    .input(
+      z.object({
+        subscription: z.any(),
+      }),
+    )
+    .query(async ({ input, ctx }) => {
+      const { subscription } = input
+      const { user } = ctx.locals
+
+      if (!user) {
+        return {
+          success: false,
+          error: 'User not found',
+        }
+      }
+
+      try {
+        await pushNotification.addUserDevice(user.id, subscription)
+        return {
+          success: true,
+        }
+      } catch (error) {
+        console.error(error)
+        return {
+          success: false,
+          error: 'Unknow error',
+        }
+      }
+    }),
+  sendTestNotification: publicProcedure.query(async ({ ctx }) => {
+    const { user } = ctx.locals
+    if (!user) {
+      return {
+        success: false,
+        error: 'User not found',
+      }
+    }
+
+    try {
+      await pushNotification.notifUser(user.id, 'Test Notification')
+      return {
+        success: true,
+      }
+    } catch (error) {
+      console.error(error)
+      return {
+        success: false,
+        error: 'Unknow error',
+      }
+    }
+  }),
   auth,
   product,
 })

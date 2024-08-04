@@ -34,6 +34,7 @@
     "@trpc/server": "^10.45.2",
     "@types/eslint": "^8.56.11",
     "@types/nodemailer": "^6.4.15",
+    "@types/web-push": "^3.6.3",
     "autoprefixer": "^10.4.19",
     "daisyui": "^4.12.10",
     "drizzle-kit": "^0.22.8",
@@ -77,6 +78,7 @@
     "svelte-sonner": "^0.3.27",
     "tailwind-merge": "^2.4.0",
     "trpc-sveltekit": "^3.6.2",
+    "web-push": "^3.6.7",
     "zod": "^3.23.8"
   }
 }

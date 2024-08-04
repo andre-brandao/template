@@ -11,10 +11,10 @@
     type ColumnDef,
     type TableOptions,
   } from '@tanstack/svelte-table'
+  import Datatable from '$components/table/Datatable.svelte'
   import {
     type TableState,
     getParams,
-    Datatable,
     EditRowButton,
     EditRowInput,
   } from '$lib/components/table'

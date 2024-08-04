@@ -130,8 +130,12 @@ export const pushNotification = {
     })
   },
   notifChannel: async (channel_id: string, payload: string) => {
-    const devices_resp = await db
-      .select({ pushNotificationDeviceTable })
+    const devices = await db
+      .select({
+        device_id: pushNotificationDeviceTable.device_id,
+        subscription: pushNotificationDeviceTable.subscription,
+        userId: pushNotificationDeviceTable.userId,
+      })
       .from(notificationChannelUsersTable)
       .where(eq(notificationChannelUsersTable, channel_id))
       .innerJoin(
@@ -141,8 +145,6 @@ export const pushNotification = {
           notificationChannelUsersTable.userId,
         ),
       )
-
-    const devices = devices_resp.map(d => d.pushNotificationDeviceTable)
 
     pushNotification.sendNotificationToDevices(devices, payload)
   },

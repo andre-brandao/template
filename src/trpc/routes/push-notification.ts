@@ -28,6 +28,7 @@ export const pushNotification = router({
         await notificationController.addUserDevice(user.id, subscription)
         return {
           success: true,
+          error: null,
         }
       } catch (error) {
         console.error(error)

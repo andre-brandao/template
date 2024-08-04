@@ -49,6 +49,10 @@
       ).pushNotification.addPushNotificationDevice.query({
         subscription,
       })
+
+      if (!res.success) {
+        console.error(`Error saving subscription on server ${res.error}`)
+      }
     } catch (error) {
       console.error('Error saving subscription on server:', error)
       unsubscribe()
@@ -199,7 +203,7 @@
             Subscribed to push notifications: <b>{isSubscribed}</b>
           </p>
           {#if isSubscribed}
-            <div>
+            <div class="pb-5">
               <button
                 class="btn btn-outline"
                 type="button"
@@ -207,17 +211,12 @@
               >
                 Unsubscribe
               </button>
+              <button class="btn btn-outline" onclick={testNotification}>
+                Test Notification
+              </button>
             </div>
-
-            <!-- <div class="mt-4">
-              <form method="post" action="?/testNotification">
-              </form>
-            </div> -->
           {/if}
         {/if}
-        <button class="btn btn-outline" onclick={testNotification}>
-          Test Notification
-        </button>
       </div>
     </div>
   </div>

@@ -44,7 +44,9 @@
   async function sendSubscriptionToServer(subscription: PushSubscription) {
     try {
       console.log(subscription)
-      const res = await trpc($page).addPushNotificationDevice.query({
+      const res = await trpc(
+        $page,
+      ).pushNotification.addPushNotificationDevice.query({
         subscription,
       })
     } catch (error) {
@@ -117,7 +119,7 @@
   }
 
   async function testNotification() {
-    await trpc($page).sendTestNotification.query()
+    await trpc($page).pushNotification.sendTestNotification.query()
   }
 </script>
 

@@ -4,6 +4,8 @@ import { VAPID_PRIVATE_KEY, VAPID_PUBLIC_KEY } from '$env/static/private'
 import {
   pushNotificationDeviceTable,
   pushNotificationLogTable,
+  notificationChannelTable,
+  notificationChannelUsersTable,
   type SelectPushNotificationDevice,
 } from '../index'
 import { db } from '$db'
@@ -39,19 +41,6 @@ export const pushNotification = {
   },
 
   deleteIfExpired: async (deviceId: number) => {
-    // const last3Success = subDb
-    //   .prepare(
-    //     `
-    // 	SELECT sum(success) as cnt
-    // 	FROM notif_log
-    // 	WHERE device_id = ?
-    // 	AND success = 0
-    // 	ORDER BY created_at DESC
-    // 	LIMIT 3
-    // `,
-    //   )
-    //   .get(deviceId) as { cnt: number }
-
     const [last3Success] = await db
       .select({ count: count(pushNotificationLogTable.success) })
       .from(pushNotificationLogTable)
@@ -64,45 +53,24 @@ export const pushNotification = {
       await db
         .delete(pushNotificationDeviceTable)
         .where(eq(pushNotificationDeviceTable.device_id, deviceId))
-      //   subDb
-      //     .prepare('DELETE FROM user_devices WHERE device_id = ?')
-      //     .run(deviceId)
     }
   },
 
   addUserDevice: async (userId: string, subscription: PushSubscription) => {
-    // const userNameCount = subDb
-    //   .prepare('SELECT count(*) as cnt FROM users WHERE username = ?')
-    //   .get(username) as { cnt: number }
-
     const [subCount] = await db
       .select({
         count: count(pushNotificationDeviceTable.device_id),
       })
       .from(pushNotificationDeviceTable)
+      // TODO: select by subscription endpoint
       .where(eq(pushNotificationDeviceTable.subscription, subscription))
-
-    // if (userNameCount.cnt === 0) {
-    //   //   subDb.prepare('INSERT INTO users (username) VALUES (?)').run(username)
-    // }
-
-    // const subCount = subDb
-    //   .prepare(
-    //     `SELECT count(*) as cnt FROM user_devices WHERE json_extract(subscription, '$.endpoint') = ? `,
-    //   )
-    //   .get(subscription.endpoint) as { cnt: number }
 
     if (subCount.count === 0) {
       console.log(`Adding subscription for user ${userId}`)
       await db.insert(pushNotificationDeviceTable).values({
         userId,
-        subscription: subscription,
+        subscription,
       })
-      //   subDb
-      //     .prepare(
-      //       'INSERT INTO user_devices (subscription, username) VALUES (?, ?)',
-      //     )
-      //     .run(JSON.stringify(subscription), username)
     }
   },
 
@@ -120,18 +88,9 @@ export const pushNotification = {
         )
       }
 
-      //   subDb
-      //     .prepare(
-      //       `
-      //   INSERT INTO notif_log (device_id, payload, http_status_response, success, error_message)
-      //   VALUES (?, ?, ?, ?, ?)
-      // `,
-      //     )
-      //     .run(device.device_id, payload, res.status, res.ok ? 1 : 0, res.body)
-
       await db.insert(pushNotificationLogTable).values({
         device_id: device.device_id,
-        http_status: res.status ?? 0,
+        http_status: res.status ?? 666,
         payload: payload,
         success: res.ok ? true : false,
         err_message: res.body,
@@ -142,9 +101,6 @@ export const pushNotification = {
         await db
           .delete(pushNotificationDeviceTable)
           .where(eq(pushNotificationDeviceTable.device_id, device.device_id))
-        // subDb
-        //   .prepare('DELETE FROM user_devices WHERE device_id = ?')
-        //   .run(device.device_id)
       } else if (!res.ok) {
         pushNotification.deleteIfExpired(device.device_id)
       }
@@ -152,15 +108,42 @@ export const pushNotification = {
   },
 
   notifUser: async (userId: string, payload: string) => {
-    // const devices = subDb
-    //   .prepare('SELECT * FROM user_devices WHERE username = ?')
-    //   .all(username) as SubDevice[]
-
     const devices = await db
       .select()
       .from(pushNotificationDeviceTable)
       .where(eq(pushNotificationDeviceTable.userId, userId))
 
     await pushNotification.sendNotificationToDevices(devices, payload)
+  },
+  addUserToChannel: async (channel_id: string, userId: string) => {
+    try {
+      await db.insert(notificationChannelTable).values({
+        channel_id,
+      })
+    } catch (error) {
+      console.error(error)
+    }
+
+    await db.insert(notificationChannelUsersTable).values({
+      channel_id,
+      userId,
+    })
+  },
+  notifChannel: async (channel_id: string, payload: string) => {
+    const devices_resp = await db
+      .select({ pushNotificationDeviceTable })
+      .from(notificationChannelUsersTable)
+      .where(eq(notificationChannelUsersTable, channel_id))
+      .innerJoin(
+        pushNotificationDeviceTable,
+        eq(
+          pushNotificationDeviceTable.userId,
+          notificationChannelUsersTable.userId,
+        ),
+      )
+
+    const devices = devices_resp.map(d => d.pushNotificationDeviceTable)
+
+    pushNotification.sendNotificationToDevices(devices, payload)
   },
 }

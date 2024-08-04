@@ -42,6 +42,9 @@ export const pushNotificationLogTable = sqliteTable('push_notification_log', {
       onDelete: 'cascade',
     },
   ),
+  channel_id: text('channel_id').references(
+    () => notificationChannelTable.channel_id,
+  ),
   created_at: text('created_at').default(sql`(CURRENT_TIMESTAMP)`),
   payload: text('payload').notNull(),
   http_status: integer('http_status').notNull(),
@@ -53,3 +56,20 @@ export type SelectPushNotificationLog =
   typeof pushNotificationLogTable.$inferSelect
 export type InsertPushNotificationLog =
   typeof pushNotificationLogTable.$inferInsert
+
+export const notificationChannelTable = sqliteTable('notification_channel', {
+  channel_id: text('channel_id').notNull().primaryKey().unique(),
+  created_at: text('created_at').default(sql`(CURRENT_TIMESTAMP)`),
+})
+
+export const notificationChannelUsersTable = sqliteTable(
+  'notification_channel_users',
+  {
+    channel_id: text('channel_id').notNull().primaryKey(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => userTable.id, {
+        onDelete: 'cascade',
+      }),
+  },
+)

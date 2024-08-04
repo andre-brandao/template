@@ -1,5 +1,12 @@
 <script lang="ts">
   import { icons } from '$lib/utils/icons'
+
+  import ThemeSwiter from './ThemeSwiter.svelte'
+  import ChangeLanguage from './ChangeLanguage.svelte'
+
+  import { modal } from '$lib/components/modal'
+  import BugReportModal from '$lib/components/modal/BugReportModal.svelte'
+
   import {
     setLanguageTag,
     sourceLanguageTag,
@@ -93,6 +100,8 @@
     },
   ]
 
+  export let showDefaultItems = true
+
   function isActive(href?: string) {
     // TODO: Fix translation home not working
 
@@ -118,7 +127,7 @@
         <ul>
           {#each navItem.subItems as subItem, i (subItem.href)}
             {#if subItem.subItems}
-              <svelte:self navItems={[subItem]} />
+              <svelte:self navItems={[subItem]} showDefaultItems={false} />
             {:else}
               <li>
                 <a
@@ -151,6 +160,15 @@
     {/if}
   </li>
 {/each}
+
+{#if showDefaultItems}
+  <li>
+    <button class="" onclick={() => modal.open(BugReportModal)}>
+      {@html icons.bug()}
+      Reportar Bug
+    </button>
+  </li>
+{/if}
 
 <style>
   a[aria-current='page']::before {

@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { User } from 'lucia'
   import ThemeSwiter from './ThemeSwiter.svelte'
+  import ChangeLanguage from './ChangeLanguage.svelte'
 
   import { website } from '$lib/config'
 
@@ -9,9 +10,6 @@
   import { page } from '$app/stores'
   import NavItems from './NavItems.svelte'
 
-  import { modal } from '$lib/components/modal'
-  import BugReportModal from '$lib/components/modal/BugReportModal.svelte'
-  import ChangeLanguage from './ChangeLanguage.svelte'
   import { icons } from '$lib/utils/icons'
   import { goto } from '$app/navigation'
 
@@ -50,9 +48,10 @@
           </svg>
         </label>
       </div>
-      <div class="mx-2 flex-1 px-2">
-        <a href="/" class="btn btn-ghost text-xl">{website.siteTitle}</a>
+      <div class="mx-2 flex-1 px-2 ">
+        <a href="/" class="btn btn-ghost text-xl max-sm:hidden">{website.siteShortTitle}</a>
       </div>
+
 
       <div class="hidden flex-none lg:block">
         <ul class="menu menu-horizontal space-x-1">
@@ -62,10 +61,7 @@
       </div>
 
       <div class="flex-none gap-2">
-        <button class="btn" onclick={() => modal.open(BugReportModal)}>
-          {@html icons.bug()}
-          Reportar Bug
-        </button>
+
 
         {#if $user}
           <div class="dropdown dropdown-end dropdown-hover">

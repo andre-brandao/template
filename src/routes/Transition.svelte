@@ -6,7 +6,7 @@
   import { onNavigate } from '$app/navigation'
   import PreLoadingIndicator from './PreLoadingIndicator.svelte'
 
-  export let key
+  export let data
 
   onNavigate(navigation => {
     // @ts-expect-error
@@ -24,11 +24,18 @@
 
 <!-- TODO: fix duplicating page bug -->
 <!-- or $navigating -->
-{#key key}
+{#key data.url}
   <div
-    class="h-full overflow-scroll overflow-x-auto transition-all"
-    in:fly={{ delay: 300, duration: 300, easing: cubicOut, x: 0, y: 240 }}
-    out:fly={{ duration: 300, easing: cubicIn, x: 0, y: -240 }}
+    in:fly={{
+      duration: 300,
+      x: 0,
+      y: 240,
+      delay: 2000,
+      opacity: 1,
+      easing: cubicOut,
+    }}
+    out:fly={{ duration: 300, x: 0, y: -240, easing: cubicIn }}
+    class="h-full overflow-scroll overflow-x-auto"
   >
     <slot />
   </div>

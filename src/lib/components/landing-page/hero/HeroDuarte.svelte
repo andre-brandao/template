@@ -9,7 +9,7 @@
 		<a
 			href="/"
 			class="rounded-lg bg-primary px-6 py-2 hover:bg-opacity-75 text-center transition"
-			>Acessar produtos</a
+			>Faça seu pedido!</a
 		>
 		<a
 			href="/admin"

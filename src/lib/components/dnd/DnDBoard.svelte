@@ -86,7 +86,7 @@
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    height: 90vh;
+    height: 80vh;
     width: 100%;
     padding: 0.5em;
   }

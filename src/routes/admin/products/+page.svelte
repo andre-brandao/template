@@ -105,7 +105,7 @@
   }
 </script>
 
-<div class="mx-auto flex items-center justify-center ">
+<div class="mx-auto flex items-center justify-center gap-3">
   <p>Produtos</p>
   <button class="btn btn-primary" onclick={handleAddCategory}>
     Add Category
@@ -136,10 +136,10 @@
   {#snippet card(p)}
     <a
       href="/admin/products/{p.id}"
-      class="flex w-full flex-col gap-2 bg-base-300 text-center"
+      class="flex w-full flex-col gap-0 bg-base-300 text-center rounded-lg py-3 px-4"
     >
-      <p>{p.name}</p>
-      <p>{p.description}</p>
+      <p class="font-bold text-xl">{p.name}</p>
+      <p class="font-light">{p.description}</p>
     </a>
   {/snippet}
 </DnDBoard>

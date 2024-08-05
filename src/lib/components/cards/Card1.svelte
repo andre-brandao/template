@@ -3,13 +3,11 @@
     nome: string
     descricao: string
     image?: string
+    preco: string
   }
 
-  let categorias = [
-    { nome: 'Latao' },
-    { nome: 'Teste' },
-  ]
-  let { nome, descricao, image }: CardProps = $props()
+  let categorias = [{ nome: 'Latao' }, { nome: 'Teste' }]
+  let { nome, descricao, image, preco }: CardProps = $props()
 </script>
 
 <button
@@ -27,7 +25,9 @@
   <div class="card-body">
     <h2 class="card-title flex justify-center">
       {nome}
-      <div class="badge badge-secondary">NEW</div>
+      <div class="badge badge-primary items-center p-4">
+        <p class="text-center text-xl">R${preco}</p>
+      </div>
     </h2>
     <p class="text-sm">Descricão: {descricao}</p>
     <div class="card-actions justify-center">

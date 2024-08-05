@@ -16,6 +16,7 @@
         nome={c.name}
         descricao={c.description}
         image={getImagePath(c.image)}
+        preco={'TODO'}
       />
     </a>
   {/snippet}

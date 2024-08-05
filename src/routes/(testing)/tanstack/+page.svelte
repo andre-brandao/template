@@ -18,7 +18,6 @@
     EditRowButton,
     EditRowInput,
   } from '$lib/components/table'
-  import type { ComponentProps } from 'svelte'
   import type { RouterOutputs, RouterInputs } from '$trpc/router'
 
   type Products = RouterOutputs['product']['paginatedProducts']['rows'][0]

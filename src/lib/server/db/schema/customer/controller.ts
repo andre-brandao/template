@@ -20,10 +20,22 @@ import { db } from '$db'
 import { eq, ne, or, sql } from 'drizzle-orm'
 
 export const customer = {
+  tables: {
+    customerTable,
+    addressTable,
+    customerOrderTable,
+    orderItemTable,
+  },
   insertCustomer: async (input: InsertCustomer) => {
     return db.insert(customerTable).values(input)
   },
-  getCustomerById: async (id: string) => {
+  updateCustomer: (
+    id: SelectCustomer['id'],
+    input: Partial<InsertCustomer>,
+  ) => {
+    return db.update(customerTable).set(input).where(eq(customerTable.id, id))
+  },
+  getCustomerById: async (id: SelectCustomer['id']) => {
     return db.query.customerTable.findFirst({
       where: eq(customerTable.id, id),
       with: {
@@ -39,6 +51,9 @@ export const customer = {
         adresses: true,
       },
     })
+  },
+  getCustomers: () => {
+    return db.select().from(customerTable)
   },
   insertAddress: async (input: InsertAddress) => {
     return db.insert(addressTable).values(input)
@@ -100,7 +115,7 @@ export const customer = {
     return resp
   },
 
-  getCustomerOrders: async (customerId: string) => {
+  getCustomerOrders: async (customerId: SelectCustomer['id']) => {
     return db.query.customerOrderTable.findMany({
       where: eq(customerOrderTable.customer_id, customerId),
       with: {

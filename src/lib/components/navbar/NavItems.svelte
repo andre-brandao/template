@@ -49,6 +49,11 @@
           // icon: icons.users(),
         },
         {
+          name: 'Customers',
+          href: '/admin/customer',
+          // icon: icons.users(),
+        },
+        {
           name: 'Orders',
           href: '/admin/orders',
           icon: icons.cart(),

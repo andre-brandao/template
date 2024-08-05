@@ -3,14 +3,16 @@
 import { t, publicProcedure } from './t'
 
 import { z } from 'zod'
-import { auth } from './routes/auth'
-import { product } from './routes/product'
-import { pushNotification } from './routes/push-notification'
 import { bugReport } from '$lib/server/db/controller'
 import { TRPCError } from '@trpc/server'
 import type { inferRouterInputs, inferRouterOutputs } from '@trpc/server'
-
 import { middleware } from './middleware'
+
+import { auth } from './routes/auth'
+import { product } from './routes/product'
+import { pushNotification } from './routes/push-notification'
+import { customer } from './routes/customer'
+
 export const router = t.router({
   // greeting: publicProcedure.query(async opts => {
   //   const { user } = opts.ctx
@@ -81,6 +83,7 @@ export const router = t.router({
 
   auth,
   product,
+  customer,
   pushNotification,
 })
 

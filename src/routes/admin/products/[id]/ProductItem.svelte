@@ -38,17 +38,19 @@
   }
 </script>
 
-<div class="bg-base-200 p-2">
-  <h2 class="font-bold">{item.name}</h2>
-  <p>Quantidade Incluida: {item.quantity}</p>
+<div class="bg-base-200 p-3 rounded-lg flex flex-col justify-center items-center">
+  <h2 class="font-bold text-center text-xl">{item.name}</h2>
+  <p class="text-center font-light">Quantidade Incluida: {item.quantity}</p>
 
-  <ImageInput
-    image_id={item.image}
-    name={item.name}
-    save={updateProductItemImage}
-  />
-  <div class="flex justify-between gap-3">
-    <p>WholeSale Price {item.wholesale_price}</p>
-    <p>Retail Price {item.retail_price}</p>
+  <div class="my-3">
+    <ImageInput
+      image_id={item.image}
+      name={item.name}
+      save={updateProductItemImage}
+    />
+  </div>
+  <div class="flex flex-col justify-between gap-1 text-center">
+    <p>WholeSale Price <span class="font-bold">{item.wholesale_price}</span></p>
+    <p>Retail Price <span class="font-bold">{item.retail_price}</span></p>
   </div>
 </div>

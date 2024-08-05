@@ -5,6 +5,7 @@
   import { trpc } from '$trpc/client'
   import { page } from '$app/stores'
   import { invalidate } from '$app/navigation'
+  import { icons } from '$lib/utils/icons'
 
   export let data: PageData
 
@@ -121,7 +122,7 @@
   }}
 >
   {#snippet collum(cat)}
-    <div class="flex items-center  justify-between gap-4">
+    <div class="flex items-center justify-between gap-4">
       <p>
         {cat.name}
       </p>
@@ -134,12 +135,17 @@
     </div>
   {/snippet}
   {#snippet card(p)}
-    <a
-      href="/admin/products/{p.id}"
-      class="flex w-full flex-col gap-0 bg-base-300 text-center rounded-lg py-3 px-4"
-    >
-      <p class="font-bold text-xl">{p.name}</p>
-      <p class="font-light">{p.description}</p>
-    </a>
+    <div class="flex w-full gap-0 rounded-lg bg-base-300 text-center">
+      <a href="/admin/products/{p.id}" class="w-5/6 px-4 py-3">
+        <p class="text-xl font-bold">{p.name}</p>
+        <p class="font-light">{p.description}</p>
+      </a>
+
+      <button
+        class="absolute right-4 top-4 flex h-12 w-12 items-center justify-center rounded-full border-2 border-red-500 bg-opacity-0 hover:cursor-pointer"
+      >
+        {@html icons.trash({ stroke: 'red' })}
+      </button>
+    </div>
   {/snippet}
 </DnDBoard>

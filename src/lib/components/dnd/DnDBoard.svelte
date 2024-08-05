@@ -103,7 +103,7 @@
     visibility: visible;
     border: 1px dashed grey;
     background: lightblue;
-    opacity: 0.35;
+    opacity: 0.30;
     margin: 0;
   }
 </style>

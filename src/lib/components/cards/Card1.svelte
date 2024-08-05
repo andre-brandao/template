@@ -4,6 +4,11 @@
     descricao: string
     image?: string
   }
+
+  let categorias = [
+    { nome: 'Latao' },
+    { nome: 'Teste' },
+  ]
   let { nome, descricao, image }: CardProps = $props()
 </script>
 
@@ -16,18 +21,19 @@
         ? image
         : 'https://img.daisyui.com/images/stock/photo-1606107557195-0e29a4b5b4aa.jpg'}
       loading="lazy"
-      alt="Shoes"
+      alt={nome}
     />
   </figure>
   <div class="card-body">
-    <h2 class="card-title">
+    <h2 class="card-title flex justify-center">
       {nome}
       <div class="badge badge-secondary">NEW</div>
     </h2>
-    <p>{descricao}</p>
-    <div class="card-actions justify-end">
-      <div class="badge badge-outline">Fashion</div>
-      <div class="badge badge-outline">Products</div>
+    <p class="text-sm">Descricão: {descricao}</p>
+    <div class="card-actions justify-center">
+      {#each categorias as categoria}
+        <div class="badge badge-outline">{categoria.nome}</div>
+      {/each}
     </div>
   </div>
 </button>

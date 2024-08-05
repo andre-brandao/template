@@ -9,11 +9,11 @@
 
 <Cardapio data={products}>
   {#snippet card(c)}
-    <a href="/products/{c.product.id}">
+    <a href="/products/{c.id}">
       <Card1
-        nome={c.product.name}
-        descricao={c.product.description}
-        image="/api/image/{c.image_id}"
+        nome={c.name}
+        descricao={c.description}
+        image="/api/image/{1}"
       />
     </a>
   {/snippet}

@@ -15,7 +15,6 @@
   import { ModalContainer } from '$lib/components/modal'
   import DrawerContainer from '$lib/components/drawer/base/DrawerContainer.svelte'
   import Transition from './Transition.svelte'
-
   import type { LayoutData } from './$types'
 
   export let data: LayoutData
@@ -24,7 +23,7 @@
   $: user.set(data.user)
 
   onMount(() => {
-    changeTheme('retro')
+    changeTheme('bumblebee')
   })
 </script>
 
@@ -33,7 +32,7 @@
   <!-- <DrawerContainer> -->
   <NavBar>
     <ModalContainer />
-    <Transition key={data.transition_key}>
+    <Transition {data}>
       <slot />
     </Transition>
   </NavBar>

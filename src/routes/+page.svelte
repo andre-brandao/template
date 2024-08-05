@@ -9,7 +9,7 @@
   import Footer from '$lib/components/landing-page/Footer.svelte'
 
   import ShareButton from '$components/share/index.svelte'
-  import HeroGlobe from '$lib/components/landing-page/hero/HeroGlobe.svelte'
+  import HeroDuarte from '$lib/components/landing-page/hero/HeroDuarte.svelte'
 </script>
 
 <SEO
@@ -27,7 +27,7 @@
 
 <!-- <Modal onClose={console.log} onOpen={console.log}>Teste Modal</Modal> -->
 <main class="flex flex-col gap-5 overflow-auto">
-  <HeroGlobe />
+  <HeroDuarte />
 
   <!-- <div class="h-60 w-60">
     <RotatingGlobe></RotatingGlobe>
@@ -36,7 +36,7 @@
 
   <!-- <MapContact /> -->
 
-  <Features3></Features3>
+  <!-- <Features3></Features3>
 
   <Pricing />
 
@@ -46,5 +46,5 @@
 
   <Carousel2 />
 
-  <Footer></Footer>
+  <Footer></Footer> -->
 </main>

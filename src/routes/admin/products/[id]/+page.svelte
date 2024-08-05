@@ -82,7 +82,7 @@
 
 <main class="container mx-auto flex flex-col">
   <div
-    class="card flex flex-row items-center justify-between bg-surface-300 p-2"
+    class="card flex flex-row items-center justify-between bg-surface-200 p-2"
   >
     <ImageInput
       name={produto.name}
@@ -90,15 +90,15 @@
       save={updateProductImage}
     />
     <div>
-      <h2 class="title-font text-sm tracking-widest text-gray-500">
+      <h2 class="title-font text-md tracking-widest text-gray-600 text-center">
         {produto.category?.name}
       </h2>
-      <h1 class="title-font mb-1 text-3xl font-medium text-gray-900">
+      <h1 class="mb-1 text-3xl font-bold text-gray-900 text-center">
         {produto.name}
       </h1>
-      <p class="leading-relaxed">{produto.description}</p>
+      <p class="leading-relaxed font-light text-sm text-center">Descricão: {produto.description}</p>
     </div>
-    <button class="btn btn-primary" onclick={handleAddItem}>+ Add Item</button>
+    <button class="btn btn-primary px-5" onclick={handleAddItem}>+ Add Item</button>
   </div>
 
   <div class="mt-3 flex flex-wrap gap-4">

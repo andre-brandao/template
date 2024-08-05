@@ -188,17 +188,21 @@ export const emailTemplate = {
                 text-align: center;
                 font-size: 12px;
               }
-               .text-blu {
-        color: #007bff;
-      }
-      .quadrado {
-        background-color: #007bff;
-        border-radius: 10px;
-      }
-      .white {
-        color: white;
-      }
-                
+              .code {
+                text-align: center;
+                font-size: 30px;
+                padding-bottom: 0px;
+              }
+              .text-blu {
+                color: #007bff;
+              }
+              .quadrado {
+                background-color: #007bff;
+                border-radius: 10px;
+              }
+              .white {
+                color: white;
+              }
             </style>
           </head>
           <body>

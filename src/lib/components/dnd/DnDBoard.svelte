@@ -86,7 +86,7 @@
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    height: 90vh;
+    height: 80vh;
     width: 100%;
     padding: 0.5em;
   }
@@ -103,7 +103,7 @@
     visibility: visible;
     border: 1px dashed grey;
     background: lightblue;
-    opacity: 0.35;
+    opacity: 0.30;
     margin: 0;
   }
 </style>

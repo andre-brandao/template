@@ -93,15 +93,15 @@
 <main class="mx-1">
   <div class="sticky top-1 z-10 mx-2 pt-2">
     <div
-      class="hide-scrollbar flex w-full gap-3 overflow-y-hidden overflow-x-scroll rounded-box bg-base-100 p-2 shadow-xl"
+      class="hide-scrollbar flex w-full gap-3 overflow-y-hidden overflow-x-scroll rounded-box bg-base-200 p-2 shadow-xl"
       bind:this={scrollContainer}
     >
       {#each data as d}
         <a
           id="head-{d}"
-          class="btn hover:-translate-x-1 hover:translate-y-1 {selected === d.id
-            ? 'btn-primary'
-            : ''}"
+          class="btn hover:translate-y-0.5 {selected === d.id
+            ? 'bg-primary'
+            : 'bg-base-100'}"
           href="#{d.id}"
           onclick={scrollIntoView}
         >

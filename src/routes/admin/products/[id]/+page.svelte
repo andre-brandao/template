@@ -93,7 +93,7 @@
       <h2 class="title-font text-md tracking-widest text-gray-600 text-center">
         {produto.category?.name}
       </h2>
-      <h1 class="title-font mb-1 text-3xl font-bold text-gray-900">
+      <h1 class="mb-1 text-3xl font-bold text-gray-900 text-center">
         {produto.name}
       </h1>
       <p class="leading-relaxed font-light text-sm text-center">Descricão: {produto.description}</p>

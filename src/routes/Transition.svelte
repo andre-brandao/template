@@ -30,9 +30,8 @@
       duration: 300,
       x: 0,
       y: 240,
-      delay: 2000,
-      opacity: 1,
       easing: cubicOut,
+      delay: 2000,
     }}
     out:fly={{ duration: 300, x: 0, y: -240, easing: cubicIn }}
     class="h-full overflow-scroll overflow-x-auto"

@@ -36,6 +36,33 @@
       footer: info => info.column.id,
     },
     {
+      header: 'CPF/CNPJ',
+      accessorKey: 'cpf_cnpj',
+      cell: info =>
+        renderComponent(EditRowInput<Customer>, {
+          id: info.row.original.id,
+          colID: 'cpf_cnpj',
+          editT: 'text',
+          value: info.getValue(),
+        }),
+    },
+    {
+      header: 'Is Retail',
+      accessorKey: 'is_retail',
+    },
+    {
+      header: 'RG/IE',
+      accessorKey: 'rg_ie',
+      cell: info =>
+        renderComponent(EditRowInput<Customer>, {
+          id: info.row.original.id,
+          colID: 'rg_ie',
+          editT: 'text',
+          value: info.getValue(),
+        }),
+    },
+
+    {
       // accessorFn: row => row.description,
       header: () => 'Email',
       accessorKey: 'email',
@@ -78,6 +105,17 @@
         renderComponent(EditRowInput<Customer>, {
           id: info.row.original.id,
           colID: 'used_credit',
+          editT: 'number',
+          value: info.getValue(),
+        }),
+    },
+    {
+      header: 'Max Credit',
+      accessorKey: 'max_credit',
+      cell: info =>
+        renderComponent(EditRowInput<Customer>, {
+          id: info.row.original.id,
+          colID: 'max_credit',
           editT: 'number',
           value: info.getValue(),
         }),

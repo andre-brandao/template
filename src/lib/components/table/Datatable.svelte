@@ -169,7 +169,7 @@
     {#if isLoading}
       <Loading />
     {:else}
-      <table class="table table-zebra table-pin-cols">
+      <table class="table table-zebra ">
         <thead>
           {#each table.getHeaderGroups() as headerGroup}
             <tr>

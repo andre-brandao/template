@@ -9,7 +9,7 @@
   import Footer from '$lib/components/landing-page/Footer.svelte'
 
   import ShareButton from '$components/share/index.svelte'
-  import HeroGlobe from '$lib/components/landing-page/hero/HeroGlobe.svelte'
+  import HeroGlobe from '$lib/components/landing-page/hero/HeroDuarte.svelte'
 </script>
 
 <SEO
@@ -36,7 +36,7 @@
 
   <!-- <MapContact /> -->
 
-  <Features3></Features3>
+  <!-- <Features3></Features3>
 
   <Pricing />
 
@@ -46,5 +46,5 @@
 
   <Carousel2 />
 
-  <Footer></Footer>
+  <Footer></Footer> -->
 </main>

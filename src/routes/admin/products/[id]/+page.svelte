@@ -7,6 +7,8 @@
   import ProductItem from './ProductItem.svelte'
   import ImageInput from '$lib/components/input/ImageInput.svelte'
 
+  import { toast } from 'svelte-sonner'
+
   export let data: PageData
 
   const produto = data.prod
@@ -62,6 +64,20 @@
       },
     })
   }
+
+  async function updateProductImage(image_id: number) {
+    try {
+      const [resp] = await trpc($page).product.updateProduct.mutate({
+        id: produto.id,
+        prod: { image: image_id },
+      })
+      if (resp) {
+        toast.info(`Product Image #${produto.id} updated`)
+      }
+    } catch (error: any) {
+      toast.error(error.message)
+    }
+  }
 </script>
 
 <main class="container mx-auto flex flex-col">
@@ -71,12 +87,7 @@
     <ImageInput
       name={produto.name}
       image_id={produto.image}
-      save={img => {
-        trpc($page).product.updateProduct.mutate({
-          id: produto.id,
-          prod: { image: img },
-        })
-      }}
+      save={updateProductImage}
     />
     <div>
       <h2 class="title-font text-sm tracking-widest text-gray-500">
@@ -91,7 +102,7 @@
   </div>
 
   <div class="mt-3 flex flex-wrap gap-4">
-    {#each produto.items as item}
+    {#each produto.items as item, i (item.id)}
       <ProductItem {item} />
     {/each}
   </div>

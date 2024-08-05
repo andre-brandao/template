@@ -1,5 +1,6 @@
 <script lang="ts">
   import { uploadImage, getImagePath } from '$utils'
+  import { toast } from 'svelte-sonner'
 
   export let name = 'PlaceholderName'
   export let image_id: number | null
@@ -36,12 +37,13 @@
       responseMessage = error ?? 'Error Uploading'
     } else {
       image_id = data
+      toast.info('Image Uploaded')
       save(data)
     }
   }
 
+  let input: HTMLInputElement
   const triggerFileInput = () => {
-    const input = document.getElementById('file-input')
     input?.click()
   }
 </script>
@@ -54,9 +56,12 @@
     type="file"
     accept="image/*"
     class="upload-input"
+    bind:this={input}
     on:change={handleFileChange}
   />
 
+  <!-- svelte-ignore a11y_no_static_element_interactions -->
+  <!-- svelte-ignore a11y_click_events_have_key_events -->
   <span class="upload-icon" on:click={triggerFileInput}>
     <svg
       xmlns="http://www.w3.org/2000/svg"

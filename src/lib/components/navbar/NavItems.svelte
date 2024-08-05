@@ -35,6 +35,10 @@
       icon: icons.chart.bar(),
     },
     {
+      name: 'Cardapio',
+      href: '/products',
+    },
+    {
       name: 'Admin',
       href: '/admin',
       subItems: [

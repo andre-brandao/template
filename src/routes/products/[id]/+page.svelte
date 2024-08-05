@@ -7,25 +7,6 @@
   export let data: PageData
   const { produto } = data
 
-  let activeEntry = 0
-
-  let activePrice = 0
-
-  // let variants = produto.entry.map(entry => {
-  //   return {
-  //     id: entry.id,
-  //     brand: entry.brand,
-  //     category: entry.category,
-  //     price: entry.prices
-  //       // .filter(p => !p.price_label.is_retail)
-  //       .map(p => ({
-  //         price_label: p.price_label.label,
-  //         price_value: p.price,
-  //       })),
-  //     image: entry.image_id,
-  //   }
-  // })
-
   let quantity = 1
   function increment() {
     quantity += 1
@@ -35,28 +16,25 @@
     quantity -= 1
   }
 
+  let activeItemIndex = 0
+
   // let total = tweened(
   //   (variants[activeEntry].price[activePrice]?.price_value ?? 0) * quantity,
   //   {
   //     duration: 300,
   //   },
   // )
-
-  // $: {
-  //   $total =
-  //     (variants[activeEntry].price[activePrice]?.price_value ?? 0) * quantity
-  // }
 </script>
 
-<!-- <section class="body-font overflow-hidden">
+<section class="body-font overflow-hidden">
   <div class="container mx-auto px-5 py-24">
-    <button onclick={() => history.back()} class="btn btn-primary mb-3">
-      {@html icons.arrows.left_line()} Back
-    </button>
     <div class="mx-auto flex flex-wrap-reverse lg:w-4/5">
       <div class="mb-6 w-full lg:mb-0 lg:w-1/2 lg:py-6 lg:pr-10">
+        <button onclick={() => history.back()} class="btn btn-primary mb-3">
+          {@html icons.arrows.left_line()} Back
+        </button>
         <h2 class="title-font text-sm tracking-widest">
-          {variants[activeEntry].brand.name}
+          {produto.category?.name}
         </h2>
         <h1 class="title-font mb-4 text-3xl font-medium">
           {produto.name}
@@ -78,42 +56,19 @@
           {produto.description}
         </p>
 
-        <div class="flex border-t border-gray-200 py-2">
-          <span class="">Brand</span>
-          <span class="ml-auto">
-            <select
-              class="select select-bordered select-sm w-full max-w-xs"
-              bind:value={activeEntry}
+        <div class="flex gap-3 border-t border-gray-200 py-2">
+          {#each produto.items as variant, i (variant)}
+            <!-- TODO: improve minicard -->
+            <button
+              class="btn"
+              class:btn-active={activeItemIndex === i}
+              value={i}
+              onclick={() => (activeItemIndex = i)}
             >
-              {#each variants as variant, i (variant)}
-                <option value={i}>
-                  {variant.brand?.name}
-                </option>
-              {/each}
-            </select>
-          </span>
+              {variant.name}
+            </button>
+          {/each}
         </div>
-        <div class="flex border-t border-gray-200 py-2">
-          <span class="">Price</span>
-
-          <span class="ml-auto">
-            <select
-              class="select select-bordered select-sm w-full max-w-xs"
-              bind:value={activePrice}
-            >
-              {#each variants[activeEntry].price as price, i (price)}
-                <option value={i}>
-                  {price.price_label}
-
-                  R${price.price_value.toFixed(2)}
-                </option>
-                {price.price_value}
-              {/each}
-            </select>
-          </span>
-        </div>
-
-  
 
         <div class="mb-6 flex border-b border-t border-gray-200 py-2">
           <span class="">Quantity</span>
@@ -125,7 +80,7 @@
         </div>
         <div class="flex">
           <span class="title-font text-2xl font-medium">
-            ${$total.toFixed(2)}
+            ${9}
           </span>
           <button class="btn btn-primary ml-auto flex">
             Adicionar Carrinho
@@ -151,8 +106,10 @@
       <img
         alt="ecommerce"
         class="h-64 w-full rounded object-cover object-center lg:h-auto lg:w-1/2"
-        src={getImagePath(variants[activeEntry].image)}
+        src={getImagePath(
+          produto.items[activeItemIndex].image ?? produto.image,
+        )}
       />
     </div>
   </div>
-</section> -->
+</section>

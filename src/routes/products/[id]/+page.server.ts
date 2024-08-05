@@ -5,7 +5,7 @@ import { error } from '@sveltejs/kit'
 
 export const load = (async ({ params }) => {
   const id = Number(params.id)
-  const produto = await product.getProductFromID(id)
+  const produto = await product.getProductByID(id)
   console.log(produto)
 
   if (!produto) {

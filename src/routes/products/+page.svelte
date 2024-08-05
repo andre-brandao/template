@@ -3,6 +3,8 @@
   import Cardapio from '$lib/components/Cardapio.svelte'
   import Card1 from '$lib/components/cards/Card1.svelte'
 
+  import { getImagePath } from '$utils/image'
+
   export let data: PageData
   const { products } = data
 </script>
@@ -13,7 +15,7 @@
       <Card1
         nome={c.name}
         descricao={c.description}
-        image="/api/image/{1}"
+        image={getImagePath(c.image)}
       />
     </a>
   {/snippet}

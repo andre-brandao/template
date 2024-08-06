@@ -32,13 +32,13 @@
         {
           name: 'wholesale_price',
           label: 'WholeSale Price',
-          type: 'number',
+          type: 'currency',
           required: true,
         },
         {
           name: 'retail_price',
           label: 'Retail Price',
-          type: 'number',
+          type: 'currency',
           required: true,
         },
       ],
@@ -90,15 +90,19 @@
       save={updateProductImage}
     />
     <div>
-      <h2 class="title-font text-md tracking-widest text-gray-600 text-center">
+      <h2 class="title-font text-md text-center tracking-widest text-gray-600">
         {produto.category?.name}
       </h2>
-      <h1 class="mb-1 text-3xl font-bold text-gray-900 text-center">
+      <h1 class="mb-1 text-center text-3xl font-bold text-gray-900">
         {produto.name}
       </h1>
-      <p class="leading-relaxed font-light text-sm text-center">Descricão: {produto.description}</p>
+      <p class="text-center text-sm font-light leading-relaxed">
+        Descricão: {produto.description}
+      </p>
     </div>
-    <button class="btn btn-primary px-5" onclick={handleAddItem}>+ Add Item</button>
+    <button class="btn btn-primary px-5" onclick={handleAddItem}>
+      + Add Item
+    </button>
   </div>
 
   <div class="mt-3 flex flex-wrap gap-4">

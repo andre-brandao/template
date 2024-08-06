@@ -4,6 +4,7 @@
   import { toast } from 'svelte-sonner'
 
   import { type Component, type ComponentProps } from 'svelte'
+  import CurrencyInput from '../input/CurrencyInput.svelte'
 
   interface Field<
     T = any,
@@ -21,6 +22,7 @@
       | 'select'
       | 'checkbox'
       | 'component'
+      | 'currency'
     component?: {
       ref: C
       props: ComponentProps<C>
@@ -113,6 +115,8 @@
               required={field.required}
               bind:checked={field.value}
             />
+          {:else if field.type === 'currency'}
+            <CurrencyInput bind:value={field.value} />
           {/if}
         </div>
         {#if field.type === 'text'}

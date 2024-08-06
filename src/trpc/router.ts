@@ -8,24 +8,14 @@ import { TRPCError } from '@trpc/server'
 import type { inferRouterInputs, inferRouterOutputs } from '@trpc/server'
 import { middleware } from './middleware'
 
+// ROUTES
 import { auth } from './routes/auth'
 import { product } from './routes/product'
 import { pushNotification } from './routes/push-notification'
 import { customer } from './routes/customer'
+import { stock } from './routes/stock'
 
 export const router = t.router({
-  // greeting: publicProcedure.query(async opts => {
-  //   const { user } = opts.ctx
-  //   return `Hello tRPC v10 @ ${new Date().toLocaleTimeString()}  ${user?.username ?? 'guest'}`
-  // }),
-
-  // greetPerson: publicProcedure
-  //   .input(z.string())
-  //   .query(async ({ ctx, input }) => {
-  //     const { user } = ctx
-  //     return `Hello ${input}! ${user?.username ?? 'guest'}`
-  //   }),
-
   reportBug: publicProcedure
     .input(
       z.object({
@@ -85,6 +75,7 @@ export const router = t.router({
   product,
   customer,
   pushNotification,
+  stock,
 })
 
 export type Router = typeof router

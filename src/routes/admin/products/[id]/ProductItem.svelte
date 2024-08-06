@@ -7,6 +7,9 @@
   import { page } from '$app/stores'
   import { trpc } from '$trpc/client'
   import { toast } from 'svelte-sonner'
+  import { icons } from '$lib/utils'
+  import { modal } from '$lib/components/modal'
+  import ModalSku from '$lib/components/modal/ModalSKU.svelte'
   export let item: SelectProductItem
 
   let isChanged = false
@@ -40,6 +43,7 @@
           quantity: item.quantity,
           wholesale_price: item.wholesale_price,
           retail_price: item.retail_price,
+          sku: item.sku ?? undefined,
         },
       })
       console.log(resp)
@@ -52,6 +56,16 @@
     }
     isChanged = false
   }
+
+  function openSKUModal() {
+    modal.open(ModalSku, {
+      selectedSKU: async sku => {
+        item.sku = sku.sku
+        await updateProductItemInfo()
+      },
+      newSKU: { name: item.name, sku: '' },
+    })
+  }
 </script>
 
 <!-- TODO: add delete button -->
@@ -59,12 +73,22 @@
   class="flex flex-col items-center justify-center space-y-1 rounded-lg bg-base-200 p-3"
 >
   <!-- <h2 class="text-center text-xl font-bold">{item.name}</h2> -->
-  <input
-    type="text"
-    class="input w-full"
-    bind:value={item.name}
-    on:change={() => (isChanged = true)}
-  />
+
+  <div class="flex items-center gap-2">
+    <input
+      type="text"
+      class="input w-full"
+      bind:value={item.name}
+      on:change={() => (isChanged = true)}
+    />
+
+    <button
+      class="btn {item.sku ? 'btn-success' : 'btn-error'}"
+      on:click={openSKUModal}
+    >
+      {@html icons.box()}
+    </button>
+  </div>
   <div class=" flex w-full items-center justify-between font-light">
     <span>Quantidade Incluida:</span>
 

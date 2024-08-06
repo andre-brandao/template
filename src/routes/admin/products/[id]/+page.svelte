@@ -20,6 +20,7 @@
           name: 'name',
           label: 'Name',
           type: 'text',
+          value: produto.name,
           required: true,
         },
         {

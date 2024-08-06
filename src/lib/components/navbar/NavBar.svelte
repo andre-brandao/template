@@ -2,6 +2,7 @@
   import type { User } from 'lucia'
   import ThemeSwiter from './ThemeSwiter.svelte'
   import ChangeLanguage from './ChangeLanguage.svelte'
+  import Cart from './Cart.svelte'
 
   import { website } from '$lib/config'
 
@@ -18,7 +19,7 @@
   async function logout() {
     user.set(null)
     await trpc($page).auth.logOut.query()
-    goto("/")
+    goto('/')
   }
 </script>
 
@@ -48,10 +49,11 @@
           </svg>
         </label>
       </div>
-      <div class="mx-2 flex-1 px-2 ">
-        <a href="/" class="btn btn-ghost text-xl max-sm:hidden">{website.siteShortTitle}</a>
+      <div class="mx-2 flex-1 px-2">
+        <a href="/" class="btn btn-ghost text-xl max-sm:hidden">
+          {website.siteShortTitle}
+        </a>
       </div>
-
 
       <div class="hidden flex-none lg:block">
         <ul class="menu menu-horizontal space-x-1">
@@ -61,8 +63,6 @@
       </div>
 
       <div class="flex-none gap-2">
-
-
         {#if $user}
           <div class="dropdown dropdown-end dropdown-hover">
             <div tabindex="0" role="button" class="btn m-1">
@@ -82,6 +82,8 @@
         {:else}
           <a class="btn" href="/login">{@html icons.login()}Login</a>
         {/if}
+
+        <Cart />
 
         <ThemeSwiter />
 

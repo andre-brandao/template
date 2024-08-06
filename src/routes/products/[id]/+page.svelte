@@ -4,6 +4,11 @@
   import { icons } from '$lib/utils/icons'
   import Detail from '$components/detail/Detail1.svelte'
   import { tweened } from 'svelte/motion'
+
+  import { getCartContext } from '$lib/stores/cart'
+  const cart = getCartContext()
+  console.log(cart)
+
   export let data: PageData
   const { produto } = data
 
@@ -18,12 +23,23 @@
 
   let activeItemIndex = 0
 
-  // let total = tweened(
-  //   (variants[activeEntry].price[activePrice]?.price_value ?? 0) * quantity,
-  //   {
-  //     duration: 300,
-  //   },
-  // )
+  let total = tweened(
+    (produto.items[activeItemIndex].retail_price ?? 0) * quantity,
+    {
+      duration: 300,
+    },
+  )
+  $: $total = (produto.items[activeItemIndex].retail_price ?? 0) * quantity
+
+  function addToCart() {
+    console.log(cart)
+
+    cart.addItem({
+      item: produto.items[activeItemIndex],
+      quantity: quantity ?? 1,
+    })
+    quantity = 1
+  }
 </script>
 
 <section class="body-font overflow-hidden">
@@ -81,7 +97,7 @@
         </div>
         <div class="flex items-center justify-between">
           <span class="title-font text-2xl font-bold">
-            ${'TODO'}
+            ${$total.toFixed(2)}
           </span>
           <div class="flex items-center gap-4">
             <button
@@ -100,7 +116,9 @@
                 ></path>
               </svg>
             </button>
-            <button class="btn btn-primary flex">Add to cart</button>
+            <button class="btn btn-primary flex" onclick={addToCart}>
+              Add to cart
+            </button>
           </div>
         </div>
       </div>

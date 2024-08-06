@@ -37,6 +37,18 @@ export const customerRelations = relations(customerTable, ({ one, many }) => ({
   }),
 }))
 export const insertCustomerSchema = createInsertSchema(customerTable, {})
+export const updateCustomerSchema = insertCustomerSchema.pick({
+  birth_date: true,
+  cellphone: true,
+  cpf_cnpj: true,
+  rg_ie: true,
+  email: true,
+  name: true,
+  phone: true,
+  is_retail: true,
+  max_credit: true,
+  used_credit: true,
+})
 export type SelectCustomer = typeof customerTable.$inferSelect
 export type InsertCustomer = typeof customerTable.$inferInsert
 
@@ -61,7 +73,10 @@ export const addressTable = sqliteTable('address', {
 })
 
 export const addressRelations = relations(addressTable, ({ one, many }) => ({
-  customer: one(customerTable),
+  customer: one(customerTable, {
+    fields: [addressTable.customer_id],
+    references: [customerTable.id],
+  }),
   orders: many(customerOrderTable),
 }))
 export const insertAddressSchema = createInsertSchema(addressTable)

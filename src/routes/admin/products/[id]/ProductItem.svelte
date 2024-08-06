@@ -52,18 +52,21 @@
     }
     isChanged = false
   }
-
-  function handleChange(e: Event) {
-    isChanged = true
-  }
 </script>
 
+<!-- TODO: add delete button -->
 <div
-  class="flex flex-col items-center justify-center rounded-lg bg-base-200 p-3"
+  class="flex flex-col items-center justify-center space-y-1 rounded-lg bg-base-200 p-3"
 >
-  <h2 class="text-center text-xl font-bold">{item.name}</h2>
+  <!-- <h2 class="text-center text-xl font-bold">{item.name}</h2> -->
+  <input
+    type="text"
+    class="input w-full"
+    bind:value={item.name}
+    on:change={() => (isChanged = true)}
+  />
   <div class=" flex w-full items-center justify-between font-light">
-    <p>Quantidade Incluida:</p>
+    <span>Quantidade Incluida:</span>
 
     <input
       type="number"
@@ -81,21 +84,21 @@
     />
   </div>
   <div class="flex flex-col justify-between gap-1 text-center">
-    <p class="flex items-center justify-between gap-2">
+    <div class="flex items-center justify-between gap-2">
       WholeSale Price
 
       <CurrencyInput
         bind:value={item.wholesale_price}
-        on:change={handleChange}
+        on:change={() => (isChanged = true)}
       />
-    </p>
+    </div>
 
-    <p class="flex items-center justify-between gap-2">
+    <div class="flex items-center justify-between gap-2">
       Retail Price <CurrencyInput
         bind:value={item.retail_price}
-        on:change={handleChange}
+        on:change={() => (isChanged = true)}
       />
-    </p>
+    </div>
   </div>
 
   {#if isChanged}

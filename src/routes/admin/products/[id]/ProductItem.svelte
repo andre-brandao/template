@@ -66,6 +66,18 @@
       newSKU: { name: item.name, sku: '' },
     })
   }
+
+  async function handleDeleteProductItem() {
+    try {
+      await trpc($page).product.deleteProductItem.mutate(item.id)
+
+      toast.success('Deletado com sucesso!')
+      //TODO: Fix delete update sem recarregar
+      window.location.reload()
+    } catch (error: any) {
+      toast.error(error.message)
+    }
+  }
 </script>
 
 <!-- TODO: add delete button -->
@@ -87,6 +99,12 @@
       on:click={openSKUModal}
     >
       {@html icons.box()}
+    </button>
+    <button
+      class="btn btn-error"
+      on:click={handleDeleteProductItem}
+    >
+      {@html icons.trash()}
     </button>
   </div>
   <div class=" flex w-full items-center justify-between font-light">

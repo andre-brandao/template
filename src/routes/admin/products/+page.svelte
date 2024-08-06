@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { toast } from 'svelte-sonner'
   import type { PageData } from './$types'
   import DnDBoard from '$components/dnd/DnDBoard.svelte'
   import { modal, FormModal } from '$modal'
@@ -19,6 +20,18 @@
   async function handleBoardUpdated(newColumnsData: typeof columnsData) {
     console.log(newColumnsData)
     columnsData = newColumnsData
+  }
+
+  async function handleDeleteProduct(id: number) {
+    try {
+      await trpc($page).product.deleteProduct.mutate(id)
+
+      toast.success('Item deletado com sucesso!')
+      //TODO: Fix delete update sem recarregar
+      window.location.reload()
+    } catch (error: any) {
+      toast.error(error.message)
+    }
   }
 
   function handleAddProduct(category_id: number) {
@@ -142,6 +155,7 @@
       </a>
 
       <button
+        onclick={() => handleDeleteProduct(p.id)}
         class="absolute right-4 top-4 flex h-12 w-12 items-center justify-center rounded-full border-2 border-red-500 bg-opacity-0 hover:cursor-pointer"
       >
         {@html icons.trash({ stroke: 'red' })}

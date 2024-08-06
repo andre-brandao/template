@@ -15,8 +15,8 @@
   })}
 />
 
-<main class="flex min-h-screen items-center justify-center">
-  <div class="w-full max-w-sm rounded-lg p-8 shadow-lg">
+<main class="flex min-h-[90vh] items-center justify-center bg-base-200">
+  <div class="w-full max-w-sm rounded-lg p-8 shadow-lg bg-base-100">
     <h1 class="text-center text-2xl font-semibold">{m.title_sign_in()}</h1>
     <form method="post" use:enhance class="mt-6 flex flex-col gap-4">
       <div>
@@ -39,7 +39,7 @@
           id="password"
         />
       </div>
-      <button class="btn btn-secondary mt-4 w-full">{m.continu()}</button>
+      <button class="btn btn-primary mt-4 w-full">{m.continu()}</button>
       <p class=" mt-2 text-center text-sm">{form?.message ?? ''}</p>
     </form>
     <p class="mt-4 text-center text-sm">

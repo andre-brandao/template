@@ -5,8 +5,8 @@
 
   const cart = getCartContext()
 
-  $: subtotal = $cart.reduce(
-    (acc, item) => acc + item.quantity * item.item.retail_price,
+  $: subtotal = Object.values($cart).reduce(
+    (acc, item) => acc + item.item.retail_price * item.quantity,
     0,
   )
 </script>
@@ -29,7 +29,9 @@
             d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
           />
         </svg>
-        <span class="badge indicator-item badge-sm">{$cart.length}</span>
+        <span class="badge indicator-item badge-sm">
+          {Object.keys($cart).length}
+        </span>
       </div>
     </div>
     <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
@@ -38,11 +40,13 @@
       class="card dropdown-content card-compact z-[1] mt-3 w-72 bg-base-100 shadow"
     >
       <div class="card-body">
-        <span class="text-lg font-bold">{$cart.length} Items</span>
+        <span class="text-lg font-bold">
+          {Object.values($cart).length} Items
+        </span>
         <!-- TODO: format price -->
-        <span class="text-info">Subtotal: {subtotal}</span>
+        <span class="text-info">Subtotal: {(subtotal / 100).toFixed(2)}</span>
         <div class="card-actions">
-          {#each $cart as item}
+          {#each Object.values($cart) as item}
             <div class="flex items-center justify-between gap-2">
               <img
                 src={getImagePath(item.item.image)}
@@ -63,7 +67,7 @@
               </button>
             </div>
           {/each}
-          {#if $cart.length === 0}
+          {#if Object.keys($cart).length === 0}
             <p class="text-center">No items in cart</p>
           {:else}
             <button class="btn btn-outline w-full">Checkout</button>

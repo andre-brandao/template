@@ -3,12 +3,15 @@ import { getContext, setContext } from 'svelte'
 import type { SelectProductItem } from '$db/schema'
 const CART_STORE_KEY = 'cart'
 
-type Cart = {
-  item: SelectProductItem
-  quantity: number
-}[]
+type Cart = Record<
+  SelectProductItem['id'],
+  {
+    item: SelectProductItem
+    quantity: number
+  }
+>
 
-function createCartStore(base_cart: Cart = []) {
+function createCartStore(base_cart: Cart = {}) {
   const { set, subscribe, update } = writable<Cart>(base_cart)
   return {
     set,
@@ -16,35 +19,38 @@ function createCartStore(base_cart: Cart = []) {
     update,
     addItem: (input: { item: SelectProductItem; quantity: number }) => {
       update(cart => {
-        const existing = cart.findIndex(i => i.item.id === input.item.id)
-        if (existing !== -1) {
-          cart[existing].quantity += input.quantity
+        const existing = cart[input.item.id]
+
+        if (existing) {
+          existing.quantity += input.quantity
         } else {
-          cart.push(input)
+          cart[input.item.id] = {
+            item: input.item,
+            quantity: input.quantity,
+          }
         }
         return cart
       })
     },
     setItem: (input: { item: SelectProductItem; quantity: number }) => {
       update(cart => {
-        const existing = cart.findIndex(i => i.item.id === input.item.id)
-        if (existing) {
-          cart[existing].quantity = input.quantity
-        } else {
-          cart.push(input)
+        cart[input.item.id] = {
+          item: input.item,
+          quantity: input.quantity,
         }
         return cart
       })
     },
     removeItem: (item_id: number) => {
       update(cart => {
-        return cart.filter(i => i.item.id !== item_id)
+        delete cart[item_id]
+        return cart
       })
     },
   }
 }
 
-export function createCartContext(cart: Cart = []) {
+export function createCartContext(cart: Cart = {}) {
   const store = createCartStore(cart)
   return setContext(CART_STORE_KEY, store)
 }

@@ -6,7 +6,7 @@
   import { onNavigate } from '$app/navigation'
   import PreLoadingIndicator from './PreLoadingIndicator.svelte'
 
-  export let data
+  export let key
 
   onNavigate(navigation => {
     // @ts-expect-error
@@ -24,7 +24,7 @@
 
 <!-- TODO: fix duplicating page bug -->
 <!-- or $navigating -->
-{#key data.url}
+{#key key}
   <div
     in:fly={{
       duration: 300,

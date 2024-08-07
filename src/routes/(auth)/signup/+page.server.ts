@@ -86,7 +86,7 @@ export const actions: Actions = {
     } catch (e) {
       if (e instanceof LibsqlError && e.code === 'SQLITE_CONSTRAINT_UNIQUE') {
         return fail(400, {
-          message: 'Username already used',
+          message: 'Username or Email already used',
         })
       }
       console.error(e)

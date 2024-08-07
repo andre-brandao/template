@@ -34,7 +34,7 @@
   <!-- <DrawerContainer> -->
   <NavBar>
     <ModalContainer />
-    <Transition {data}>
+    <Transition key={data.transition_key}>
       <slot />
     </Transition>
   </NavBar>

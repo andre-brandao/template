@@ -22,8 +22,10 @@
   })
 </script>
 
-<!-- TODO: fix duplicating page bug -->
-<!-- or $navigating -->
+{#if $navigating}
+  <PreLoadingIndicator />
+{/if}
+
 {#key key}
   <div
     in:fly={{

@@ -71,25 +71,7 @@ export const customer = {
     const { order_info, order_items } = input
 
     const resp = db.transaction(async tx => {
-      if (order_info.customer_id && order_info.payment_method === 'credit') {
-        const [customer] = await tx
-          .select()
-          .from(customerTable)
-          .where(eq(customerTable.id, order_info.customer_id))
-        if (customer.max_credit < order_info.total + customer.used_credit) {
-          await tx.rollback()
-          return {
-            error: `Customer ${customer.name} has no credit available`,
-          }
-        }
-        await tx
-          .update(customerTable)
-          .set({
-            // used_credit: sql`${customerTable.used_credit} + ${order_info.total}`,
-            used_credit: customer.used_credit + order_info.total,
-          })
-          .where(eq(customerTable.id, order_info.customer_id))
-      }
+  
 
       const [order] = await tx
         .insert(customerOrderTable)

@@ -133,12 +133,7 @@
   ]
 
   async function load(s: TableState) {
-    const resp = await trpc($page).customer.getPaginatedCustomers.query(s)
-
-    return {
-      data: resp.rows ?? [],
-      count: resp.total ?? 0,
-    }
+    return await trpc($page).customer.getPaginatedCustomers.query(s)
   }
 
   async function save(changes: { [key: string]: Customer }) {

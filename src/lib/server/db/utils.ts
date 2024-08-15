@@ -21,13 +21,13 @@ export async function tableHelper<T extends SQLiteSelect>(
   if (search) {
     qb = withSearch(qb, table, search, seach_column)
   }
-  const [rows, total] = await Promise.all([
+  const [rows, [{ count }]] = await Promise.all([
     await withPagination(qb, page, pageSize),
     await getRowCount(table),
   ])
   return {
     rows,
-    total: total[0].count,
+    count: count,
   }
 }
 

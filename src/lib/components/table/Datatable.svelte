@@ -8,25 +8,26 @@
   } from '@tanstack/svelte-table'
   import type { ColumnDef, TableOptions } from '@tanstack/svelte-table'
   import { type TableState, createRowChanges } from '.'
+  import { toast } from 'svelte-sonner'
 
   const rowChanges = createRowChanges<T>()
   // import { type TableState } from '.'
 
   interface DatatableProps {
-    data?: T[]
+    rows?: T[]
     columns: ColumnDef<T>[]
     add?: (invalidate: Function) => void
     save?: (changes: { [key: string]: T }) => void
     load: (state: TableState) => Promise<
       | {
-          data: T[]
+          rows: T[]
           count: number
         }
       | undefined
     >
   }
 
-  let { data, columns, load, save, add }: DatatableProps = $props()
+  let { rows, columns, load, save, add }: DatatableProps = $props()
 
   let datatableState = $state<TableState>({
     page: 1,
@@ -45,15 +46,18 @@
     isLoading = true
     console.log(true)
 
-    const resp = await load(datatableState)
-    console.log(resp)
+    try {
+      const resp = await load(datatableState)
+      console.log(resp)
 
-    if (resp) {
-      options.data = resp.data ?? []
-      totalRows = resp.count ?? 0
+      if (resp) {
+        options.rows = resp.rows ?? []
+        totalRows = resp.count ?? 0
+      }
+    } catch (error: any) {
+      console.error(error)
+      toast.error(error.message)
     }
-    console.log(false)
-
     isLoading = false
   }
 
@@ -100,7 +104,7 @@
   }
 
   const options = $state<TableOptions<T>>({
-    data: data ?? [],
+    rows: rows ?? [],
     columns,
     getCoreRowModel: getCoreRowModel(),
   })
@@ -169,7 +173,7 @@
     {#if isLoading}
       <Loading />
     {:else}
-      <table class="table table-zebra ">
+      <table class="table table-zebra">
         <thead>
           {#each table.getHeaderGroups() as headerGroup}
             <tr>

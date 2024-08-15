@@ -12,13 +12,6 @@ import { skuTable } from '../stock'
 
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod'
 
-//                     _            _
-// _ __  _ __ ___   __| |_   _  ___| |_
-// | '_ \| '__/ _ \ / _` | | | |/ __| __|
-// | |_) | | | (_) | (_| | |_| | (__| |_
-// | .__/|_|  \___/ \__,_|\__,_|\___|\__|
-// |_|
-
 export const productCategoryTable = sqliteTable('product_category', {
   id: integer('id', { mode: 'number' }).primaryKey({ autoIncrement: true }),
   created_at: text('created_at').default(sql`(CURRENT_TIMESTAMP)`),
@@ -77,8 +70,7 @@ export const productItemTable = sqliteTable('product_item', {
   sku: text('sku').references(() => skuTable.sku),
   quantity: integer('quantity').notNull().default(1),
   image: integer('image_id').references(() => imageTable.id),
-  retail_price: integer('retail_price').notNull(),
-  wholesale_price: integer('wholesale_price').notNull(),
+  price: integer('price').notNull(),
 })
 
 export const productItemRelations = relations(

@@ -25,8 +25,6 @@ export const customerTable = sqliteTable('customer', {
   phone: text('phone'),
   cpf_cnpj: text('cpf_cnpj'),
   rg_ie: text('rg_ie'),
-  max_credit: integer('max_credit').notNull().default(50000),
-  used_credit: integer('used_credit').notNull().default(0),
 })
 export const customerRelations = relations(customerTable, ({ one, many }) => ({
   adresses: many(addressTable),
@@ -46,15 +44,13 @@ export const updateCustomerSchema = insertCustomerSchema.pick({
   name: true,
   phone: true,
   is_retail: true,
-  max_credit: true,
-  used_credit: true,
+ 
 })
 export type SelectCustomer = typeof customerTable.$inferSelect
 export type InsertCustomer = typeof customerTable.$inferInsert
 
 export const addressTable = sqliteTable('address', {
   id: integer('id').notNull().primaryKey({ autoIncrement: true }),
-  // .$defaultFn(() => generateId(15)),
   created_at: text('created_at').default(sql`(CURRENT_TIMESTAMP)`),
   updated_at: integer('updated_at', { mode: 'timestamp' }).$onUpdate(
     () => new Date(),

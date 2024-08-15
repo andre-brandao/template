@@ -4,7 +4,7 @@ export function draggable(node: HTMLElement, data:string) {
 	node.draggable = true;
 	node.style.cursor = 'grab';
 
-	function handle_dragstart(e) {
+	function handle_dragstart(e: DragEvent) {
 		if (!e.dataTransfer) return;
 		e.dataTransfer.setData('text/plain', state);
 	}
@@ -12,7 +12,7 @@ export function draggable(node: HTMLElement, data:string) {
 	node.addEventListener('dragstart', handle_dragstart);
 
 	return {
-		update(data) {
+		update(data: string) {
 			state = data;
 		},
 
@@ -21,31 +21,37 @@ export function draggable(node: HTMLElement, data:string) {
 		}
 	};
 }
+interface DropzoneOptions {
+	dropEffect?: 'none' | 'copy' | 'link' | 'move';
+	dragover_class?: string;
+	on_dropzone: (data: string, e: DragEvent) => void;
+}
 
-export function dropzone(node, options) {
+export function dropzone(node:HTMLElement, options:DropzoneOptions) {
 	let state = {
 		dropEffect: 'move',
 		dragover_class: 'droppable',
 		...options
 	};
 
-	function handle_dragenter(e) {
+	function handle_dragenter(e:DragEvent) {
 		if (!(e.target instanceof HTMLElement)) return;
 		e.target.classList.add(state.dragover_class);
 	}
 
-	function handle_dragleave(e) {
+	function handle_dragleave(e:DragEvent) {
 		if (!(e.target instanceof HTMLElement)) return;
 		e.target.classList.remove(state.dragover_class);
 	}
 
-	function handle_dragover(e) {
+	function handle_dragover(e:DragEvent) {
 		e.preventDefault();
 		if (!e.dataTransfer) return;
+		// @ts-expect-error - TS types are wrong
 		e.dataTransfer.dropEffect = state.dropEffect;
 	}
 
-	function handle_drop(e) {
+	function handle_drop(e:DragEvent) {
 		e.preventDefault();
 		if (!e.dataTransfer) return;
 		const data = e.dataTransfer.getData('text/plain');
@@ -60,7 +66,7 @@ export function dropzone(node, options) {
 	node.addEventListener('drop', handle_drop);
 
 	return {
-		update(options) {
+		update(options:DropzoneOptions) {
 			state = {
 				dropEffect: 'move',
 				dragover_class: 'droppable',

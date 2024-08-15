@@ -7,6 +7,10 @@ import {
 } from 'drizzle-orm/sqlite-core'
 import { sql } from 'drizzle-orm'
 
+export const DEFAULT_PERMISSIONS: UserPermissions = {
+  role: 'user',
+} as const
+
 export const userTable = sqliteTable('user', {
   id: text('id').notNull().primaryKey(),
   // .$defaultFn(() => generateId(15)),
@@ -23,7 +27,7 @@ export const userTable = sqliteTable('user', {
   permissions: text('permissions', { mode: 'json' })
     .notNull()
     .$type<UserPermissions>()
-    .default({ isAdmin: false }),
+    .default(DEFAULT_PERMISSIONS),
 })
 
 export type SelectUser = typeof userTable.$inferSelect
@@ -39,7 +43,7 @@ export interface DatabaseUser {
 }
 
 export type UserPermissions = {
-  isAdmin: boolean
+  role: 'admin' | 'user'
 }
 
 // AUTH TABLES
@@ -86,4 +90,23 @@ export const magicLinkTable = sqliteTable('magic_link', {
   expiresAt: integer('expires_at', { mode: 'timestamp' }).notNull(),
 })
 
+export const stripeCheckoutSessionTable = sqliteTable(
+  'stripe_checkout_session',
+  {
+    id: text('id').notNull().primaryKey(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => userTable.id, {
+        onDelete: 'set null',
+      }),
 
+    geopoints: integer('geopoints').notNull(),
+    stripe_json: text('stripe_json', { mode: 'json' }).notNull(),
+    credited: integer('credited', { mode: 'boolean' }).notNull().default(false),
+    expiresAt: integer('expires_at', { mode: 'timestamp' }).notNull(),
+    expired: integer('expired', { mode: 'boolean' }).notNull().default(false),
+  },
+)
+
+export type InsertCheckoutSession =
+  typeof stripeCheckoutSessionTable.$inferInsert

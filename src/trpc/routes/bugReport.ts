@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { publicProcedure, router } from '../t'
 
 import { z } from 'zod'

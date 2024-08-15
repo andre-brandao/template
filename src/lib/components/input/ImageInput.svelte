@@ -7,7 +7,6 @@
   export let save: (image_id: number) => void
 
   let image: File | null = null
-  let responseMessage = ''
 
   const handleFileChange = (
     event: Event & {
@@ -34,7 +33,9 @@
     console.log(error)
 
     if (!data) {
-      responseMessage = error ?? 'Error Uploading'
+      if (error) {
+        toast.error(error)
+      }
     } else {
       image_id = data
       toast.info('Image Uploaded')
@@ -49,7 +50,13 @@
 </script>
 
 <div class="image-container object-cover">
-  <img width="100" height="100" src={getImagePath(image_id)} alt="" class="rounded-lg" />
+  <img
+    width="100"
+    height="100"
+    src={getImagePath(image_id)}
+    alt="{name}"
+    class="rounded-lg"
+  />
 
   <input
     id="file-input"
@@ -84,12 +91,6 @@
     </svg>
   </span>
 </div>
-
-{#if responseMessage}
-  <p class="bg-error p-1">
-    {responseMessage}
-  </p>
-{/if}
 
 <style>
   .image-container {

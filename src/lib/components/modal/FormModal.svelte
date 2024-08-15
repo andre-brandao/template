@@ -181,12 +181,10 @@
     {/each}
   </div>
 
-  <svelte:fragment slot="footer">
-    <button class="btn" onclick={handleConfirm} disabled={isLoading}>
-      {!isLoading ? 'Save' : 'Loading...'}
-    </button>
-    <button class="btn" onclick={handleCancel} disabled={isLoading}>
-      Cancel
-    </button>
-  </svelte:fragment>
+  <button class="btn" onclick={handleConfirm} disabled={isLoading}>
+    {!isLoading ? 'Save' : 'Loading...'}
+  </button>
+  <button class="btn" onclick={handleCancel} disabled={isLoading}>
+    Cancel
+  </button>
 </Modal>

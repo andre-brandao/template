@@ -2,10 +2,9 @@
   import { modal } from '$lib/components/modal'
   export let title = ''
 </script>
-
-<header class="handle">
+<header class="handle sticky top-2 z-40 rounded bg-base-200 p-1">
   <aside>
-    <span>{@html title}</span>
+    <span class="text-2xl text-base-content">{@html title}</span>
   </aside>
   <!-- <button type="button" on:click={() => modal.close()}>
         <i class="micon">clear</i>
@@ -23,9 +22,6 @@
   <slot />
 </section>
 
-<footer>
-  <slot name="footer" />
-</footer>
 
 <style>
   header {
@@ -73,37 +69,5 @@
     align-items: center;
   }
 
-  footer {
-    height: 56px;
-    border-top: 1px solid #eee;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 12px;
-    padding: 0;
-    border-radius: 0 0 4px 4px;
-    user-select: none;
-  }
 
-  /* footer :global(button) {
-    border: 1px solid #e0e0e0;
-    outline: none;
-    width: auto;
-    height: 34px;
-    background: #eee;
-    transition: all, 0.5s;
-    cursor: pointer;
-    margin-right: 12px;
-    padding: 0 16px;
-    color: #212121;
-    border-radius: 2px;
-    font-size: 14px;
-  } */
-  /* footer :global(button):hover {
-    border: 1px solid var(--primary);
-    background: #fafafa;
-  }
-  footer :global(button):active {
-    background: #e0e0e0;
-  } */
 </style>

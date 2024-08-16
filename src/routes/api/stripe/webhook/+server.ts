@@ -63,6 +63,32 @@ export const POST: RequestHandler = async ({ request }) => {
       console.log(`✅ Checkout session completed ${session.id}`)
       break
     }
+    case 'customer.subscription.created':
+      // Subscription was created
+      break
+    case 'customer.subscription.updated':
+      // Subscription has been changed
+      break
+    case 'invoice.paid':
+      // Used to provision services after the trial has ended.
+      // The status of the invoice will show up as paid. Store the status in your
+      // database to reference when a user accesses your service to avoid hitting rate limits.
+      break
+    case 'invoice.payment_failed':
+      // If the payment fails or the customer does not have a valid payment method,
+      //  an invoice.payment_failed event is sent, the subscription becomes past_due.
+      // Use this webhook to notify your user that their payment has
+      // failed and to retrieve new card details.
+      break
+    case 'customer.subscription.deleted':
+      if (event.request != null) {
+        // handle a subscription canceled by your request
+        // from above.
+      } else {
+        // handle subscription canceled automatically based
+        // upon your subscription settings.
+      }
+      break
 
     default:
       // unhandled event

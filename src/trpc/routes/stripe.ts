@@ -7,7 +7,8 @@ import { middleware } from '../middleware'
 import { TRPCError } from '@trpc/server'
 import { stripe } from '$lib/server/stripe'
 
-import { user as userController } from '$lib/server/db/controller'
+// import { user as userController } from '$lib/server/db/controller'
+import { stripe as stripeControler } from '$lib/server/db/controller'
 
 export const checkout = router({
   createCheckoutSession: publicProcedure
@@ -68,7 +69,7 @@ export const checkout = router({
       console.log(session)
 
       const geoPoints = items[0].quantity
-      await userController.insertCheckoutSession({
+      await stripeControler.insertCheckoutSession({
         id: session.id,
         userId: user.id,
         expiresAt: new Date(session.expires_at),

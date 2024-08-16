@@ -89,24 +89,3 @@ export const magicLinkTable = sqliteTable('magic_link', {
   email: text('email').notNull(),
   expiresAt: integer('expires_at', { mode: 'timestamp' }).notNull(),
 })
-
-export const stripeCheckoutSessionTable = sqliteTable(
-  'stripe_checkout_session',
-  {
-    id: text('id').notNull().primaryKey(),
-    userId: text('user_id')
-      .notNull()
-      .references(() => userTable.id, {
-        onDelete: 'set null',
-      }),
-
-    geopoints: integer('geopoints').notNull(),
-    stripe_json: text('stripe_json', { mode: 'json' }).notNull(),
-    credited: integer('credited', { mode: 'boolean' }).notNull().default(false),
-    expiresAt: integer('expires_at', { mode: 'timestamp' }).notNull(),
-    expired: integer('expired', { mode: 'boolean' }).notNull().default(false),
-  },
-)
-
-export type InsertCheckoutSession =
-  typeof stripeCheckoutSessionTable.$inferInsert

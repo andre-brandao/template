@@ -1,4 +1,4 @@
-import { eq, and } from 'drizzle-orm'
+import { eq } from 'drizzle-orm'
 import { db } from '$db'
 import {
   type InsertUser,
@@ -9,9 +9,7 @@ import {
   type UserPermissions,
   type SelectUser,
   sessionTable,
-  stripeCheckoutSessionTable,
-  type InsertCheckoutSession,
-  DEFAULT_PERMISSIONS
+  DEFAULT_PERMISSIONS,
 } from '$db/schema'
 
 import { TimeSpan, createDate, isWithinExpirationDate } from 'oslo'
@@ -19,7 +17,6 @@ import { generateRandomString, alphabet, sha256 } from 'oslo/crypto'
 import type { User } from 'lucia'
 import { encodeHex } from 'oslo/encoding'
 import { generateIdFromEntropySize } from 'lucia'
-
 
 function getUserByUsername(username: string) {
   return db
@@ -182,49 +179,4 @@ export const user = {
   getMagicLinkToken,
   deleteMagicLinkToken,
   DEFAULT_PERMISSIONS,
-  getPendingCheckoutSessionFromUserID,
-  insertCheckoutSession,
-  getStripeOrderFromID,
-  processStripeOrder,
-}
-
-async function processStripeOrder(sessionId: string) {
-  const [sessionDB] = await getStripeOrderFromID(sessionId)
-  if (!sessionDB) {
-    return
-  }
-
-  if (sessionDB.credited) {
-    return
-  }
-
- 
-  await db.update(stripeCheckoutSessionTable).set({
-    credited: true,
-  })
-}
-
-function insertCheckoutSession(session: InsertCheckoutSession) {
-  return db.insert(stripeCheckoutSessionTable).values(session)
-}
-
-function getStripeOrderFromID(sessionId: string) {
-  return db
-    .select()
-    .from(stripeCheckoutSessionTable)
-    .where(eq(stripeCheckoutSessionTable.id, sessionId))
-    .limit(1)
-}
-
-function getPendingCheckoutSessionFromUserID(userId: string) {
-  return db
-    .select()
-    .from(stripeCheckoutSessionTable)
-    .where(
-      and(
-        eq(stripeCheckoutSessionTable.userId, userId),
-        eq(stripeCheckoutSessionTable.credited, false),
-        eq(stripeCheckoutSessionTable.expired, false),
-      ),
-    )
 }

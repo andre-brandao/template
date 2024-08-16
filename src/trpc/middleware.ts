@@ -3,7 +3,7 @@ import { TRPCError } from '@trpc/server'
 
 const admin = t.middleware(async ({ next, ctx }) => {
   const { user } = ctx.locals
-  if (!user?.permissions.isAdmin)
+  if (user?.permissions.role !== 'admin')
     throw new TRPCError({
       code: 'UNAUTHORIZED',
       message: 'You must be an admin to access this route',

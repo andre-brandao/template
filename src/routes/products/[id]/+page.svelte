@@ -24,12 +24,12 @@
   let activeItemIndex = 0
 
   let total = tweened(
-    (produto.items[activeItemIndex].retail_price ?? 0) * quantity,
+    (produto.items[activeItemIndex].price ?? 0) * quantity,
     {
       duration: 300,
     },
   )
-  $: $total = (produto.items[activeItemIndex].retail_price ?? 0) * quantity
+  $: $total = (produto.items[activeItemIndex].price ?? 0) * quantity
 
   function addToCart() {
     console.log(cart)

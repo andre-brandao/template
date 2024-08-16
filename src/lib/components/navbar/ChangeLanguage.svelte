@@ -1,4 +1,4 @@
-<script lang="ts">
+<!-- <script lang="ts">
   import {
     setLanguageTag,
     sourceLanguageTag,
@@ -23,7 +23,6 @@
   <div tabindex="0" role="button" class="btn m-1">
     {icons.flags.getEmojiFlag(languageTag())}
   </div>
-  <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
   <ul
     tabindex="0"
     class="menu dropdown-content z-[1] space-y-1 rounded-box bg-base-100 p-2 shadow"
@@ -36,6 +35,35 @@
           </button>
         </li>
       {/if}
+    {/each}
+  </ul>
+</div> -->
+
+<script>
+  import { availableLanguageTags, languageTag } from '$lib/paraglide/runtime.js'
+  import { i18n } from '../../i18n'
+  import { page } from '$app/stores'
+  import { icons } from '$lib/utils/icons'
+</script>
+
+<div class="dropdown dropdown-end dropdown-hover">
+  <div tabindex="0" role="button" class="btn m-1">
+    {icons.flags.getEmojiFlag(languageTag())}
+  </div>
+  <ul
+    tabindex="0"
+    class="menu dropdown-content z-[1] space-y-1 rounded-box bg-base-100 p-2 shadow"
+  >
+    {#each availableLanguageTags as lang}
+      <li>
+        <a
+          href={i18n.route($page.url.pathname)}
+          hreflang={lang}
+          aria-current={lang === languageTag() ? 'page' : undefined}
+        >
+          {icons.flags.getEmojiFlag(lang)}
+        </a>
+      </li>
     {/each}
   </ul>
 </div>

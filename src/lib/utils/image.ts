@@ -38,7 +38,7 @@ export async function uploadImage(image: File, name: string) {
 
 export function getImagePath(id?: number | string | null) {
   if (!id) {
-    return 'https://placehold.co/400x400?text=Upload+Image'
+    return 'https://placehold.co/400x400?text=No+Image'
   }
   return `/api/image/${id}`
 }

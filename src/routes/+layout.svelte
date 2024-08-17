@@ -13,7 +13,6 @@
   import { createCartContext } from '$lib/stores/cart'
   // COMPONENTS
   import { ModalContainer } from '$lib/components/modal'
-  import DrawerContainer from '$lib/components/drawer/base/DrawerContainer.svelte'
   import Transition from './Transition.svelte'
   import type { LayoutData } from './$types'
 

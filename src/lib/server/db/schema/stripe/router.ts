@@ -1,16 +1,16 @@
-import { publicProcedure, router } from '../t'
+import { publicProcedure, router } from '$trpc/t'
 
 import { z } from 'zod'
 // import { insertMapSchema, type InsertMapPoint } from '$db/schema'
 
-import { middleware } from '../middleware'
+import { middleware } from '$trpc/middleware'
 import { TRPCError } from '@trpc/server'
 import { stripe } from '$lib/server/stripe'
 
 // import { user as userController } from '$lib/server/db/controller'
 import { stripe as stripeControler } from '$lib/server/db/controller'
 
-export const checkout = router({
+export const stripeRouter = router({
   createCheckoutSession: publicProcedure
     .use(middleware.auth)
     .input(

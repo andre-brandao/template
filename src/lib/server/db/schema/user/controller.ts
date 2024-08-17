@@ -26,6 +26,18 @@ function getUserByUsername(username: string) {
     .limit(1)
 }
 
+function getPublicUserInfo(){
+  return db.select({
+    id: userTable.id,
+    name: userTable.username,
+    email: userTable.email,
+    created_at: userTable.created_at,
+    updated_at: userTable.updated_at,
+    permissions: userTable.permissions,
+    verified: userTable.emailVerified
+  }).from(userTable)
+}
+
 function getUserById(userId: string) {
   return db.select().from(userTable).where(eq(userTable.id, userId)).limit(1)
 }
@@ -163,6 +175,7 @@ async function deleteMagicLinkToken(token: string) {
 }
 
 export const user = {
+  getPublicUserInfo,
   getUserByUsername,
   getUserByEmail,
   getUserById,

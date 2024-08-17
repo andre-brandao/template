@@ -1,14 +1,14 @@
-import { publicProcedure, router } from '../t'
+import { publicProcedure, router } from '$trpc/t'
 
 import { z } from 'zod'
 import { bugReport } from '$lib/server/db/controller'
 import { TRPCError } from '@trpc/server'
-import { middleware } from '../middleware'
+import { middleware } from '$trpc/middleware'
 import { paramsSchema } from '$lib/components/table'
 import { tableHelper } from '$lib/server/db/utils'
 import { bugReportTable } from '$lib/server/db/schema'
 
-export const bugReporter = router({
+export const bugReportRouter = router({
   reportBug: publicProcedure
     .input(
       z.object({
@@ -34,10 +34,10 @@ export const bugReporter = router({
 
         await bugReport.insertLogs({
           text: `${user.username} reportou um bug`,
-          created_by:user.id,
+          created_by: user.id,
           metadata: {
-            bug_id: id
-          }
+            bug_id: id,
+          },
         })
         return 'Bug reported #' + id
       } catch (e) {

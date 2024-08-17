@@ -1,11 +1,11 @@
-import { publicProcedure, router } from '../t'
+import { publicProcedure, router } from '$trpc/t'
 
 import { z } from 'zod'
-import { pushNotification as notificationController } from '$db/schema/push-notification/controller'
+import { pushNotification as notificationController } from './controller'
 
-import { middleware } from '../middleware'
+import { middleware } from '$trpc/middleware'
 
-export const pushNotification = router({
+export const pushNotificationRouter = router({
   addPushNotificationDevice: publicProcedure
     .use(middleware.auth)
     .input(

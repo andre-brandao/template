@@ -1,4 +1,4 @@
-import { publicProcedure, router } from '../t'
+import { publicProcedure, router } from '$trpc/t'
 
 import { z } from 'zod'
 
@@ -12,7 +12,7 @@ import { redirect } from '@sveltejs/kit'
 
 import { emailTemplate, sendMail } from '$lib/server/email'
 
-export const auth = router({
+export const userRouter = router({
   logOut: publicProcedure.query(async ({ ctx }) => {
     const { cookies } = ctx
     const { session } = ctx.locals
@@ -82,10 +82,7 @@ export const auth = router({
         }
       }
 
-      const validCode = await userController.verifyVerificationCode(
-        user,
-        code,
-      )
+      const validCode = await userController.verifyVerificationCode(user, code)
 
       if (!validCode) {
         return {

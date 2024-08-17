@@ -1,4 +1,4 @@
-import { publicProcedure, router } from '../t'
+import { publicProcedure, router } from '$trpc/t'
 
 import { z } from 'zod'
 
@@ -13,7 +13,7 @@ import {
 import { tableHelper } from '$db/utils'
 import { paramsSchema } from '$lib/components/table'
 
-export const product = router({
+export const productRouter = router({
   paginatedProducts: publicProcedure
     .input(paramsSchema)
     .query(async ({ input }) => {

@@ -1,7 +1,15 @@
-import { stripeCheckoutSessionTable, type InsertCheckoutSession } from '.'
+import {
+  stripeCheckoutSessionTable,
+  type InsertCheckoutSession,
+  // type InsertPaymentIntent,
+} from '.'
 import { db } from '$db'
 
 import { and, eq } from 'drizzle-orm'
+
+import { stripe } from '$lib/server/stripe'
+import Stripe from 'stripe'
+import type { User } from 'lucia'
 
 async function processStripeOrder(sessionId: string) {
   const [sessionDB] = await getStripeOrderFromID(sessionId)
@@ -38,14 +46,51 @@ function getPendingCheckoutSessionFromUserID(userId: string) {
       and(
         eq(stripeCheckoutSessionTable.userId, userId),
         eq(stripeCheckoutSessionTable.credited, false),
-        eq(stripeCheckoutSessionTable.expired, false),
       ),
     )
 }
 
+async function createCheckoutSession({
+  lineItems,
+  user,
+  url,
+}: {
+  lineItems: Stripe.Checkout.SessionCreateParams.LineItem[]
+  user: User
+  url: URL
+}) {
+  const session = await stripe.checkout.sessions.create({
+    payment_method_types: ['card'],
+    line_items: lineItems,
+    mode: 'payment',
+    success_url: `${url.origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${url.origin}/checkout/cancel`,
+    customer_email: user.email,
+    metadata: {
+      user_id: user.id,
+    },
+  })
+
+  return session
+}
+
+async function createPaymentIntent(data: { amount: number }) {
+  const { amount } = data
+  const intent = await stripe.paymentIntents.create({
+    amount,
+    currency: 'brl',
+    automatic_payment_methods: {
+      enabled: true,
+    },
+  })
+
+  return intent
+}
 export const stripeController = {
+  createCheckoutSession,
   processStripeOrder,
   insertCheckoutSession,
   getStripeOrderFromID,
   getPendingCheckoutSessionFromUserID,
+  createPaymentIntent,
 }

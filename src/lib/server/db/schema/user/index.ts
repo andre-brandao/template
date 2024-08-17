@@ -5,18 +5,23 @@ import {
 
   // customType,
 } from 'drizzle-orm/sqlite-core'
-import { sql } from 'drizzle-orm'
+import { relations, sql } from 'drizzle-orm'
+import { addressTable, customerOrderTable } from '$db/schema'
 
 export const DEFAULT_PERMISSIONS: UserPermissions = {
-  role: 'user',
+  role: 'customer',
 } as const
 
 export const userTable = sqliteTable('user', {
   id: text('id').notNull().primaryKey(),
   // .$defaultFn(() => generateId(15)),
-
-  created_at: text('created_at').default(sql`(CURRENT_TIMESTAMP)`),
-
+  created_at: integer('created_at', { mode: 'timestamp' }).default(
+    sql`(CURRENT_TIMESTAMP)`,
+  ),
+  updated_at: integer('updated_at', { mode: 'timestamp' })
+    .default(sql`(CURRENT_TIMESTAMP)`)
+    .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+    
   username: text('username').notNull().unique(),
   email: text('email').notNull().unique(),
   emailVerified: integer('email_verified', { mode: 'boolean' })
@@ -29,6 +34,11 @@ export const userTable = sqliteTable('user', {
     .$type<UserPermissions>()
     .default(DEFAULT_PERMISSIONS),
 })
+
+export const userRelations = relations(userTable, ({one, many})=>({
+  addresses: many(addressTable),
+  orders: many(customerOrderTable)
+}))
 
 export type SelectUser = typeof userTable.$inferSelect
 export type InsertUser = typeof userTable.$inferInsert
@@ -43,7 +53,7 @@ export interface DatabaseUser {
 }
 
 export type UserPermissions = {
-  role: 'admin' | 'user'
+  role: 'admin' | 'user' | 'customer'
 }
 
 // AUTH TABLES

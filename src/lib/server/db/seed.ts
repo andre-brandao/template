@@ -76,10 +76,12 @@ async function seedProducts() {
 
   for (let i = 0; i < 20; i++) {
     try {
-      await product.insertProduct({
+      const [prod] = await product.insertProduct({
         name: faker.commerce.productName(),
         description: faker.commerce.productDescription(),
-      })
+      }).returning()
+
+      await seedProductItem(prod.id)
     } catch (error) {
       console.error(`Failed to insert product ${i}:`, error)
     }
@@ -88,4 +90,15 @@ async function seedProducts() {
   console.log('productTable seed END')
 }
 
+
+async function seedProductItem(product_id: number, quantity = 2) {
+  for (let i = 0; i < quantity; i++) {
+    await product.insertProductItem({
+      price: faker.number.int({ max: 25000, min: 500 }),
+      name: faker.commerce.productName(),
+      description: faker.commerce.productDescription(),
+      product_id: product_id,
+    })
+  }
+}
 

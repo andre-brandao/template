@@ -16,7 +16,7 @@ export interface BaseModalProps {
 function createModal() {
   const { subscribe, set } = writable<{
     component: null | Component
-    props: null | ComponentProps<Component>
+    props: null | ComponentProps<Component<any, object, string>>
   }>({ component: null, props: null })
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

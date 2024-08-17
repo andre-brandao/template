@@ -6,7 +6,7 @@
   const cart = getCartContext()
 
   $: subtotal = Object.values($cart).reduce(
-    (acc, item) => acc + item.item.retail_price * item.quantity,
+    (acc, item) => acc + item.item.price * item.quantity,
     0,
   )
 </script>

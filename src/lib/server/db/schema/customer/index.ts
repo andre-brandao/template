@@ -10,54 +10,19 @@ import { sql, relations } from 'drizzle-orm'
 import { userTable, productItemTable } from '$db/schema'
 import { createInsertSchema } from 'drizzle-zod'
 
-export const customerTable = sqliteTable('customer', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
-  // .$defaultFn(() => generateId(15)),
-  is_retail: integer('is_retail', { mode: 'boolean' }).notNull(),
-  created_at: text('created_at').default(sql`(CURRENT_TIMESTAMP)`),
-  updated_at: integer('updated_at', { mode: 'timestamp' }).$onUpdate(
-    () => new Date(),
-  ),
-  name: text('name').notNull(),
-  email: text('email').unique(),
-  birth_date: text('birth_date'),
-  cellphone: text('cellphone'),
-  phone: text('phone'),
-  cpf_cnpj: text('cpf_cnpj'),
-  rg_ie: text('rg_ie'),
-})
-export const customerRelations = relations(customerTable, ({ one, many }) => ({
-  adresses: many(addressTable),
-  orders: many(customerOrderTable),
-  user: one(userTable, {
-    fields: [customerTable.email],
-    references: [userTable.email],
-  }),
-}))
-export const insertCustomerSchema = createInsertSchema(customerTable, {})
-export const updateCustomerSchema = insertCustomerSchema.pick({
-  birth_date: true,
-  cellphone: true,
-  cpf_cnpj: true,
-  rg_ie: true,
-  email: true,
-  name: true,
-  phone: true,
-  is_retail: true,
- 
-})
-export type SelectCustomer = typeof customerTable.$inferSelect
-export type InsertCustomer = typeof customerTable.$inferInsert
 
 export const addressTable = sqliteTable('address', {
   id: integer('id').notNull().primaryKey({ autoIncrement: true }),
-  created_at: text('created_at').default(sql`(CURRENT_TIMESTAMP)`),
-  updated_at: integer('updated_at', { mode: 'timestamp' }).$onUpdate(
-    () => new Date(),
+  created_at: integer('created_at', { mode: 'timestamp' }).default(
+    sql`(CURRENT_TIMESTAMP)`,
   ),
-  customer_id: text('customer_id')
+  updated_at: integer('updated_at', { mode: 'timestamp' })
+    .default(sql`(CURRENT_TIMESTAMP)`)
+    .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+  user_id: text('user_id')
     .notNull()
-    .references(() => customerTable.id),
+    .references(() => userTable.id),
+  is_default: integer('is_default', { mode: 'boolean' }).default(false),
   cep: text('cep').notNull(),
   street: text('street').notNull(),
   number: text('number').notNull(),
@@ -69,12 +34,13 @@ export const addressTable = sqliteTable('address', {
 })
 
 export const addressRelations = relations(addressTable, ({ one, many }) => ({
-  customer: one(customerTable, {
-    fields: [addressTable.customer_id],
-    references: [customerTable.id],
+  customer: one(userTable, {
+    fields: [addressTable.user_id],
+    references: [userTable.id],
   }),
   orders: many(customerOrderTable),
 }))
+
 export const insertAddressSchema = createInsertSchema(addressTable)
 export type SelectAddress = typeof addressTable.$inferSelect
 export type InsertAddress = typeof addressTable.$inferInsert
@@ -82,14 +48,17 @@ export type InsertAddress = typeof addressTable.$inferInsert
 export const customerOrderTable = sqliteTable('customer_order', {
   id: integer('id').notNull().primaryKey({ autoIncrement: true }),
   // .$defaultFn(() => generateId(15)),
-  created_at: text('created_at').default(sql`(CURRENT_TIMESTAMP)`),
-  updated_at: integer('updated_at', { mode: 'timestamp' }).$onUpdate(
-    () => new Date(),
+  created_at: integer('created_at', { mode: 'timestamp' }).default(
+    sql`(CURRENT_TIMESTAMP)`,
   ),
-  customer_id: integer('customer_id').references(() => customerTable.id),
+  updated_at: integer('updated_at', { mode: 'timestamp' })
+    .default(sql`(CURRENT_TIMESTAMP)`)
+    .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+  user_id: text('customer_id').notNull().references(() => userTable.id),
   address_id: text('address_id').references(() => addressTable.id),
   payment_method: text('payment_method').notNull(),
   total: integer('total').notNull(),
+  observation: text('observation'),
   status: text('status', {
     enum: [
       'PENDING',
@@ -105,9 +74,9 @@ export const customerOrderTable = sqliteTable('customer_order', {
 export const customerOrderRelations = relations(
   customerOrderTable,
   ({ one, many }) => ({
-    customer: one(customerTable, {
-      fields: [customerOrderTable.customer_id],
-      references: [customerTable.id],
+    customer: one(userTable, {
+      fields: [customerOrderTable.user_id],
+      references: [userTable.id],
     }),
     address: one(addressTable, {
       fields: [customerOrderTable.address_id],
@@ -121,16 +90,19 @@ export type InsertCustomerOrder = typeof customerOrderTable.$inferInsert
 
 export const orderItemTable = sqliteTable('order_item', {
   id: integer('id').notNull().primaryKey({ autoIncrement: true }),
-  created_at: text('created_at').default(sql`(CURRENT_TIMESTAMP)`),
-  updated_at: integer('updated_at', { mode: 'timestamp' }).$onUpdate(
-    () => new Date(),
+  created_at: integer('created_at', { mode: 'timestamp' }).default(
+    sql`(CURRENT_TIMESTAMP)`,
   ),
+  updated_at: integer('updated_at', { mode: 'timestamp' })
+    .default(sql`(CURRENT_TIMESTAMP)`)
+    .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
   order_id: integer('order_id')
     .notNull()
     .references(() => customerOrderTable.id),
-  product_id: text('product_id')
+  product_id: integer('product_id')
     .notNull()
     .references(() => productItemTable.id),
+  observation: text('observation'),
   quantity: integer('quantity').notNull(),
   price: integer('price').notNull(),
 })

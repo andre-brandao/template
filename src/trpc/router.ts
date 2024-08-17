@@ -13,9 +13,8 @@ import { auth } from './routes/auth'
 import { product } from './routes/product'
 import { pushNotification } from './routes/push-notification'
 import { customer } from './routes/customer'
-import { stock } from './routes/stock'
 import { bugReporter as bugReport } from './routes/bugReport'
-
+import { checkout } from './routes/stripe'
 
 export const router = t.router({
   auth,
@@ -23,5 +22,6 @@ export const router = t.router({
   customer,
   pushNotification,
   bugReport,
-  stock,
+
+  checkout,
 })

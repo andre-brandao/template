@@ -5,12 +5,11 @@
 
   export let data: PageData
 
-  const order = data.recentOrder
+  // const order = data.recentOrder
 
   onMount(() => {
     setTimeout(() => {
-      
-      goto('/map')
+      goto('/myprofile')
       // window.location.reload()
     }, 5000)
   })
@@ -27,14 +26,14 @@
           class="h-16 w-16"
         />
       </div> -->
-      <h2 class="text-2xl font-semibold text-primary">Payment Successful!</h2>
+      <!-- <h2 class="text-2xl font-semibold text-primary">Payment Successful!</h2> -->
       <p class="mt-2 text-gray-600">
-        Thank you for your purchase. Your payment was successfully processed.
-        and we added
-        <span class="text-primary">
-          {order.geopoints} GeoPoints
-        </span>
-        to your account
+        <!-- Thank you for your purchase. Your payment was successfully processed.
+        and we added -->
+        <!-- <span class="text-primary">
+          {JSON.stringify(order, null, 2)}
+        </span> -->
+        {data.message}
       </p>
       <!-- <div class="mt-6">
         <p class="text-gray-600">

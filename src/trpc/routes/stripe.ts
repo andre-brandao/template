@@ -27,10 +27,11 @@ export const checkout = router({
             quantity: z.number(),
           }),
         ),
+        order_id: z.number(),
       }),
     )
     .mutation(async ({ input, ctx }) => {
-      const { items } = input
+      const { items, order_id } = input
       const { url } = ctx
 
       const { user } = ctx.locals
@@ -68,19 +69,43 @@ export const checkout = router({
 
       console.log(session)
 
-      const geoPoints = items[0].quantity
       await stripeControler.insertCheckoutSession({
         id: session.id,
         userId: user.id,
-        expiresAt: new Date(session.expires_at),
-        stripe_json: session,
-        geopoints: geoPoints,
-        credited: false,
-        expired: false,
+        json: session,
+
+        orderID: order_id,
       })
 
       return {
         payment_url: session.url,
+      }
+    }),
+
+  createPaymentIntent: publicProcedure
+    .use(middleware.auth)
+    .input(
+      z.object({
+        amount: z.number(),
+      }),
+    )
+    .mutation(async ({ input, ctx }) => {
+      const { amount } = input
+      const { user } = ctx.locals
+
+      if (!user) {
+        throw new TRPCError({
+          code: 'UNAUTHORIZED',
+          message: 'You must be logged in to checkout',
+        })
+      }
+
+      const intent = await stripeControler.createPaymentIntent({
+        amount,
+      })
+
+      return {
+        client_secret: intent.client_secret,
       }
     }),
 

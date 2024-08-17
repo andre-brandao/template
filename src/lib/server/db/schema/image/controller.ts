@@ -11,7 +11,7 @@ async function insertImage(img: {
   uploaded_by: InsertImage['uploaded_by']
 }) {
   const processedImage = await sharp(img.buff)
-    .resize({ width: 400, height: 400, fit: 'cover' })
+    .resize({ width: 400, height: 400, fit: 'cover',  })
     .toBuffer()
 
   return await db

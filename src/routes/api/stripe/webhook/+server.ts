@@ -7,6 +7,8 @@ import { error, json } from '@sveltejs/kit'
 import { env } from '$env/dynamic/private'
 import { stripe } from '$lib/server/stripe'
 
+import { dev } from '$app/environment'
+
 // endpoint to handle incoming webhooks
 export const POST: RequestHandler = async ({ request }) => {
   // extract body
@@ -23,14 +25,6 @@ export const POST: RequestHandler = async ({ request }) => {
     throw error(400, 'Invalid request')
   }
 
-  if (!env.STRIPE_WEBHOOK_SECRET) {
-    // webhook secret is missing
-    console.warn('⚠️  Webhook secret missing.')
-
-    // return, because it's a bad request
-    throw error(400, 'Invalid request')
-  }
-
   // var to hold event data
   let event
 
@@ -39,7 +33,7 @@ export const POST: RequestHandler = async ({ request }) => {
     event = stripe.webhooks.constructEvent(
       body,
       signature,
-      env.STRIPE_WEBHOOK_SECRET,
+      dev ? env.STRIPE_WEBHOOK_SECRET_TESTE : env.STRIPE_WEBHOOK_SECRET,
     )
   } catch (err) {
     // signature is invalid!

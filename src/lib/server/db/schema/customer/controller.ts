@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   customerOrderTable,
-  customerTable,
+
   addressTable,
   orderItemTable,
 } from './index'
@@ -11,58 +11,32 @@ import type {
   InsertCustomerOrder,
   InsertAddress,
   InsertOrderItem,
-  InsertCustomer,
+
   SelectAddress,
   SelectOrderItem,
-  SelectCustomer,
-} from './index'
+  SelectUser, InsertStockTransaction,
+} from '$db/schema'
 import { db } from '$db'
 import { eq, ne, or, sql } from 'drizzle-orm'
 
+import { product } from '$db/controller'
+
 export const customer = {
   tables: {
-    customerTable,
     addressTable,
     customerOrderTable,
     orderItemTable,
   },
-  insertCustomer: async (input: InsertCustomer) => {
-    return db.insert(customerTable).values(input)
-  },
-  updateCustomer: (
-    id: SelectCustomer['id'],
-    input: Partial<InsertCustomer>,
-  ) => {
-    return db.update(customerTable).set(input).where(eq(customerTable.id, id))
-  },
-  getCustomerById: async (id: SelectCustomer['id']) => {
-    return db.query.customerTable.findFirst({
-      where: eq(customerTable.id, id),
-      with: {
-        adresses: true,
-      },
-    })
-  },
 
-  getCustomerByEmail: async (email: string) => {
-    return db.query.customerTable.findFirst({
-      where: eq(customerTable.email, email),
-      with: {
-        adresses: true,
-      },
-    })
-  },
-  getCustomers: () => {
-    return db.select().from(customerTable)
-  },
+
   insertAddress: async (input: InsertAddress) => {
     return db.insert(addressTable).values(input)
   },
-  getCustomerAddress: async (customerId: string) => {
+  getCustomerAddress: async (customerId: SelectUser['id']) => {
     return db
       .select()
       .from(addressTable)
-      .where(eq(addressTable.customer_id, customerId))
+      .where(eq(addressTable.user_id, customerId))
   },
   insertOrder: async (input: {
     order_info: Omit<InsertCustomerOrder, 'status'>
@@ -70,36 +44,42 @@ export const customer = {
   }) => {
     const { order_info, order_items } = input
 
-    const resp = db.transaction(async tx => {
-  
+    const [order] = await db
+      .insert(customerOrderTable)
+      .values({
+        payment_method: order_info.payment_method,
+        status: 'PENDING',
+        total: order_info.total,
+        user_id: order_info.user_id,
+        address_id: order_info.address_id,
+        observation: order_info.observation,
+      })
+      .returning()
 
-      const [order] = await tx
-        .insert(customerOrderTable)
-        .values({
-          payment_method: order_info.payment_method,
-          status: 'PENDING',
-          total: order_info.total,
-          customer_id: order_info.customer_id,
-          address_id: order_info.address_id,
-        })
-        .returning()
 
-      const items = order_items.map(item => ({
+    let items: InsertOrderItem[] = []
+    for (const item of order_items) {
+      items.push({
         ...item,
         order_id: order.id,
-      }))
-      await tx.insert(orderItemTable).values(items)
-      return {
-        order,
-        items,
-      }
-    })
-    return resp
+      })
+      await product.insertStockTransaction({
+        item_id: item.product_id,
+        quantity: item.quantity,
+        order_id: order.id,
+        type: 'Saida',
+        meta_data: {
+          todo: 'TODO: put metadata',
+        },
+      })
+    }
+    await db.insert(orderItemTable).values(items)
+
   },
 
-  getCustomerOrders: async (customerId: SelectCustomer['id']) => {
+  getCustomerOrders: async (userId: SelectUser['id']) => {
     return db.query.customerOrderTable.findMany({
-      where: eq(customerOrderTable.customer_id, customerId),
+      where: eq(customerOrderTable.user_id, userId),
       with: {
         address: true,
         items: {

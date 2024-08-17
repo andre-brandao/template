@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { eq } from 'drizzle-orm'
+import { eq, sql } from 'drizzle-orm'
 
 import { db } from '$lib/server/db'
 
@@ -7,6 +7,8 @@ import {
   productTable,
   productItemTable,
   productCategoryTable,
+  type InsertStockTransaction,
+  stockTransactionTable,
 } from '$db/schema'
 import type {
   InsertProduct,
@@ -127,5 +129,25 @@ export const product = {
         products: true,
       },
     })
+  },
+  insertStockTransaction: async (data: InsertStockTransaction) => {
+    const itemID = data.item_id
+    const transactionQuantity = data.quantity
+    await db
+      .update(productItemTable)
+      .set({
+        quantity: sql`${productItemTable.quantity}
+      +
+      ${transactionQuantity}`,
+      })
+      .where(eq(productItemTable.id, itemID))
+    return db.insert(stockTransactionTable).values(data)
+  },
+
+  getProductTransactions: (itemID: SelectProductItem['id']) => {
+    return db
+      .select()
+      .from(stockTransactionTable)
+      .where(eq(stockTransactionTable.id, itemID))
   },
 }

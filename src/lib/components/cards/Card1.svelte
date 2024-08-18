@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { getImagePath } from "$lib/utils"
+
   interface CardProps {
     nome: string
     descricao: string
@@ -15,9 +17,7 @@
 >
   <figure>
     <img
-      src={image
-        ? image
-        : 'https://img.daisyui.com/images/stock/photo-1606107557195-0e29a4b5b4aa.jpg'}
+      src={getImagePath(image)}
       loading="lazy"
       alt={nome}
     />
@@ -26,7 +26,6 @@
     <h2 class="card-title flex justify-center">
       {nome}
       <div class="badge badge-primary items-center p-4">
-        <p class="text-center text-xl">R${preco}</p>
       </div>
     </h2>
     <p class="text-sm">Descricão: {descricao}</p>

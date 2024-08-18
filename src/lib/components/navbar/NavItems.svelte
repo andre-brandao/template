@@ -15,6 +15,9 @@
   } from '$lib/paraglide/runtime'
 
   import { page } from '$app/stores'
+  import { getUserContext } from '$lib/stores/user'
+
+  const user = getUserContext()
 
   type NavItem = {
     name: string
@@ -22,6 +25,7 @@
     subItems?: NavItem[]
     icon?: string
   }
+  export let showDefaultItems = true
 
   export let navItems: NavItem[] = [
     {
@@ -30,15 +34,13 @@
       icon: icons.home(),
     },
     {
-      name: 'Chart',
-      href: '/chart',
-      icon: icons.chart.bar(),
-    },
-    {
-      name: 'Cardapio',
+      name: 'Products',
       href: '/products',
     },
-    {
+  ]
+
+  if (showDefaultItems && $user?.permissions.role === 'admin') {
+    navItems.push({
       name: 'Admin',
       href: '/admin',
       subItems: [
@@ -53,6 +55,11 @@
           // icon: icons.users(),
         },
         {
+          name: 'Stock',
+          href: '/admin/stock',
+          // icon: icons.users(),
+        },
+        {
           name: 'Customers',
           href: '/admin/customer',
           // icon: icons.users(),
@@ -61,55 +68,11 @@
           name: 'Orders',
           href: '/admin/orders',
           icon: icons.cart(),
+          
         },
       ],
-    },
-    {
-      name: 'Testing',
-      icon: icons.warning(),
-      href: '/testing',
-      subItems: [
-        {
-          name: 'Datatable',
-          href: '/datatable',
-          icon: icons.table(),
-        },
-        {
-          name: 'Modal',
-          href: '/modal',
-        },
-        {
-          name: 'Cardapio',
-          href: '/products',
-        },
-        {
-          name: 'Tanner',
-          href: '/tanstack',
-        },
-        {
-          name: 'Checkout',
-          href: '/checkout',
-          icon: icons.cart(),
-        },
-        {
-          name: 'Inner Parent',
-          href: '/inner-parent',
-          subItems: [
-            {
-              name: 'Item 1',
-              href: '/item-1',
-            },
-            {
-              name: 'Item 2',
-              href: '/item-2',
-            },
-          ],
-        },
-      ],
-    },
-  ]
-
-  export let showDefaultItems = true
+    })
+  }
 
   function isActive(href?: string) {
     // TODO: Fix translation home not working

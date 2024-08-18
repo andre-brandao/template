@@ -50,29 +50,17 @@
           {@html icons.arrows.left_line()} Back
         </button>
         <h2 class="title-font text-sm tracking-widest">
-          {produto.category?.name}
+          {produto.name}
         </h2>
         <h1 class="title-font mt-1 text-3xl font-bold">
-          {produto.name}
+          {produto.items[activeItemIndex].name}
         </h1>
-        <!-- <div class="mb-4 flex">
-          <button
-            class="flex-grow border-b-2 border-indigo-500 px-1 py-2 text-lg text-indigo-500"
-          >
-            Description
-          </button>
-          <button class="flex-grow border-b-2 border-gray-300 px-1 py-2 text-lg">
-            Reviews
-          </button>
-          <button class="flex-grow border-b-2 border-gray-300 px-1 py-2 text-lg">
-            Details
-          </button>
-        </div> -->
+
         <p class="mb-4 leading-relaxed">
-          Description: {produto.description}
+           {produto.items[activeItemIndex].description}
         </p>
 
-        <div class="flex gap-3 border-t border-gray-200 py-2">
+        <div class="flex flex-wrap gap-3 border-t border-gray-200 py-2">
           {#each produto.items as variant, i (variant)}
             <!-- TODO: improve minicard -->
             <button
@@ -100,7 +88,7 @@
             ${$total.toFixed(2)}
           </span>
           <div class="flex items-center gap-4">
-            <button
+            <!-- <button
               class="inline-flex h-10 w-10 items-center justify-center rounded-full border-0 bg-gray-200 p-0"
             >
               <svg
@@ -115,7 +103,7 @@
                   d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"
                 ></path>
               </svg>
-            </button>
+            </button> -->
             <button class="btn btn-primary flex" onclick={addToCart}>
               Add to cart
             </button>

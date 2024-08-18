@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   sqliteTable,
   text,
@@ -21,7 +22,7 @@ export const userTable = sqliteTable('user', {
   updated_at: integer('updated_at', { mode: 'timestamp' })
     .default(sql`(CURRENT_TIMESTAMP)`)
     .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
-    
+
   username: text('username').notNull().unique(),
   email: text('email').notNull().unique(),
   emailVerified: integer('email_verified', { mode: 'boolean' })
@@ -35,9 +36,9 @@ export const userTable = sqliteTable('user', {
     .default(DEFAULT_PERMISSIONS),
 })
 
-export const userRelations = relations(userTable, ({one, many})=>({
+export const userRelations = relations(userTable, ({ one, many }) => ({
   addresses: many(addressTable),
-  orders: many(customerOrderTable)
+  orders: many(customerOrderTable),
 }))
 
 export type SelectUser = typeof userTable.$inferSelect
@@ -56,6 +57,7 @@ export type UserPermissions = {
   role: 'admin' | 'user' | 'customer'
 }
 
+type foo = typeof sessionTable
 // AUTH TABLES
 export const sessionTable = sqliteTable('session', {
   id: text('id').notNull().primaryKey(),

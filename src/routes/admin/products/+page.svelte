@@ -2,11 +2,13 @@
   import { toast } from 'svelte-sonner'
   import type { PageData } from './$types'
   import DnDBoard from '$components/dnd/DnDBoard.svelte'
+  import ImageInput from '$components/input/ImageInput.svelte'
   import { modal, FormModal } from '$modal'
   import { trpc } from '$trpc/client'
   import { page } from '$app/stores'
   import { invalidate } from '$app/navigation'
   import { icons } from '$lib/utils/icons'
+  import { getImagePath } from '$lib/utils'
 
   export let data: PageData
 
@@ -27,8 +29,12 @@
       await trpc($page).product.deleteProduct.mutate(id)
 
       toast.success('Item deletado com sucesso!')
+      columnsData = columnsData.map(col => {
+        col.items = col.items.filter(item => item.id !== id)
+        return col
+      })
       //TODO: Fix delete update sem recarregar
-      window.location.reload()
+      // window.location.reload()
     } catch (error: any) {
       toast.error(error.message)
     }
@@ -59,18 +65,19 @@
         save: async data => {
           console.log(data)
           try {
-            const resp = await trpc($page).product.insertProduct.mutate({
+            const [resp] = await trpc($page).product.insertProduct.mutate({
               name: data.name,
               description: data.description,
               category_id: category_id,
             })
-            columnsData.map(col => {
+            columnsData = columnsData.map(col => {
               if (col.id === category_id) {
                 col.items.push(resp)
               }
+              return col
             })
             console.log(resp)
-            window.location.reload()
+            // window.location.reload()
           } catch (error) {
             return JSON.stringify(error)
           }
@@ -97,20 +104,26 @@
         save: async data => {
           console.log(data)
           try {
-            const resp = await trpc($page).product.insertProductCategory.mutate(
-              {
-                name: data.name,
-              },
-            )
-            columnsData.push({
-              id: resp.id,
-              category: resp,
-              items: [],
+            const [resp] = await trpc(
+              $page,
+            ).product.insertProductCategory.mutate({
+              name: data.name,
             })
+
+            columnsData = [{
+              id: resp.id,
+              category: {
+                ...resp,
+                products: [],
+              },
+              items: [],
+            } ,...columnsData]
+            
             console.log(resp)
-            window.location.reload()
-          } catch (error) {
-            return JSON.stringify(error)
+            // window.location.reload()
+          } catch (error:any) {
+            console.error(error)
+            return error.message
           }
         },
         title: 'Add Category',
@@ -149,6 +162,19 @@
   {/snippet}
   {#snippet card(p)}
     <div class="flex w-full gap-0 rounded-lg bg-base-300 text-center">
+      <ImageInput
+        name={p.name}
+        image_id={p.image}
+        save={async img => {
+          p.image = img
+          await trpc($page).product.updateProduct.mutate({
+            id: p.id,
+            prod: {
+              image: img,
+            },
+          })
+        }}
+      />
       <a href="/admin/products/{p.id}" class="w-5/6 px-4 py-3">
         <p class="text-xl font-bold">{p.name}</p>
         <p class="font-light">{p.description}</p>

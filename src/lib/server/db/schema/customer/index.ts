@@ -55,7 +55,7 @@ export const customerOrderTable = sqliteTable('customer_order', {
     .default(sql`(CURRENT_TIMESTAMP)`)
     .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
   user_id: text('customer_id').notNull().references(() => userTable.id),
-  address_id: text('address_id').references(() => addressTable.id),
+  address_id: integer('address_id').references(() => addressTable.id),
   payment_method: text('payment_method').notNull(),
   total: integer('total').notNull(),
   observation: text('observation'),

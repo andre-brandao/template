@@ -10,8 +10,6 @@ const TEST_IMAGE = 'src/lib/assets/home/home-open-graph-square.jpg'
 const main = async () => {
   await seedUsers()
   await seedCategories()
-  await seedProducts()
-
 }
 main()
 
@@ -23,6 +21,9 @@ async function seedUsers() {
       id: generateId(15),
       email: 'admin@admin.com',
       username: 'administrator',
+      permissions: {
+        role: 'admin',
+      },
       password_hash: await hash('senha123', {
         memoryCost: 19456,
         timeCost: 2,
@@ -55,14 +56,17 @@ async function seedUsers() {
   console.log('userTable seed END')
 }
 
-async function seedCategories() {
+async function seedCategories(quantity = 5) {
   console.log('categoryTable seed START')
 
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < quantity; i++) {
     try {
-      await product.insertProductCategory({
-        name: faker.commerce.department(),
-      })
+      const [cat] = await product
+        .insertProductCategory({
+          name: faker.commerce.department(),
+        })
+        .returning()
+      await seedProducts(cat.id, i + 1)
     } catch (error) {
       console.error(`Failed to insert category ${i}:`, error)
     }
@@ -71,17 +75,20 @@ async function seedCategories() {
   console.log('categoryTable seed END')
 }
 
-async function seedProducts() {
+async function seedProducts(category_id: number, quantity = 5) {
   console.log('productTable seed START')
 
-  for (let i = 0; i < 20; i++) {
+  for (let i = 0; i < quantity; i++) {
     try {
-      const [prod] = await product.insertProduct({
-        name: faker.commerce.productName(),
-        description: faker.commerce.productDescription(),
-      }).returning()
+      const [prod] = await product
+        .insertProduct({
+          name: faker.commerce.productName(),
+          description: faker.commerce.productDescription(),
+          category_id: category_id,
+        })
+        .returning()
 
-      await seedProductItem(prod.id)
+      await seedProductItem(prod.id, i + 1)
     } catch (error) {
       console.error(`Failed to insert product ${i}:`, error)
     }
@@ -89,7 +96,6 @@ async function seedProducts() {
 
   console.log('productTable seed END')
 }
-
 
 async function seedProductItem(product_id: number, quantity = 2) {
   for (let i = 0; i < quantity; i++) {
@@ -101,4 +107,3 @@ async function seedProductItem(product_id: number, quantity = 2) {
     })
   }
 }
-

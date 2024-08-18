@@ -14,6 +14,7 @@
     getParams,
     EditRowButton,
     EditRowInput,
+    RowActions,
   } from '$lib/components/table'
 
   import type { RouterOutputs, RouterInputs } from '$trpc/router'
@@ -21,36 +22,41 @@
   import { toast } from 'svelte-sonner'
   import { trpc } from '$trpc/client'
   import { page } from '$app/stores'
+  import { goto } from '$app/navigation'
 
-  type Customer = RouterOutputs['customer']['paginatedUsers']['rows'][0]
+  type Customer = RouterOutputs['product']['paginatedProductItems']['rows'][0]
 
   const defaultColumns: ColumnDef<Customer>[] = [
     {
       header: 'Name',
       accessorKey: 'name',
-
-      footer: info => info.column.id,
     },
     {
-      header: 'Email',
-      accessorKey: 'email',
+      header: 'Em estoque',
+      accessorKey: 'quantity',
     },
     {
-      header: 'Created At',
-      accessorKey: 'created_at',
+      header: 'Price',
+      accessorKey: 'price',
     },
     {
-      header: 'Verified',
-      accessorKey: 'verified',
-    },
-    {
-      header: 'Permissions',
-      accessorFn: v => v.permissions.role,
+      header: 'Actions',
+      cell: info =>
+        renderComponent(RowActions, {
+          actions: [
+            {
+              name: 'View Details',
+              fn: () => {
+                goto(`/admin/stock/${info.row.original.id}`)
+              },
+            },
+          ],
+        }),
     },
   ]
 
   function load(s: TableState) {
-    return trpc($page).customer.paginatedUsers.query(s)
+    return trpc($page).product.paginatedProductItems.query(s)
   }
 </script>
 

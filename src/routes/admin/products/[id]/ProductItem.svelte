@@ -41,10 +41,9 @@
         prod: {
           name: item.name,
           quantity: item.quantity,
-          wholesale_price: item.wholesale_price,
-          retail_price: item.retail_price,
-          sku: item.sku ?? undefined,
-        },
+          price: item.price,
+          
+        }
       })
       console.log(resp)
 
@@ -57,15 +56,6 @@
     isChanged = false
   }
 
-  function openSKUModal() {
-    modal.open(ModalSku, {
-      selectedSKU: async sku => {
-        item.sku = sku.sku
-        await updateProductItemInfo()
-      },
-      newSKU: { name: item.name, sku: '' },
-    })
-  }
 
   async function handleDeleteProductItem() {
     try {
@@ -94,16 +84,10 @@
       on:change={() => (isChanged = true)}
     />
 
-    <button
-      class="btn {item.sku ? 'btn-success' : 'btn-error'}"
-      on:click={openSKUModal}
-    >
+    <a class="btn" href="/admin/stock/{item.id}">
       {@html icons.box()}
-    </button>
-    <button
-      class="btn btn-error"
-      on:click={handleDeleteProductItem}
-    >
+    </a>
+    <button class="btn btn-error" on:click={handleDeleteProductItem}>
       {@html icons.trash()}
     </button>
   </div>
@@ -130,14 +114,7 @@
       WholeSale Price
 
       <CurrencyInput
-        bind:value={item.wholesale_price}
-        on:change={() => (isChanged = true)}
-      />
-    </div>
-
-    <div class="flex items-center justify-between gap-2">
-      Retail Price <CurrencyInput
-        bind:value={item.retail_price}
+        bind:value={item.price}
         on:change={() => (isChanged = true)}
       />
     </div>

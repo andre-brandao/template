@@ -30,15 +30,10 @@
           value: 1,
           required: true,
         },
+
         {
-          name: 'wholesale_price',
-          label: 'WholeSale Price',
-          type: 'currency',
-          required: true,
-        },
-        {
-          name: 'retail_price',
-          label: 'Retail Price',
+          name: 'price',
+          label: 'Price',
           type: 'currency',
           required: true,
         },
@@ -49,15 +44,12 @@
           const [resp] = await trpc($page).product.insertProductItem.mutate({
             name: data.name,
             quantity: data.quantity,
-            wholesale_price: data.wholesale_price,
-            retail_price: data.retail_price,
+            price: data.price,
             product_id: produto.id,
+            description: data.description,
           })
           console.log(resp)
-          produto.items.push({
-            ...resp,
-            updated_at: new Date(resp.updated_at ?? ''),
-          })
+          produto.items.push(resp)
         } catch (error) {
           console.error(error)
           return JSON.stringify(error, null, 2)

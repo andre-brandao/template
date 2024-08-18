@@ -8,6 +8,7 @@ import {
   insertProductCategorySchema,
   insertProductItemSchema,
   insertProductSchema,
+  stockTransactionTable,
 } from '$db/schema'
 
 import { tableHelper } from '$db/utils'
@@ -35,10 +36,25 @@ export const productRouter = router({
       )
     }),
 
+  paginatedTransactions: publicProcedure
+    .input(z.object({
+      item_id: z.number(),
+      table_state: paramsSchema
+    }))
+    .query(async ({ input }) => {
+      const { item_id, table_state } = input
+      return await tableHelper(
+        productController.getProductTransactions(item_id).$dynamic(),
+        stockTransactionTable,
+        'name',
+        table_state,
+      )
+    }),
+
   insertProduct: publicProcedure
     .input(insertProductSchema)
     .mutation(async ({ input }) => {
-      return await productController.insertProduct(input)
+      return await productController.insertProduct(input).returning()
     }),
   updateProduct: publicProcedure
     .input(
@@ -64,20 +80,13 @@ export const productRouter = router({
   insertProductItem: publicProcedure
     .input(insertProductItemSchema)
     .mutation(async ({ input }) => {
-      return await productController.insertProductItem(input)
+      return await productController.insertProductItem(input).returning()
     }),
   updateProductItem: publicProcedure
     .input(
       z.object({
         id: z.number(),
-        prod: z.object({
-          name: z.string().optional(),
-          sku: z.string().optional(),
-          quantity: z.number().optional(),
-          retail_price: z.number().optional(),
-          wholesale_price: z.number().optional(),
-          image: z.number().optional(),
-        }),
+        prod: insertProductItemSchema.partial(),
       }),
     )
     .mutation(async ({ input }) => {
@@ -93,7 +102,7 @@ export const productRouter = router({
   insertProductCategory: publicProcedure
     .input(insertProductCategorySchema)
     .mutation(async ({ input }) => {
-      return await productController.insertProductCategory(input)
+      return await productController.insertProductCategory(input).returning()
     }),
   updateProductCategory: publicProcedure
     .input(
@@ -106,7 +115,7 @@ export const productRouter = router({
     )
     .mutation(async ({ input }) => {
       const { id, prod } = input
-      return await productController.updateProductCategory(id, prod)
+      return await productController.updateProductCategory(id, prod).returning()
     }),
   deleteProductCategory: publicProcedure
     .input(z.number())

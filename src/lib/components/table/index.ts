@@ -39,6 +39,7 @@ export const getParams = ({
 
 export { default as EditRowButton } from './EditRowButton.svelte'
 export { default as EditRowInput } from './EditRowInput.svelte'
+export { default as RowActions } from './RowActions.svelte'
 
 function createChangesStore<T>() {
   const { subscribe, set, update } = writable<{ [key: string]: T }>({})

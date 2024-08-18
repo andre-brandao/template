@@ -40,7 +40,7 @@ export const customer = {
   },
   insertOrder: async (input: {
     order_info: Omit<InsertCustomerOrder, 'status'>
-    order_items: InsertOrderItem[]
+    order_items: Omit<InsertOrderItem, 'order_id'>[]
   }) => {
     const { order_info, order_items } = input
 
@@ -57,7 +57,7 @@ export const customer = {
       .returning()
 
 
-    let items: InsertOrderItem[] = []
+    const items: InsertOrderItem[] = []
     for (const item of order_items) {
       items.push({
         ...item,

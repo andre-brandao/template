@@ -4,10 +4,6 @@ import { t } from './t'
 
 import type { inferRouterInputs, inferRouterOutputs } from '@trpc/server'
 
-export type Router = typeof router
-export type RouterInputs = inferRouterInputs<Router>
-export type RouterOutputs = inferRouterOutputs<Router>
-
 // ROUTES
 import { userRouter } from '$db/schema/user/router'
 import { productRouter } from '$db/schema/product/router'
@@ -24,3 +20,7 @@ export const router = t.router({
   bugReport: bugReportRouter,
   checkout: stripeRouter,
 })
+
+export type Router = typeof router
+export type RouterInputs = inferRouterInputs<Router>
+export type RouterOutputs = inferRouterOutputs<Router>

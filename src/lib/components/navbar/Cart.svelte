@@ -70,7 +70,7 @@
           {#if Object.keys($cart).length === 0}
             <p class="text-center">No items in cart</p>
           {:else}
-            <button class="btn btn-outline w-full">Checkout</button>
+            <a class="btn btn-outline w-full" href="/checkout">Checkout</a>
           {/if}
         </div>
       </div>

@@ -14,7 +14,7 @@
   // import { type TableState } from '.'
 
   interface DatatableProps {
-    rows?: T[]
+    data?: T[]
     columns: ColumnDef<T>[]
     add?: (invalidate: Function) => void
     save?: (changes: { [key: string]: T }) => void
@@ -27,7 +27,7 @@
     >
   }
 
-  let { rows, columns, load, save, add }: DatatableProps = $props()
+  let { data, columns, load, save, add }: DatatableProps = $props()
 
   let datatableState = $state<TableState>({
     page: 1,
@@ -44,20 +44,20 @@
 
   async function invalidate() {
     isLoading = true
-    console.log(true)
-
     try {
       const resp = await load(datatableState)
       console.log(resp)
 
       if (resp) {
-        options.rows = resp.rows ?? []
+        options.data = resp.rows ?? []
         totalRows = resp.count ?? 0
       }
     } catch (error: any) {
-      console.error(error)
       toast.error(error.message)
     }
+
+    console.log(false)
+
     isLoading = false
   }
 
@@ -99,12 +99,12 @@
 
   function getSortIcon(direction: 'asc' | 'desc' | string) {
     return direction == 'asc'
-      ? '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-up-narrow-wide"><path d="m3 8 4-4 4 4"/><path d="M7 4v16"/><path d="M11 12h4"/><path d="M11 16h7"/><path d="M11 20h10"/></svg>'
-      : '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-down-wide-narrow"><path d="m3 16 4 4 4-4"/><path d="M7 20V4"/><path d="M11 4h10"/><path d="M11 8h7"/><path d="M11 12h4"/></svg>'
+      ? '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-up-narrow-wide"><path d="m3 8 4-4 4 4"/><path d="M7 4v16"/><path d="M11 12h4"/><path d="M11 16h7"/><path d="M11 20h10"/></svg>'
+      : '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-down-wide-narrow"><path d="m3 16 4 4 4-4"/><path d="M7 20V4"/><path d="M11 4h10"/><path d="M11 8h7"/><path d="M11 12h4"/></svg>'
   }
 
-  const options = $state<TableOptions<T>>({
-    rows: rows ?? [],
+  const options: TableOptions<T> = $state<TableOptions<T>>({
+    data: data ?? [],
     columns,
     getCoreRowModel: getCoreRowModel(),
   })
@@ -120,6 +120,7 @@
       save($rowChanges)
       $rowChanges = {}
     }
+    invalidate()
     isLoading = false
   }
 </script>
@@ -127,7 +128,7 @@
 <section>
   <header>
     <div
-      class="mb-2 flex items-center justify-between rounded-box bg-base-300 p-2"
+      class="mb-2 flex items-center justify-between rounded-t-box bg-base-300 p-2"
     >
       <label class="input input-bordered flex items-center gap-2">
         <input
@@ -169,14 +170,14 @@
       </div>
     </div>
   </header>
-  <article class="thin-scrollbar">
+  <article class="thin-scrollba">
     {#if isLoading}
       <Loading />
     {:else}
-      <table class="table table-zebra">
+      <table class="table table-zebra table-xs p-1">
         <thead>
           {#each table.getHeaderGroups() as headerGroup}
-            <tr>
+            <tr class="bg-base-200">
               {#each headerGroup.headers as header}
                 {@const isSortable = header.column.getCanSort()}
                 {@const sortDirection =
@@ -187,11 +188,9 @@
                 <th colspan={header.colSpan}>
                   {#if !header.isPlaceholder}
                     <button
-                      class="flex items-center gap-2"
-                      class:btn={isSortable}
-                      class:btn-info={isSortable}
-                      class:badge={!isSortable}
-                      class:badge-info={!isSortable}
+                      class="badge flex flex-nowrap items-center gap-2"
+                      class:bg-base-200={isSortable}
+                      class:badge-primary={!isSortable}
                       disabled={!isSortable}
                       onclick={() => setSort(header.column.id, sortDirection)}
                     >
@@ -209,8 +208,8 @@
                           <span>
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
-                              width="24"
-                              height="24"
+                              width="18"
+                              height="18"
                               viewBox="0 0 24 24"
                               fill="none"
                               stroke="currentColor"

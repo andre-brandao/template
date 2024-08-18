@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { eq, sql } from 'drizzle-orm'
+import { eq, inArray, sql } from 'drizzle-orm'
 
 import { db } from '$lib/server/db'
 
@@ -47,7 +47,7 @@ export const product = {
 
   // Product Item
   insertProductItem: (data: InsertProductItem) => {
-    return db.insert(productItemTable).values(data).returning()
+    return db.insert(productItemTable).values(data)
   },
   updateProductItem: (
     id: SelectProductItem['id'],
@@ -69,6 +69,17 @@ export const product = {
       .select()
       .from(productItemTable)
       .where(eq(productItemTable.product_id, product_id))
+  },
+  getProductItemsByIDS: (ids: SelectProductItem['id'][]) => {
+    return db
+      .select()
+      .from(productItemTable)
+      .where(inArray(productItemTable.id, ids))
+  },
+  getProductItemByID: (id: SelectProductItem['id']) => {
+    return db.query.productItemTable.findFirst({
+      where: eq(productItemTable.id, id),
+    })
   },
 
   // Product Category

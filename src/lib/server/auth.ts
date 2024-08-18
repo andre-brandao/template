@@ -1,4 +1,4 @@
-import { Lucia } from 'lucia'
+import { Lucia, TimeSpan } from 'lucia'
 import { dev } from '$app/environment'
 
 import { DrizzleSQLiteAdapter } from '@lucia-auth/adapter-drizzle'
@@ -9,10 +9,14 @@ import { sessionTable, userTable, type DatabaseUser } from './db/schema'
 const adapter = new DrizzleSQLiteAdapter(db, sessionTable, userTable)
 
 export const lucia = new Lucia(adapter, {
+  // sessionExpiresIn: new TimeSpan(69, "w"), // 2 weeks
   sessionCookie: {
+    expires: false,
+
     attributes: {
       // set to `true` when using HTTPS
       secure: !dev,
+
     },
   },
   getUserAttributes: attributes => {
@@ -29,5 +33,6 @@ declare module 'lucia' {
   interface Register {
     Lucia: typeof lucia
     DatabaseUserAttributes: Omit<DatabaseUser, 'id'>
+    
   }
 }

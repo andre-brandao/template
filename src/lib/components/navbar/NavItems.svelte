@@ -124,9 +124,9 @@
         aria-current={isActive(navItem.href) ? 'page' : undefined}
         class:active={isActive(navItem.href)}
       >
-        <!-- {#if typeof navItem.icon === 'string'}
+        {#if typeof navItem.icon === 'string'}
           {@html icon}
-        {/if} -->
+        {/if}
         {name}
       </a>
     {/if}

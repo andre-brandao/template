@@ -100,8 +100,8 @@
         <a
           id="head-{d}"
           class="btn hover:translate-y-0.5 {selected === d.id
-            ? 'bg-primary'
-            : 'bg-base-100'}"
+            ? 'bg-primary text-primary-content'
+            : 'bg-base-100 text-base-content'}"
           href="#{d.id}"
           onclick={scrollIntoView}
         >

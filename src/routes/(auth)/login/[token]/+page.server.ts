@@ -27,18 +27,25 @@ export const load = (async ({ params, cookies, setHeaders }) => {
       message: 'Invalid or expired token',
     })
   }
-  await lucia.invalidateUserSessions(user.id)
+  try {
+    await lucia.invalidateUserSessions(user.id)
 
-  await userController.updateUser(user.id, {
-    emailVerified: true,
-  })
+    await userController.updateUser(user.id, {
+      emailVerified: true,
+    })
 
-  const session = await lucia.createSession(user.id, {})
-  const sessionCookie = lucia.createSessionCookie(session.id)
-  cookies.set(sessionCookie.name, sessionCookie.value, {
-    path: '.',
-    ...sessionCookie.attributes,
-  })
+    const session = await lucia.createSession(user.id, {})
+    const sessionCookie = lucia.createSessionCookie(session.id)
+    cookies.set(sessionCookie.name, sessionCookie.value, {
+      path: '.',
+      ...sessionCookie.attributes,
+    })
+  } catch (e) {
+    console.error(e)
+    return error(500, {
+      message: 'Failed to verify email',
+    })
+  }
 
   return redirect(302, '/')
 }) satisfies PageServerLoad

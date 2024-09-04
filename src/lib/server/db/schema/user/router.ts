@@ -4,13 +4,13 @@ import { z } from 'zod'
 
 import { user as userController } from '$db/controller'
 import { lucia } from '$lib/server/auth'
-import { redirect } from '@sveltejs/kit'
 // import { hash, verify } from '@node-rs/argon2'
 
 // import { generateId } from 'lucia'
 // import { LibsqlError } from '@libsql/client'
 
 import { emailTemplate, sendMail } from '$lib/server/email'
+
 
 export const userRouter = router({
   logOut: publicProcedure.query(async ({ ctx }) => {
@@ -28,7 +28,13 @@ export const userRouter = router({
       ...sessionCookie.attributes,
     })
 
-    return redirect(302, '/login')
+    return {
+      data: {
+        message: 'Logged out',
+        success: true,
+      },
+      error: null,
+    }
   }),
 
   resendEmailVerification: publicProcedure.query(async ({ ctx }) => {
@@ -55,7 +61,6 @@ export const userRouter = router({
       message: 'Verification email sent',
     }
   }),
-
   verifyEmail: publicProcedure
     .input(
       z.object({
@@ -139,32 +144,6 @@ export const userRouter = router({
       return {
         data: 'Password reset email sent, Check your email',
         error: null,
-      }
-    }),
-  sendMagicLink: publicProcedure
-    .input(z.object({ email: z.string().email() }))
-    .query(async ({ input, ctx }) => {
-      const { email } = input
-      const { url } = ctx
-
-      const [{ id: userId }] = await userController.getUserByEmail(email)
-
-      if (!userId) {
-        return {
-          message: 'Invalid email',
-          success: false,
-        }
-      }
-
-      const verificationToken = await userController.createMagicLinkToken(
-        userId,
-        email,
-      )
-      const verificationLink = `${url.origin}/login/${verificationToken}`
-      await sendMail(email, emailTemplate.magicLink(verificationLink))
-      return {
-        message: 'Magic link sent, Check your email',
-        success: true,
       }
     }),
 })

@@ -9,6 +9,8 @@ import {
 import { relations, sql } from 'drizzle-orm'
 import { addressTable, customerOrderTable } from '$db/schema'
 
+import { type DatabaseUser } from 'lucia'
+
 export const DEFAULT_PERMISSIONS: UserPermissions = {
   role: 'customer',
 } as const
@@ -45,7 +47,7 @@ export type SelectUser = typeof userTable.$inferSelect
 export type InsertUser = typeof userTable.$inferInsert
 
 // import { generateId } from 'lucia'
-export interface DatabaseUser {
+export interface DUser {
   id: string
   username: string
   email: string

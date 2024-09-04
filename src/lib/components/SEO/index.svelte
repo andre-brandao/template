@@ -156,6 +156,7 @@
     twitterUsername,
   }
   const twitterProps = {
+    title,
     article,
     author,
     twitterUsername,

@@ -4,6 +4,7 @@
   export let twitterUsername
   export let image
   export let timeToRead = 0
+  export let title
 
   /*
    * When there is an equivalent og tag present, Twitter takes that so check OpenGraph before
@@ -12,6 +13,7 @@
 </script>
 
 <svelte:head>
+  <meta property="twitter:title" content={title} />
   <meta name="twitter:card" content="summary_large_image" />
   {#if image}
     <meta name="twitter:image" content={image.url} />

@@ -37,6 +37,7 @@ export const actions: Actions = {
       !/.+@.+/.test(email)
     ) {
       return fail(400, {
+        success: false,
         message: 'Invalid email',
       })
     }
@@ -47,6 +48,7 @@ export const actions: Actions = {
       password.length > 255
     ) {
       return fail(400, {
+        success: false,
         message: 'Invalid password',
       })
     }
@@ -55,6 +57,7 @@ export const actions: Actions = {
 
     if (!existingUser) {
       return fail(400, {
+        success: false,
         message: 'Incorrect username',
       })
     }
@@ -76,6 +79,7 @@ export const actions: Actions = {
       // it is crucial your implementation is protected against brute-force attacks with login throttling, 2FA, etc.
       // If usernames are public, you can outright tell the user that the username is invalid.
       return fail(400, {
+        success: false,
         message: 'Incorrect password',
       })
     }

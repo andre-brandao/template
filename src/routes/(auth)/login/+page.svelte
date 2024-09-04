@@ -6,6 +6,7 @@
   let isLoading = false
 
   import type { ActionData } from './$types'
+  import Info from '$lib/components/Info.svelte'
 
   export let form: ActionData
 </script>
@@ -21,10 +22,13 @@
   <div class="w-full max-w-sm rounded-lg bg-base-100 p-8 shadow-lg">
     <h1 class="text-center text-2xl font-semibold">{m.title_sign_in()}</h1>
     <form method="post" use:enhance class="mt-6 flex flex-col gap-4">
-      {#if form?.message && form.success}
+      <!-- {#if form?.message && form.success}
         <div class="alert alert-success">{form.message}</div>
       {:else if form?.message}
         <div class="alert alert-error">{form.message}</div>
+      {/if} -->
+      {#if form}
+        <Info {...form} />
       {/if}
       <div></div>
       <div>

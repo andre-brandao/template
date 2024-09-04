@@ -2,6 +2,7 @@
   import SEO, { getSEOProps } from '$lib/components/SEO/index.svelte'
   import { enhance } from '$app/forms'
   import * as m from '$msgs'
+  import Info from '$lib/components/Info.svelte'
 
   import type { ActionData } from './$types'
 
@@ -16,9 +17,12 @@
 />
 
 <main class="flex min-h-[90vh] items-center justify-center bg-base-200">
-  <div class="w-full max-w-sm rounded-lg p-8 shadow-lg bg-base-100">
+  <div class="w-full max-w-sm rounded-lg bg-base-100 p-8 shadow-lg">
     <h1 class="text-center text-2xl font-semibold">{m.title_sign_in()}</h1>
     <form method="post" use:enhance class="mt-6 flex flex-col gap-4">
+      {#if form}
+        <Info {...form} />
+      {/if}
       <div>
         <label for="email" class="block text-sm font-medium">Email</label>
         <input

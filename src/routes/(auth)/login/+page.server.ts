@@ -27,6 +27,7 @@ export const actions: Actions = {
       !/.+@.+/.test(email)
     ) {
       return fail(400, {
+        success: false,
         message: 'Invalid email',
       })
     }
@@ -35,6 +36,7 @@ export const actions: Actions = {
 
     if (!existingUser) {
       return fail(400, {
+        success: false,
         message: 'User not found',
       })
     }
@@ -49,6 +51,7 @@ export const actions: Actions = {
     } catch (error) {
       console.error(error)
       return fail(500, {
+        success: false,
         message: 'Failed to send magic link',
       })
     }

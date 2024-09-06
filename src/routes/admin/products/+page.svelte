@@ -1,7 +1,6 @@
 <script lang="ts">
   import { toast } from 'svelte-sonner'
   import type { PageData } from './$types'
-  import DnDBoard from '$components/dnd/DnDBoard.svelte'
   import ImageInput from '$components/input/ImageInput.svelte'
   import { modal, FormModal } from '$modal'
   import { trpc } from '$trpc/client'
@@ -47,43 +46,44 @@
         name: string
         description: string
       }>,
-      {
-        fields: [
-          {
-            name: 'name',
-            label: 'Name',
-            type: 'text',
-            required: true,
-          },
-          {
-            name: 'description',
-            label: 'Description',
-            type: 'text',
-            required: true,
-          },
-        ],
-        save: async data => {
-          console.log(data)
-          try {
-            const [resp] = await trpc($page).product.insertProduct.mutate({
-              name: data.name,
-              description: data.description,
-              category_id: category_id,
-            })
-            columnsData = columnsData.map(col => {
-              if (col.id === category_id) {
-                col.items.push(resp)
-              }
-              return col
-            })
-            console.log(resp)
-            // window.location.reload()
-          } catch (error) {
-            return JSON.stringify(error)
-          }
-        },
-        title: 'Add Product',
-      },
+      {},
+      // {
+      //   fields: [
+      //     {
+      //       name: 'name',
+      //       label: 'Name',
+      //       type: 'text',
+      //       required: true,
+      //     },
+      //     {
+      //       name: 'description',
+      //       label: 'Description',
+      //       type: 'text',
+      //       required: true,
+      //     },
+      //   ],
+      //   save: async data => {
+      //     console.log(data)
+      //     try {
+      //       const [resp] = await trpc($page).product.insertProduct.mutate({
+      //         name: data.name,
+      //         description: data.description,
+      //         category_id: category_id,
+      //       })
+      //       columnsData = columnsData.map(col => {
+      //         if (col.id === category_id) {
+      //           col.items.push(resp)
+      //         }
+      //         return col
+      //       })
+      //       console.log(resp)
+      //       // window.location.reload()
+      //     } catch (error) {
+      //       return JSON.stringify(error)
+      //     }
+      //   },
+      //   title: 'Add Product',
+      // },
     )
   }
 
@@ -110,18 +110,21 @@
               name: data.name,
             })
 
-            columnsData = [{
-              id: resp.id,
-              category: {
-                ...resp,
-                products: [],
+            columnsData = [
+              {
+                id: resp.id,
+                category: {
+                  ...resp,
+                  products: [],
+                },
+                items: [],
               },
-              items: [],
-            } ,...columnsData]
-            
+              ...columnsData,
+            ]
+
             console.log(resp)
             // window.location.reload()
-          } catch (error:any) {
+          } catch (error: any) {
             console.error(error)
             return error.message
           }
@@ -138,7 +141,7 @@
     Add Category
   </button>
 </div>
-
+<!-- 
 <DnDBoard
   columns={columnsData}
   onFinalUpdate={handleBoardUpdated}
@@ -188,4 +191,4 @@
       </button>
     </div>
   {/snippet}
-</DnDBoard>
+</DnDBoard> -->

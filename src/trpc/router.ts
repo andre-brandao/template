@@ -7,7 +7,6 @@ import type { inferRouterInputs, inferRouterOutputs } from '@trpc/server'
 // ROUTES
 import { userRouter } from '$db/schema/user/router'
 import { productRouter } from '$db/schema/product/router'
-import { pushNotificationRouter } from '$db/schema/push-notification/router'
 import { customerRouter } from '$db/schema/customer/router'
 import { bugReportRouter } from '$db/schema/bug-report/router'
 import { stripeRouter } from '$db/schema/stripe/router'
@@ -16,7 +15,6 @@ export const router = t.router({
   auth: userRouter,
   product: productRouter,
   customer: customerRouter,
-  pushNotification: pushNotificationRouter,
   bugReport: bugReportRouter,
   checkout: stripeRouter,
 })

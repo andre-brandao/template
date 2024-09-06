@@ -7,7 +7,6 @@ export * from './product'
 
 export * from './bug-report'
 
-export * from './push-notification'
 
 export * from './customer'
 

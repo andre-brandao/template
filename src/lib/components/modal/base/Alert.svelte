@@ -23,12 +23,13 @@
 
 <Modal {title}>
   <p>{text}</p>
-  <svelte:fragment slot="footer">
+
+  <div>
     {#if onConfirm}
       <button class="btn" onclick={confirm}>Confirm</button>
     {/if}
     <button class="btn" onclick={cancel}>
       {onCancel ? 'Cancel' : 'Close'}
     </button>
-  </svelte:fragment>
+  </div>
 </Modal>

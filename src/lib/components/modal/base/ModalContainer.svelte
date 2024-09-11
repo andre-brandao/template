@@ -9,7 +9,7 @@
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 
-{#if $isActive}
+{#if $isActive && $modal.component}
   <!-- svelte-ignore a11y_no_static_element_interactions -->
   <section
     class=""

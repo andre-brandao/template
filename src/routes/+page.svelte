@@ -29,7 +29,8 @@
 
 <!-- <Modal onClose={console.log} onOpen={console.log}>Teste Modal</Modal> -->
 <main class="flex flex-col gap-5 overflow-auto">
-  <!-- <HeroGlobe /> -->
+  <!-- hello -->
+  <HeroGlobe />
 
   <!-- <div class="h-60 w-60">
     <RotatingGlobe></RotatingGlobe>
@@ -38,7 +39,7 @@
 
   <!-- <MapContact /> -->
 
-  <Features3></Features3>
+  <!-- <Features3></Features3>
 
   <Pricing />
 
@@ -48,5 +49,5 @@
 
   <Carousel2 />
 
-  <Footer></Footer>
+  <Footer></Footer> -->
 </main>

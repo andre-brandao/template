@@ -15,14 +15,14 @@ export interface BaseModalProps {
 
 function createModal() {
   const { subscribe, set } = writable<{
-    component: null | Component
-    props: null | ComponentProps<Component<any, object, string>>
+    component: null | Component<never>
+    props: null | ComponentProps<Component>
   }>({ component: null, props: null })
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const open = <T extends Component<any, object, string>>(
+  const open = <T extends Component<any>>(
     component: T,
-    props: ComponentProps<T> | null = null,
+    props: ComponentProps<T>,
   ) => {
     isActive.set(true)
     set({

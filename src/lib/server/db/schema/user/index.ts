@@ -59,7 +59,6 @@ export type UserPermissions = {
   role: 'admin' | 'user' | 'customer'
 }
 
-type foo = typeof sessionTable
 // AUTH TABLES
 export const sessionTable = sqliteTable('session', {
   id: text('id').notNull().primaryKey(),

@@ -8,7 +8,6 @@
 
   interface Field<
     T = any,
-    C extends Component<any, object> = Component<any, object>,
   > {
     name: keyof T
     value?: any
@@ -23,10 +22,6 @@
       | 'checkbox'
       | 'component'
       | 'currency'
-    component?: {
-      ref: C
-      props: ComponentProps<C>
-    }
     required?: boolean
     annotation?: string
     placeholder?: string
@@ -158,12 +153,12 @@
             required={field.required}
             bind:value={field.value}
           ></textarea>
-        {:else if field.type === 'component' && field.component}
+        <!-- {:else if field.type === 'component' && field.component}
           <svelte:component
             this={field.component.ref}
             bind:value={field.value}
             {...field.component.props}
-          />
+          /> -->
         {/if}
 
         {#if field.annotation && !erros?.[field.name]}

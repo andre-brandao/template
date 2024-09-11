@@ -9,7 +9,7 @@ import { sessionTable, userTable, type DUser } from './db/schema'
 const adapter = new DrizzleSQLiteAdapter(db, sessionTable, userTable)
 
 export const lucia = new Lucia(adapter, {
-  // sessionExpiresIn: new TimeSpan(69, "w"), // 2 weeks
+  sessionExpiresIn: new TimeSpan(69, "w"), 
   sessionCookie: {
     expires: false,
 

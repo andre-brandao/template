@@ -9,7 +9,6 @@
   import { toast } from 'svelte-sonner'
   import { icons } from '$lib/utils'
   import { modal } from '$lib/components/modal'
-  import ModalSku from '$lib/components/modal/ModalSKU.svelte'
   export let item: SelectProductItem
 
   let isChanged = false

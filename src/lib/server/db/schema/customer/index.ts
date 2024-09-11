@@ -16,9 +16,7 @@ export const addressTable = sqliteTable('address', {
   created_at: integer('created_at', { mode: 'timestamp' }).default(
     sql`(CURRENT_TIMESTAMP)`,
   ),
-  updated_at: integer('updated_at', { mode: 'timestamp' })
-    .default(sql`(CURRENT_TIMESTAMP)`)
-    .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+
   user_id: text('user_id')
     .notNull()
     .references(() => userTable.id),
@@ -51,9 +49,7 @@ export const customerOrderTable = sqliteTable('customer_order', {
   created_at: integer('created_at', { mode: 'timestamp' }).default(
     sql`(CURRENT_TIMESTAMP)`,
   ),
-  updated_at: integer('updated_at', { mode: 'timestamp' })
-    .default(sql`(CURRENT_TIMESTAMP)`)
-    .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+
   user_id: text('customer_id').notNull().references(() => userTable.id),
   address_id: integer('address_id').references(() => addressTable.id),
   payment_method: text('payment_method').notNull(),
@@ -93,9 +89,7 @@ export const orderItemTable = sqliteTable('order_item', {
   created_at: integer('created_at', { mode: 'timestamp' }).default(
     sql`(CURRENT_TIMESTAMP)`,
   ),
-  updated_at: integer('updated_at', { mode: 'timestamp' })
-    .default(sql`(CURRENT_TIMESTAMP)`)
-    .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+
   order_id: integer('order_id')
     .notNull()
     .references(() => customerOrderTable.id),

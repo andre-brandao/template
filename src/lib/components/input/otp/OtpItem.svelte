@@ -85,7 +85,7 @@
 </script>
 
 <input
-	class={`${nostyle ? '' : 'default-input'} ${className}`}
+	class={`${nostyle ? '' : 'default-input rounded bg-primary text-primary-content'} ${className}`}
 	bind:this={input}
 	on:keydown={keyDownHandler}
 	on:keyup={keyUpHandler}

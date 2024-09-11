@@ -32,7 +32,6 @@ function getPublicUserInfo(){
     name: userTable.username,
     email: userTable.email,
     created_at: userTable.created_at,
-    updated_at: userTable.updated_at,
     permissions: userTable.permissions,
     verified: userTable.emailVerified
   }).from(userTable)

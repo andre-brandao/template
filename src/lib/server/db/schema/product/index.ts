@@ -17,9 +17,7 @@ export const productCategoryTable = sqliteTable('product_category', {
   created_at: integer('created_at', { mode: 'timestamp' }).default(
     sql`(CURRENT_TIMESTAMP)`,
   ),
-  updated_at: integer('updated_at', { mode: 'timestamp' })
-    .default(sql`(CURRENT_TIMESTAMP)`)
-    .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+
   image: integer('image_id').references(() => imageTable.id),
   name: text('name').notNull(),
 })
@@ -41,9 +39,7 @@ export const productTable = sqliteTable('product', {
   created_at: integer('created_at', { mode: 'timestamp' }).default(
     sql`(CURRENT_TIMESTAMP)`,
   ),
-  updated_at: integer('updated_at', { mode: 'timestamp' })
-    .default(sql`(CURRENT_TIMESTAMP)`)
-    .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+
   category_id: integer('category_id').references(() => productCategoryTable.id),
   name: text('name').notNull(),
   description: text('description').notNull(),
@@ -68,9 +64,7 @@ export const productItemTable = sqliteTable('product_item', {
   created_at: integer('created_at', { mode: 'timestamp' }).default(
     sql`(CURRENT_TIMESTAMP)`,
   ),
-  updated_at: integer('updated_at', { mode: 'timestamp' })
-    .default(sql`(CURRENT_TIMESTAMP)`)
-    .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+
   product_id: integer('product_id')
     .notNull()
     .references(() => productTable.id),
@@ -101,9 +95,7 @@ export const stockTransactionTable = sqliteTable('stock_transaction', {
   created_at: integer('created_at', { mode: 'timestamp' }).default(
     sql`(CURRENT_TIMESTAMP)`,
   ),
-  updated_at: integer('updated_at', { mode: 'timestamp' })
-    .default(sql`(CURRENT_TIMESTAMP)`)
-    .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+
   item_id: integer('stock_id')
     .notNull()
     .references(() => productItemTable.id),

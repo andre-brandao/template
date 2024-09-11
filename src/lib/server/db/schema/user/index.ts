@@ -21,9 +21,6 @@ export const userTable = sqliteTable('user', {
   created_at: integer('created_at', { mode: 'timestamp' }).default(
     sql`(CURRENT_TIMESTAMP)`,
   ),
-  updated_at: integer('updated_at', { mode: 'timestamp' })
-    .default(sql`(CURRENT_TIMESTAMP)`)
-    .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
 
   username: text('username').notNull().unique(),
   email: text('email').notNull().unique(),

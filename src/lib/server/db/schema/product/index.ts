@@ -100,7 +100,7 @@ export const stockTransactionTable = sqliteTable('stock_transaction', {
     .notNull()
     .references(() => productItemTable.id),
   order_id: integer('order_id').references(() => customerOrderTable.id),
-  quantity: integer('quantity').notNull(),
+  quantity: integer('quantity').notNull().default(0),
   type: text('type', { enum: ['Entrada', 'Saida'] }).notNull(),
   meta_data: text('meta_data', { mode: 'json' }).notNull(),
 })

@@ -53,7 +53,7 @@ export interface DUser {
 }
 
 export type UserPermissions = {
-  role: 'admin' | 'user' | 'customer'
+  role: 'admin' | 'customer'
 }
 
 // AUTH TABLES

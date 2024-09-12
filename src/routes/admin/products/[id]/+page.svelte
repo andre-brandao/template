@@ -11,7 +11,7 @@
 
   export let data: PageData
 
-  const produto = data.prod
+  let produto = data.prod
   function handleAddItem() {
     modal.open(FormModal<InsertProductItem>, {
       title: 'Add Product Item',
@@ -24,10 +24,9 @@
           required: true,
         },
         {
-          name: 'quantity',
-          label: 'Base Quantity',
-          type: 'number',
-          value: 1,
+          name: 'description',
+          label: 'Description',
+          type: 'text',
           required: true,
         },
 
@@ -50,6 +49,7 @@
           })
           console.log(resp)
           produto.items.push(resp)
+          produto = produto
         } catch (error) {
           console.error(error)
           return JSON.stringify(error, null, 2)

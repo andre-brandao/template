@@ -41,8 +41,7 @@
           name: item.name,
           quantity: item.quantity,
           price: item.price,
-          
-        }
+        },
       })
       console.log(resp)
 
@@ -54,7 +53,6 @@
     }
     isChanged = false
   }
-
 
   async function handleDeleteProductItem() {
     try {
@@ -69,7 +67,6 @@
   }
 </script>
 
-<!-- TODO: add delete button -->
 <div
   class="flex flex-col items-center justify-center space-y-1 rounded-lg bg-base-200 p-3"
 >
@@ -83,22 +80,12 @@
       on:change={() => (isChanged = true)}
     />
 
-    <a class="btn" href="/admin/stock/{item.id}">
+    <!-- <a class="btn" href="/admin/stock/{item.id}">
       {@html icons.box()}
-    </a>
+    </a> -->
     <button class="btn btn-error" on:click={handleDeleteProductItem}>
       {@html icons.trash()}
     </button>
-  </div>
-  <div class=" flex w-full items-center justify-between font-light">
-    <span>Quantidade Incluida:</span>
-
-    <input
-      type="number"
-      class="input w-20"
-      bind:value={item.quantity}
-      on:change={() => (isChanged = true)}
-    />
   </div>
 
   <div class="my-3">
@@ -108,15 +95,13 @@
       save={updateProductItemImage}
     />
   </div>
-  <div class="flex flex-col justify-between gap-1 text-center">
-    <div class="flex items-center justify-between gap-2">
-      WholeSale Price
+  <div class="flex w-full items-center justify-between gap-2">
+    Price
 
-      <CurrencyInput
-        bind:value={item.price}
-        on:change={() => (isChanged = true)}
-      />
-    </div>
+    <CurrencyInput
+      bind:value={item.price}
+      on:change={() => (isChanged = true)}
+    />
   </div>
 
   {#if isChanged}

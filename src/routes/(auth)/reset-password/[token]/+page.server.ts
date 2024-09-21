@@ -21,9 +21,9 @@ export const load = (async ({ params, setHeaders }) => {
     await sha256(new TextEncoder().encode(verificationToken)),
   )
 
-  const [token] = await user.getPasswordResetToken(tokenHash)
+  const [token] = await user.passwordRecovery.getToken(tokenHash)
 
-  const [resetUser] = await user.getUserById(token.userId)
+  const [resetUser] = await user.getById(token.userId)
 
   return {
     email: resetUser.email,
@@ -56,19 +56,10 @@ export const actions: Actions = {
     const tokenHash = encodeHex(
       await sha256(new TextEncoder().encode(verificationToken)),
     )
-    // const token = await db
-    //   .table('password_reset_token')
-    //   .where('token_hash', '=', tokenHash)
-    //   .get()
-
-    const [token] = await user.getPasswordResetToken(tokenHash)
+    const [token] = await user.passwordRecovery.getToken(tokenHash)
 
     if (token) {
-      // await db
-      //   .table('password_reset_token')
-      //   .where('token_hash', '=', tokenHash)
-      //   .delete()
-      await user.deletePasswordResetToken(tokenHash)
+      await user.passwordRecovery.deleteToken(tokenHash)
     }
 
     if (!token || !isWithinExpirationDate(token.expiresAt)) {
@@ -85,10 +76,7 @@ export const actions: Actions = {
       outputLen: 32,
       parallelism: 1,
     })
-    // await db.table('user').where('id', '=', token.user).update({
-    //   password_hash: passwordHash,
-    // })
-    await user.updateUser(token.userId, {
+    await user.update(token.userId, {
       password_hash: passwordHash,
     })
 

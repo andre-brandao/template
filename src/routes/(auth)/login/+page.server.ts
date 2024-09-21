@@ -5,7 +5,7 @@ import { fail, redirect } from '@sveltejs/kit'
 import type { Actions, PageServerLoad } from './$types'
 
 import { user } from '$db/controller'
-import { emailTemplate, sendMail } from '$lib/server/email'
+// import { emailTemplate, sendMail } from '$lib/server/email'
 
 export const load: PageServerLoad = async event => {
   if (event.locals.user) {
@@ -20,41 +20,18 @@ export const actions: Actions = {
 
     const email = formData.get('email')
 
-    if (
-      typeof email !== 'string' ||
-      email.length < 3 ||
-      email.length > 255 ||
-      !/.+@.+/.test(email)
-    ) {
-      return fail(400, {
+    const { error } = await user.auth.login.magicLink.send({
+      email,
+      url,
+    })
+
+    if (error) {
+      return fail(404, {
         success: false,
-        message: 'Invalid email',
+        message: error.message,
       })
     }
 
-    const [existingUser] = await user.getUserByEmail(email)
-
-    if (!existingUser) {
-      return fail(400, {
-        success: false,
-        message: 'User not found',
-      })
-    }
-
-    try {
-      const verificationToken = await user.createMagicLinkToken(
-        existingUser.id,
-        existingUser.email,
-      )
-      const verificationLink = `${url.origin}/login/${verificationToken}`
-      await sendMail(email, emailTemplate.magicLink(verificationLink))
-    } catch (error) {
-      console.error(error)
-      return fail(500, {
-        success: false,
-        message: 'Failed to send magic link',
-      })
-    }
     return {
       message: 'Magic link sent, Check your email',
       success: true,

@@ -6,7 +6,23 @@ import {
 } from 'drizzle-orm/sqlite-core'
 import { db } from '.'
 
-import type { TableState } from '$components/table'
+
+import { z } from 'zod'
+
+export const paramsSchema = z.object({
+  page: z.number(),
+  pageSize: z.number().optional(),
+  sort: z
+    .object({
+      field: z.string(),
+      direction: z.string(),
+    })
+    .optional(),
+  search: z.string().optional(),
+})
+
+export type TableState = z.infer<typeof paramsSchema>
+
 
 export async function tableHelper<T extends SQLiteSelect>(
   qb: T,

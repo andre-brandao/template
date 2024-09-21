@@ -3,20 +3,9 @@ import { setContext, getContext } from 'svelte'
 
 const CONTEXT_KEY = 'table'
 
-import { z } from 'zod'
 
-export const paramsSchema = z.object({
-  page: z.number(),
-  pageSize: z.number().optional(),
-  sort: z
-    .object({
-      field: z.string(),
-      direction: z.string(),
-    })
-    .optional(),
-  search: z.string().optional(),
-})
-export type TableState = z.infer<typeof paramsSchema>
+import type { TableState } from '$db/utils'
+export type { TableState } from '$db/utils'
 
 export type EditableTypes = 'text' | 'number'
 

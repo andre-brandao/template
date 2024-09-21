@@ -1,7 +1,6 @@
 import type { PageServerLoad } from './$types'
 import { lucia } from '$lib/server/auth'
-import { user as userController } from '$db/controller'
-import { isWithinExpirationDate } from 'oslo'
+import { user  } from '$db/controller'
 import { error, redirect } from '@sveltejs/kit'
 
 export const load = (async ({ params, cookies, setHeaders }) => {
@@ -11,30 +10,26 @@ export const load = (async ({ params, cookies, setHeaders }) => {
     'Referrer-Policy': 'strict-origin',
   })
 
-  const [token] = await userController.getMagicLinkToken(verificationToken)
-  if (token) {
-    await userController.deleteMagicLinkToken(verificationToken)
+
+  const { data, error: err } =
+    await user.auth.login.magicLink.validate(verificationToken)
+
+  if (err) {
+    return error(400, {
+      message: err.message,
+    })
   }
 
-  if (!token || !isWithinExpirationDate(token.expiresAt)) {
-    return error(400, {
-      message: 'Invalid or expired token',
-    })
-  }
-  const [user] = await userController.getUserById(token.userId)
-  if (!user || user.email !== token.email) {
-    return error(400, {
-      message: 'Invalid or expired token',
-    })
-  }
+  const verifiedUser = data.user
+
   try {
-    await lucia.invalidateUserSessions(user.id)
+    await lucia.invalidateUserSessions(verifiedUser.id)
 
-    await userController.updateUser(user.id, {
+    await user.update(verifiedUser.id, {
       emailVerified: true,
     })
 
-    const session = await lucia.createSession(user.id, {})
+    const session = await lucia.createSession(verifiedUser.id, {})
     const sessionCookie = lucia.createSessionCookie(session.id)
     cookies.set(sessionCookie.name, sessionCookie.value, {
       path: '.',
@@ -45,6 +40,10 @@ export const load = (async ({ params, cookies, setHeaders }) => {
     return error(500, {
       message: 'Failed to verify email',
     })
+  }
+
+  if (!verifiedUser.password_hash) {
+    return redirect(302, '/onboarding')
   }
 
   return redirect(302, '/')

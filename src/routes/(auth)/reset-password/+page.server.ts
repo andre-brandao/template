@@ -24,7 +24,7 @@ export const actions: Actions = {
       })
     }
 
-    const [existingUser] = await user.getUserByEmail(email)
+    const [existingUser] = await user.getByEmail(email)
 
     if (!existingUser) {
       return fail(400, {
@@ -32,7 +32,7 @@ export const actions: Actions = {
       })
     }
 
-    const verificationToken = await user.createPasswordResetToken(
+    const verificationToken = await user.passwordRecovery.createToken(
       existingUser.id,
     )
     // const verificationLink =

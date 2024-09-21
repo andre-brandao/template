@@ -4,9 +4,8 @@ import { z } from 'zod'
 import { bugReport } from '$lib/server/db/controller'
 import { TRPCError } from '@trpc/server'
 import { middleware } from '$trpc/middleware'
-import { paramsSchema } from '$lib/components/table'
-import { tableHelper } from '$lib/server/db/utils'
-import { bugReportTable } from '$lib/server/db/schema'
+// import { tableHelper } from '$lib/server/db/utils'
+// import { bugReportTable } from '$lib/server/db/schema'
 
 export const bugReportRouter = router({
   reportBug: publicProcedure
@@ -71,14 +70,14 @@ export const bugReportRouter = router({
       }
     }),
 
-  paginatedLogs: publicProcedure
-    .input(paramsSchema)
-    .query(async ({ input }) => {
-      return await tableHelper(
-        bugReport.allLogs().$dynamic(),
-        bugReportTable,
-        'text',
-        input,
-      )
-    }),
+  // paginatedLogs: publicProcedure
+  //   .input(paramsSchema)
+  //   .query(async ({ input }) => {
+  //     return await tableHelper(
+  //       bugReport.allLogs().$dynamic(),
+  //       bugReportTable,
+  //       'text',
+  //       input,
+  //     )
+  //   }),
 })

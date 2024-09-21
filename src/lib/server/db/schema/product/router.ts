@@ -11,8 +11,8 @@ import {
   stockTransactionTable,
 } from '$db/schema'
 
-import { tableHelper } from '$db/utils'
-import { paramsSchema } from '$lib/components/table'
+import { tableHelper, paramsSchema } from '$db/utils'
+export type TableState = z.infer<typeof paramsSchema>
 
 export const productRouter = router({
   paginatedProducts: publicProcedure

@@ -9,15 +9,17 @@ import {
 import { relations, sql } from 'drizzle-orm'
 import { addressTable, customerOrderTable } from '$db/schema'
 
-import { type DatabaseUser } from 'lucia'
+import { generateId, type DatabaseUser } from 'lucia'
 
 export const DEFAULT_PERMISSIONS: UserPermissions = {
   role: 'customer',
 } as const
 
 export const userTable = sqliteTable('user', {
-  id: text('id').notNull().primaryKey(),
-  // .$defaultFn(() => generateId(15)),
+  id: text('id')
+    .notNull()
+    .primaryKey()
+    .$defaultFn(() => generateId(15)),
   created_at: integer('created_at', { mode: 'timestamp' }).default(
     sql`(CURRENT_TIMESTAMP)`,
   ),
@@ -27,10 +29,8 @@ export const userTable = sqliteTable('user', {
   emailVerified: integer('email_verified', { mode: 'boolean' })
     .notNull()
     .default(false),
-  password_hash: text('password_hash').notNull(),
-
+  password_hash: text('password_hash'),
   permissions: text('permissions', { mode: 'json' })
-    .notNull()
     .$type<UserPermissions>()
     .default(DEFAULT_PERMISSIONS),
 })
@@ -57,7 +57,7 @@ export type UserPermissions = {
 }
 
 // AUTH TABLES
-export const sessionTable = sqliteTable('session', {
+export const sessionTable = sqliteTable('auth_session', {
   id: text('id').notNull().primaryKey(),
   userId: text('user_id')
     .notNull()
@@ -67,7 +67,7 @@ export const sessionTable = sqliteTable('session', {
   expiresAt: integer('expires_at').notNull(),
 })
 
-export const userVerificationCodeTable = sqliteTable('user_verification_code', {
+export const userVerificationCodeTable = sqliteTable('auth_verification_code', {
   id: integer('id').notNull().primaryKey({ autoIncrement: true }),
   code: text('code').notNull(),
   userId: text('user_id')
@@ -79,7 +79,7 @@ export const userVerificationCodeTable = sqliteTable('user_verification_code', {
   expiresAt: integer('expires_at', { mode: 'timestamp' }).notNull(),
 })
 
-export const passwordResetCodeTable = sqliteTable('password_reset_code', {
+export const passwordResetCodeTable = sqliteTable('auth_password_reset_code', {
   token_hash: text('token_hash').notNull(),
   userId: text('user_id')
     .notNull()
@@ -89,7 +89,7 @@ export const passwordResetCodeTable = sqliteTable('password_reset_code', {
   expiresAt: integer('expires_at', { mode: 'timestamp' }).notNull(),
 })
 
-export const magicLinkTable = sqliteTable('magic_link', {
+export const magicLinkTable = sqliteTable('auth_magic_link', {
   id: text('id').notNull().primaryKey(),
   userId: text('user_id')
     .notNull()

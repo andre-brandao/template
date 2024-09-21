@@ -11,7 +11,6 @@ import { lucia } from '$lib/server/auth'
 
 import { emailTemplate, sendMail } from '$lib/server/email'
 
-
 export const userRouter = router({
   logOut: publicProcedure.query(async ({ ctx }) => {
     const { cookies } = ctx
@@ -97,7 +96,7 @@ export const userRouter = router({
       }
 
       await lucia.invalidateUserSessions(user.id)
-      await userController.updateUser(user.id, {
+      await userController.update(user.id, {
         emailVerified: true,
       })
 
@@ -123,7 +122,7 @@ export const userRouter = router({
       const { url } = ctx
 
       // const user = await db.table('user').where('email', '=', email).get()
-      const [{ id: userID }] = await userController.getUserByEmail(email)
+      const [{ id: userID }] = await userController.getByEmail(email)
       if (!userID) {
         // If you want to avoid disclosing valid emails,
         // this can be a normal 200 response.

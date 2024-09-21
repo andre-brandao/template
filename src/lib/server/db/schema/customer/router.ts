@@ -8,8 +8,7 @@ import {
 } from '$db/controller'
 import { insertAddressSchema, userTable } from '$lib/server/db/schema'
 
-import { paramsSchema } from '$lib/components/table'
-import { tableHelper } from '$lib/server/db/utils'
+import { tableHelper, paramsSchema } from '$lib/server/db/utils'
 
 import { middleware } from '$trpc/middleware'
 import { z } from 'zod'
@@ -20,7 +19,7 @@ export const customerRouter = router({
     .input(paramsSchema)
     .query(async ({ input }) => {
       return await tableHelper(
-        userController.getPublicUserInfo().$dynamic(),
+        userController.getPublicInfo().$dynamic(),
         userTable,
         'username',
         input,

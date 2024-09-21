@@ -17,7 +17,7 @@ async function seedUsers() {
   console.log('userTable seed START')
 
   try {
-    await user.insertUser({
+    await user.create({
       id: generateId(15),
       email: 'admin@admin.com',
       username: 'administrator',
@@ -37,7 +37,7 @@ async function seedUsers() {
 
   for (let i = 0; i < 20; i++) {
     try {
-      await user.insertUser({
+      await user.create({
         id: generateId(15),
         email: faker.internet.email(),
         username: faker.internet.userName(),

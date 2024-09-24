@@ -154,12 +154,15 @@ devDependencies:
   svelte-check:
     specifier: ^4.0.2
     version: 4.0.2(svelte@5.0.0-next.257)(typescript@5.6.2)
+  svelte-headless-table:
+    specifier: ^0.18.2
+    version: 0.18.2(svelte@5.0.0-next.257)
   svelte-stripe:
-    specifier: ^1.2.0
-    version: 1.2.0(@stripe/stripe-js@4.5.0)(svelte@5.0.0-next.257)
+    specifier: ^1.2.1
+    version: 1.2.1(@stripe/stripe-js@4.5.0)(svelte@5.0.0-next.257)
   tailwindcss:
-    specifier: ^3.4.12
-    version: 3.4.12
+    specifier: ^3.4.13
+    version: 3.4.13
   tslib:
     specifier: ^2.7.0
     version: 2.7.0
@@ -5788,6 +5791,25 @@ packages:
       svelte: 5.0.0-next.257
     dev: true
 
+  /svelte-headless-table@0.18.2(svelte@5.0.0-next.257):
+    resolution: {integrity: sha512-dnDTaXW5CNzRUjHVbc/Hb0Zv80zU4VcIUnAja6OuZriXvim1AqcWYQCHPRzBGwqj1m3YEHHNvspSzY0o5HzA0A==}
+    peerDependencies:
+      svelte: ^4.0.0
+    dependencies:
+      svelte: 5.0.0-next.257
+      svelte-keyed: 2.0.0(svelte@5.0.0-next.257)
+      svelte-render: 2.0.1(svelte@5.0.0-next.257)
+      svelte-subscribe: 2.0.1(svelte@5.0.0-next.257)
+    dev: true
+
+  /svelte-keyed@2.0.0(svelte@5.0.0-next.257):
+    resolution: {integrity: sha512-7TeEn+QbJC2OJrHiuM0T8vMBkms3DNpTE+Ir+NtnVBnBMA78aL4f1ft9t0Hn/pBbD/TnIXi4YfjFRAgtN+DZ5g==}
+    peerDependencies:
+      svelte: ^4.0.0
+    dependencies:
+      svelte: 5.0.0-next.257
+    dev: true
+
   /svelte-motion@0.12.2(svelte@5.0.0-next.257):
     resolution: {integrity: sha512-7RrdRz9iVP55B9HT/C0hYW3pyrKlF61kAby/AkDtOAP0uHFQDrfd0qQetDC81cEsK9b40jt+jfcqSAXcA7LPEw==}
     peerDependencies:
@@ -5844,6 +5866,15 @@ packages:
       typescript: 5.6.2
     dev: false
 
+  /svelte-render@2.0.1(svelte@5.0.0-next.257):
+    resolution: {integrity: sha512-RpB0SurwXm4xhjvHHtjeqMmvd645FURb79GFOotScOSqnKK5vpqBgoBPGC0pp+E/eZgDSQ9rRAdn/+N4ys1mXQ==}
+    peerDependencies:
+      svelte: ^4.0.0
+    dependencies:
+      svelte: 5.0.0-next.257
+      svelte-subscribe: 2.0.1(svelte@5.0.0-next.257)
+    dev: true
+
   /svelte-sonner@0.3.28(svelte@5.0.0-next.257):
     resolution: {integrity: sha512-K3AmlySeFifF/cKgsYNv5uXqMVNln0NBAacOYgmkQStLa/UoU0LhfAACU6Gr+YYC8bOCHdVmFNoKuDbMEsppJg==}
     peerDependencies:
@@ -5852,13 +5883,21 @@ packages:
       svelte: 5.0.0-next.257
     dev: false
 
-  /svelte-stripe@1.2.0(@stripe/stripe-js@4.5.0)(svelte@5.0.0-next.257):
-    resolution: {integrity: sha512-k2cBOceZLfstjlnZNoGv2eSvrhJ7piha8zRvSFD8g/n0f669j5wS7Ba5xInVTtgKMU2QdNpj5niYR00bqdxbKw==}
+  /svelte-stripe@1.2.1(@stripe/stripe-js@4.5.0)(svelte@5.0.0-next.257):
+    resolution: {integrity: sha512-UiRsbblJg61LZPPOQrNpSDVzVFu5svWKIQWt9De0PzyyFZq286PsE/Xz/r57tFANNBoUDpSgtHcBZiHbTQiR7Q==}
     peerDependencies:
-      '@stripe/stripe-js': ^3
+      '@stripe/stripe-js': ^3 || ^4
       svelte: ^3 || ^4
     dependencies:
       '@stripe/stripe-js': 4.5.0
+      svelte: 5.0.0-next.257
+    dev: true
+
+  /svelte-subscribe@2.0.1(svelte@5.0.0-next.257):
+    resolution: {integrity: sha512-eKXIjLxB4C7eQWPqKEdxcGfNXm2g/qJ67zmEZK/GigCZMfrTR3m7DPY93R6MX+5uoqM1FRYxl8LZ1oy4URWi2A==}
+    peerDependencies:
+      svelte: ^4.0.0
+    dependencies:
       svelte: 5.0.0-next.257
     dev: true
 
@@ -5938,8 +5977,8 @@ packages:
     resolution: {integrity: sha512-kjEBm+pvD+6eAwzJL2Bi+02/9LFLal1Gs61+QB7HvTfQQ0aXwC5LGT8PEt1gS0CWKktKe6ysPTAy3cBC5MeiIg==}
     dev: false
 
-  /tailwindcss@3.4.12:
-    resolution: {integrity: sha512-Htf/gHj2+soPb9UayUNci/Ja3d8pTmu9ONTfh4QY8r3MATTZOzmv6UYWF7ZwikEIC8okpfqmGqrmDehua8mF8w==}
+  /tailwindcss@3.4.13:
+    resolution: {integrity: sha512-KqjHOJKogOUt5Bs752ykCeiwvi0fKVkr5oqsFNt/8px/tA8scFPIlkygsf6jXrfCqGHz7VflA6+yytWuM+XhFw==}
     engines: {node: '>=14.0.0'}
     hasBin: true
     dependencies:

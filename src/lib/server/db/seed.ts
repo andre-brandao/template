@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { faker } from '@faker-js/faker'
+// import faker from "https://cdnjs.cloudflare.com/ajax/libs/Faker/3.1.0/faker.min.js";
 import { hash } from '@node-rs/argon2'
 import { generateId } from 'lucia'
 import fs from 'fs'
@@ -9,7 +10,7 @@ const TEST_IMAGE = 'src/lib/assets/home/home-open-graph-square.jpg'
 
 const main = async () => {
   await seedUsers()
-  await seedCategories()
+  // await seedCategories()
 }
 main()
 
@@ -38,7 +39,6 @@ async function seedUsers() {
   for (let i = 0; i < 20; i++) {
     try {
       await user.create({
-        id: generateId(15),
         email: faker.internet.email(),
         username: faker.internet.userName(),
         password_hash: await hash('password', {

@@ -1,67 +1,44 @@
-import { writable } from 'svelte/store'
-import { setContext, getContext } from 'svelte'
-
-const CONTEXT_KEY = 'table'
-
-
-import type { TableState } from '$db/utils'
-export type { TableState } from '$db/utils'
-
-export type EditableTypes = 'text' | 'number'
-
-export const getParams = ({
-  pageSize,
-  search,
-  sort,
-  // filters,
-  page,
-}: TableState) => {
-  let params = `limit=${pageSize}`
-  if (page) params += `&page=${page}`
-  if (search) params += `&q=${search}`
-  if (sort) params += `&sort=${sort.field}&order=${sort.direction}`
-  // if (filters) {
-  //   params += filters.map(({ field, value }) => `&${field}=${value}`).join()
-  // }
-  return params
-}
-
-export { default as EditRowButton } from './EditRowButton.svelte'
-export { default as EditRowInput } from './EditRowInput.svelte'
-export { default as RowActions } from './RowActions.svelte'
-
-function createChangesStore<T>() {
-  const { subscribe, set, update } = writable<{ [key: string]: T }>({})
-
-  function setRow(key: string, value: T) {
-    update(rows => {
-      rows[key] = value
-      return rows
-    })
+export interface TableState {
+  sort: {
+    column: string
+    direction: string
   }
-  function removeRow(key: string) {
-    update(rows => {
-      delete rows[key]
-      return rows
-    })
+  filters: {
+    [key: string]: unknown
   }
-
-  return {
-    subscribe,
-    set,
-    update,
-    setRow,
-    removeRow,
+  page: {
+    current: number
+    size: number
   }
 }
-// export const rowChanges = createChangesStore()
 
-// type rowChangeStoreT = ReturnType<typeof createChangesStore>
+type UnksownFilter = { filterValue: unknown; value: unknown }
 
-export function createRowChanges<T>() {
-  return setContext(CONTEXT_KEY, createChangesStore<T>())
+export const textPrefixFilter = ({ filterValue, value }: UnksownFilter) => {
+  return String(value)
+    .toLowerCase()
+    .startsWith(String(filterValue).toLowerCase())
 }
 
-export function getRowChanges<T>() {
-  return getContext<ReturnType<typeof createChangesStore<T>>>(CONTEXT_KEY)
+export const minFilter = ({ filterValue, value }: UnksownFilter) => {
+  if (typeof value !== 'number' || typeof filterValue !== 'number') return true
+  return filterValue <= value
 }
+
+export const numberRangeFilter = ({ filterValue, value }: UnksownFilter) => {
+  if (!Array.isArray(filterValue) || typeof value !== 'number') return true
+  const [min, max] = filterValue
+  if (min === null && max === null) return true
+  if (min === null) return value <= max
+  if (max === null) return min <= value
+
+  return min <= value && value <= max
+}
+
+export const matchFilter = ({ filterValue, value }: UnksownFilter) => {
+  if (filterValue === undefined) return true
+  return filterValue === value
+}
+
+// import type { Table } from 'svelte-headless-table'
+// import type { AnyPlugins } from 'svelte-headless-table/plugins'

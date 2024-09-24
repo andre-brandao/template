@@ -1,6 +1,6 @@
 // lib/trpc/router.ts
 
-import { t } from './t'
+import { publicProcedure, t } from './t'
 
 import type { inferRouterInputs, inferRouterOutputs } from '@trpc/server'
 
@@ -10,6 +10,7 @@ import { productRouter } from '$db/schema/product/router'
 import { customerRouter } from '$db/schema/customer/router'
 import { bugReportRouter } from '$db/schema/bug-report/router'
 import { stripeRouter } from '$db/schema/stripe/router'
+import { drizzleTable } from './table'
 
 export const router = t.router({
   auth: userRouter,
@@ -17,6 +18,7 @@ export const router = t.router({
   customer: customerRouter,
   bugReport: bugReportRouter,
   checkout: stripeRouter,
+  drizzleTable
 })
 
 export type Router = typeof router

@@ -1,4 +1,4 @@
-<script lang="ts">
+<!-- <script lang="ts">
   import type { PageData } from './$types'
 
   export let data: PageData
@@ -56,4 +56,4 @@
 
 <div class=" h-[70vh] overflow-x-auto p-4">
   <Datatable columns={defaultColumns} {load} />
-</div>
+</div> -->

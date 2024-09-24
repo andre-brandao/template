@@ -1,6 +1,6 @@
 import nodemailer from 'nodemailer'
 
-import { env } from '$env/dynamic/private'
+// import { env } from '$env/dynamic/private'
 
 import { website } from '$lib/config'
 
@@ -17,15 +17,15 @@ export async function sendMail(to: string, email: EmailOptions) {
     port: 587,
     secure: false, // true for 465, false for other ports
     auth: {
-      user: env.GOOGLE_ACC_EMAIL,
-      pass: env.GOOGLE_ACC_PASSWORD,
+      user: process.env.GOOGLE_ACC_EMAIL,
+      pass: process.env.GOOGLE_ACC_PASSWORD,
     },
   })
 
   const worked = await transporter.sendMail({
     from: {
       name: website.siteShortTitle,
-      address: env.GOOGLE_ACC_EMAIL,
+      address: process.env.GOOGLE_ACC_EMAIL || '',
     },
     to: to,
     subject: email.subject,

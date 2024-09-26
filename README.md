@@ -83,7 +83,7 @@ Drizzle ORM Commands The following commands help manage the database schema and
 migrations, refer to [Commands Docs](https://orm.drizzle.team/kit-docs/commands)
 
 Push changes to the development database:
-
+ Push command is good for situations where you need to quickly test new schema designs or changes in a local development environment, allowing for fast iterations without the overhead of managing migration files. 
 ```bash
 npm run db:push
 ```

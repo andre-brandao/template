@@ -26,6 +26,7 @@ import {
   getOperators,
   SQL,
   type AnyColumn,
+  sql,
 } from 'drizzle-orm'
 import {
   SQLiteTable,
@@ -46,23 +47,36 @@ export function getSQLiteColumn<T extends SQLiteTable>(
 export function withPagination<T extends SQLiteSelect>(
   qb: T,
   page: number = 1,
-  pageSize: number = 10,
+  pageSize: number = 15,
 ) {
   return qb.limit(pageSize).offset((page - 1) * pageSize)
 }
 
-export function getOrderBy(order: string, column: AnyColumn) {
+export function getOrderBy(column: AnyColumn, order?: string) {
   return order === 'asc' ? asc(column) : desc(column)
 }
 
 export function withOrderBy<T extends SQLiteSelect>(
   qb: T,
-  column: AnyColumn,
-  order: string | 'asc' | 'desc',
+  column?: AnyColumn,
+  order?: string | 'asc' | 'desc',
 ) {
   if (column) {
-    return qb.orderBy(getOrderBy(order, column))
+    return qb.orderBy(getOrderBy(column, order))
   }
   return qb
 }
 
+// LENGHT OPERATORS
+function lenlt(column: AnyColumn, value: number) {
+  return sql`length(${column}) < ${value}`
+}
+function lenlte(column: AnyColumn, value: number) {
+  return sql`length(${column}) <= ${value}`
+}
+function leneq(column: AnyColumn, value: number) {
+  return sql`length(${column}) = ${value}`
+}
+function lenne(column: AnyColumn, value: number) {
+  return sql`length(${column}) != ${value}`
+}

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { eq, inArray, sql } from 'drizzle-orm'
 
-import { db } from '$lib/server/db'
+import { db } from '$drizzle/client.server'
 
 import {
   productTable,
@@ -9,7 +9,7 @@ import {
   productCategoryTable,
   type InsertStockTransaction,
   stockTransactionTable,
-} from '$db/schema'
+} from '$drizzle/schema'
 import type {
   InsertProduct,
   SelectProduct,
@@ -17,8 +17,8 @@ import type {
   SelectProductCategory,
   InsertProductCategory,
   SelectProductItem,
-} from '$db/schema'
-import { getRowCount } from '$db/utils'
+} from '$drizzle/schema'
+// import { getRowCount } from '$drizzle/utils'
 
 export const product = {
   tables: { productTable, productItemTable, productCategoryTable },

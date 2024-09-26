@@ -1,7 +1,7 @@
 import { t } from '$trpc/t'
 import { TRPCError } from '@trpc/server'
 
-import type { UserPermissions } from '$db/schema'
+import type { UserPermissions } from '$drizzle/schema'
 const admin = t.middleware(async ({ next, ctx }) => {
   const { user } = ctx.locals
   if (user?.permissions.role !== 'admin')

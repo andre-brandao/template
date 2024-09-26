@@ -2,54 +2,56 @@ import { publicProcedure, router } from '$trpc/t'
 
 import { z } from 'zod'
 
-import { product as productController } from '$db/controller'
+import { product as productController } from '$drizzle/controller'
 
 import {
   insertProductCategorySchema,
   insertProductItemSchema,
   insertProductSchema,
   stockTransactionTable,
-} from '$db/schema'
+} from '$drizzle/schema'
 
-import { tableHelper, paramsSchema } from '$db/utils'
-export type TableState = z.infer<typeof paramsSchema>
+// import { tableHelper, paramsSchema } from '$drizzle/utils'
+// export type TableState = z.infer<typeof paramsSchema>
 
 export const productRouter = router({
-  paginatedProducts: publicProcedure
-    .input(paramsSchema)
-    .query(async ({ input }) => {
-      return await tableHelper(
-        productController.getProducts().$dynamic(),
-        productController.tables.productTable,
-        'name',
-        input,
-      )
-    }),
-  paginatedProductItems: publicProcedure
-    .input(paramsSchema)
-    .query(async ({ input }) => {
-      return await tableHelper(
-        productController.getProductItems().$dynamic(),
-        productController.tables.productItemTable,
-        'name',
-        input,
-      )
-    }),
+  // paginatedProducts: publicProcedure
+  //   .input(paramsSchema)
+  //   .query(async ({ input }) => {
+  //     return await tableHelper(
+  //       productController.getProducts().$dynamic(),
+  //       productController.tables.productTable,
+  //       'name',
+  //       input,
+  //     )
+  //   }),
+  // paginatedProductItems: publicProcedure
+  //   .input(paramsSchema)
+  //   .query(async ({ input }) => {
+  //     return await tableHelper(
+  //       productController.getProductItems().$dynamic(),
+  //       productController.tables.productItemTable,
+  //       'name',
+  //       input,
+  //     )
+  //   }),
 
-  paginatedTransactions: publicProcedure
-    .input(z.object({
-      item_id: z.number(),
-      table_state: paramsSchema
-    }))
-    .query(async ({ input }) => {
-      const { item_id, table_state } = input
-      return await tableHelper(
-        productController.getProductTransactions(item_id).$dynamic(),
-        stockTransactionTable,
-        'name',
-        table_state,
-      )
-    }),
+  // paginatedTransactions: publicProcedure
+  //   .input(
+  //     z.object({
+  //       item_id: z.number(),
+  //       table_state: paramsSchema,
+  //     }),
+  //   )
+  //   .query(async ({ input }) => {
+  //     const { item_id, table_state } = input
+  //     return await tableHelper(
+  //       productController.getProductTransactions(item_id).$dynamic(),
+  //       stockTransactionTable,
+  //       'name',
+  //       table_state,
+  //     )
+  //   }),
 
   insertProduct: publicProcedure
     .input(insertProductSchema)

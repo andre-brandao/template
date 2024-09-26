@@ -1,6 +1,6 @@
 import type { PageServerLoad } from './$types'
 import { lucia } from '$lib/server/auth'
-import { user  } from '$db/controller'
+import { user } from '$drizzle/controller'
 import { error, redirect } from '@sveltejs/kit'
 
 export const load = (async ({ params, cookies, setHeaders }) => {
@@ -9,7 +9,6 @@ export const load = (async ({ params, cookies, setHeaders }) => {
   setHeaders({
     'Referrer-Policy': 'strict-origin',
   })
-
 
   const { data, error: err } =
     await user.auth.login.magicLink.validate(verificationToken)

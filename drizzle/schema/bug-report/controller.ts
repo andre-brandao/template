@@ -7,8 +7,8 @@ import {
   logsTable,
   type InsertLogs,
   // type SelectLogs,
-} from '$db/schema'
-import { db } from '$db'
+} from '$drizzle/schema'
+import { db } from '$drizzle/client.server'
 
 function insertBugReport(report: InsertBugReport) {
   return db

@@ -2,7 +2,7 @@ import { publicProcedure, router } from '$trpc/t'
 
 import { z } from 'zod'
 
-import { user as userController } from '$db/controller'
+import { user as userController } from '$drizzle/controller'
 import { lucia } from '$lib/server/auth'
 // import { hash, verify } from '@node-rs/argon2'
 

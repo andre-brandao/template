@@ -1,4 +1,5 @@
 {
+  "include": ["src", "drizzle"],
   "extends": "./.svelte-kit/tsconfig.json",
   "compilerOptions": {
     "allowJs": true,
@@ -19,8 +20,10 @@
       "$utils/*": ["./src/lib/utils/*"],
       "$trpc": ["./src/trpc"],
       "$trpc/*": ["./src/trpc/*"],
-      "$db": ["./src/lib/server/db"],
-      "$db/*": ["./src/lib/server/db/*"],
+      // "$drizzle": ["./src/lib/server/db"],
+      // "$drizzle/*": ["./src/lib/server/db/*"],
+      "$drizzle": ["./drizzle"],
+      "$drizzle/*": ["./drizzle/*"],
       "$modal": ["./src/lib/components/modal"],
       "$modal/*": ["./src/lib/components/modal/*"],
       "$msgs": ["./src/lib/paraglide/messages"]

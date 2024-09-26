@@ -1,6 +1,6 @@
 import { fail } from '@sveltejs/kit'
 import type { PageServerLoad, Actions } from './$types'
-import { user } from '$db/controller'
+import { user } from '$drizzle/controller'
 import { emailTemplate, sendMail } from '$lib/server/email'
 
 export const load = (async () => {

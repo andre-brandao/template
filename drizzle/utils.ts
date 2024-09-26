@@ -34,17 +34,6 @@ import {
   type SQLiteColumn,
 } from 'drizzle-orm/sqlite-core'
 
-import type { DrizzleDataTableCfg } from './types'
-
-export type TableState = z.infer<typeof tableParams>
-
-export type ColumFilter<T extends SQLiteColumn> = Record<
-  keyof T,
-  {
-    column: T
-    filter: (value: unknown) => SQL
-  }
->
 export function getSQLiteColumn<T extends SQLiteTable>(
   table: T,
   column_name: string,
@@ -77,15 +66,3 @@ export function withOrderBy<T extends SQLiteSelect>(
   return qb
 }
 
-export function tableCfgFromDrizzleT<T extends SQLiteTable>(
-  drizzleTable: T,
-): DrizzleDataTableCfg {
-  const { columns, name } = getTableConfig(drizzleTable)
-  return {
-    name,
-    columns: columns.map(c => ({
-      name: c.name,
-      type: c.columnType,
-    })),
-  }
-}

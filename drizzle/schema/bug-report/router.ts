@@ -1,11 +1,9 @@
 import { publicProcedure, router } from '$trpc/t'
 
 import { z } from 'zod'
-import { bugReport } from '$lib/server/db/controller'
+import { bugReport } from '$drizzle/controller'
 import { TRPCError } from '@trpc/server'
 import { middleware } from '$trpc/middleware'
-// import { tableHelper } from '$lib/server/db/utils'
-// import { bugReportTable } from '$lib/server/db/schema'
 
 export const bugReportRouter = router({
   reportBug: publicProcedure

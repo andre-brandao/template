@@ -6,7 +6,7 @@ import { hash } from '@node-rs/argon2'
 import { sha256 } from 'oslo/crypto'
 import { encodeHex } from 'oslo/encoding'
 
-import { user } from '$db/controller'
+import { user } from '$drizzle/controller'
 import { lucia } from '$lib/server/auth'
 
 export const load = (async ({ params, setHeaders }) => {

@@ -3,28 +3,26 @@ import { publicProcedure, router } from '$trpc/t'
 // import { z } from 'zod'
 import {
   customer as customerController,
-  user as userController,
   product as productController,
-} from '$db/controller'
-import { insertAddressSchema, userTable } from '$lib/server/db/schema'
+} from '$drizzle/controller'
+import { insertAddressSchema, userTable } from '$drizzle/schema'
 
-import { tableHelper, paramsSchema } from '$lib/server/db/utils'
 
 import { middleware } from '$trpc/middleware'
 import { z } from 'zod'
 import { TRPCError } from '@trpc/server'
 
 export const customerRouter = router({
-  paginatedUsers: publicProcedure
-    .input(paramsSchema)
-    .query(async ({ input }) => {
-      return await tableHelper(
-        userController.getPublicInfo().$dynamic(),
-        userTable,
-        'username',
-        input,
-      )
-    }),
+  // paginatedUsers: publicProcedure
+  //   .input(paramsSchema)
+  //   .query(async ({ input }) => {
+  //     return await tableHelper(
+  //       userController.getPublicInfo().$dynamic(),
+  //       userTable,
+  //       'username',
+  //       input,
+  //     )
+  //   }),
   insertAddress: publicProcedure
     .use(middleware.auth)
     .input(insertAddressSchema)

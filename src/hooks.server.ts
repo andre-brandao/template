@@ -3,7 +3,7 @@ import { lucia } from '$lib/server/auth'
 import type { Handle } from '@sveltejs/kit'
 import { sequence } from '@sveltejs/kit/hooks'
 
-import { bugReport } from '$db/controller'
+import { bugReport } from '$drizzle/controller'
 
 const handleSession: Handle = async ({ event, resolve }) => {
   const sessionId = event.cookies.get(lucia.sessionCookieName)

@@ -3,20 +3,20 @@ import { dev } from '$app/environment'
 
 import { DrizzleSQLiteAdapter } from '@lucia-auth/adapter-drizzle'
 
-import { db } from './db'
-import { sessionTable, userTable, type DUser } from './db/schema'
+import { db } from '$drizzle/client.server'
+
+import { sessionTable, userTable, type DUser } from '$drizzle/schema'
 
 const adapter = new DrizzleSQLiteAdapter(db, sessionTable, userTable)
 
 export const lucia = new Lucia(adapter, {
-  sessionExpiresIn: new TimeSpan(69, "w"), 
+  sessionExpiresIn: new TimeSpan(69, 'w'),
   sessionCookie: {
     expires: false,
 
     attributes: {
       // set to `true` when using HTTPS
       secure: !dev,
-
     },
   },
   getUserAttributes: attributes => {

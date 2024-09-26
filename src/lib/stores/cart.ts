@@ -1,6 +1,6 @@
 import { writable } from 'svelte/store'
 import { getContext, setContext } from 'svelte'
-import type { SelectProductItem } from '$db/schema'
+import type { SelectProductItem } from '$drizzle/schema'
 const CART_STORE_KEY = 'cart'
 
 type Cart = Record<

@@ -1,6 +1,6 @@
 import type { RequestHandler } from './$types'
 
-import { image } from '$db/controller'
+import { image } from '$drizzle/controller'
 
 export const GET: RequestHandler = async ({ params }) => {
   const id = Number(params.id)

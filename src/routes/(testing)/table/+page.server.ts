@@ -1,5 +1,5 @@
 import type { PageServerLoad } from './$types'
-import { user } from '$db/controller' 
+import { user } from '$drizzle/controller'
 export const load = (async ({ url }) => {
   const page = url.searchParams.get('page') || 1
   console.log('page', page)

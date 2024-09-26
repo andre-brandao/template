@@ -7,9 +7,8 @@ import {
 } from 'drizzle-orm/sqlite-core'
 import { sql, relations } from 'drizzle-orm'
 
-import { userTable, productItemTable } from '$db/schema'
+import { userTable, productItemTable } from '$drizzle/schema'
 import { createInsertSchema } from 'drizzle-zod'
-
 
 export const addressTable = sqliteTable('address', {
   id: integer('id').notNull().primaryKey({ autoIncrement: true }),
@@ -50,7 +49,9 @@ export const customerOrderTable = sqliteTable('customer_order', {
     sql`(CURRENT_TIMESTAMP)`,
   ),
 
-  user_id: text('customer_id').notNull().references(() => userTable.id),
+  user_id: text('customer_id')
+    .notNull()
+    .references(() => userTable.id),
   address_id: integer('address_id').references(() => addressTable.id),
   payment_method: text('payment_method').notNull(),
   total: integer('total').notNull(),

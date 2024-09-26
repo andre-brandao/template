@@ -3,7 +3,7 @@ import {
   type InsertCheckoutSession,
   // type InsertPaymentIntent,
 } from '.'
-import { db } from '$db'
+import { db } from '$drizzle/client.server'
 
 import { and, eq } from 'drizzle-orm'
 

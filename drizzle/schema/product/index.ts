@@ -10,7 +10,7 @@ import { sql, relations, type AnyColumn } from 'drizzle-orm'
 import { imageTable } from '../image'
 
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod'
-import { customerOrderTable, orderItemTable } from '$db/schema'
+import { customerOrderTable, orderItemTable } from '$drizzle/schema'
 
 export const productCategoryTable = sqliteTable('product_category', {
   id: integer('id', { mode: 'number' }).primaryKey({ autoIncrement: true }),

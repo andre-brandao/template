@@ -4,8 +4,8 @@ import { z } from 'zod'
 import { publicProcedure, t } from './t'
 
 import { TRPCError } from '@trpc/server'
-import { userTable } from '$lib/server/db/schema'
-import { db } from '$lib/server/db'
+import { userTable } from '$drizzle/schema'
+import { db } from '$drizzle/client.server'
 
 const tableMap = {
   user: userTable,

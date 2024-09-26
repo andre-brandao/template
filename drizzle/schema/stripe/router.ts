@@ -1,14 +1,13 @@
 import { publicProcedure, router } from '$trpc/t'
 
 import { z } from 'zod'
-// import { insertMapSchema, type InsertMapPoint } from '$db/schema'
+// import { insertMapSchema, type InsertMapPoint } from '$drizzle/schema'
 
 import { middleware } from '$trpc/middleware'
 import { TRPCError } from '@trpc/server'
 import { stripe } from '$lib/server/stripe'
 
-// import { user as userController } from '$lib/server/db/controller'
-import { stripe as stripeControler } from '$lib/server/db/controller'
+import { stripe as stripeControler } from '$drizzle/controller'
 
 export const stripeRouter = router({
   createCheckoutSession: publicProcedure

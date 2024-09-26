@@ -3,7 +3,7 @@ import { fail, redirect } from '@sveltejs/kit'
 
 import type { Actions, PageServerLoad } from './$types'
 
-import { user } from '$db/controller'
+import { user } from '$drizzle/controller'
 
 export const load: PageServerLoad = async event => {
   if (event.locals.user) {

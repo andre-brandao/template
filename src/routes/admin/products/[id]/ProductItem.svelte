@@ -2,7 +2,7 @@
   import ImageInput from '$lib/components/input/ImageInput.svelte'
   import CurrencyInput from '$lib/components/input/CurrencyInput.svelte'
 
-  import type { SelectProductItem } from '$db/schema'
+  import type { SelectProductItem } from '../../../../../drizzle/schema'
 
   import { page } from '$app/stores'
   import { trpc } from '$trpc/client'

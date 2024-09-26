@@ -1,25 +1,20 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import {
-  customerOrderTable,
-
-  addressTable,
-  orderItemTable,
-} from './index'
+import { customerOrderTable, addressTable, orderItemTable } from './index'
 
 import type {
   SelectCustomerOrder,
   InsertCustomerOrder,
   InsertAddress,
   InsertOrderItem,
-
   SelectAddress,
   SelectOrderItem,
-  SelectUser, InsertStockTransaction,
-} from '$db/schema'
-import { db } from '$db'
+  SelectUser,
+  InsertStockTransaction,
+} from '$drizzle/schema'
+import { db } from '$drizzle/client.server'
 import { eq, ne, or, sql } from 'drizzle-orm'
 
-import { product } from '$db/controller'
+import { product } from '$drizzle/controller'
 
 export const customer = {
   tables: {
@@ -27,7 +22,6 @@ export const customer = {
     customerOrderTable,
     orderItemTable,
   },
-
 
   insertAddress: async (input: InsertAddress) => {
     return db.insert(addressTable).values(input)
@@ -56,7 +50,6 @@ export const customer = {
       })
       .returning()
 
-
     const items: InsertOrderItem[] = []
     for (const item of order_items) {
       items.push({
@@ -74,7 +67,6 @@ export const customer = {
       })
     }
     await db.insert(orderItemTable).values(items)
-
   },
 
   getCustomerOrders: async (userId: SelectUser['id']) => {

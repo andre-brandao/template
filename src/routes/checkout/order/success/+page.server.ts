@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import type { PageServerLoad } from './$types'
-import { stripe as stripeController } from '$lib/server/db/controller'
+import { stripe as stripeController } from '$drizzle/controller'
 import { error, redirect } from '@sveltejs/kit'
 
 import { stripe } from '$lib/server/stripe'

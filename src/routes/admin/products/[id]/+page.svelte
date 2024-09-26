@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { PageData } from './$types'
   import { modal, FormModal } from '$modal'
-  import type { InsertProductItem } from '$db/schema'
+  import type { InsertProductItem } from '../../../../../drizzle/schema'
   import { trpc } from '$trpc/client'
   import { page } from '$app/stores'
   import ProductItem from './ProductItem.svelte'

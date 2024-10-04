@@ -1,3 +1,47 @@
+<script module lang="ts">
+  interface SSRTablePlugins<Item> extends AnyPlugins {
+    sort: TablePlugin<
+      Item,
+      SortByState<Item>,
+      SortByColumnOptions,
+      SortByPropSet
+    >
+    filter: TablePlugin<
+      Item,
+      ColumnFiltersState<Item>,
+      ColumnFiltersColumnOptions<Item>,
+      ColumnFiltersPropSet
+    >
+    select: TablePlugin<
+      Item,
+      SelectedRowsState<Item>,
+      Record<string, never>,
+      SelectedRowsPropSet
+    >
+    //resize: TablePlugin<
+    //  Item,
+    //  ResizedColumnsState,
+    //  ResizedColumnsColumnOptions,
+    //  ResizedColumnsPropSet,
+    //  ResizedColumnsAttributeSet
+    //>
+    page: TablePlugin<
+      Item,
+      PaginationState,
+      Record<string, never>,
+      NewTablePropSet<never>
+    >
+  }
+
+  export interface SSRTableProps<Item> {
+    tableRows: Writable<Item[]>
+    count: Readable<number>
+    columns: (
+      table: Table<Item, SSRTablePlugins<Item>>,
+    ) => Column<Item, SSRTablePlugins<Item>>[]
+  }
+</script>
+
 <script lang="ts" generics="Item">
   import {
     createTable,
@@ -16,6 +60,22 @@
     addResizedColumns,
     addGridLayout,
     addPagination,
+    type TablePlugin,
+    type ColumnFiltersState,
+    type ColumnFiltersColumnOptions,
+    type ColumnFiltersPropSet,
+    type SortByState,
+    type SortByColumnOptions,
+    type SortByPropSet,
+    type SelectedRowsState,
+    type SelectedRowsPropSet,
+    type ResizedColumnsState,
+    type ResizedColumnsColumnOptions,
+    type ResizedColumnsPropSet,
+    type ResizedColumnsAttributeSet,
+    type PaginationState,
+    type NewTablePropSet,
+    type AnyPlugins,
   } from '@andre-brandao/svelte-headless-table/plugins'
   import {
     readable,
@@ -23,35 +83,40 @@
     type Writable,
     type Readable,
   } from 'svelte/store'
-  import TextFilter from './filters/TextFilter.svelte'
+  import TextFilter from '$components/table/filters/TextFilter.svelte'
+  import { page } from '$app/stores'
+  import SelectIndicator from '$components/table/edit/SelectIndicator.svelte'
+  import EditableCell from '$components/table/edit/EditableCell.svelte'
+  import { goto } from '$app/navigation'
+  import type { SelectUser } from '$drizzle/schema'
+  import { onDestroy, onMount } from 'svelte'
+  import { SSRFilter } from './index.svelte'
+  import { debounce } from '$lib/utils'
 
-  import SelectIndicator from './edit/SelectIndicator.svelte'
-  import EditableCell from './edit/EditableCell.svelte'
+  let {
+    tableRows,
+    count,
+    columns: createColumns,
+  }: SSRTableProps<Item> = $props()
 
-  export let data: Writable<Item[]> | Readable<Item[]>
-
-  const table = createTable(data, {
+  const table = createTable(tableRows, {
     sort: addSortBy({
       disableMultiSort: true,
+      serverSide: true,
     }),
     // colOrder: addColumnOrder(),
-    filter: addColumnFilters(),
-    select: addSelectedRows(),
-    resize: addResizedColumns(),
+    filter: addColumnFilters({
+      serverSide: true,
+    }),
+    select: addSelectedRows({}),
     page: addPagination({
       initialPageSize: 15,
-      initialPageIndex: 0,
-      serverItemCount: readable(100),
+      initialPageIndex: 1,
+      serverItemCount: count,
       serverSide: true,
     }),
     // grid: addGridLayout(),
   })
-
-  type ItemTable = typeof table
-
-  type Plugins = ItemTable['plugins']
-
-  export let createColumns: (table: ItemTable) => Column<Item, Plugins>[]
 
   const columns = createColumns(table)
 
@@ -62,26 +127,38 @@
   // $columnIdOrder = ['age', 'name']
 
   const { sortKeys } = pluginStates.sort
-  $: console.log($sortKeys)
+  // $: console.log($sortKeys)
 
   const { filterValues } = pluginStates.filter
-  $: console.log($filterValues)
+  // $: console.log($filterValues)
 
   const { selectedDataIds } = pluginStates.select
-  $: console.log($selectedDataIds)
+  // $: console.log($selectedDataIds)
 
-  const { columnWidths } = pluginStates.resize
-  $: console.log($columnWidths)
+  //const { columnWidths } = pluginStates.resize
+  // $: console.log($columnWidths)
 
   const { pageIndex, pageCount, pageSize, hasNextPage, hasPreviousPage } =
     pluginStates.page
-  $: console.log(
-    'page_index' + $pageIndex,
-    'page_count' + $pageCount,
-    'size' + $pageSize,
-    $hasNextPage,
-    $hasPreviousPage,
-  )
+
+  const debounced_update = debounce(SSRFilter.update_many, 250)
+
+  $effect(() => {
+    pageIndex.set(Number($page.url.searchParams.get('page') ?? 1) - 1)
+
+    const [sort] = $sortKeys
+
+    if (!sort) {
+      SSRFilter.update_many({ sort_id: '', sort_order: '' })
+    } else {
+      SSRFilter.update_many({ sort_id: sort.id, sort_order: sort.order })
+    }
+  })
+  // $inspect($tableBodyAttrs)
+  // $inspect($tableAttrs)
+  // $inspect($headerRows)
+  // $inspect($rows)
+  $inspect($filterValues)
 </script>
 
 <main class="container mx-auto overflow-x-auto">
@@ -99,7 +176,7 @@
                 let:props
               >
                 <th {...attrs}>
-                  <button on:click={props.sort.toggle}>
+                  <button onclick={props.sort.toggle}>
                     <Render of={cell.render()} />
                   </button>
                   {#if props.sort.order === 'asc'}
@@ -111,10 +188,6 @@
                     <div>
                       <Render of={props.filter.render} />
                     </div>
-                  {/if}
-
-                  {#if !props.resize.disabled}
-                    <div class="resizer" use:props.resize.drag></div>
                   {/if}
                 </th>
               </Subscribe>
@@ -142,19 +215,25 @@
 
   <div class="flex items-center justify-between">
     <div>
-      <label for="page-size">Page size</label>
+      <label for="pageSize">Page size</label>
       <input
-        id="page-size"
+        id="pageSize"
         type="number"
         class="w-3` input input-sm"
         min={1}
-        bind:value={$pageSize}
+        max={100}
+        onchange={e => {
+          const value = (e.target as HTMLInputElement).value
+          SSRFilter.update({ name: 'pageSize', value: value })
+        }}
       />
     </div>
     <div>
       <button
         class="btn"
-        on:click={() => $pageIndex--}
+        onclick={() => {
+          SSRFilter.update({ name: 'page', value: String($pageIndex) })
+        }}
         disabled={!$hasPreviousPage}
       >
         Previous page
@@ -162,7 +241,9 @@
       {$pageIndex + 1} out of {$pageCount}
       <button
         class="btn"
-        on:click={() => $pageIndex++}
+        onclick={() => {
+          SSRFilter.update({ name: 'page', value: String($pageIndex + 2) })
+        }}
         disabled={!$hasNextPage}
       >
         Next page

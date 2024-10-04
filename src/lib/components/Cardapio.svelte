@@ -10,11 +10,7 @@
     card: Snippet<[T]>
   }
 
-  // interface CardapioProps {
-  //   data: Record<string, T[]>
-  //   card: (row: T) => any
-  // }
-  let { data, card }: CardapioProps = $props()
+  const {card, data}:CardapioProps = $props()
 
   let selected = $state('')
 

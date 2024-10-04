@@ -14,13 +14,12 @@
     Graticule,
     TransformContext,
   } from 'layerchart'
-  import { PeriodType, format, formatDate } from 'svelte-ux'
   import { scaleTime, scaleBand } from 'd3-scale'
 
-  import { geoOrthographic } from 'd3-geo'
-  import { feature } from 'topojson-client'
+  // import { geoOrthographic } from 'd3-geo'
+  // import { feature } from 'topojson-client'
 
-  import { Button, ButtonGroup, Field, RangeField, timerStore } from 'svelte-ux'
+  // import { Button, ButtonGroup, Field, RangeField, timerStore } from 'svelte-ux'
 
   export let data
 

@@ -1,5 +1,5 @@
 <script lang="ts" generics="Item">
-  import { type DataColumn, type BodyRow } from 'svelte-headless-table'
+  import { type DataColumn, type BodyRow } from '@andre-brandao/svelte-headless-table'
 
   // type Item = $$Generic;
 

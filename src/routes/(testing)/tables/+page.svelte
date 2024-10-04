@@ -35,7 +35,7 @@
   import { goto } from '$app/navigation'
   import type { SelectUser } from '$drizzle/schema'
   import { onDestroy, onMount } from 'svelte'
-  import { SSRTable, SSRFilter, type SSRTableProps } from './ssr/index.svelte'
+  import { SSRTable, SSRFilter, type SSRTableProps } from '$components/table/ssr/index.svelte'
   import { debounce } from '$lib/utils'
 
   const EditableCellLabel: DataLabel<SelectUser> = ({ column, row, value }) =>

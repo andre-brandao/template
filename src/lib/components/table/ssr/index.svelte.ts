@@ -1,6 +1,6 @@
 import { goto } from '$app/navigation'
 import { page } from '$app/stores'
-import { derived, get, writable } from 'svelte/store'
+import { get } from 'svelte/store'
 
 // Filters
 

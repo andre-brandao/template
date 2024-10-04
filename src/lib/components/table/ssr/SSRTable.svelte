@@ -83,15 +83,9 @@
     type Writable,
     type Readable,
   } from 'svelte/store'
-  import TextFilter from '$components/table/filters/TextFilter.svelte'
   import { page } from '$app/stores'
-  import SelectIndicator from '$components/table/edit/SelectIndicator.svelte'
-  import EditableCell from '$components/table/edit/EditableCell.svelte'
   import { goto } from '$app/navigation'
-  import type { SelectUser } from '$drizzle/schema'
-  import { onDestroy, onMount } from 'svelte'
   import { SSRFilter } from './index.svelte'
-  import { debounce } from '$lib/utils'
 
   let {
     tableRows,
@@ -118,6 +112,33 @@
     // grid: addGridLayout(),
   })
 
+  let Filters = $derived($page.url)
+
+  function Filters_get(name: string) {
+    return Filters.searchParams.get(name)
+  }
+
+  function Filters_update(name: string, value: string) {
+    const url = new URL(Filters)
+    if (value !== '') url.searchParams.set(name, value)
+    else url.searchParams.delete(name)
+
+    goto(url, { keepFocus: true })
+  }
+  function Filters_update_many(params: Record<string, string>) {
+    const url = new URL(Filters)
+    Object.entries(params).forEach(([name, value]) => {
+      if (!value) {
+        url.searchParams.delete(name)
+      }
+      if (value !== '') url.searchParams.set(name, value)
+      else url.searchParams.delete(name)
+    })
+
+    const searchParams = url.pathname + url.search
+    goto(searchParams, { keepFocus: true })
+  }
+
   const columns = createColumns(table)
 
   const { headerRows, rows, tableAttrs, tableBodyAttrs, pluginStates } =
@@ -141,7 +162,7 @@
   const { pageIndex, pageCount, pageSize, hasNextPage, hasPreviousPage } =
     pluginStates.page
 
-  const debounced_update = debounce(SSRFilter.update_many, 250)
+
 
   $effect(() => {
     pageIndex.set(Number($page.url.searchParams.get('page') ?? 1) - 1)
@@ -149,9 +170,9 @@
     const [sort] = $sortKeys
 
     if (!sort) {
-      SSRFilter.update_many({ sort_id: '', sort_order: '' })
+      Filters_update_many({ sort_id: '', sort_order: '' })
     } else {
-      SSRFilter.update_many({ sort_id: sort.id, sort_order: sort.order })
+      Filters_update_many({ sort_id: sort.id, sort_order: sort.order })
     }
   })
   // $inspect($tableBodyAttrs)
@@ -232,7 +253,7 @@
       <button
         class="btn"
         onclick={() => {
-          SSRFilter.update({ name: 'page', value: String($pageIndex) })
+          Filters_update('page', $pageIndex.toString())
         }}
         disabled={!$hasPreviousPage}
       >
@@ -242,7 +263,7 @@
       <button
         class="btn"
         onclick={() => {
-          SSRFilter.update({ name: 'page', value: String($pageIndex + 2) })
+          Filters_update('page', String($pageIndex + 2))
         }}
         disabled={!$hasNextPage}
       >

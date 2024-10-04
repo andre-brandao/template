@@ -35,7 +35,11 @@
   import { goto } from '$app/navigation'
   import type { SelectUser } from '$drizzle/schema'
   import { onDestroy, onMount } from 'svelte'
-  import { SSRTable, SSRFilter, type SSRTableProps } from '$components/table/ssr/index.svelte'
+  import {
+    SSRTable,
+    SSRFilter,
+    type SSRTableProps,
+  } from '$components/table/ssr/index.svelte'
   import { debounce } from '$lib/utils'
 
   const EditableCellLabel: DataLabel<SelectUser> = ({ column, row, value }) =>
@@ -154,7 +158,29 @@
     table.column({
       header: 'Name',
       accessor: 'username',
-      cell: EditableCellLabel,
+      cell: ({ column, row, value }) =>
+        createRender(EditableCell, {
+          row,
+          column,
+          value,
+          onUpdateValue: (
+            rowDataId: string,
+            columnId: string,
+            newValue: unknown,
+          ) => {
+            console.log(rowDataId, columnId, newValue)
+            // In this case, the dataId of each item is its index in $tableRows.
+            // You can also handle any server-synchronization necessary here.
+            const idx = parseInt(rowDataId)
+            const currentItem = $tableRows[idx]
+            const key = columnId // Cast as `keyof YourDataItem`
+            const newItem = { ...currentItem, [key]: newValue }
+            console.log(newItem)
+            $tableRows[idx] = newItem
+            $tableRows = $tableRows
+            // Handle any server-synchronization.
+          },
+        }),
       plugins: {
         sort: {
           invert: false,
@@ -179,7 +205,29 @@
     table.column({
       header: 'Email',
       accessor: 'email',
-      cell: EditableCellLabel,
+      cell: ({ column, row, value }) =>
+        createRender(EditableCell, {
+          row,
+          column,
+          value,
+          onUpdateValue: (
+            rowDataId: string,
+            columnId: string,
+            newValue: unknown,
+          ) => {
+            console.log(rowDataId, columnId, newValue)
+            // In this case, the dataId of each item is its index in $tableRows.
+            // You can also handle any server-synchronization necessary here.
+            const idx = parseInt(rowDataId)
+            const currentItem = $tableRows[idx]
+            const key = columnId // Cast as `keyof YourDataItem`
+            const newItem = { ...currentItem, [key]: newValue }
+            console.log(newItem)
+            $tableRows[idx] = newItem
+            $tableRows = $tableRows
+            // Handle any server-synchronization.
+          },
+        }),
 
       plugins: {
         sort: {
@@ -202,7 +250,30 @@
       header: 'Verified',
       accessor: 'emailVerified',
       // cell: EditableCell
-      cell: EditableCellLabel,
+      cell: ({ column, row, value }) =>
+        createRender(EditableCell, {
+          row,
+          column,
+          value,
+          onUpdateValue: (
+            rowDataId: string,
+            columnId: string,
+            newValue: unknown,
+          ) => {
+            newValue = newValue === 'true'
+            console.log(rowDataId, columnId, newValue)
+            // In this case, the dataId of each item is its index in $tableRows.
+            // You can also handle any server-synchronization necessary here.
+            const idx = parseInt(rowDataId)
+            const currentItem = $tableRows[idx]
+            const key = columnId // Cast as `keyof YourDataItem`
+            const newItem = { ...currentItem, [key]: newValue }
+            console.log(newItem)
+            $tableRows[idx] = newItem
+            $tableRows = $tableRows
+            // Handle any server-synchronization.
+          },
+        }),
     }),
   ]}
 />

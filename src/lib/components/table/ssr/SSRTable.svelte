@@ -247,7 +247,7 @@
         </div>
       </div>
       <div class="flex items-center justify-between mt-4">
-        <div class="flex gap-2 items-center border rounded p-3">
+        <div class="flex gap-2 items-center border border-base-300 rounded p-3">
           <label for="pageSize">Page size</label>
           <input
             id="pageSize"

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { debounce } from '$lib/utils'
   import type { Readable, Writable } from 'svelte/store'
 
   export let filterValue: Writable<string>
@@ -8,6 +9,10 @@
   export let placeholder = 'filter...'
 
   export let change: undefined | ( (value: string) => void) = undefined
+
+  const debounceChange = debounce((value: string) => {
+    change?.(value)
+  }, 350)
 </script>
 
 <!-- 
@@ -20,7 +25,7 @@
   class="input input-bordered"
   bind:value={$filterValue}
   {placeholder}
-  on:change={() => change?.($filterValue)}
+  on:input={() => debounceChange($filterValue)}
 />
 
 <style>

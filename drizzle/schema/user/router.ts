@@ -12,30 +12,6 @@ import { lucia } from '$lib/server/auth'
 import { emailTemplate, sendMail } from '$lib/server/email'
 
 export const userRouter = router({
-  logOut: publicProcedure.query(async ({ ctx }) => {
-    const { cookies } = ctx
-    const { session } = ctx.locals
-    if (!session) {
-      return {
-        error: 'Not authenticated',
-      }
-    }
-    await lucia.invalidateSession(session.id)
-    const sessionCookie = lucia.createBlankSessionCookie()
-    cookies.set(sessionCookie.name, sessionCookie.value, {
-      path: '.',
-      ...sessionCookie.attributes,
-    })
-
-    return {
-      data: {
-        message: 'Logged out',
-        success: true,
-      },
-      error: null,
-    }
-  }),
-
   resendEmailVerification: publicProcedure.query(async ({ ctx }) => {
     const { locals } = ctx
 
@@ -47,7 +23,7 @@ export const userRouter = router({
       }
     }
 
-    const verificationCode = await userController.generateEmailVerificationCode(
+    const verificationCode = await userController.verificationCode.generate(
       localUser.id,
       localUser.email,
     )
@@ -86,7 +62,7 @@ export const userRouter = router({
         }
       }
 
-      const validCode = await userController.verifyVerificationCode(user, code)
+      const validCode = await userController.verificationCode.verify(user, code)
 
       if (!validCode) {
         return {
@@ -133,7 +109,7 @@ export const userRouter = router({
       }
 
       const verificationToken =
-        await userController.createPasswordResetToken(userID)
+        await userController.passwordRecovery.createToken(userID)
       // const verificationLink =
       //   'http://localhost:3000/reset-password/' + verificationToken
       const verificationLink = `${url.origin}/reset-password/${verificationToken}`

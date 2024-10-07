@@ -16,11 +16,6 @@
 
   const user = getUserContext()
 
-  async function logout() {
-    user.set(null)
-    await trpc($page).auth.logOut.query()
-    goto('/')
-  }
 </script>
 
 <div class="drawer">
@@ -76,7 +71,9 @@
             >
               <li><a href="/myprofile">{@html icons.user()} Meu Perfil</a></li>
               <li>
-                <button onclick={logout}>{@html icons.logout()} Logout</button>
+                <form method="post" action="/login?/logout">
+                  <button type="submit">{@html icons.logout()} Logout</button>
+                </form>
               </li>
             </ul>
           </div>

@@ -11,6 +11,7 @@
     "sourceMap": true,
     "strict": true,
     "moduleResolution": "bundler",
+    // "module": "NodeNext",
     "paths": {
       "$lib/*": ["./src/lib/*"],
       "$lib": ["./src/lib"],

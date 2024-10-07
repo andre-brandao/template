@@ -10,13 +10,13 @@ import {
   type SelectUser,
   sessionTable,
   DEFAULT_PERMISSIONS,
-  type DUser,
+
 } from '../.'
 
 import { TimeSpan, createDate, isWithinExpirationDate } from 'oslo'
 import { generateRandomString, alphabet, sha256 } from 'oslo/crypto'
 import { encodeHex } from 'oslo/encoding'
-import { generateIdFromEntropySize } from 'lucia'
+import { generateIdFromEntropySize, type User } from 'lucia'
 import { hash, verify } from '@node-rs/argon2'
 import { LibsqlError } from '@libsql/client'
 import { emailTemplate, sendMail } from '../../../src/lib/server/email'
@@ -80,7 +80,7 @@ export const user = {
       })
       return code
     },
-    verify: async function (user: DUser, code: string): Promise<boolean> {
+    verify: async function (user: User, code: string): Promise<boolean> {
       const [databaseCode] = await db
         .select()
         .from(userVerificationCodeTable)

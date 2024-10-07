@@ -255,9 +255,9 @@
             class="w-3` input input-sm"
             min={1}
             max={100}
-            onchange={e => {
+            oninput={e => {
               const value = (e.target as HTMLInputElement).value
-              SSRFilter.update({ name: 'pageSize', value: value })
+              Filters_update('pageSize',value )
             }}
           />
         </div>

@@ -1,8 +1,6 @@
 import { fail, redirect } from '@sveltejs/kit'
 import type { PageServerLoad, Actions } from './$types'
 
-import { isWithinExpirationDate } from 'oslo'
-import { hash } from '@node-rs/argon2'
 import { sha256 } from 'oslo/crypto'
 import { encodeHex } from 'oslo/encoding'
 
@@ -41,46 +39,23 @@ export const actions: Actions = {
     })
     console.log(formData)
 
-    if (
-      typeof password !== 'string' ||
-      password.length < 6 ||
-      password.length > 255
-    ) {
-      return fail(400, {
-        message: 'Invalid password',
-      })
-    }
-
     const verificationToken = params.token
 
-    const tokenHash = encodeHex(
-      await sha256(new TextEncoder().encode(verificationToken)),
+    const { data, error } = await user.passwordRecovery.alterPassword(
+      password,
+      verificationToken,
     )
-    const [token] = await user.passwordRecovery.getToken(tokenHash)
 
-    if (token) {
-      await user.passwordRecovery.deleteToken(tokenHash)
-    }
-
-    if (!token || !isWithinExpirationDate(token.expiresAt)) {
+    if (error) {
       return fail(400, {
-        message: 'Invalid or expired token',
+        message: error.message,
       })
     }
 
-    await lucia.invalidateUserSessions(token.userId)
-    const passwordHash = await hash(password, {
-      // recommended minimum parameters
-      memoryCost: 19456,
-      timeCost: 2,
-      outputLen: 32,
-      parallelism: 1,
-    })
-    await user.update(token.userId, {
-      password_hash: passwordHash,
-    })
+    const userId = data.userId
+    await lucia.invalidateUserSessions(userId)
 
-    const session = await lucia.createSession(token.userId, {})
+    const session = await lucia.createSession(userId, {})
     const sessionCookie = lucia.createSessionCookie(session.id)
     cookies.set(sessionCookie.name, sessionCookie.value, {
       path: '.',

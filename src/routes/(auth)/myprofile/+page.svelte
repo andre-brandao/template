@@ -1,8 +1,8 @@
 <script lang="ts">
-  import SEO, { getSEOProps } from '$lib/components/SEO/index.svelte'
+  import SEO, { getSEOProps } from '$components/SEO/index.svelte'
 
   import type { PageData } from './$types'
-  import { getUserContext } from '$lib/stores/user'
+  import { getUserContext } from '$lib/client/stores/user'
 
   import { trpc } from '$trpc/client'
   import { page } from '$app/stores'

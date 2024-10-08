@@ -5,9 +5,9 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export * from './image'
-export * from './icons'
-export * from './device'
+export * from '$lib/client/utils/image'
+export * from '../client/utils/icons'
+export * from '../client/utils/device'
 export * from './entities'
 
 export function getEnderecoFromCEP(cep: string) {

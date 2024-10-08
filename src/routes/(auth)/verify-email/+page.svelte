@@ -2,7 +2,7 @@
   import type { PageData } from './$types'
   import OTP from '$components/input/otp/OTP.svelte'
 
-  import SEO, { getSEOProps } from '$lib/components/SEO/index.svelte'
+  import SEO, { getSEOProps } from '$components/SEO/index.svelte'
 
   export let data: PageData
 

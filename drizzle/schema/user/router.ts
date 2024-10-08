@@ -4,7 +4,6 @@ import { z } from 'zod'
 
 import { user as userController } from '$drizzle/controller'
 import { lucia } from '$lib/server/auth'
-// import { hash, verify } from '@node-rs/argon2'
 
 // import { generateId } from 'lucia'
 // import { LibsqlError } from '@libsql/client'

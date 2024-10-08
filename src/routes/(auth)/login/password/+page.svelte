@@ -1,8 +1,8 @@
 <script lang="ts">
-  import SEO, { getSEOProps } from '$lib/components/SEO/index.svelte'
+  import SEO, { getSEOProps } from '$components/SEO/index.svelte'
   import { enhance } from '$app/forms'
-  import * as m from '$msgs'
-  import Info from '$lib/components/Info.svelte'
+  import * as m from '$lib/i18n/paraglide/messages'
+  import Info from '$components/Info.svelte'
 
   import type { ActionData } from './$types'
 

@@ -22,13 +22,12 @@ const config = {
     adapter: adapter(),
     alias: {
       $lib: './src/lib',
-      $components: './src/lib/components',
+      $components: './src/lib/client/components',
       $utils: './src/lib/utils',
-      // $drizzle: './src/lib/server/db',
       $drizzle: './drizzle',
       $trpc: './src/trpc',
       $modal: './src/lib/components/modal',
-      $msgs: './src//lib/paraglide/messages',
+      $msgs: './src/lib/i18n/paraglide/messages',
     },
   },
 }

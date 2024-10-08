@@ -112,13 +112,16 @@ export const actions: Actions = {
       return fail(400, {
         success: false,
         message: error.message,
+        username,
+        email,
       })
     }
 
     const userId = data.user.id
     const ueserEmail = data.user.email
 
-    const session = await lucia.createSession(userId, {})
+    const session = await lucia.createSession(userId, {
+    })
     const sessionCookie = lucia.createSessionCookie(session.id)
 
     event.cookies.set(sessionCookie.name, sessionCookie.value, {

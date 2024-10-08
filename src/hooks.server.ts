@@ -1,4 +1,4 @@
-import { i18n } from '$lib/i18n'
+import { i18n } from '$lib/i18n/i18n'
 import { lucia } from '$lib/server/auth'
 import type { Handle } from '@sveltejs/kit'
 import { sequence } from '@sveltejs/kit/hooks'

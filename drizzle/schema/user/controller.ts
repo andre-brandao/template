@@ -1,3 +1,4 @@
+
 import { eq } from 'drizzle-orm'
 import { db } from '$drizzle/client.server'
 import {
@@ -10,21 +11,27 @@ import {
   type SelectUser,
   sessionTable,
   DEFAULT_PERMISSIONS,
-
 } from '../.'
 
 import { TimeSpan, createDate, isWithinExpirationDate } from 'oslo'
 import { generateRandomString, alphabet, sha256 } from 'oslo/crypto'
 import { encodeHex } from 'oslo/encoding'
 import { generateIdFromEntropySize, type User } from 'lucia'
-import { hash, verify } from '@node-rs/argon2'
+// import { hash, verify } from '@node-rs/argon2'
+import { hash, verify } from './password'
 import { LibsqlError } from '@libsql/client'
-import { emailTemplate, sendMail } from '../../../src/lib/server/email'
+import { emailTemplate, sendMail } from '$lib/server/email'
 
 export function isValidEmail(email: string): boolean {
   return /.+@.+/.test(email)
-}
+  // eslint-disable-next-line no-useless-escape
+  // const re = /\S+@\S+\.\S+/;
+  // return re.test(email);
+  console.log('email', email)
+  return true
 
+}
+// /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
 export const user = {
   getPublicInfo: function () {
     return db
@@ -132,6 +139,51 @@ export const user = {
         .delete(passwordResetCodeTable)
         .where(eq(passwordResetCodeTable.token_hash, token))
         .run()
+    },
+    alterPassword: async function (
+      password: unknown,
+      verificationToken: string,
+    ) {
+      if (
+        typeof password !== 'string' ||
+        password.length < 6 ||
+        password.length > 255
+      ) {
+        return {
+          error: {
+            message: 'Invalid password',
+          },
+        }
+      }
+
+      const tokenHash = encodeHex(
+        await sha256(new TextEncoder().encode(verificationToken)),
+      )
+      const [token] = await user.passwordRecovery.getToken(tokenHash)
+
+      if (token) {
+        await user.passwordRecovery.deleteToken(tokenHash)
+      }
+
+      if (!token || !isWithinExpirationDate(token.expiresAt)) {
+        return {
+          error: {
+            message: 'Invalid or expired token',
+          },
+        }
+      }
+
+      const passwordHash = await hash(password)
+      await user.update(token.userId, {
+        password_hash: passwordHash,
+      })
+
+      return {
+        data: {
+          message: 'Password updated',
+          userId: token.userId,
+        },
+      }
     },
   },
   auth: {
@@ -259,16 +311,7 @@ export const user = {
           }
         }
 
-        const validPassword = await verify(
-          existingUser.password_hash,
-          password,
-          {
-            memoryCost: 19456,
-            timeCost: 2,
-            outputLen: 32,
-            parallelism: 1,
-          },
-        )
+        const validPassword = await verify(existingUser.password_hash, password)
 
         if (!validPassword) {
           return {
@@ -317,7 +360,7 @@ export const user = {
           typeof email !== 'string' ||
           email.length < 3 ||
           email.length > 255 ||
-          isValidEmail(email)
+          !isValidEmail(email)
         ) {
           return {
             error: {
@@ -347,13 +390,7 @@ export const user = {
           }
         }
 
-        const passwordHash = await hash(password, {
-          // recommended minimum parameters
-          memoryCost: 19456,
-          timeCost: 2,
-          outputLen: 32,
-          parallelism: 1,
-        })
+        const passwordHash = await hash(password)
 
         try {
           const [newUser] = await user
@@ -395,7 +432,7 @@ export const user = {
           typeof email !== 'string' ||
           email.length < 3 ||
           email.length > 255 ||
-          !/.+@.+/.test(email)
+          !isValidEmail(email)
         ) {
           return {
             error: {

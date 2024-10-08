@@ -4,10 +4,11 @@ import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
   plugins: [
-    paraglide({ project: './project.inlang', outdir: './src/lib/paraglide' }),
+    paraglide({ project: './project.inlang', outdir: './src/lib/i18n/paraglide' }),
     sveltekit(),
   ],
+  
   test: {
-    include: ['src/**/*.{test,spec}.{js,ts}'],
+    include: ['src/**/*.{test,spec}.{js,ts}', 'drizzle/**/*.{test,spec}.{js,ts}'],
   },
 })

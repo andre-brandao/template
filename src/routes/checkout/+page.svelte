@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { getCartContext } from '$lib/stores/cart'
+  import { getCartContext } from '$lib/client/stores/cart'
   import { getImagePath, icons } from '$lib/utils'
   import type { PageData } from './$types'
 

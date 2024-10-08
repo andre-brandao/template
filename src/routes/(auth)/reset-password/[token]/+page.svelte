@@ -8,7 +8,7 @@
 
   export let data: PageData
 
-  import SEO, { getSEOProps } from '$lib/components/SEO/index.svelte'
+  import SEO, { getSEOProps } from '$components/SEO/index.svelte'
 
   let password = ''
 

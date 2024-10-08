@@ -1,11 +1,11 @@
 <script lang="ts">
   import { getImagePath } from '$lib/utils/image'
   import type { PageData } from './$types'
-  import { icons } from '$lib/utils/icons'
+  import { icons } from '$lib/client/utils/icons'
   import Detail from '$components/detail/Detail1.svelte'
   import { tweened } from 'svelte/motion'
 
-  import { getCartContext } from '$lib/stores/cart'
+  import { getCartContext } from '$lib/client/stores/cart'
   const cart = getCartContext()
   console.log(cart)
 

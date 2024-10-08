@@ -2,17 +2,17 @@
   import '../app.css'
   // INLANG
   import { ParaglideJS } from '@inlang/paraglide-sveltekit'
-  import { i18n } from '$lib/i18n'
+  import { i18n } from '$lib/i18n/i18n'
   // DAISY THEMES
   import { onMount } from 'svelte'
   // TOASTER
   import { Toaster, toast } from 'svelte-sonner'
-  import NavBar from '$lib/components/navbar/NavBar.svelte'
+  import NavBar from '$components/navbar/NavBar.svelte'
   // STORE
-  import { createUserContext } from '$lib/stores/user'
-  import { createCartContext } from '$lib/stores/cart'
+  import { createUserContext } from '$lib/client/stores/user'
+  import { createCartContext } from '$lib/client/stores/cart'
   // COMPONENTS
-  import { ModalContainer } from '$lib/components/modal'
+  import { ModalContainer } from '$components/modal'
   import Transition from './Transition.svelte'
   import type { LayoutData } from './$types'
 

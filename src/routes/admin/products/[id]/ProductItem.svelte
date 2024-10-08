@@ -1,14 +1,14 @@
 <script lang="ts">
-  import ImageInput from '$lib/components/input/ImageInput.svelte'
-  import CurrencyInput from '$lib/components/input/CurrencyInput.svelte'
+  import ImageInput from '$components/input/ImageInput.svelte'
+  import CurrencyInput from '$components/input/CurrencyInput.svelte'
 
-  import type { SelectProductItem } from '../../../../../drizzle/schema'
+  import type { SelectProductItem } from '$drizzle/schema'
 
   import { page } from '$app/stores'
   import { trpc } from '$trpc/client'
   import { toast } from 'svelte-sonner'
-  import { icons } from '$lib/utils'
-  import { modal } from '$lib/components/modal'
+  import { icons } from '$lib/client/utils/icons'
+  import { modal } from '$components/modal'
   export let item: SelectProductItem
 
   let isChanged = false

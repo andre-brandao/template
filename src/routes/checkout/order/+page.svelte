@@ -26,7 +26,7 @@
   import { toast } from 'svelte-sonner'
   import { goto } from '$app/navigation'
 
-  import { extractThemeColorsFromDOM, type ThemeColors } from '$utils/colors'
+  import { extractThemeColorsFromDOM, type ThemeColors } from '$lib/client/utils/theme'
   import Loading from '$components/Loading.svelte'
 
   let stripe: Stripe | null = null

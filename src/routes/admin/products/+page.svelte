@@ -6,7 +6,7 @@
   import { trpc } from '$trpc/client'
   import { page } from '$app/stores'
   import { invalidate } from '$app/navigation'
-  import { icons } from '$lib/utils/icons'
+  import { icons } from '$lib/client/utils/icons'
   import { getImagePath } from '$lib/utils'
 
   export let data: PageData

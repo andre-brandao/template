@@ -1,6 +1,6 @@
 <script lang="ts">
   import { page } from '$app/stores'
-  import { icons } from '$lib/utils/icons'
+  import { icons } from '$lib/client/utils/icons'
 </script>
 
 <main class="flex h-full items-center justify-center bg-base-200">

@@ -1,6 +1,5 @@
 // import { lucia } from '$lib/server/auth'
 import { fail, redirect } from '@sveltejs/kit'
-// import { verify } from '@node-rs/argon2'
 
 import type { Actions, PageServerLoad } from './$types'
 

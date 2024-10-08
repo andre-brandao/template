@@ -5,7 +5,7 @@
   import { trpc } from '$trpc/client'
   import { page } from '$app/stores'
   import ProductItem from './ProductItem.svelte'
-  import ImageInput from '$lib/components/input/ImageInput.svelte'
+  import ImageInput from '$components/input/ImageInput.svelte'
 
   import { toast } from 'svelte-sonner'
 

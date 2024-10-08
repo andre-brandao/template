@@ -14,7 +14,7 @@
     getParams,
     EditRowButton,
     EditRowInput,
-  } from '$lib/components/table'
+  } from '$components/table'
 
   import type { RouterOutputs, RouterInputs } from '$trpc/router'
 

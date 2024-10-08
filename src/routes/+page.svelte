@@ -1,15 +1,14 @@
 <script>
-  import SEO, { getSEOProps } from '$lib/components/SEO/index.svelte'
+  import SEO, { getSEOProps } from '$components/SEO/index.svelte'
 
-  import Carousel from '$lib/components/landing-page/Carousel.svelte'
-  import Carousel2 from '$lib/components/landing-page/Carousel2.svelte'
-  import Features3 from '$lib/components/landing-page/features/Features3.svelte'
-  import Pricing from '$lib/components/landing-page/pricing/Pricing.svelte'
-  import Features4 from '$lib/components/landing-page/features/Features4.svelte'
-  import Footer from '$lib/components/landing-page/Footer.svelte'
+  import Carousel from '$components/landing-page/Carousel.svelte'
+  import Carousel2 from '$components/landing-page/Carousel2.svelte'
+  import Features3 from '$components/landing-page/features/Features3.svelte'
+  import Pricing from '$components/landing-page/pricing/Pricing.svelte'
+  import Features4 from '$components/landing-page/features/Features4.svelte'
+  import Footer from '$components/landing-page/Footer.svelte'
 
   import ShareButton from '$components/share/index.svelte'
-  import HeroGlobe from '$lib/components/landing-page/hero/HeroGlobe.svelte'
 
   // console.log(tailwind.theme.colors.primary)
 </script>
@@ -30,7 +29,7 @@
 <!-- <Modal onClose={console.log} onOpen={console.log}>Teste Modal</Modal> -->
 <main class="flex flex-col gap-5 overflow-auto">
   <!-- hello -->
-  <HeroGlobe />
+  <!-- <HeroGlobe /> -->
 
   <!-- <div class="h-60 w-60">
     <RotatingGlobe></RotatingGlobe>

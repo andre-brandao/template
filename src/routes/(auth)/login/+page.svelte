@@ -1,12 +1,12 @@
 <script lang="ts">
-  import * as m from '$msgs'
-  import SEO, { getSEOProps } from '$lib/components/SEO/index.svelte'
+  import * as m from '$lib/i18n/paraglide/messages'
+  import SEO, { getSEOProps } from '$components/SEO/index.svelte'
   import { enhance } from '$app/forms'
 
   let isLoading = false
 
   import type { ActionData } from './$types'
-  import Info from '$lib/components/Info.svelte'
+  import Info from '$components/Info.svelte'
 
   export let form: ActionData
 </script>

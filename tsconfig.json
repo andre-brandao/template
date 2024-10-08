@@ -12,23 +12,23 @@
     "strict": true,
     "moduleResolution": "bundler",
     // "module": "NodeNext",
-    "paths": {
-      "$lib/*": ["./src/lib/*"],
-      "$lib": ["./src/lib"],
-      "$components/*": ["./src/lib/components/*"],
-      "$components": ["./src/lib/components"],
-      "$utils": ["./src/lib/utils"],
-      "$utils/*": ["./src/lib/utils/*"],
-      "$trpc": ["./src/trpc"],
-      "$trpc/*": ["./src/trpc/*"],
-      // "$drizzle": ["./src/lib/server/db"],
-      // "$drizzle/*": ["./src/lib/server/db/*"],
-      "$drizzle": ["./drizzle"],
-      "$drizzle/*": ["./drizzle/*"],
-      "$modal": ["./src/lib/components/modal"],
-      "$modal/*": ["./src/lib/components/modal/*"],
-      "$msgs": ["./src/lib/paraglide/messages"]
-    }
+    // "paths": {
+    //   "$lib/*": ["./src/lib/*"],
+    //   "$lib": ["./src/lib"],
+    //   "$components/*": ["./src/lib/components/*"],
+    //   "$components": ["./src/lib/components"],
+    //   "$utils": ["./src/lib/utils"],
+    //   "$utils/*": ["./src/lib/utils/*"],
+    //   "$trpc": ["./src/trpc"],
+    //   "$trpc/*": ["./src/trpc/*"],
+    //   // "$drizzle": ["./src/lib/server/db"],
+    //   // "$drizzle/*": ["./src/lib/server/db/*"],
+    //   "$drizzle": ["./drizzle"],
+    //   "$drizzle/*": ["./drizzle/*"],
+    //   "$modal": ["./src/lib/components/modal"],
+    //   "$modal/*": ["./src/lib/components/modal/*"],
+    //   "$msgs": ["./src/lib/paraglide/messages"]
+    // }
   }
   // Path aliases are handled by https://kit.svelte.dev/docs/configuration#alias
   // except $lib which is handled by https://kit.svelte.dev/docs/configuration#files

@@ -1,5 +1,4 @@
 {
-  "include": ["src", "drizzle"],
   "extends": "./.svelte-kit/tsconfig.json",
   "compilerOptions": {
     "allowJs": true,
@@ -12,19 +11,36 @@
     "strict": true,
     "moduleResolution": "bundler",
     // "module": "NodeNext",
-    // "paths": {
-    //   "$lib/*": ["./src/lib/*"],
-    //   "$lib": ["./src/lib"],
-    //   "$components/*": ["./src/lib/components/*"],
-    //   "$components": ["./src/lib/components"],
-    //   "$utils": ["./src/lib/utils"],
-    //   "$utils/*": ["./src/lib/utils/*"],
-    //   "$trpc": ["./src/trpc"],
-    //   "$trpc/*": ["./src/trpc/*"],
-    //   "$modal": ["./src/lib/components/modal"],
-    //   "$modal/*": ["./src/lib/components/modal/*"],
-    //   "$msgs": ["./src/lib/paraglide/messages"]
-    // }
+    "paths": {
+      "$lib/*": ["./src/lib/*"],
+      "$lib": ["./src/lib"],
+      "$db/*": ["./src/lib/server/db/*"],
+      "$db": ["./src/lib/server/db"],
+      "$components/*": ["./src/lib/client/components/*"],
+      "$components": ["./src/lib/client/components"],
+      "$utils/*": ["./src/lib/utils/*"],
+      "$utils": ["./src/lib/utils"],
+      "$utils/client/*": ["./src/lib/client/utils/*"],
+      "$utils/client": ["./src/lib/client/utils"],
+      "$utils/server/*": ["./src/lib/server/utils/*"],
+      "$utils/server": ["./src/lib/server/utils"],
+      "$trpc/*": ["./src/lib/utils/trpc/*"],
+      "$trpc": ["./src/lib/utils/trpc"],
+      "$modal/*": ["./src/lib/components/modal/*"],
+      "$modal": ["./src/lib/components/modal"],
+      "$msgs/*": ["./src/lib/i18n/paraglide/messages/*"],
+      "$msgs": ["./src/lib/i18n/paraglide/messages"],
+    }
+
+    // $lib: './src/lib',
+    // $db: './src/lib/server/db',
+    // $components: './src/lib/client/components',
+    // $utils: './src/lib/utils',
+    // "$utils/client": './src/lib/client/utils',
+    // "$utils/server": './src/lib/server/utils',
+    // $trpc: './src/lib/utils/trpc',
+    // $modal: './src/lib/components/modal',
+    // $msgs: './src/lib/i18n/paraglide/messages',
   }
   // Path aliases are handled by https://kit.svelte.dev/docs/configuration#alias
   // except $lib which is handled by https://kit.svelte.dev/docs/configuration#files

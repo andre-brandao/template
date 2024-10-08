@@ -9,7 +9,6 @@ import {
   // type UserPermissions,
   type SelectUser,
   sessionTable,
-  DEFAULT_PERMISSIONS,
 } from '../schema'
 
 import { TimeSpan, createDate, isWithinExpirationDate } from 'oslo'
@@ -35,10 +34,12 @@ export const user = {
     return db
       .select({
         id: userTable.id,
-        name: userTable.username,
+        name: userTable.name,
+        username: userTable.username,
         email: userTable.email,
+        phone: userTable.phone,
         created_at: userTable.created_at,
-        permissions: userTable.permissions,
+        role: userTable.role,
         verified: userTable.emailVerified,
       })
       .from(userTable)
@@ -397,7 +398,7 @@ export const user = {
               email,
               emailVerified: false,
               password_hash: passwordHash,
-              permissions: user.DEFAULT_PERMISSIONS,
+              
             })
             .returning()
 
@@ -474,7 +475,7 @@ export const user = {
       },
     },
   },
-  DEFAULT_PERMISSIONS,
+  
 }
 
 async function createMagicLinkToken(

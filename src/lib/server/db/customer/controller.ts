@@ -69,6 +69,27 @@ export const customer = {
     await db.insert(orderItemTable).values(items)
   },
 
+  getOrderTotal: async (orderId: SelectCustomerOrder['id']) => {
+    const order = await db.query.customerOrderTable.findFirst({
+      where: eq(customerOrderTable.id, orderId),
+      with: {
+        items: {
+          with: {
+            product: true,
+          },
+        },
+      },
+    })
+
+    if (!order) {
+      throw new Error('Order not found')
+    }
+
+    return order.items.reduce((acc, item) => {
+      return acc + item.product.price * item.quantity
+    }, 0)
+  },
+
   getCustomerOrders: async (userId: SelectUser['id']) => {
     return db.query.customerOrderTable.findMany({
       where: eq(customerOrderTable.user_id, userId),

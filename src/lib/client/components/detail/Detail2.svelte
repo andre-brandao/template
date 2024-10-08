@@ -85,6 +85,8 @@
           <span
             class="space-x-2s ml-3 flex border-l-2 border-gray-200 py-2 pl-3"
           >
+                      <!-- svelte-ignore a11y_consider_explicit_label -->
+            <!-- svelte-ignore a11y_missing_attribute -->
             <a class="text-gray-500">
               <svg
                 fill="currentColor"
@@ -99,6 +101,8 @@
                 ></path>
               </svg>
             </a>
+            <!-- svelte-ignore a11y_consider_explicit_label -->
+            <!-- svelte-ignore a11y_missing_attribute -->
             <a class="text-gray-500">
               <svg
                 fill="currentColor"
@@ -113,6 +117,8 @@
                 ></path>
               </svg>
             </a>
+                        <!-- svelte-ignore a11y_consider_explicit_label -->
+            <!-- svelte-ignore a11y_missing_attribute -->
             <a class="text-gray-500">
               <svg
                 fill="currentColor"
@@ -141,12 +147,18 @@
         >
           <div class="flex">
             <span class="mr-3">Color</span>
+                        <!-- svelte-ignore a11y_consider_explicit_label -->
+            <!-- svelte-ignore a11y_missing_attribute -->
             <button
               class="h-6 w-6 rounded-full border-2 border-gray-300 focus:outline-none"
             ></button>
+                        <!-- svelte-ignore a11y_consider_explicit_label -->
+            <!-- svelte-ignore a11y_missing_attribute -->
             <button
               class="ml-1 h-6 w-6 rounded-full border-2 border-gray-300 bg-gray-700 focus:outline-none"
             ></button>
+                        <!-- svelte-ignore a11y_consider_explicit_label -->
+            <!-- svelte-ignore a11y_missing_attribute -->
             <button
               class="ml-1 h-6 w-6 rounded-full border-2 border-gray-300 bg-indigo-500 focus:outline-none"
             ></button>
@@ -189,6 +201,8 @@
           >
             Button
           </button>
+                      <!-- svelte-ignore a11y_consider_explicit_label -->
+            <!-- svelte-ignore a11y_missing_attribute -->
           <button
             class="ml-4 inline-flex h-10 w-10 items-center justify-center rounded-full border-0 bg-gray-200 p-0 text-gray-500"
           >

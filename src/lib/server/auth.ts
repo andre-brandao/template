@@ -22,9 +22,14 @@ export const lucia = new Lucia(adapter, {
   getUserAttributes: attributes => {
     return {
       username: attributes.username,
-      permissions: attributes.permissions,
+      role: attributes.role,
+      name: attributes.name,
       email: attributes.email,
       email_verified: attributes.emailVerified,
+      phone: attributes.phone,
+      phone_verified: attributes.phoneVerified,
+      meta: attributes.meta,
+      has_subscription: attributes.hasSubscription,
     }
   },
 })

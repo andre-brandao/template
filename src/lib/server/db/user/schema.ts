@@ -11,10 +11,8 @@ import { addressTable, customerOrderTable } from '$db/schema'
 
 import { generateId, type DatabaseUser } from 'lucia'
 
-export const DEFAULT_PERMISSIONS: UserPermissions = {
-  role: 'customer',
-} as const
-
+export const userRoleEnum = ['customer', 'admin'] as const
+export type UserRole = (typeof userRoleEnum)[number]
 export const userTable = sqliteTable('user', {
   id: text('id')
     .notNull()
@@ -23,16 +21,22 @@ export const userTable = sqliteTable('user', {
   created_at: integer('created_at', { mode: 'timestamp' }).default(
     sql`(CURRENT_TIMESTAMP)`,
   ),
-
+  role: text('role', { enum: userRoleEnum }).default('customer'),
+  name: text('name'),
   username: text('username').notNull().unique(),
   email: text('email').notNull().unique(),
   emailVerified: integer('email_verified', { mode: 'boolean' })
     .notNull()
     .default(false),
+  phone: text('phone'),
+  phoneVerified: integer('phone_verified', { mode: 'boolean' }),
+
+  hasSubscription: integer('has_subscription', { mode: 'boolean' }).default(
+    false,
+  ),
+
   password_hash: text('password_hash'),
-  permissions: text('permissions', { mode: 'json' })
-    .$type<UserPermissions>()
-    .default(DEFAULT_PERMISSIONS),
+  meta: text('meta', { mode: 'json' }),
 })
 
 export type SelectUser = typeof userTable.$inferSelect
@@ -41,14 +45,15 @@ export type InsertUser = typeof userTable.$inferInsert
 // import { generateId } from 'lucia'
 export interface DUser {
   id: string
+  role: UserRole
+  name: string
   username: string
   email: string
   emailVerified: boolean
-  permissions: UserPermissions
-}
-
-export type UserPermissions = {
-  role: 'admin' | 'customer'
+  phone: string
+  phoneVerified: boolean
+  hasSubscription: boolean
+  meta: JSON
 }
 
 // AUTH TABLES

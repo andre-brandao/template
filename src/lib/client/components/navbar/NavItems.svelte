@@ -39,7 +39,7 @@
     },
   ]
 
-  if (showDefaultItems && $user?.permissions.role === 'admin') {
+  if (showDefaultItems && $user?.role === 'admin') {
     navItems.push({
       name: 'Admin',
       href: '/admin',
@@ -135,7 +135,7 @@
 
 {#if showDefaultItems}
   <li>
-    <button class="" onclick={() => modal.open(BugReportModal)}>
+    <button class="" onclick={() => modal.open(BugReportModal, {})}>
       {@html icons.bug()}
       Reportar Bug
     </button>

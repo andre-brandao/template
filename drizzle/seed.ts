@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { faker } from '@faker-js/faker'
 // import faker from "https://cdnjs.cloudflare.com/ajax/libs/Faker/3.1.0/faker.min.js";
-import { hash } from '$lib/server/db/user/password'
+import { hash } from '../src/lib/server/db/user/password'
 import { generateId } from 'lucia'
 import fs from 'fs'
-import { image, product, user } from '$db/controller'
+import { image, product, user } from '../src/lib/server/db/controller'
 
 const TEST_IMAGE = 'src/lib/assets/home/home-open-graph-square.jpg'
 
@@ -20,11 +20,10 @@ async function seedUsers() {
   try {
     await user.create({
       id: generateId(15),
-      email: 'admin@admin.com',
+      email: 'brandaoandre00@gmail.com',
       username: 'administrator',
-      permissions: {
-        role: 'admin',
-      },
+      name: 'André Brandão',
+      role: 'admin',
       password_hash: await hash('senha123'),
     })
   } catch (error) {

@@ -8,4 +8,3 @@ export { bugReport } from './bug-report/controller'
 
 export { customer } from './customer/controller'
 
-export { stripeController as stripe } from './stripe/controller'

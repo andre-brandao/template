@@ -3,6 +3,8 @@
 
   export let data: PageData
 
+  const email = data.user?.email
+
   import {
     loadStripe,
     type Stripe,
@@ -47,28 +49,32 @@
       stripe = await loadStripe(
         dev ? PUBLIC_TESTE_STRIPE_KEY : PUBLIC_STRIPE_KEY,
       )
-      clientSecret = await createPaymentIntent()
+      clientSecret = data.clientSecret
       colors = extractThemeColorsFromDOM()
+
+      elements.update({
+
+      })
       console.log(colors)
     } catch (error) {
       console.log(error)
     }
   })
 
-  async function createPaymentIntent() {
-    try {
-      const resp = await trpc($page).checkout.createPaymentIntent.mutate({
-        amount: 1000,
-      })
+  // async function createPaymentIntent() {
+  //   try {
+  //     const resp = await trpc($page).checkout.createPaymentIntent.mutate({
+  //       amount: 1000,
+  //     })
 
-      return resp.client_secret
-    } catch (error: any) {
-      console.log(error)
+  //     return resp.client_secret
+  //   } catch (error: any) {
+  //     console.log(error)
 
-      toast.error(error.message)
-    }
-    return null
-  }
+  //     toast.error(error.message)
+  //   }
+  //   return null
+  // }
 
   async function submit() {
     // avoid processing duplicates
@@ -103,11 +109,9 @@
   {#if clientSecret && stripe && colors}
     <Elements
       {stripe}
-      {clientSecret}
+      clientSecret={data.clientSecret}
       labels="floating"
-      variables={{
-
-      }}
+      variables={{}}
 
       rules={{ '.Input': { border: 'solid 1px #0002' } }}
       bind:elements
@@ -117,8 +121,8 @@
       colorBackground: colors.base200,
       colorBackgroundText: colors.baseContent -->
       <form on:submit|preventDefault={submit}>
-        <LinkAuthenticationElement />
-        <PaymentElement options={{}}  />
+        <LinkAuthenticationElement defaultValues={{email: email ?? ''}}/>
+        <PaymentElement options={{}} />
         <Address mode="billing" />
 
         <button disabled={processing} class="btn btn-primary">
@@ -134,6 +138,10 @@
     <Loading />
   {/if}
 </div>
+
+<pre>
+  {JSON.stringify(data.info, null, 2)}
+</pre>
 
 <style>
   .error {

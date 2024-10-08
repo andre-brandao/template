@@ -1,6 +1,6 @@
 import type { PageServerLoad } from './$types'
 import { lucia } from '$lib/server/auth'
-import { user } from '$drizzle/controller'
+import { user } from '$db/controller'
 import { error, redirect } from '@sveltejs/kit'
 
 export const load = (async ({ params, cookies, setHeaders }) => {

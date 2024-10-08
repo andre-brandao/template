@@ -1,5 +1,5 @@
 <script>
-  import { themes, changeTheme } from '$lib'
+  import { themes, changeTheme } from '$lib/client/utils/theme'
   import { icons } from '$lib/client/utils/icons'
 </script>
 

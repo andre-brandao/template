@@ -6,7 +6,7 @@
 
   export let data: PageData
 
-  import { trpc } from '$trpc/client'
+  import { trpc } from '$lib/utils/trpc/client'
   import { page } from '$app/stores'
   import { toast } from 'svelte-sonner'
   import { goto } from '$app/navigation'

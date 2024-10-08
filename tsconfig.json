@@ -21,10 +21,6 @@
     //   "$utils/*": ["./src/lib/utils/*"],
     //   "$trpc": ["./src/trpc"],
     //   "$trpc/*": ["./src/trpc/*"],
-    //   // "$drizzle": ["./src/lib/server/db"],
-    //   // "$drizzle/*": ["./src/lib/server/db/*"],
-    //   "$drizzle": ["./drizzle"],
-    //   "$drizzle/*": ["./drizzle/*"],
     //   "$modal": ["./src/lib/components/modal"],
     //   "$modal/*": ["./src/lib/components/modal/*"],
     //   "$msgs": ["./src/lib/paraglide/messages"]

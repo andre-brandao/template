@@ -3,7 +3,7 @@
   import type { PageData } from './$types'
   import ImageInput from '$components/input/ImageInput.svelte'
   import { modal, FormModal } from '$modal'
-  import { trpc } from '$trpc/client'
+  import { trpc } from '$lib/utils/trpc/client'
   import { page } from '$app/stores'
   import { invalidate } from '$app/navigation'
   import { icons } from '$lib/client/utils/icons'

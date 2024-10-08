@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { faker } from '@faker-js/faker'
 // import faker from "https://cdnjs.cloudflare.com/ajax/libs/Faker/3.1.0/faker.min.js";
-import { hash } from '@node-rs/argon2'
+import { hash } from '$lib/server/db/user/password'
 import { generateId } from 'lucia'
 import fs from 'fs'
-import { image, product, user } from './controller'
+import { image, product, user } from '$db/controller'
 
 const TEST_IMAGE = 'src/lib/assets/home/home-open-graph-square.jpg'
 
@@ -25,12 +25,7 @@ async function seedUsers() {
       permissions: {
         role: 'admin',
       },
-      password_hash: await hash('senha123', {
-        memoryCost: 19456,
-        timeCost: 2,
-        outputLen: 32,
-        parallelism: 1,
-      }),
+      password_hash: await hash('senha123'),
     })
   } catch (error) {
     console.error('Failed to insert administrator:', error)
@@ -41,12 +36,7 @@ async function seedUsers() {
       await user.create({
         email: faker.internet.email(),
         username: faker.internet.userName(),
-        password_hash: await hash('password', {
-          memoryCost: 19456,
-          timeCost: 2,
-          outputLen: 32,
-          parallelism: 1,
-        }),
+        password_hash: await hash('password'),
       })
     } catch (error) {
       console.error(`Failed to insert user ${i}:`, error)

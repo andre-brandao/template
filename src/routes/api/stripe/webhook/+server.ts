@@ -5,7 +5,7 @@ export const GET: RequestHandler = async () => {
 }
 import { error, json } from '@sveltejs/kit'
 import { env } from '$env/dynamic/private'
-import { stripe } from '$lib/server/stripe'
+import { stripe } from '$lib/server/services/stripe'
 
 import { dev } from '$app/environment'
 

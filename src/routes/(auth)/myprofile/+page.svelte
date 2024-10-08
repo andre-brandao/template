@@ -4,7 +4,7 @@
   import type { PageData } from './$types'
   import { getUserContext } from '$lib/client/stores/user'
 
-  import { trpc } from '$trpc/client'
+  import { trpc } from '$lib/utils/trpc/client'
   import { page } from '$app/stores'
   const user = getUserContext()
 

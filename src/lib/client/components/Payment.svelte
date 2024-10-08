@@ -2,7 +2,7 @@
   import { website } from '$lib/config'
   import { tweened } from 'svelte/motion'
 
-  import { trpc } from '$trpc/client'
+  import { trpc } from '$lib/utils/trpc/client'
   import { page } from '$app/stores'
   import { toast } from 'svelte-sonner'
 

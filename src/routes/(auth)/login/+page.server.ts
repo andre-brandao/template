@@ -3,7 +3,7 @@ import { fail, redirect } from '@sveltejs/kit'
 
 import type { Actions, PageServerLoad } from './$types'
 
-import { user } from '$drizzle/controller'
+import { user } from '$db/controller'
 import { lucia } from '$lib/server/auth'
 // import { emailTemplate, sendMail } from '$lib/server/email'
 

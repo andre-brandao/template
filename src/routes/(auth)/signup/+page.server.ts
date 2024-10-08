@@ -5,9 +5,9 @@ import { fail, redirect } from '@sveltejs/kit'
 // import { LibsqlError } from '@libsql/client'
 
 import type { Actions, PageServerLoad } from './$types'
-import { emailTemplate, sendMail } from '$lib/server/email'
+import { emailTemplate, sendMail } from '$lib/server/services/email'
 
-import { user } from '$drizzle/controller'
+import { user } from '$db/controller'
 
 export const load: PageServerLoad = async event => {
   if (event.locals.user) {
@@ -120,8 +120,7 @@ export const actions: Actions = {
     const userId = data.user.id
     const ueserEmail = data.user.email
 
-    const session = await lucia.createSession(userId, {
-    })
+    const session = await lucia.createSession(userId, {})
     const sessionCookie = lucia.createSessionCookie(session.id)
 
     event.cookies.set(sessionCookie.name, sessionCookie.value, {

@@ -7,7 +7,7 @@
   import { website } from '$lib/config'
 
   import { getUserContext } from '$lib/client/stores/user'
-  import { trpc } from '$trpc/client'
+  import { trpc } from '$lib/utils/trpc/client'
   import { page } from '$app/stores'
   import NavItems from './NavItems.svelte'
   import Breadcrumbs from './Breadcrumbs.svelte'

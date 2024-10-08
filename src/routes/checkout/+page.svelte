@@ -4,7 +4,7 @@
   import type { PageData } from './$types'
 
   import { toast } from 'svelte-sonner'
-  import { trpc } from '$trpc/client'
+  import { trpc } from '$lib/utils/trpc/client'
   import { page } from '$app/stores'
 
   export let data: PageData

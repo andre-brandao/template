@@ -1,14 +1,14 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import type { PageServerLoad } from './$types'
 
-import * as schema from '$drizzle/schema'
+import * as schema from '$db/schema'
 import {
   withPagination,
   withOrderBy,
   getSQLiteColumn,
   getOrderBy,
-} from '$drizzle/utils'
-import { db } from '$drizzle/client.server'
+} from '$db/utils'
+import { db } from '$db'
 import { and, eq, getTableColumns, SQL, count, like } from 'drizzle-orm'
 
 export const load = (async ({ url }) => {

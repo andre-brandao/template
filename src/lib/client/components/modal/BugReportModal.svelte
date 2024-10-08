@@ -2,7 +2,7 @@
   import { Modal, modal } from '$components/modal'
   import { icons } from '$lib/client/utils/icons'
   import { page } from '$app/stores'
-  import { trpc } from '$trpc/client'
+  import { trpc } from '$lib/utils/trpc/client'
   import { toast } from 'svelte-sonner'
   import { TRPCClientError } from '@trpc/client'
 

@@ -1,6 +1,6 @@
 import type { PageServerLoad } from './$types'
 
-import { product } from '$drizzle/controller'
+import { product } from '$db/controller'
 
 export const load = (async () => {
   const products = await product.queryCategorysWithProducts()

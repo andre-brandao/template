@@ -4,7 +4,7 @@ import type { PageServerLoad, Actions } from './$types'
 import { sha256 } from 'oslo/crypto'
 import { encodeHex } from 'oslo/encoding'
 
-import { user } from '$drizzle/controller'
+import { user } from '$db/controller'
 import { lucia } from '$lib/server/auth'
 
 export const load = (async ({ params, setHeaders }) => {

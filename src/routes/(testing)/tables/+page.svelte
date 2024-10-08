@@ -33,7 +33,7 @@
   import SelectIndicator from '$components/table/edit/SelectIndicator.svelte'
   import EditableCell from '$components/table/edit/EditableCell.svelte'
   import { goto } from '$app/navigation'
-  import type { SelectUser } from '$drizzle/schema'
+  import type { SelectUser } from '$db/schema'
   import { onDestroy, onMount } from 'svelte'
   import {
     SSRTable,
@@ -51,7 +51,7 @@
   $effect(() => {
     console.log('data.rows', data.rows)
 
-   tableRows.set(data.rows)
+    tableRows.set(data.rows)
   })
 
   let Filters = $derived($page.url)
@@ -137,8 +137,6 @@
             $tableRows[idx] = newItem
             $tableRows = $tableRows
             // Handle any server-synchronization.
-
-            
           },
         }),
       plugins: {

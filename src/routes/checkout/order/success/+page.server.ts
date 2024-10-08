@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import type { PageServerLoad } from './$types'
-import { stripe as stripeController } from '$drizzle/controller'
+import { stripe as stripeController } from '$db/controller'
 import { error, redirect } from '@sveltejs/kit'
 
-import { stripe } from '$lib/server/stripe'
+import { stripe } from '$lib/server/services/stripe'
 export const load = (async ({ locals, url, cookies }) => {
   // const { user } = locals
   // const CHECKOUT_SESSION_ID = url.searchParams.get('session_id')

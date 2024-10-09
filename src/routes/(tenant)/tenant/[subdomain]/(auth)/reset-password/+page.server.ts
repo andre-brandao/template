@@ -1,6 +1,6 @@
-import { fail } from '@sveltejs/kit'
+import { error, fail } from '@sveltejs/kit'
 import type { PageServerLoad, Actions } from './$types'
-import { user } from '$db/controller'
+import { user } from '$db/tenant/controller'
 import { emailTemplate, sendMail } from '$lib/server/services/email'
 
 export const load = (async () => {
@@ -8,7 +8,13 @@ export const load = (async () => {
 }) satisfies PageServerLoad
 
 export const actions: Actions = {
-  default: async ({ request, url }) => {
+  default: async ({ request, url, locals }) => {
+    const {tenantDb} = locals
+
+    if (!tenantDb) {
+      error(404, 'Tenant not found')
+    }
+
     const formData = await request.formData()
 
     const email = formData.get('email')
@@ -24,7 +30,7 @@ export const actions: Actions = {
       })
     }
 
-    const [existingUser] = await user.getByEmail(email)
+    const [existingUser] = await user(tenantDb).getByEmail(email)
 
     if (!existingUser) {
       return fail(400, {
@@ -32,7 +38,7 @@ export const actions: Actions = {
       })
     }
 
-    const verificationToken = await user.passwordRecovery.createToken(
+    const verificationToken = await user(tenantDb).passwordRecovery.createToken(
       existingUser.id,
     )
     // const verificationLink =

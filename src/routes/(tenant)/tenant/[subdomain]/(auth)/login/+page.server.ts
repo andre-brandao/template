@@ -1,10 +1,9 @@
 // import { lucia } from '$lib/server/auth'
-import { fail, redirect } from '@sveltejs/kit'
+import { error, fail, redirect } from '@sveltejs/kit'
 
 import type { Actions, PageServerLoad } from './$types'
 
-import { user } from '$db/controller'
-import { lucia } from '$lib/server/auth'
+import { user } from '$db/tenant/controller'
 // import { emailTemplate, sendMail } from '$lib/server/email'
 
 export const load: PageServerLoad = async event => {
@@ -15,20 +14,26 @@ export const load: PageServerLoad = async event => {
 }
 
 export const actions: Actions = {
-  login: async ({ request, url }) => {
+  login: async ({ request, url, locals }) => {
+    const { tenantDb } = locals
+
+    if (!tenantDb) {
+      return error(404, 'Tenant not found')
+    }
+
     const formData = await request.formData()
 
     const email = formData.get('email')
 
-    const { error } = await user.auth.login.magicLink.send({
+    const { error: err } = await user(tenantDb).auth.login.magicLink.send({
       email,
       url,
     })
 
-    if (error) {
+    if (err) {
       return fail(404, {
         success: false,
-        message: error.message,
+        message: err.message,
       })
     }
 
@@ -40,7 +45,10 @@ export const actions: Actions = {
   logout: async ({ locals, cookies }) => {
     console.log('logout')
 
-    const { session } = locals
+    const { session, lucia } = locals
+    if (!lucia) {
+      return redirect(302, '/no-lucia')
+    }
 
     if (!session) {
       return redirect(302, '/login')

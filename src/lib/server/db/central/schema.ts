@@ -11,6 +11,9 @@ export const tenants = sqliteTable("tenants", {
     .default(sql`current_timestamp`),
 });
 
+export type SelectTenant = typeof tenants.$inferSelect
+export type InsertTenant = typeof tenants.$inferInsert
+
 // export const customDomains = sqliteTable("custom_domains", {
 //   customDomainId: integer("custom_domain_id").primaryKey({
 //     autoIncrement: true,

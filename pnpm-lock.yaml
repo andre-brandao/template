@@ -14,6 +14,9 @@ dependencies:
   '@trpc/client':
     specifier: ^10.45.2
     version: 10.45.2(@trpc/server@10.45.2)
+  '@tursodatabase/api':
+    specifier: ^1.8.1
+    version: 1.8.1
   clsx:
     specifier: ^2.1.1
     version: 2.1.1
@@ -2334,6 +2337,12 @@ packages:
 
   /@trpc/server@10.45.2:
     resolution: {integrity: sha512-wOrSThNNE4HUnuhJG6PfDRp4L2009KDVxsd+2VYH8ro6o/7/jwYZ8Uu5j+VaW+mOmc8EHerHzGcdbGNQSAUPgg==}
+
+  /@tursodatabase/api@1.8.1:
+    resolution: {integrity: sha512-/HhBZEJEtGtI3FlP+vZY0VG+/GRO9L/yaPOjg/lWRDi0x9tjX6pvDiX1QOaeadKzGVkXH6gM+HYEH8LZnvOhKQ==}
+    dependencies:
+      whatwg-fetch: 3.6.20
+    dev: false
 
   /@tybys/wasm-util@0.8.3:
     resolution: {integrity: sha512-Z96T/L6dUFFxgFJ+pQtkPpne9q7i6kIPYCFnQBHSgSPV9idTsKfIhCss0h5iM9irweZCatkrdeP8yi5uM1eX6Q==}
@@ -5506,6 +5515,10 @@ packages:
 
   /webpack-virtual-modules@0.6.2:
     resolution: {integrity: sha512-66/V2i5hQanC51vBQKPH4aI8NMAcBW59FVBs+rC7eGHupMyfn34q7rZIE+ETlJ+XTevqfUhVVBgSUNSW2flEUQ==}
+    dev: false
+
+  /whatwg-fetch@3.6.20:
+    resolution: {integrity: sha512-EqhiFU6daOA8kpjOWTL0olhVOF3i7OrFzSYiGsEMB8GcXS+RrzauAERX65xMeNWVqxA6HXH2m69Z9LaKKdisfg==}
     dev: false
 
   /whatwg-url@5.0.0:

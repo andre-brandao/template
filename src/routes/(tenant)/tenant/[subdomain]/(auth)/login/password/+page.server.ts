@@ -1,9 +1,8 @@
-import { lucia } from '$lib/server/auth'
-import { fail, redirect } from '@sveltejs/kit'
+import { error, fail, redirect } from '@sveltejs/kit'
 
 import type { Actions, PageServerLoad } from './$types'
 
-import { user } from '$db/controller'
+import { user } from '$db/tenant/controller'
 
 export const load: PageServerLoad = async event => {
   if (event.locals.user) {
@@ -13,25 +12,34 @@ export const load: PageServerLoad = async event => {
 }
 
 export const actions: Actions = {
-  default: async event => {
-    const formData = await event.request.formData()
+  default: async ({ locals, request, cookies }) => {
+    const { lucia, tenantDb } = locals
+
+    if (!tenantDb || !lucia) {
+      return error(404, 'Tenant not found')
+    }
+
+    const formData = await request.formData()
     // const username = formData.get('username')
     const password = formData.get('password')
     const email = formData.get('email')
 
-    const { data, error } = await user.auth.login.password(email, password)
+    const { data, error: err } = await user(tenantDb).auth.login.password(
+      email,
+      password,
+    )
 
-    if (error) {
+    if (err) {
       return fail(404, {
         succes: false,
-        message: error.message,
+        message: err.message,
       })
     }
     const existingUser = data.user
 
     const session = await lucia.createSession(existingUser.id, {})
     const sessionCookie = lucia.createSessionCookie(session.id)
-    event.cookies.set(sessionCookie.name, sessionCookie.value, {
+    cookies.set(sessionCookie.name, sessionCookie.value, {
       path: '.',
       ...sessionCookie.attributes,
     })

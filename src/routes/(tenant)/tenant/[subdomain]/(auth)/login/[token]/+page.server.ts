@@ -1,17 +1,21 @@
 import type { PageServerLoad } from './$types'
-import { lucia } from '$lib/server/auth'
-import { user } from '$db/controller'
+
+import { user } from '$db/tenant/controller'
 import { error, redirect } from '@sveltejs/kit'
 
-export const load = (async ({ params, cookies, setHeaders }) => {
-  const verificationToken = params.token
+export const load = (async ({ locals, params, cookies, setHeaders }) => {
+  const { lucia, tenantDb } = locals
 
+  if (!tenantDb || !lucia) {
+    return error(404, 'Tenant not found')
+  }
+
+  const verificationToken = params.token
   setHeaders({
     'Referrer-Policy': 'strict-origin',
   })
-
   const { data, error: err } =
-    await user.auth.login.magicLink.validate(verificationToken)
+    await user(tenantDb).auth.login.magicLink.validate(verificationToken)
 
   if (err) {
     return error(400, {
@@ -24,7 +28,7 @@ export const load = (async ({ params, cookies, setHeaders }) => {
   try {
     await lucia.invalidateUserSessions(verifiedUser.id)
 
-    await user.update(verifiedUser.id, {
+    await user(tenantDb).update(verifiedUser.id, {
       emailVerified: true,
     })
 

@@ -1,18 +1,24 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import type { PageServerLoad } from './$types'
 
-import * as schema from '$db/schema'
+import { userTable } from '$db/tenant/schema'
 import {
   withPagination,
   withOrderBy,
   getSQLiteColumn,
   getOrderBy,
 } from '$db/utils'
-import { db } from '$db'
 import { and, eq, getTableColumns, SQL, count, like } from 'drizzle-orm'
+import { error } from '@sveltejs/kit'
 
-export const load = (async ({ url }) => {
+export const load = (async ({ url, locals }) => {
   const { searchParams } = url
+  const db = locals.tenantDb
+
+  if (!db) {
+    return error(404, 'Tenant not found')
+  }
+
   const page = Number(searchParams.get('page') ?? 1)
   const pageSize = Number(searchParams.get('pageSize') ?? 10)
 
@@ -24,27 +30,23 @@ export const load = (async ({ url }) => {
 
   let query = db
     .select()
-    .from(schema.userTable)
+    .from(userTable)
     .where(
       and(
-        username ? like(schema.userTable.username, `%${username}%`) : undefined,
-        email ? like(schema.userTable.email, `%${email}%`) : undefined,
+        username ? like(userTable.username, `%${username}%`) : undefined,
+        email ? like(userTable.email, `%${email}%`) : undefined,
       ),
     )
     .$dynamic()
 
   if (sortId && sortOrder) {
-    query = withOrderBy(
-      query,
-      getSQLiteColumn(schema.userTable, sortId),
-      sortOrder,
-    )
+    query = withOrderBy(query, getSQLiteColumn(userTable, sortId), sortOrder)
   }
 
   try {
     const rows = await withPagination(query, page, pageSize)
 
-    const total = await db.select({ count: count() }).from(schema.userTable)
+    const total = await db.select({ count: count() }).from(userTable)
 
     return { rows: rows ?? [], count: total[0].count }
   } catch (error) {

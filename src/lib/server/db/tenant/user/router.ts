@@ -26,10 +26,6 @@ export const userRouter = router({
       localUser.email,
     )
 
-    // .verificationCode.generate(
-    //   localUser.id,
-    //   localUser.email,
-    // )
     await sendMail(
       localUser.email,
       emailTemplate.verificationCode(verificationCode),

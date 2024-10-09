@@ -1,15 +1,15 @@
 import type { RequestHandler } from './$types'
 
-import { image } from '$db/controller'
+import { image } from '$db/tenant/controller'
 
-export const GET: RequestHandler = async ({ params }) => {
+export const GET: RequestHandler = async ({ params, locals }) => {
   const id = Number(params.id)
-
-  if (!id) {
+  const { tenantDb } = locals
+  if (!id || !tenantDb) {
     return new Response('Not found', { status: 404 })
   }
 
-  const [{ img }] = await image.getImageByID(id)
+  const [{ img }] = await image(tenantDb).getImageByID(id)
 
   if (!img) {
     return new Response('Not found', { status: 404 })
@@ -23,9 +23,9 @@ export const GET: RequestHandler = async ({ params }) => {
 }
 
 export const POST: RequestHandler = async ({ request, locals }) => {
-  const { user } = locals
+  const { user, tenantDb } = locals
 
-  if (!user) {
+  if (!user || !tenantDb) {
     return new Response('Unauthorized', { status: 401 })
   }
 
@@ -40,7 +40,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 
     const imageBuffer = Buffer.from(await imageFile.arrayBuffer())
 
-    const [{ img_id }] = await image.insertImage({
+    const [{ img_id }] = await image(tenantDb).insertImage({
       buff: imageBuffer,
       name,
       uploaded_by: user.id,

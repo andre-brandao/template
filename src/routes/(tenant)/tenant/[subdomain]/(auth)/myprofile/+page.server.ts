@@ -1,18 +1,18 @@
 import { redirect } from '@sveltejs/kit'
 import type { PageServerLoad } from './$types'
 
-import { user as userController } from '$db/controller'
+import { user as userController } from '$db/tenant/controller'
 
 export const load = (async ({ locals, getClientAddress, platform }) => {
-  const { user, session } = locals
+  const { user, session, tenantDb } = locals
 
-  if (!user || !session) {
+  if (!user || !session || !tenantDb) {
     return redirect(302, '/login')
   }
 
   console.log('ip', getClientAddress())
   console.log('platform', platform)
 
-  const user_sessions = await userController.getSessions(user.id)
+  const user_sessions = await userController(tenantDb).getSessions(user.id)
   return { user_sessions }
 }) satisfies PageServerLoad

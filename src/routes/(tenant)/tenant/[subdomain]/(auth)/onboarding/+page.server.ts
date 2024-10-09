@@ -1,6 +1,6 @@
 import type { PageServerLoad, Actions } from './$types'
 import { user as userC } from '$lib/server/db/tenant/user/controller'
-import { fail, redirect } from '@sveltejs/kit'
+import { error, fail, redirect } from '@sveltejs/kit'
 export const load = (async ({ locals }) => {
   const user = locals.user
 
@@ -15,7 +15,11 @@ export const load = (async ({ locals }) => {
 
 export const actions: Actions = {
   default: async ({ request, locals, url }) => {
-    const user = locals.user
+    const {user, tenantDb} = locals
+
+    if (!tenantDb) {
+      return error(404, 'Tenant not found')
+    }
 
     const redirectPath = url.searchParams.get('redirect')
 
@@ -33,7 +37,7 @@ export const actions: Actions = {
       })
     }
 
-    await userC.update(user.id, {
+    await userC(tenantDb).update(user.id, {
       name: name,
     })
 

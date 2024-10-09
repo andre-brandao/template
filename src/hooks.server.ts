@@ -1,11 +1,33 @@
 import { i18n } from '$lib/i18n/i18n'
-import { lucia } from '$lib/server/auth'
-import type { Handle } from '@sveltejs/kit'
+import { getLuciaForTenant } from '$lib/server/auth'
+import { error, type Handle } from '@sveltejs/kit'
 import { sequence } from '@sveltejs/kit/hooks'
 
-import { bugReport } from '$db/controller'
+// import { bugReport } from '$db/controller'
 
 const handleSession: Handle = async ({ event, resolve }) => {
+  /* disallow access to PUBLIC_DOMAIN/tenant, this is optional */
+  const { host, pathname } = event.url
+  if (host === PUBLIC_DOMAIN) {
+    if (pathname.startsWith('/tenant')) {
+      error(404, { message: 'Not Found' })
+    } else {
+      return resolve(event)
+    }
+  }
+
+  /* if no database returned for given subdomain or custom domain then the tenant does not exist */
+  const tenant = await getTenant(host)
+  if (!tenant) {
+    error(404, { message: 'Not Found' })
+  }
+  event.locals.tenantDb = tenant.tenantDb
+  event.locals.tenantInfo = tenant.tenantInfo!
+
+  /* authenticate users of tenants with lucia */
+  const lucia = getLuciaForTenant(tenant.tenantDb)
+  event.locals.lucia = lucia
+
   const sessionId = event.cookies.get(lucia.sessionCookieName)
   if (!sessionId) {
     event.locals.user = null
@@ -38,6 +60,8 @@ const handleSession: Handle = async ({ event, resolve }) => {
 import { createContext } from '$trpc/context'
 import { router } from '$trpc/router'
 import { createTRPCHandle } from 'trpc-sveltekit'
+import { PUBLIC_DOMAIN } from '$env/static/public'
+import { getTenant } from '$lib/server/utils/getTenantInformation'
 
 const handleTRPC = createTRPCHandle({
   router,

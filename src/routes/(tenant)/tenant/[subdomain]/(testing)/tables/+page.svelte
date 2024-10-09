@@ -137,6 +137,10 @@
             $tableRows[idx] = newItem
             $tableRows = $tableRows
             // Handle any server-synchronization.
+
+
+
+            
           },
         }),
       plugins: {

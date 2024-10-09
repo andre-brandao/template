@@ -1,5 +1,5 @@
 import type { PageServerLoad, Actions } from './$types'
-import { user as userC } from '$db/user/controller'
+import { user as userC } from '$lib/server/db/tenant/user/controller'
 import { fail, redirect } from '@sveltejs/kit'
 export const load = (async ({ locals }) => {
   const user = locals.user
@@ -33,7 +33,7 @@ export const actions: Actions = {
       })
     }
 
-     await userC.update(user.id, {
+    await userC.update(user.id, {
       name: name,
     })
 
@@ -43,7 +43,7 @@ export const actions: Actions = {
 
     return {
       success: true,
-      message: 'Name updated', 
+      message: 'Name updated',
     }
   },
 }

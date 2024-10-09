@@ -20,9 +20,10 @@ export const stripeCustomer = sqliteTable('stripe_customer', {
 
 export const stripeSubscriptions = sqliteTable('stripe_subscriptions', {
   id: text('id').notNull().primaryKey(),
-  userId: text('user_id').references(() => userTable.id).notNull(),
-  customerID: text('customer_id')
+  userId: text('user_id')
+    .references(() => userTable.id)
     .notNull(),
+  customerID: text('customer_id').notNull(),
   active: integer('active', { mode: 'boolean' }).notNull().default(false),
   json: text('json', { mode: 'json' }).notNull().$type<Stripe.Subscription>(),
 })

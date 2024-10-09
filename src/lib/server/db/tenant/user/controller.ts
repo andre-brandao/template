@@ -398,7 +398,6 @@ export const user = {
               email,
               emailVerified: false,
               password_hash: passwordHash,
-              
             })
             .returning()
 
@@ -475,7 +474,6 @@ export const user = {
       },
     },
   },
-  
 }
 
 async function createMagicLinkToken(

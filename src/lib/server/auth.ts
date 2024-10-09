@@ -1,42 +1,38 @@
-import { Lucia, TimeSpan } from 'lucia'
-import { dev } from '$app/environment'
+import { Lucia } from "lucia";
+import { dev } from "$app/environment";
+import type { TenantDbType } from "./db/tenant";
+import { DrizzleSQLiteAdapter } from "@lucia-auth/adapter-drizzle";
+import { sessionTable, userTable } from "./db/tenant/schema";
 
-import { DrizzleSQLiteAdapter } from '@lucia-auth/adapter-drizzle'
-
-import { db } from '$db'
-
-import { sessionTable, userTable, type DUser } from '$db/schema'
-
-const adapter = new DrizzleSQLiteAdapter(db, sessionTable, userTable)
-
-export const lucia = new Lucia(adapter, {
-  sessionExpiresIn: new TimeSpan(69, 'w'),
-  sessionCookie: {
-    expires: false,
-
-    attributes: {
-      // set to `true` when using HTTPS
-      secure: !dev,
+export function getLuciaForTenant(db: TenantDbType) {
+  // @ts-ignore fix later, idk why it's complaining about db
+  const adapter = new DrizzleSQLiteAdapter(db, sessionTable, userTable);
+  return new Lucia(adapter, {
+    sessionCookie: {
+      attributes: {
+        secure: !dev,
+      },
     },
-  },
-  getUserAttributes: attributes => {
-    return {
-      username: attributes.username,
-      role: attributes.role,
-      name: attributes.name,
-      email: attributes.email,
-      email_verified: attributes.emailVerified,
-      phone: attributes.phone,
-      phone_verified: attributes.phoneVerified,
-      meta: attributes.meta,
-      has_subscription: attributes.hasSubscription,
-    }
-  },
-})
+    getUserAttributes: (attributes) => {
+      return {
+        id: attributes.id,
+        username: attributes.username,
+        role: attributes.role,
+      };
+    },
+  });
+}
 
-declare module 'lucia' {
+declare module "lucia" {
   interface Register {
-    Lucia: typeof lucia
-    DatabaseUserAttributes: Omit<DUser, 'id'>
+    Lucia: ReturnType<typeof getLuciaForTenant>;
+    DatabaseUserAttributes: {
+      id: string;
+      username: string;
+      role: "admin" | "customer";
+    };
+    UserId: number;
   }
 }
+
+export type LuciaType = ReturnType<typeof getLuciaForTenant>;

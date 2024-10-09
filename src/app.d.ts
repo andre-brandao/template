@@ -8,6 +8,19 @@ declare global {
     interface Locals {
       paraglide: ParaglideLocals<AvailableLanguageTag>
 
+
+
+
+      tenantDb: import("$lib/server/db/tenant").TenantDbType | null;
+      tenantInfo: {
+        tenantId: number;
+        name: string;
+        subdomain: string;
+        createdAt: string;
+        databaseName: string;
+      } | null;
+      lucia: import("$lib/server/auth").LuciaType | null;
+
       user: import('lucia').User | null
       session: import('lucia').Session | null
     }

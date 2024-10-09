@@ -20,21 +20,13 @@
 
   const user = createUserContext(data.user)
   $: user.set(data.user)
-  const cart = createCartContext()
-
-  // onMount(() => {
-  //   changeTheme('bumblebee')
-  // })
 </script>
 
 <ParaglideJS {i18n}>
   <Toaster richColors closeButton />
-  <!-- <DrawerContainer> -->
-  <NavBar>
-    <ModalContainer />
-    <Transition key={data.transition_key}>
-      <slot />
-    </Transition>
-  </NavBar>
-  <!-- </DrawerContainer> -->
+
+  <ModalContainer />
+  <Transition key={data.transition_key}>
+    <slot />
+  </Transition>
 </ParaglideJS>

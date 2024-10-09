@@ -11,5 +11,4 @@ export * from './customer/schema'
 
 export * from './stripe/schema'
 
-
 export * from './relations'

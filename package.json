@@ -13,14 +13,10 @@
     "format": "prettier --write .",
     "test:integration": "playwright test",
     "test:unit": "vitest",
-    "db:push": "drizzle-kit push",
-    "db:migrate": "drizzle-kit migrate",
-    "db:studio": "drizzle-kit studio",
     "db:seed": "npx tsx ./drizzle/seed.ts",
-    "db:generate": "drizzle-kit generate",
-    "db:drop": "drizzle-kit drop",
-    "db:up": "drizzle-kit up",
-    "db:check": "drizzle-kit check"
+    "db:studio": "drizzle-kit studio",
+    "db:tenant": "drizzle-kit --config drizzle.config.tenant.ts",
+    "db:central": "drizzle-kit --config drizzle.config.central.ts"
   },
   "devDependencies": {
     "@andre-brandao/svelte-headless-table": "^0.18.6",

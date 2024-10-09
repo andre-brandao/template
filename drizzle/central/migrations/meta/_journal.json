@@ -1,0 +1,13 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1728517474356,
+      "tag": "0000_sudden_winter_soldier",
+      "breakpoints": true
+    }
+  ]
+}

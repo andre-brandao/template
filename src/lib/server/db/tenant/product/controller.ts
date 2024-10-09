@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { eq, inArray, sql } from 'drizzle-orm'
 
-import { db } from '$db'
+import { type TenantDbType } from '$db/tenant'
 
 import {
   productTable,
@@ -9,7 +9,7 @@ import {
   productCategoryTable,
   type InsertStockTransaction,
   stockTransactionTable,
-} from '$db/schema'
+} from '$db/tenant/schema'
 import type {
   InsertProduct,
   SelectProduct,
@@ -17,10 +17,10 @@ import type {
   SelectProductCategory,
   InsertProductCategory,
   SelectProductItem,
-} from '$db/schema'
+} from '$db/tenant/schema'
 // import { getRowCount } from '$db/utils'
 
-export const product = {
+export const product = (db: TenantDbType) => ({
   tables: { productTable, productItemTable, productCategoryTable },
   // Product
   insertProduct: (data: InsertProduct) => {
@@ -161,4 +161,4 @@ export const product = {
       .from(stockTransactionTable)
       .where(eq(stockTransactionTable.id, itemID))
   },
-}
+})

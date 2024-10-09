@@ -7,7 +7,7 @@ import {
 } from 'drizzle-orm/sqlite-core'
 import { sql, relations } from 'drizzle-orm'
 
-import { userTable, productItemTable } from '$db/schema'
+import { userTable, productItemTable } from '$db/tenant/schema'
 import { createInsertSchema } from 'drizzle-zod'
 
 export const addressTable = sqliteTable('address', {

@@ -10,13 +10,13 @@ import type {
   SelectOrderItem,
   SelectUser,
   InsertStockTransaction,
-} from '$db/schema'
-import { db } from '$db'
+} from '$db/tenant/schema'
 import { eq, ne, or, sql } from 'drizzle-orm'
 
-import { product } from '$db/controller'
+import { product } from '$db/tenant/controller'
+import type { TenantDbType } from '$db/tenant'
 
-export const customer = {
+export const customer = (db: TenantDbType) => ({
   tables: {
     addressTable,
     customerOrderTable,
@@ -56,7 +56,7 @@ export const customer = {
         ...item,
         order_id: order.id,
       })
-      await product.insertStockTransaction({
+      await product(db).insertStockTransaction({
         item_id: item.product_id,
         quantity: item.quantity,
         order_id: order.id,
@@ -120,4 +120,4 @@ export const customer = {
       },
     })
   },
-}
+})

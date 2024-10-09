@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { getImagePath } from '$lib/utils/image'
+  import { getImagePath } from '$lib/client/utils/image'
   import type { PageData } from './$types'
   import { icons } from '$lib/client/utils/icons'
   import Detail from '$components/detail/Detail1.svelte'
@@ -23,12 +23,9 @@
 
   let activeItemIndex = 0
 
-  let total = tweened(
-    (produto.items[activeItemIndex].price ?? 0) * quantity,
-    {
-      duration: 300,
-    },
-  )
+  let total = tweened((produto.items[activeItemIndex].price ?? 0) * quantity, {
+    duration: 300,
+  })
   $: $total = (produto.items[activeItemIndex].price ?? 0) * quantity
 
   function addToCart() {
@@ -57,7 +54,7 @@
         </h1>
 
         <p class="mb-4 leading-relaxed">
-           {produto.items[activeItemIndex].description}
+          {produto.items[activeItemIndex].description}
         </p>
 
         <div class="flex flex-wrap gap-3 border-t border-gray-200 py-2">

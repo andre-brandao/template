@@ -2,8 +2,8 @@ import { publicProcedure, router } from '$trpc/t'
 
 import { z } from 'zod'
 
-import { user as userController } from '$db/controller'
-import { lucia } from '$lib/server/auth'
+import { user, user as userController } from '$db/tenant/controller'
+// import { lucia } from '$lib/server/auth'
 
 // import { generateId } from 'lucia'
 // import { LibsqlError } from '@libsql/client'
@@ -15,17 +15,21 @@ export const userRouter = router({
     const { locals } = ctx
 
     const localUser = locals.user
-
     if (!localUser) {
       return {
         message: 'Not authenticated',
       }
     }
 
-    const verificationCode = await userController.verificationCode.generate(
+    const verificationCode = await user(ctx.tenantDb).verificationCode.generate(
       localUser.id,
       localUser.email,
     )
+
+    // .verificationCode.generate(
+    //   localUser.id,
+    //   localUser.email,
+    // )
     await sendMail(
       localUser.email,
       emailTemplate.verificationCode(verificationCode),
@@ -42,7 +46,7 @@ export const userRouter = router({
       }),
     )
     .query(async ({ ctx, input }) => {
-      const { cookies, locals } = ctx
+      const { cookies, locals, lucia } = ctx
       const sessionId = locals.session?.id
       const { code } = input
 
@@ -61,7 +65,9 @@ export const userRouter = router({
         }
       }
 
-      const validCode = await userController.verificationCode.verify(user, code)
+      const validCode = await userController(
+        ctx.tenantDb,
+      ).verificationCode.verify(user, code)
 
       if (!validCode) {
         return {
@@ -71,7 +77,7 @@ export const userRouter = router({
       }
 
       await lucia.invalidateUserSessions(user.id)
-      await userController.update(user.id, {
+      await userController(ctx.tenantDb).update(user.id, {
         emailVerified: true,
       })
 
@@ -97,7 +103,9 @@ export const userRouter = router({
       const { url } = ctx
 
       // const user = await db.table('user').where('email', '=', email).get()
-      const [{ id: userID }] = await userController.getByEmail(email)
+      const [{ id: userID }] = await userController(ctx.tenantDb).getByEmail(
+        email,
+      )
       if (!userID) {
         // If you want to avoid disclosing valid emails,
         // this can be a normal 200 response.
@@ -107,8 +115,9 @@ export const userRouter = router({
         }
       }
 
-      const verificationToken =
-        await userController.passwordRecovery.createToken(userID)
+      const verificationToken = await userController(
+        ctx.tenantDb,
+      ).passwordRecovery.createToken(userID)
       // const verificationLink =
       //   'http://localhost:3000/reset-password/' + verificationToken
       const verificationLink = `${url.origin}/reset-password/${verificationToken}`

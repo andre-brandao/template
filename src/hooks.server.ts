@@ -73,19 +73,12 @@ const handleTRPC = createTRPCHandle({
     )
     if (error.code === 'INTERNAL_SERVER_ERROR') {
       // TODO: send to bug reporting
-      const userId = ctx?.locals.user?.id
-      bugReport.insertBugReport({
-        status: 'TODO',
-        text: 'Internal server error',
-        created_by: userId,
-        metadata: {
-          path,
-          type,
-          error,
-          input,
-          req,
-        },
-      })
+      console.error('Internal server error')
+      console.error('Error:', error)
+      console.error('Path:', path)
+      console.error('Input:', input)
+      console.error('Context:', ctx)
+      console.error('Request:', req)
     }
   },
 })

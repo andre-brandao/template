@@ -10,7 +10,7 @@ import { sql, relations, type AnyColumn } from 'drizzle-orm'
 import { imageTable } from '../image/schema'
 
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod'
-import { customerOrderTable, orderItemTable } from '$db/schema'
+import { customerOrderTable, orderItemTable } from '$db/tenant/schema'
 
 export const productCategoryTable = sqliteTable('product_category', {
   id: integer('id', { mode: 'number' }).primaryKey({ autoIncrement: true }),
@@ -40,7 +40,6 @@ export const productTable = sqliteTable('product', {
   image: integer('image_id').references(() => imageTable.id),
 })
 
-
 export const insertProductSchema = createInsertSchema(productTable)
 
 export type SelectProduct = typeof productTable.$inferSelect
@@ -61,7 +60,6 @@ export const productItemTable = sqliteTable('product_item', {
   price: integer('price').notNull(),
   quantity: integer('quantity').notNull().default(0),
 })
-
 
 export const insertProductItemSchema = createInsertSchema(productItemTable)
 

@@ -2,61 +2,22 @@ import { publicProcedure, router } from '$trpc/t'
 
 import { z } from 'zod'
 
-import { product as productController } from '$db/controller'
+import { product as productController } from '$db/tenant/controller'
 
 import {
-  insertProductCategorySchema,
-  insertProductItemSchema,
-  insertProductSchema,
-  stockTransactionTable,
-} from '$db/schema'
-
-// import { tableHelper, paramsSchema } from '$db/utils'
-// export type TableState = z.infer<typeof paramsSchema>
+  productCategoryTable,
+  productItemTable,
+  productTable,
+} from '$db/tenant/schema'
+import { createInsertSchema } from 'drizzle-zod'
 
 export const productRouter = router({
-  // paginatedProducts: publicProcedure
-  //   .input(paramsSchema)
-  //   .query(async ({ input }) => {
-  //     return await tableHelper(
-  //       productController.getProducts().$dynamic(),
-  //       productController.tables.productTable,
-  //       'name',
-  //       input,
-  //     )
-  //   }),
-  // paginatedProductItems: publicProcedure
-  //   .input(paramsSchema)
-  //   .query(async ({ input }) => {
-  //     return await tableHelper(
-  //       productController.getProductItems().$dynamic(),
-  //       productController.tables.productItemTable,
-  //       'name',
-  //       input,
-  //     )
-  //   }),
-
-  // paginatedTransactions: publicProcedure
-  //   .input(
-  //     z.object({
-  //       item_id: z.number(),
-  //       table_state: paramsSchema,
-  //     }),
-  //   )
-  //   .query(async ({ input }) => {
-  //     const { item_id, table_state } = input
-  //     return await tableHelper(
-  //       productController.getProductTransactions(item_id).$dynamic(),
-  //       stockTransactionTable,
-  //       'name',
-  //       table_state,
-  //     )
-  //   }),
-
   insertProduct: publicProcedure
-    .input(insertProductSchema)
-    .mutation(async ({ input }) => {
-      return await productController.insertProduct(input).returning()
+    .input(createInsertSchema(productTable))
+    .mutation(async ({ input, ctx }) => {
+      return await productController(ctx.tenantDb)
+        .insertProduct(input)
+        .returning()
     }),
   updateProduct: publicProcedure
     .input(
@@ -69,42 +30,50 @@ export const productRouter = router({
         }),
       }),
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       const { id, prod } = input
-      return await productController.updateProduct(id, prod).returning()
+      return await productController(ctx.tenantDb)
+        .updateProduct(id, prod)
+        .returning()
     }),
   deleteProduct: publicProcedure
     .input(z.number())
-    .mutation(async ({ input }) => {
-      return await productController.deleteProduct(input)
+    .mutation(async ({ input, ctx }) => {
+      return await productController(ctx.tenantDb).deleteProduct(input)
     }),
 
   insertProductItem: publicProcedure
-    .input(insertProductItemSchema)
-    .mutation(async ({ input }) => {
-      return await productController.insertProductItem(input).returning()
+    .input(createInsertSchema(productItemTable))
+    .mutation(async ({ input, ctx }) => {
+      return await productController(ctx.tenantDb)
+        .insertProductItem(input)
+        .returning()
     }),
   updateProductItem: publicProcedure
     .input(
       z.object({
         id: z.number(),
-        prod: insertProductItemSchema.partial(),
+        prod: createInsertSchema(productTable).partial(),
       }),
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       const { id, prod } = input
-      return await productController.updateProductItem(id, prod).returning()
+      return await productController(ctx.tenantDb)
+        .updateProductItem(id, prod)
+        .returning()
     }),
   deleteProductItem: publicProcedure
     .input(z.number())
-    .mutation(async ({ input }) => {
-      return await productController.deleteProductItem(input)
+    .mutation(async ({ input, ctx }) => {
+      return await productController(ctx.tenantDb).deleteProductItem(input)
     }),
 
   insertProductCategory: publicProcedure
-    .input(insertProductCategorySchema)
-    .mutation(async ({ input }) => {
-      return await productController.insertProductCategory(input).returning()
+    .input(createInsertSchema(productCategoryTable))
+    .mutation(async ({ input, ctx }) => {
+      return await productController(ctx.tenantDb)
+        .insertProductCategory(input)
+        .returning()
     }),
   updateProductCategory: publicProcedure
     .input(
@@ -115,13 +84,15 @@ export const productRouter = router({
         }),
       }),
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       const { id, prod } = input
-      return await productController.updateProductCategory(id, prod).returning()
+      return await productController(ctx.tenantDb)
+        .updateProductCategory(id, prod)
+        .returning()
     }),
   deleteProductCategory: publicProcedure
     .input(z.number())
-    .mutation(async ({ input }) => {
-      return await productController.deleteProductCategory(input)
+    .mutation(async ({ input, ctx }) => {
+      return await productController(ctx.tenantDb).deleteProductCategory(input)
     }),
 })

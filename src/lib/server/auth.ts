@@ -5,7 +5,7 @@ import { DrizzleSQLiteAdapter } from "@lucia-auth/adapter-drizzle";
 import { sessionTable, userTable } from "./db/tenant/schema";
 
 export function getLuciaForTenant(db: TenantDbType) {
-  // @ts-ignore fix later, idk why it's complaining about db
+  // @ts-expect-error fix later, idk why it's complaining about db
   const adapter = new DrizzleSQLiteAdapter(db, sessionTable, userTable);
   return new Lucia(adapter, {
     sessionCookie: {
@@ -17,6 +17,7 @@ export function getLuciaForTenant(db: TenantDbType) {
       return {
         id: attributes.id,
         username: attributes.username,
+        email: attributes.email,
         role: attributes.role,
       };
     },
@@ -29,9 +30,10 @@ declare module "lucia" {
     DatabaseUserAttributes: {
       id: string;
       username: string;
+      email: string;
       role: "admin" | "customer";
     };
-    UserId: number;
+    UserId: string;
   }
 }
 

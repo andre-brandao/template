@@ -4,29 +4,20 @@ import { publicProcedure, router } from '$trpc/t'
 import {
   customer as customerController,
   product as productController,
-} from '$db/controller'
-import { insertAddressSchema, userTable } from '$db/schema'
+} from '$db/tenant/controller'
+import { addressTable } from '$db/tenant/schema'
 
 import { middleware } from '$trpc/middleware'
 import { z } from 'zod'
 import { TRPCError } from '@trpc/server'
+import { createInsertSchema } from 'drizzle-zod'
 
 export const customerRouter = router({
-  // paginatedUsers: publicProcedure
-  //   .input(paramsSchema)
-  //   .query(async ({ input }) => {
-  //     return await tableHelper(
-  //       userController.getPublicInfo().$dynamic(),
-  //       userTable,
-  //       'username',
-  //       input,
-  //     )
-  //   }),
   insertAddress: publicProcedure
     .use(middleware.auth)
-    .input(insertAddressSchema)
-    .mutation(async ({ input }) => {
-      return await customerController.insertAddress(input)
+    .input(createInsertSchema(addressTable))
+    .mutation(async ({ input, ctx }) => {
+      return await customerController(ctx.tenantDb).insertAddress(input)
     }),
 
   makerUserOrder: publicProcedure
@@ -50,8 +41,9 @@ export const customerRouter = router({
         throw new TRPCError({ code: 'UNAUTHORIZED', message: 'Unauthorized' })
 
       const product_ids = input.items.map(item => item.item_id)
-      const product_items =
-        await productController.getProductItemsByIDS(product_ids)
+      const product_items = await productController(
+        ctx.tenantDb,
+      ).getProductItemsByIDS(product_ids)
       const order_items = product_items.map(item => {
         const found = input.items.find(i => i.item_id === item.id)
         if (!found)
@@ -68,7 +60,7 @@ export const customerRouter = router({
           price: item.price,
         }
       })
-      return await customerController.insertOrder({
+      return await customerController(ctx.tenantDb).insertOrder({
         order_items: order_items,
         order_info: {
           user_id: user.id,

@@ -1,5 +1,5 @@
 import { eq } from 'drizzle-orm'
-import { db } from '$db'
+// import { db } from '$db'
 import {
   type InsertUser,
   userTable,
@@ -19,6 +19,7 @@ import { generateIdFromEntropySize, type User } from 'lucia'
 import { hash, verify } from './password'
 import { LibsqlError } from '@libsql/client'
 import { emailTemplate, sendMail } from '$lib/server/services/email'
+import type { TenantDbType } from '..'
 
 export function isValidEmail(email: string): boolean {
   return /.+@.+/.test(email)
@@ -29,7 +30,7 @@ export function isValidEmail(email: string): boolean {
   return true
 }
 // /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-export const user = {
+export const user = (db: TenantDbType) => ({
   getPublicInfo: function () {
     return db
       .select({
@@ -158,10 +159,10 @@ export const user = {
       const tokenHash = encodeHex(
         await sha256(new TextEncoder().encode(verificationToken)),
       )
-      const [token] = await user.passwordRecovery.getToken(tokenHash)
+      const [token] = await user(db).passwordRecovery.getToken(tokenHash)
 
       if (token) {
-        await user.passwordRecovery.deleteToken(tokenHash)
+        await user(db).passwordRecovery.deleteToken(tokenHash)
       }
 
       if (!token || !isWithinExpirationDate(token.expiresAt)) {
@@ -173,7 +174,7 @@ export const user = {
       }
 
       const passwordHash = await hash(password)
-      await user.update(token.userId, {
+      await user(db).update(token.userId, {
         password_hash: passwordHash,
       })
 
@@ -188,6 +189,39 @@ export const user = {
   auth: {
     login: {
       magicLink: {
+        createToken: async function (
+          userId: string,
+          email: string,
+        ): Promise<string> {
+          await db
+            .delete(magicLinkTable)
+            .where(eq(magicLinkTable.userId, userId))
+            .all()
+          const tokenId = generateIdFromEntropySize(25) // 40 characters long
+          await db.insert(magicLinkTable).values({
+            id: tokenId,
+            userId,
+            email,
+            expiresAt: createDate(new TimeSpan(2, 'h')),
+          })
+          return tokenId
+        },
+
+        getToken: async function (token: string) {
+          return db
+            .select()
+            .from(magicLinkTable)
+            .where(eq(magicLinkTable.id, token))
+            .limit(1)
+        },
+
+        deleteToken: async function (token: string) {
+          return db
+            .delete(magicLinkTable)
+            .where(eq(magicLinkTable.id, token))
+            .run()
+        },
+
         send: async function ({ email, url }: { email: unknown; url: URL }) {
           if (
             typeof email !== 'string' ||
@@ -202,10 +236,10 @@ export const user = {
             }
           }
 
-          let [existingUser] = await user.getByEmail(email)
+          let [existingUser] = await user(db).getByEmail(email)
 
           if (!existingUser) {
-            const { data, error } = await user.auth.register.simple(email)
+            const { data, error } = await user(db).auth.register.simple(email)
 
             if (error) {
               console.error(error)
@@ -220,7 +254,9 @@ export const user = {
           }
 
           try {
-            const verificationToken = await createMagicLinkToken(
+            const verificationToken = await user(
+              db,
+            ).auth.login.magicLink.createToken(
               existingUser.id,
               existingUser.email,
             )
@@ -241,9 +277,10 @@ export const user = {
           }
         },
         validate: async function (verificationToken: string) {
-          const [token] = await getMagicLinkToken(verificationToken)
+          const [token] =
+            await user(db).auth.login.magicLink.getToken(verificationToken)
           if (token) {
-            await deleteMagicLinkToken(verificationToken)
+            await user(db).auth.login.magicLink.deleteToken(verificationToken)
           }
 
           if (!token || !isWithinExpirationDate(token.expiresAt)) {
@@ -253,7 +290,7 @@ export const user = {
               },
             }
           }
-          const [userDB] = await user.getById(token.userId)
+          const [userDB] = await user(db).getById(token.userId)
           if (!userDB || userDB.email !== token.email) {
             return {
               error: {
@@ -293,7 +330,7 @@ export const user = {
             },
           }
         }
-        const [existingUser] = await user.getByEmail(email)
+        const [existingUser] = await user(db).getByEmail(email)
         if (!existingUser) {
           return {
             error: {
@@ -345,7 +382,7 @@ export const user = {
             },
           }
         } else {
-          const [exists] = await user.getByUsername(username)
+          const [exists] = await user(db).getByUsername(username)
           if (exists) {
             return {
               error: {
@@ -367,7 +404,7 @@ export const user = {
             },
           }
         } else {
-          const [exists] = await user.getByEmail(email)
+          const [exists] = await user(db).getByEmail(email)
           if (exists) {
             return {
               error: {
@@ -392,7 +429,7 @@ export const user = {
         const passwordHash = await hash(password)
 
         try {
-          const [newUser] = await user
+          const [newUser] = await user(db)
             .create({
               username,
               email,
@@ -440,7 +477,7 @@ export const user = {
         }
         try {
           const username = email.split('@')[0]
-          const [newUser] = await user
+          const [newUser] = await user(db)
             .create({
               email,
               username,
@@ -474,31 +511,4 @@ export const user = {
       },
     },
   },
-}
-
-async function createMagicLinkToken(
-  userId: string,
-  email: string,
-): Promise<string> {
-  await db.delete(magicLinkTable).where(eq(magicLinkTable.userId, userId)).all()
-  const tokenId = generateIdFromEntropySize(25) // 40 characters long
-  await db.insert(magicLinkTable).values({
-    id: tokenId,
-    userId,
-    email,
-    expiresAt: createDate(new TimeSpan(2, 'h')),
-  })
-  return tokenId
-}
-
-async function getMagicLinkToken(token: string) {
-  return db
-    .select()
-    .from(magicLinkTable)
-    .where(eq(magicLinkTable.id, token))
-    .limit(1)
-}
-
-async function deleteMagicLinkToken(token: string) {
-  return db.delete(magicLinkTable).where(eq(magicLinkTable.id, token)).run()
-}
+})

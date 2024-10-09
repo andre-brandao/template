@@ -8,7 +8,6 @@ import { userRouter } from '$db/user/router'
 import { productRouter } from '$db/product/router'
 import { customerRouter } from '$db/customer/router'
 import { bugReportRouter } from '$db/bug-report/router'
-import { stripeRouter } from '$db/stripe/router'
 
 
 export const router = t.router({
@@ -16,7 +15,6 @@ export const router = t.router({
   product: productRouter,
   customer: customerRouter,
   bugReport: bugReportRouter,
-  checkout: stripeRouter,
 })
 
 export type Router = typeof router

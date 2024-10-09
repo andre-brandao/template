@@ -49,32 +49,14 @@
       stripe = await loadStripe(
         dev ? PUBLIC_TESTE_STRIPE_KEY : PUBLIC_STRIPE_KEY,
       )
-      clientSecret = data.clientSecret
       colors = extractThemeColorsFromDOM()
 
-      elements.update({
-
-      })
+      elements.update({})
       console.log(colors)
     } catch (error) {
       console.log(error)
     }
   })
-
-  // async function createPaymentIntent() {
-  //   try {
-  //     const resp = await trpc($page).checkout.createPaymentIntent.mutate({
-  //       amount: 1000,
-  //     })
-
-  //     return resp.client_secret
-  //   } catch (error: any) {
-  //     console.log(error)
-
-  //     toast.error(error.message)
-  //   }
-  //   return null
-  // }
 
   async function submit() {
     // avoid processing duplicates
@@ -87,9 +69,11 @@
       elements,
       redirect: 'if_required',
       confirmParams: {
-        return_url: `${window.location.origin}/checkout/order/success?payment_intent={PAYMENT_INTENT_ID}`,
+        return_url: `${window.location.origin}/checkout/subscription/success?payment_intent={PAYMENT_INTENT_ID}`,
       },
     })
+
+    result.paymentIntent?.next_action?.type
 
     // log results, for debugging
     console.log({ result })
@@ -99,20 +83,27 @@
       error = result.error
       processing = false
     } else {
+      if (
+        result.paymentIntent.next_action?.type === 'redirect_to_url' &&
+        result.paymentIntent.next_action?.redirect_to_url?.return_url
+      ) {
+        window.location.href =
+          result.paymentIntent.next_action.redirect_to_url.return_url
+        return
+      }
       // payment succeeded, redirect to "thank you" page
-      goto('/checkout/success')
+      goto('/todo/deubom')
     }
   }
 </script>
 
 <div class="container mx-auto">
-  {#if clientSecret && stripe && colors}
+  {#if clientSecret && stripe }
     <Elements
       {stripe}
       clientSecret={data.clientSecret}
       labels="floating"
       variables={{}}
-
       rules={{ '.Input': { border: 'solid 1px #0002' } }}
       bind:elements
     >
@@ -121,7 +112,7 @@
       colorBackground: colors.base200,
       colorBackgroundText: colors.baseContent -->
       <form on:submit|preventDefault={submit}>
-        <LinkAuthenticationElement defaultValues={{email: email ?? ''}}/>
+        <LinkAuthenticationElement defaultValues={{ email: email ?? '' }} />
         <PaymentElement options={{}} />
         <Address mode="billing" />
 

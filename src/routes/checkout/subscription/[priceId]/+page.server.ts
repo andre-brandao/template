@@ -83,7 +83,6 @@ export const load = (async ({ params, locals }) => {
   }
 
   try {
-    // @ts-expect-error sei la
     const sub = await sCustomer.createSubscription(user, priceId)
 
     console.log(sub)

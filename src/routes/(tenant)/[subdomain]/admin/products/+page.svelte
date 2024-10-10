@@ -2,7 +2,7 @@
   import { toast } from 'svelte-sonner'
   import type { PageData } from './$types'
   import ImageInput from '$components/input/ImageInput.svelte'
-  import { modal, FormModal } from '$modal'
+  import { modal, FormModal } from '$components/modal'
   import { trpc } from '$lib/utils/trpc/client'
   import { page } from '$app/stores'
   import { invalidate } from '$app/navigation'
@@ -32,11 +32,11 @@
   function handleAddProduct(category_id: number) {
     console.log('add product')
     modal.open(
-      FormModal<{
-        name: string
-        description: string
-      }>,
-
+      FormModal,
+      // <{
+      //   name: string
+      //   description: string
+      // }>
       {
         fields: [
           {
@@ -85,9 +85,11 @@
 
   function handleAddCategory() {
     modal.open(
-      FormModal<{
-        name: string
-      }>,
+      FormModal
+      // <{
+      //   name: string
+      // }>
+      ,
       {
         fields: [
           {
@@ -140,7 +142,7 @@
 </script>
 
 <div
-  class="container sticky top-2 mx-auto flex items-center justify-between gap-3 rounded bg-base-200 p-2 z-30"
+  class="container sticky top-2 z-30 mx-auto flex items-center justify-between gap-3 rounded bg-base-200 p-2"
 >
   <p class="text-5xl">Produtos</p>
   <button class="btn btn-primary" onclick={handleAddCategory}>

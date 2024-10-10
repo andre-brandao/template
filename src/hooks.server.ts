@@ -8,19 +8,24 @@ import { sequence } from '@sveltejs/kit/hooks'
 const handleSession: Handle = async ({ event, resolve }) => {
   /* disallow access to PUBLIC_DOMAIN/tenant, this is optional */
   const { host, pathname } = event.url
-  if (host === PUBLIC_DOMAIN) {
-    if (pathname.startsWith('/tenant')) {
-      error(404, { message: 'Not Found' })
-    } else {
-      return resolve(event)
-    }
-  }
+  
+  // TODOL: remove this
+  // if (host === PUBLIC_DOMAIN) {
+  //   if (pathname.startsWith('/tenant')) {
+  //     error(404, { message: 'Not Found' })
+  //   } else {
+  //     return resolve(event)
+  //   }
+  // }
 
   /* if no database returned for given subdomain or custom domain then the tenant does not exist */
   const tenant = await getTenant(host)
   if (!tenant) {
     error(404, { message: 'Not Found' })
   }
+
+  console.log('tenant', tenant.tenantInfo);
+  
   event.locals.tenantDb = tenant.tenantDb
   event.locals.tenantInfo = tenant.tenantInfo!
 

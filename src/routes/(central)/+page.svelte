@@ -1,6 +1,7 @@
 <script lang="ts">
   import { enhance } from '$app/forms'
   import Info from '$lib/client/components/Info.svelte'
+  import { website } from '$lib/config'
   import type { PageData, ActionData } from './$types'
 
   export let data: PageData
@@ -9,7 +10,16 @@
 </script>
 
 <main class="container mx-auto">
-  <form method="post" action="?/create_tenant" use:enhance>
+  <h1 class="text-center text-4xl">
+    {website.siteTitle} - Create Tenant
+  </h1>
+
+  <form
+    method="post"
+    action="?/create_tenant"
+    use:enhance
+    class="flex flex-col"
+  >
     {#if form?.message !== undefined}
       <Info message={form.message} success={form.success} />
     {/if}
@@ -19,7 +29,7 @@
       type="text"
       id="tenantName"
       name="tenantName"
-      class="input"
+      class="input input-bordered"
       required
       value={form?.form?.tenantName ?? ''}
     />
@@ -29,7 +39,7 @@
       type="text"
       id="subdomain"
       name="subdomain"
-      class="input"
+      class="input input-bordered"
       required
       value={form?.form?.subdomain ?? ''}
     />
@@ -39,7 +49,7 @@
       type="text"
       id="username"
       name="username"
-      class="input"
+      class="input input-bordered"
       required
       value={form?.form?.username ?? ''}
     />
@@ -49,7 +59,7 @@
       type="email"
       id="email"
       name="email"
-      class="input"
+      class="input input-bordered"
       required
       value={form?.form?.email ?? ''}
     />
@@ -59,7 +69,7 @@
       type="password"
       id="password"
       name="password"
-      class="input"
+      class="input input-bordered"
       required
     />
 
@@ -68,10 +78,10 @@
       type="password"
       id="confirmPassword"
       name="confirmPassword"
-      class="input"
+      class="input input-bordered"
       required
     />
 
-    <button type="submit">Submit</button>
+    <button type="submit" class="btn mt-4">Submit</button>
   </form>
 </main>

@@ -7,7 +7,6 @@ import {
   // customType,
 } from 'drizzle-orm/sqlite-core'
 import { relations, sql } from 'drizzle-orm'
-import { addressTable, customerOrderTable } from '$db/schema'
 
 import { generateId, type DatabaseUser } from 'lucia'
 

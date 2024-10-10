@@ -1,13 +1,13 @@
 <script lang="ts">
   import type { PageData } from './$types'
-  import { modal, FormModal } from '$modal'
-  import type { InsertProductItem } from '../../../../../drizzle/schema'
+  import { modal, FormModal } from '$components/modal'
   import { trpc } from '$lib/utils/trpc/client'
   import { page } from '$app/stores'
   import ProductItem from './ProductItem.svelte'
   import ImageInput from '$components/input/ImageInput.svelte'
 
   import { toast } from 'svelte-sonner'
+  import type { InsertProductItem } from '$lib/server/db/tenant/schema'
 
   export let data: PageData
 

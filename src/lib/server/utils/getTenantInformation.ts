@@ -5,9 +5,9 @@ import { getTenantDbClient } from "./init-db";
 import { getDomainAndType } from "$lib/utils";
 
 export async function getTenant(host: string) {
-  // const { domain, type } = getDomainAndType(host);
-  const domain = 'cafedavilla'
-  const type = 'subdomain'
+  const { domain, type } = getDomainAndType(host);
+  // const domain = 'cafedavilla'
+  // const type = 'subdomain'
 
 
   if (type === "appDomain") return null;

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { getImagePath } from '$lib/utils/image'
+  import { getImagePath } from '$lib/client/utils/image'
 
   export let produto: {
     id: number

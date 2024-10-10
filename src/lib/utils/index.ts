@@ -3,6 +3,9 @@ export * from '../client/utils/icons'
 export * from '../client/utils/device'
 export * from './entities'
 
+export * from '../client/utils/image'
+export * from '../client/utils/index'
+
 export function getEnderecoFromCEP(cep: string) {
   return fetch(`https://viacep.com.br/ws/${cep}/json/`)
     .then(res => res.json())

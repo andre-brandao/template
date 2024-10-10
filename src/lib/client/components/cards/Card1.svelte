@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { getImagePath } from '$lib/utils'
+  import { getImagePath } from '$lib/client/utils/image'
 
   interface CardProps {
     nome: string

@@ -4,10 +4,16 @@ import type { PageServerLoad, Actions } from './$types'
 import { sha256 } from 'oslo/crypto'
 import { encodeHex } from 'oslo/encoding'
 
-import { user } from '$db/controller'
-import { lucia } from '$lib/server/auth'
+import { user } from '$db/tenant/controller'
 
-export const load = (async ({ params, setHeaders }) => {
+export const load = (async ({ params, setHeaders, locals }) => {
+  const { tenantDb, lucia } = locals
+
+  if (!tenantDb) {
+    return error(404, 'Tenant not found')
+  }
+
+
   const verificationToken = params.token
   console.log(verificationToken)
 
@@ -19,9 +25,9 @@ export const load = (async ({ params, setHeaders }) => {
     await sha256(new TextEncoder().encode(verificationToken)),
   )
 
-  const [token] = await user.passwordRecovery.getToken(tokenHash)
+  const [token] = await user(tenantDb).passwordRecovery.getToken(tokenHash)
 
-  const [resetUser] = await user.getById(token.userId)
+  const [resetUser] = await user(tenantDb).getById(token.userId)
 
   return {
     email: resetUser.email,
@@ -30,7 +36,10 @@ export const load = (async ({ params, setHeaders }) => {
 }) satisfies PageServerLoad
 
 export const actions: Actions = {
-  default: async ({ request, params, cookies, setHeaders }) => {
+  default: async ({ request, params, cookies, setHeaders, locals }) => {
+
+    const { tenantDb, lucia } = locals
+
     const formData = await request.formData()
     const password = formData.get('password')
 
@@ -41,7 +50,7 @@ export const actions: Actions = {
 
     const verificationToken = params.token
 
-    const { data, error } = await user.passwordRecovery.alterPassword(
+    const { data, error } = await user(tenantDb).passwordRecovery.alterPassword(
       password,
       verificationToken,
     )

@@ -13,7 +13,8 @@
 
   let produto = data.prod
   function handleAddItem() {
-    modal.open(FormModal<InsertProductItem>, {
+    // modal.open(FormModal<InsertProductItem>, {
+    modal.open(FormModal, {
       title: 'Add Product Item',
       fields: [
         {

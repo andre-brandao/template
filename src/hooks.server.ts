@@ -2,6 +2,11 @@ import { i18n } from '$lib/i18n/i18n'
 import { getLuciaForTenant } from '$lib/server/auth'
 import { error, type Handle } from '@sveltejs/kit'
 import { sequence } from '@sveltejs/kit/hooks'
+import { createContext } from '$trpc/context'
+import { router } from '$trpc/router'
+import { createTRPCHandle } from 'trpc-sveltekit'
+import { PUBLIC_DOMAIN } from '$env/static/public'
+import { getTenant } from '$lib/server/utils/getTenantInformation'
 
 // import { bugReport } from '$db/controller'
 
@@ -10,19 +15,19 @@ const handleSession: Handle = async ({ event, resolve }) => {
   const { host, pathname } = event.url
   
   // TODOL: remove this
-  // if (host === PUBLIC_DOMAIN) {
-  //   if (pathname.startsWith('/tenant')) {
-  //     error(404, { message: 'Not Found' })
-  //   } else {
-  //     return resolve(event)
-  //   }
-  // }
+  if (host === PUBLIC_DOMAIN) {
+    if (pathname.startsWith('/tenant')) {
+      error(404, { message: 'Not Found' })
+    } else {
+      return resolve(event)
+    }
+  }
 
   /* if no database returned for given subdomain or custom domain then the tenant does not exist */
   const tenant = await getTenant(host)
-  if (!tenant) {
-    error(404, { message: 'Not Found' })
-  }
+  // if (!tenant) {
+  //   error(404, { message: 'Not Found' })
+  // }
 
   console.log('tenant', tenant.tenantInfo);
   
@@ -62,11 +67,6 @@ const handleSession: Handle = async ({ event, resolve }) => {
   return resolve(event)
 }
 
-import { createContext } from '$trpc/context'
-import { router } from '$trpc/router'
-import { createTRPCHandle } from 'trpc-sveltekit'
-import { PUBLIC_DOMAIN } from '$env/static/public'
-import { getTenant } from '$lib/server/utils/getTenantInformation'
 
 const handleTRPC = createTRPCHandle({
   router,

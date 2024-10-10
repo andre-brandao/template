@@ -15,7 +15,12 @@ export const reroute: Reroute = ({ url }) => {
   } else {
     const tenantDomain = domain.domain
 
-    console.log('reroute: tenantDomain', tenantDomain)
+    console.log(
+      'reroute: tenantDomain',
+      tenantDomain,
+      'i88nPathname',
+      i88nPathname,
+    )
 
     return `/${tenantDomain}${i88nPathname}`
   }

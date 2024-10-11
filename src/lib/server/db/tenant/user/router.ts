@@ -42,7 +42,7 @@ export const userRouter = router({
       }),
     )
     .query(async ({ ctx, input }) => {
-      const { cookies, locals, lucia } = ctx
+      const {  locals, lucia } = ctx
       const sessionId = locals.session?.id
       const { code } = input
 
@@ -53,7 +53,7 @@ export const userRouter = router({
         }
       }
 
-      const { user } = await lucia.validateSession(sessionId)
+      const { user } = await lucia.validateSessionToken(sessionId)
       if (!user) {
         return {
           error: 'Not authenticated',
@@ -76,13 +76,9 @@ export const userRouter = router({
       await userController(ctx.tenantDb).update(user.id, {
         emailVerified: true,
       })
-
-      const session = await lucia.createSession(user.id, {})
-      const sessionCookie = lucia.createSessionCookie(session.id)
-      cookies.set(sessionCookie.name, sessionCookie.value, {
-        path: '.',
-        ...sessionCookie.attributes,
-      })
+      const token = lucia.generateSessionToken()
+      const session = await lucia.createSession(token, user.id)
+      lucia.setSessionTokenCookie(ctx, token, session.expiresAt)
 
       return {
         data: {

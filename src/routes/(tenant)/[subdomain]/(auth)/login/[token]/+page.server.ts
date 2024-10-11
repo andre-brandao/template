@@ -3,7 +3,8 @@ import type { PageServerLoad } from './$types'
 import { user } from '$db/tenant/controller'
 import { error, redirect } from '@sveltejs/kit'
 
-export const load = (async ({ locals, params, cookies, setHeaders }) => {
+export const load = (async event => {
+  const { locals, params, setHeaders } = event
   const { lucia, tenantDb } = locals
 
   if (!tenantDb || !lucia) {
@@ -31,13 +32,9 @@ export const load = (async ({ locals, params, cookies, setHeaders }) => {
     await user(tenantDb).update(verifiedUser.id, {
       emailVerified: true,
     })
-
-    const session = await lucia.createSession(verifiedUser.id, {})
-    const sessionCookie = lucia.createSessionCookie(session.id)
-    cookies.set(sessionCookie.name, sessionCookie.value, {
-      path: '.',
-      ...sessionCookie.attributes,
-    })
+    const token = lucia.generateSessionToken()
+    const session = await lucia.createSession(token, verifiedUser.id)
+    lucia.setSessionTokenCookie(event, token, session.expiresAt)
   } catch (e) {
     console.error(e)
     return error(500, {

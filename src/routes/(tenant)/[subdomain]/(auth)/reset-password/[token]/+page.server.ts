@@ -1,4 +1,4 @@
-import { fail, redirect } from '@sveltejs/kit'
+import { error, fail, redirect } from '@sveltejs/kit'
 import type { PageServerLoad, Actions } from './$types'
 
 import { sha256 } from 'oslo/crypto'
@@ -7,12 +7,11 @@ import { encodeHex } from 'oslo/encoding'
 import { user } from '$db/tenant/controller'
 
 export const load = (async ({ params, setHeaders, locals }) => {
-  const { tenantDb, lucia } = locals
+  const { tenantDb } = locals
 
   if (!tenantDb) {
     return error(404, 'Tenant not found')
   }
-
 
   const verificationToken = params.token
   console.log(verificationToken)
@@ -36,9 +35,14 @@ export const load = (async ({ params, setHeaders, locals }) => {
 }) satisfies PageServerLoad
 
 export const actions: Actions = {
-  default: async ({ request, params, cookies, setHeaders, locals }) => {
+  default: async event => {
+    const { request, params, setHeaders, locals } = event
 
     const { tenantDb, lucia } = locals
+
+    if (!tenantDb || !lucia) {
+      return error(404, 'Tenant not found')
+    }
 
     const formData = await request.formData()
     const password = formData.get('password')
@@ -50,26 +54,23 @@ export const actions: Actions = {
 
     const verificationToken = params.token
 
-    const { data, error } = await user(tenantDb).passwordRecovery.alterPassword(
-      password,
-      verificationToken,
-    )
+    const { data, error: err } = await user(
+      tenantDb,
+    ).passwordRecovery.alterPassword(password, verificationToken)
 
-    if (error) {
+    if (err) {
       return fail(400, {
-        message: error.message,
+        message: err.message,
       })
     }
 
     const userId = data.userId
     await lucia.invalidateUserSessions(userId)
 
-    const session = await lucia.createSession(userId, {})
-    const sessionCookie = lucia.createSessionCookie(session.id)
-    cookies.set(sessionCookie.name, sessionCookie.value, {
-      path: '.',
-      ...sessionCookie.attributes,
-    })
+    const token = lucia?.generateSessionToken()
+    const session = await lucia.createSession(token, userId)
+    lucia.setSessionTokenCookie(event, token, session.expiresAt)
+
 
     return redirect(302, '/myprofile')
   },

@@ -1,5 +1,7 @@
 import type { AvailableLanguageTag } from '$lib/paraglide/runtime'
 import type { ParaglideLocals } from '@inlang/paraglide-sveltekit'
+
+import type { SelectUser, SelectSession } from '$lib/server/db/tenant/schema'
 // See https://kit.svelte.dev/docs/types#app
 // for information about these interfaces
 declare global {
@@ -8,41 +10,21 @@ declare global {
     interface Locals {
       paraglide: ParaglideLocals<AvailableLanguageTag>
 
-
-
-
-      tenantDb: import("$lib/server/db/tenant").TenantDbType | null;
+      tenantDb: import('$lib/server/db/tenant').TenantDbType | null
       tenantInfo: {
-        tenantId: number;
-        name: string;
-        subdomain: string;
-        createdAt: string;
-        databaseName: string;
-      } | null;
-      lucia: import("$lib/server/auth").LuciaType | null;
+        tenantId: number
+        name: string
+        subdomain: string
+        createdAt: string
+        databaseName: string
+      } | null
+      lucia: import('$lib/server/auth').LuciaType | null
 
-      user: import('lucia').User | null
-      session: import('lucia').Session | null
+      user: SelectUser | null
+      session: SelectSession | null
     }
     // interface PageData {}
     // interface PageState {}
     // interface Platform {}
-  }
-}
-
-export {}
-
-// SVELTE DND ACTION
-declare type Item = import('svelte-dnd-action').Item
-declare type DndEvent<ItemType = Item> =
-  import('svelte-dnd-action').DndEvent<ItemType>
-declare namespace svelteHTML {
-  interface HTMLAttributes<T> {
-    'on:consider'?: (
-      event: CustomEvent<DndEvent<ItemType>> & { target: EventTarget & T },
-    ) => void
-    'on:finalize'?: (
-      event: CustomEvent<DndEvent<ItemType>> & { target: EventTarget & T },
-    ) => void
   }
 }

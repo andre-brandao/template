@@ -42,7 +42,8 @@ export const actions: Actions = {
       message: 'Magic link sent, Check your email',
     }
   },
-  logout: async ({ locals, cookies }) => {
+  logout: async event => {
+    const { locals } = event
     console.log('logout')
 
     const { session, lucia } = locals
@@ -54,11 +55,7 @@ export const actions: Actions = {
       return redirect(302, '/login')
     }
     await lucia.invalidateSession(session.id)
-    const sessionCookie = lucia.createBlankSessionCookie()
-    cookies.set(sessionCookie.name, sessionCookie.value, {
-      path: '.',
-      ...sessionCookie.attributes,
-    })
+    lucia.deleteSessionTokenCookie(event)
 
     return redirect(302, '/login')
   },

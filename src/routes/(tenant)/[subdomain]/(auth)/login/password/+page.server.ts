@@ -12,7 +12,8 @@ export const load: PageServerLoad = async event => {
 }
 
 export const actions: Actions = {
-  default: async ({ locals, request, cookies }) => {
+  default: async event => {
+    const { locals, request } = event
     const { lucia, tenantDb } = locals
 
     if (!tenantDb || !lucia) {
@@ -37,12 +38,9 @@ export const actions: Actions = {
     }
     const existingUser = data.user
 
-    const session = await lucia.createSession(existingUser.id, {})
-    const sessionCookie = lucia.createSessionCookie(session.id)
-    cookies.set(sessionCookie.name, sessionCookie.value, {
-      path: '.',
-      ...sessionCookie.attributes,
-    })
+    const token = lucia.generateSessionToken()
+    const session = await lucia.createSession(token, existingUser.id)
+    lucia.setSessionTokenCookie(event, token, session.expiresAt)
 
     if (!existingUser.emailVerified) {
       return redirect(302, '/verify-email')

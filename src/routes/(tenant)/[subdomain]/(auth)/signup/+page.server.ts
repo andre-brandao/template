@@ -12,25 +12,23 @@ export const load: PageServerLoad = async event => {
 }
 
 export const actions: Actions = {
-  default: async ({locals, request, cookies}) => {
+  default: async event => {
+    const { locals, request } = event
 
-    const {lucia, tenantDb} = locals
+    const { lucia, tenantDb } = locals
 
     if (!tenantDb || !lucia) {
       return error(404, 'Tenant not found')
     }
-
 
     const formData = await request.formData()
     const username = formData.get('username')
     const password = formData.get('password')
     const email = formData.get('email')
 
-    const { data, error:err } = await user(tenantDb).auth.register.withPassword(
-      username,
-      email,
-      password,
-    )
+    const { data, error: err } = await user(
+      tenantDb,
+    ).auth.register.withPassword(username, email, password)
 
     if (err) {
       return fail(400, {
@@ -44,13 +42,9 @@ export const actions: Actions = {
     const userId = data.user.id
     const ueserEmail = data.user.email
 
-    const session = await lucia.createSession(userId, {})
-    const sessionCookie = lucia.createSessionCookie(session.id)
-
-    cookies.set(sessionCookie.name, sessionCookie.value, {
-      path: '.',
-      ...sessionCookie.attributes,
-    })
+    const token = lucia.generateSessionToken()
+    const session = await lucia.createSession(token, userId)
+    lucia.setSessionTokenCookie(event, token, session.expiresAt)
 
     const verificationCode = await user(tenantDb).verificationCode.generate(
       userId,

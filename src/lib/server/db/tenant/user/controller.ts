@@ -14,7 +14,7 @@ import {
 import { TimeSpan, createDate, isWithinExpirationDate } from 'oslo'
 import { generateRandomString, alphabet, sha256 } from 'oslo/crypto'
 import { encodeHex } from 'oslo/encoding'
-import { generateIdFromEntropySize, type User } from 'lucia'
+import { generateId } from '$lib/server/auth'
 // import { hash, verify } from '@node-rs/argon2'
 import { hash, verify } from './password'
 import { LibsqlError } from '@libsql/client'
@@ -23,11 +23,6 @@ import type { TenantDbType } from '..'
 
 export function isValidEmail(email: string): boolean {
   return /.+@.+/.test(email)
-  // eslint-disable-next-line no-useless-escape
-  // const re = /\S+@\S+\.\S+/;
-  // return re.test(email);
-  console.log('email', email)
-  return true
 }
 // /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
 export const user = (db: TenantDbType) => ({
@@ -87,7 +82,7 @@ export const user = (db: TenantDbType) => ({
       })
       return code
     },
-    verify: async function (user: User, code: string): Promise<boolean> {
+    verify: async function (user: SelectUser, code: string): Promise<boolean> {
       const [databaseCode] = await db
         .select()
         .from(userVerificationCodeTable)
@@ -116,7 +111,7 @@ export const user = (db: TenantDbType) => ({
         .delete(passwordResetCodeTable)
         .where(eq(passwordResetCodeTable.userId, userId))
         .all()
-      const tokenId = generateIdFromEntropySize(25) // 40 character
+      const tokenId = generateId(40) // 40 character
       const tokenHash = encodeHex(
         await sha256(new TextEncoder().encode(tokenId)),
       )
@@ -197,7 +192,7 @@ export const user = (db: TenantDbType) => ({
             .delete(magicLinkTable)
             .where(eq(magicLinkTable.userId, userId))
             .all()
-          const tokenId = generateIdFromEntropySize(25) // 40 characters long
+          const tokenId = generateId(40) // 40 characters long
           await db.insert(magicLinkTable).values({
             id: tokenId,
             userId,

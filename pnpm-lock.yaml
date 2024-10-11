@@ -23,6 +23,9 @@ importers:
       '@trpc/client':
         specifier: ^10.45.2
         version: 10.45.2(@trpc/server@10.45.2)
+      arctic:
+        specifier: 2.0.0-next.9
+        version: 2.0.0-next.9
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
@@ -1206,17 +1209,32 @@ packages:
     resolution: {integrity: sha512-CyuLJ0/P7bKZ+kIYw+fnkeVdhUzNuDKgNSI7pU/m7Nod0T7kP+s4s2f0pNmG9HL8/RZN1S0ZWTDll3VTMrFLAw==}
     engines: {node: '>= 18'}
 
+  '@oslojs/asn1@0.2.2':
+    resolution: {integrity: sha512-/c7DTaOdmk3Xb482b4CFnPdWLo5e2WQuozhc89KVb91kohA+VvVNTd9IPyLsZpDUf9u3iwP4HcuMEXBcYmGFnQ==}
+
   '@oslojs/asn1@1.0.0':
     resolution: {integrity: sha512-zw/wn0sj0j0QKbIXfIlnEcTviaCzYOY3V5rAyjR6YtOByFtJiT574+8p9Wlach0lZH9fddD4yb9laEAIl4vXQA==}
+
+  '@oslojs/binary@0.2.3':
+    resolution: {integrity: sha512-pBJvvl5wpBBmkbP8cMZvPXzxPd7WN+NDBHPEg2N6WTDSnYCCPmqghIz6W+Cw16hhAju9wgmOeHryjHFbNezr1w==}
 
   '@oslojs/binary@1.0.0':
     resolution: {integrity: sha512-9RCU6OwXU6p67H4NODbuxv2S3eenuQ4/WFLrsq+K/k682xrznH5EVWA7N4VFk9VYVcbFtKqur5YQQZc0ySGhsQ==}
 
+  '@oslojs/crypto@0.6.0':
+    resolution: {integrity: sha512-MAwQt2BwW/oLvYaX1SuVHBqBXV+3CsF7ied23LDqeVeesFTPxLLIqW6pbQ6SMUPnGEJXQx4OTfm2BYSLLvp5Hg==}
+
   '@oslojs/crypto@1.0.1':
     resolution: {integrity: sha512-7n08G8nWjAr/Yu3vu9zzrd0L9XnrJfpMioQcvCMxBIiF5orECHe5/3J0jmXRVvgfqMm/+4oxlQ+Sq39COYLcNQ==}
 
+  '@oslojs/encoding@0.4.1':
+    resolution: {integrity: sha512-hkjo6MuIK/kQR5CrGNdAPZhS01ZCXuWDRJ187zh6qqF2+yMHZpD9fAYpX8q2bOO6Ryhl3XpCT6kUX76N8hhm4Q==}
+
   '@oslojs/encoding@1.1.0':
     resolution: {integrity: sha512-70wQhgYmndg4GCPxPPxPGevRKqTIJ2Nh4OkiMWmDAVYsTQ+Ta7Sq+rPevXyXGdzr30/qZBnyOalCszoMxlyldQ==}
+
+  '@oslojs/jwt@0.1.0':
+    resolution: {integrity: sha512-g6JHWeCl9OkHLeoaaKUZoQUfCzhn2U5hYnyoT7/Uh/HY0AGpf0odmFViW6AhPKaOOVXKITvoOArEhec1vEd6GA==}
 
   '@pkgjs/parseargs@0.11.0':
     resolution: {integrity: sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==}
@@ -1594,6 +1612,9 @@ packages:
 
   aproba@2.0.0:
     resolution: {integrity: sha512-lYe4Gx7QT+MKGbDsA+Z+he/Wtef0BiwDOlK/XkBrdfsh9J/jPPXbX0tE9x9cl27Tmu5gg3QUbUrQYa/y+KOHPQ==}
+
+  arctic@2.0.0-next.9:
+    resolution: {integrity: sha512-VUi47ekY8oWEa+NE4AcEl5fwZF5lMn0/PCQUsPieLP8wFVXVFR+vxDKESkMQg+d8Ffd7LBLXWW/DTIgvD8zRtw==}
 
   are-we-there-yet@2.0.0:
     resolution: {integrity: sha512-Ci/qENmwHnsYo9xKIcUJN5LeDKdJ6R1Z1j9V/J5wyq8nh/mYPEpIKJbBZXtZjG04HiK7zV/p6Vs9952MrMeUIw==}
@@ -4282,18 +4303,35 @@ snapshots:
       '@octokit/webhooks-types': 7.4.0
       aggregate-error: 3.1.0
 
+  '@oslojs/asn1@0.2.2':
+    dependencies:
+      '@oslojs/binary': 0.2.3
+
   '@oslojs/asn1@1.0.0':
     dependencies:
       '@oslojs/binary': 1.0.0
 
+  '@oslojs/binary@0.2.3': {}
+
   '@oslojs/binary@1.0.0': {}
+
+  '@oslojs/crypto@0.6.0':
+    dependencies:
+      '@oslojs/asn1': 0.2.2
+      '@oslojs/binary': 0.2.3
 
   '@oslojs/crypto@1.0.1':
     dependencies:
       '@oslojs/asn1': 1.0.0
       '@oslojs/binary': 1.0.0
 
+  '@oslojs/encoding@0.4.1': {}
+
   '@oslojs/encoding@1.1.0': {}
+
+  '@oslojs/jwt@0.1.0':
+    dependencies:
+      '@oslojs/encoding': 0.4.1
 
   '@pkgjs/parseargs@0.11.0':
     optional: true
@@ -4696,6 +4734,12 @@ snapshots:
       picomatch: 2.3.1
 
   aproba@2.0.0: {}
+
+  arctic@2.0.0-next.9:
+    dependencies:
+      '@oslojs/crypto': 0.6.0
+      '@oslojs/encoding': 0.4.1
+      '@oslojs/jwt': 0.1.0
 
   are-we-there-yet@2.0.0:
     dependencies:

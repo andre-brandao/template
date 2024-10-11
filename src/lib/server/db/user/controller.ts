@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm'
+import { and, eq } from 'drizzle-orm'
 import { db } from '$db'
 import {
   type InsertUser,
@@ -9,6 +9,9 @@ import {
   // type UserPermissions,
   type SelectUser,
   sessionTable,
+  authProviderTable,
+  type SelectAuthProvider,
+  type InsertAuthProvider,
 } from '../schema'
 
 import { TimeSpan, createDate, isWithinExpirationDate } from 'oslo'
@@ -22,13 +25,7 @@ import { generateId } from '$lib/server/auth'
 
 export function isValidEmail(email: string): boolean {
   return /.+@.+/.test(email)
-  // eslint-disable-next-line no-useless-escape
-  // const re = /\S+@\S+\.\S+/;
-  // return re.test(email);
-  console.log('email', email)
-  return true
 }
-// /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
 export const user = {
   getPublicInfo: function () {
     return db
@@ -57,6 +54,29 @@ export const user = {
       .from(userTable)
       .where(eq(userTable.email, email))
       .limit(1)
+  },
+  getUserFromAuthProvider: async function (
+    provider: SelectAuthProvider['provider'],
+    code: string,
+  ) {
+    if (provider === 'password') {
+      throw new Error('Cannot get user from password')
+    }
+
+    const [authP] = await db
+      .select()
+      .from(authProviderTable)
+      .where(
+        and(
+          eq(authProviderTable.provider, provider),
+          eq(authProviderTable.code, code),
+        ),
+      )
+    const [user] = await db
+      .select()
+      .from(userTable)
+      .where(eq(userTable.id, authP.userId))
+    return user
   },
   getById: function (userId: string) {
     return db.select().from(userTable).where(eq(userTable.id, userId)).limit(1)
@@ -173,9 +193,40 @@ export const user = {
       }
 
       const passwordHash = await hash(password)
-      await user.update(token.userId, {
-        password_hash: passwordHash,
-      })
+
+      const [hasPassword] = await db
+        .select()
+        .from(authProviderTable)
+        .where(
+          and(
+            eq(authProviderTable.userId, token.userId),
+            eq(authProviderTable.provider, 'password'),
+          ),
+        )
+
+      if (hasPassword) {
+        await db
+          .update(authProviderTable)
+          .set({
+            code: passwordHash,
+          })
+          .where(
+            and(
+              eq(authProviderTable.userId, token.userId),
+              eq(authProviderTable.provider, 'password'),
+            ),
+          )
+      } else {
+        await db.insert(authProviderTable).values({
+          userId: token.userId,
+          provider: 'password',
+          code: passwordHash,
+        })
+      }
+
+      // await user.update(token.userId, {
+      //   password_hash: passwordHash,
+      // })
 
       return {
         data: {
@@ -301,7 +352,18 @@ export const user = {
             },
           }
         }
-        if (!existingUser.password_hash) {
+
+        const [passwordProvider] = await db
+          .select()
+          .from(authProviderTable)
+          .where(
+            and(
+              eq(authProviderTable.userId, existingUser.id),
+              eq(authProviderTable.provider, 'password'),
+            ),
+          )
+
+        if (!passwordProvider) {
           return {
             error: {
               message:
@@ -310,7 +372,7 @@ export const user = {
           }
         }
 
-        const validPassword = await verify(existingUser.password_hash, password)
+        const validPassword = await verify(passwordProvider.code, password)
 
         if (!validPassword) {
           return {
@@ -397,9 +459,14 @@ export const user = {
               username,
               email,
               emailVerified: false,
-              password_hash: passwordHash,
             })
             .returning()
+
+          await db.insert(authProviderTable).values({
+            userId: newUser.id,
+            provider: 'password',
+            code: passwordHash,
+          })
 
           return {
             data: {
@@ -471,6 +538,9 @@ export const user = {
             },
           }
         }
+      },
+      authProvider: async function (data: InsertAuthProvider) {
+        return db.insert(authProviderTable).values(data)
       },
     },
   },

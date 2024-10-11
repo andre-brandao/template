@@ -3,6 +3,7 @@ import {
   sqliteTable,
   text,
   integer,
+  primaryKey,
 
   // customType,
 } from 'drizzle-orm/sqlite-core'
@@ -33,13 +34,34 @@ export const userTable = sqliteTable('user', {
     false,
   ),
 
-  password_hash: text('password_hash'),
+  // password_hash: text('password_hash'),
   meta: text('meta', { mode: 'json' }),
 })
 
 export type SelectUser = typeof userTable.$inferSelect
 export type InsertUser = typeof userTable.$inferInsert
 
+export const authProviderTable = sqliteTable(
+  'auth_provider',
+  {
+    userId: text('user_id')
+      .references(() => userTable.id)
+      .notNull()
+      .primaryKey(),
+    provider: text('provider', {
+      enum: ['google', 'password'],
+    }).notNull(),
+    code: text('code').notNull(),
+    meta_data: text('meta_data', { mode: 'json' }),
+  },
+  t => ({
+
+    pk: primaryKey({ columns: [t.userId, t.provider] }),
+  }),
+)
+
+export type SelectAuthProvider = typeof authProviderTable.$inferSelect
+export type InsertAuthProvider = typeof authProviderTable.$inferInsert
 // AUTH TABLES
 export const sessionTable = sqliteTable('auth_session', {
   id: text('id').notNull().primaryKey(),

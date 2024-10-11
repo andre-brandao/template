@@ -3,12 +3,18 @@ import { publicProcedure, router } from '$trpc/t'
 import { z } from 'zod'
 
 import { user as userController } from '$db/controller'
-import { lucia } from '$lib/server/auth'
 
 // import { generateId } from 'lucia'
 // import { LibsqlError } from '@libsql/client'
 
 import { emailTemplate, sendMail } from '$lib/server/services/email'
+import {
+  createSession,
+  generateSessionToken,
+  invalidateUserSessions,
+  setSessionTokenCookie,
+  validateSessionToken,
+} from '$lib/server/auth'
 
 export const userRouter = router({
   resendEmailVerification: publicProcedure.query(async ({ ctx }) => {
@@ -42,7 +48,7 @@ export const userRouter = router({
       }),
     )
     .query(async ({ ctx, input }) => {
-      const { cookies, locals } = ctx
+      const {  locals } = ctx
       const sessionId = locals.session?.id
       const { code } = input
 
@@ -53,7 +59,7 @@ export const userRouter = router({
         }
       }
 
-      const { user } = await lucia.validateSession(sessionId)
+      const { user } = await validateSessionToken(sessionId)
       if (!user) {
         return {
           error: 'Not authenticated',
@@ -70,17 +76,20 @@ export const userRouter = router({
         }
       }
 
-      await lucia.invalidateUserSessions(user.id)
+      await invalidateUserSessions(user.id)
       await userController.update(user.id, {
         emailVerified: true,
       })
 
-      const session = await lucia.createSession(user.id, {})
-      const sessionCookie = lucia.createSessionCookie(session.id)
-      cookies.set(sessionCookie.name, sessionCookie.value, {
-        path: '.',
-        ...sessionCookie.attributes,
-      })
+      const token = generateSessionToken()
+      const session = await createSession(token, user.id)
+      setSessionTokenCookie(ctx, token, session.expiresAt)
+
+      // const sessionCookie = lucia.createSessionCookie(session.id)
+      // cookies.set(sessionCookie.name, sessionCookie.value, {
+      //   path: '.',
+      //   ...sessionCookie.attributes,
+      // })
 
       return {
         data: {

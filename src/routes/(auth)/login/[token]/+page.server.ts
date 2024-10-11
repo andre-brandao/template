@@ -44,9 +44,7 @@ export const load = (async event => {
     })
   }
 
-  if (!verifiedUser.password_hash) {
-    return redirect(302, '/onboarding')
-  }
+
 
   return redirect(302, '/')
 }) satisfies PageServerLoad

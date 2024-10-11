@@ -29,7 +29,7 @@ export function generateSessionToken(): string {
   return token
 }
 
-export function getLuciaForTenant(db: TenantDbType) {
+export function getAuthForTenant(db: TenantDbType) {
   return {
     generateSessionToken,
     createSession: async function (
@@ -113,4 +113,4 @@ export function getLuciaForTenant(db: TenantDbType) {
   }
 }
 
-export type LuciaType = ReturnType<typeof getLuciaForTenant>
+export type LuciaType = ReturnType<typeof getAuthForTenant>

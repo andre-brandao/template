@@ -1,5 +1,5 @@
 import { i18n } from '$lib/i18n/i18n'
-import { getLuciaForTenant } from '$lib/server/auth'
+import { getAuthForTenant } from '$lib/server/auth'
 import { error, type Handle } from '@sveltejs/kit'
 import { sequence } from '@sveltejs/kit/hooks'
 import { createContext } from '$trpc/context'
@@ -35,7 +35,7 @@ const handleSession: Handle = async ({ event, resolve }) => {
   event.locals.tenantInfo = tenant.tenantInfo!
 
   /* authenticate users of tenants with lucia */
-  const lucia = getLuciaForTenant(tenant.tenantDb)
+  const lucia = getAuthForTenant(tenant.tenantDb)
   event.locals.lucia = lucia
 
   const token = event.cookies.get('session') ?? null

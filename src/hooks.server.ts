@@ -13,7 +13,7 @@ import { getTenant } from '$lib/server/utils/getTenantInformation'
 const handleSession: Handle = async ({ event, resolve }) => {
   /* disallow access to PUBLIC_DOMAIN/tenant, this is optional */
   const { host, pathname } = event.url
-  
+
   // TODOL: remove this
   if (host === PUBLIC_DOMAIN) {
     if (pathname.startsWith('/tenant')) {
@@ -25,12 +25,12 @@ const handleSession: Handle = async ({ event, resolve }) => {
 
   /* if no database returned for given subdomain or custom domain then the tenant does not exist */
   const tenant = await getTenant(host)
-  // if (!tenant) {
-  //   error(404, { message: 'Not Found' })
-  // }
+  if (!tenant) {
+    error(404, { message: 'Not Found' })
+  }
 
-  console.log('tenant', tenant.tenantInfo);
-  
+  console.log('tenant', tenant.tenantInfo)
+
   event.locals.tenantDb = tenant.tenantDb
   event.locals.tenantInfo = tenant.tenantInfo!
 
@@ -38,35 +38,25 @@ const handleSession: Handle = async ({ event, resolve }) => {
   const lucia = getLuciaForTenant(tenant.tenantDb)
   event.locals.lucia = lucia
 
-  const sessionId = event.cookies.get(lucia.sessionCookieName)
-  if (!sessionId) {
+  const token = event.cookies.get('session') ?? null
+
+  if (!token) {
     event.locals.user = null
     event.locals.session = null
     return resolve(event)
   }
 
-  const { session, user } = await lucia.validateSession(sessionId)
-  if (session && session.fresh) {
-    const sessionCookie = lucia.createSessionCookie(session.id)
-    // sveltekit types deviates from the de-facto standard
-    // you can use 'as any' too
-    event.cookies.set(sessionCookie.name, sessionCookie.value, {
-      path: '.',
-      ...sessionCookie.attributes,
-    })
-  }
-  if (!session) {
-    const sessionCookie = lucia.createBlankSessionCookie()
-    event.cookies.set(sessionCookie.name, sessionCookie.value, {
-      path: '.',
-      ...sessionCookie.attributes,
-    })
+  const { session, user } = await lucia.validateSessionToken(token)
+
+  if (session !== null) {
+    lucia.setSessionTokenCookie(event, token, session.expiresAt)
+  } else {
+    lucia.deleteSessionTokenCookie(event)
   }
   event.locals.user = user
   event.locals.session = session
   return resolve(event)
 }
-
 
 const handleTRPC = createTRPCHandle({
   router,

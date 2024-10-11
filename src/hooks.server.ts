@@ -14,7 +14,6 @@ const handleSession: Handle = async ({ event, resolve }) => {
   /* disallow access to PUBLIC_DOMAIN/tenant, this is optional */
   const { host, pathname } = event.url
 
-  // TODOL: remove this
   if (host === PUBLIC_DOMAIN) {
     if (pathname.startsWith('/tenant')) {
       error(404, { message: 'Not Found' })
@@ -29,7 +28,6 @@ const handleSession: Handle = async ({ event, resolve }) => {
     error(404, { message: 'Not Found' })
   }
 
-  console.log('tenant', tenant.tenantInfo)
 
   event.locals.tenantDb = tenant.tenantDb
   event.locals.tenantInfo = tenant.tenantInfo!

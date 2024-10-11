@@ -10,6 +10,6 @@
 </script>
 
 
-<NavBar>
+<NavBar  tenantName={data.tenantInfo.name}>
   <slot />
 </NavBar>

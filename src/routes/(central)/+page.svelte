@@ -24,64 +24,76 @@
       <Info message={form.message} success={form.success} />
     {/if}
 
-    <label for="tenantName">Company Name</label>
-    <input
-      type="text"
-      id="tenantName"
-      name="tenantName"
-      class="input input-bordered"
-      required
-      value={form?.form?.tenantName ?? ''}
-    />
+    {#if form?.data?.domain}
+      <!-- succsess your domain can be found here  -->
+      <a
+        href="{form.data.domain}"
+        target="_blank"
+        
+        class="btn mt-4"
+      >
+        {form.data.domain}
+      </a>
+    {:else}
+      <label for="tenantName">Company Name</label>
+      <input
+        type="text"
+        id="tenantName"
+        name="tenantName"
+        class="input input-bordered"
+        required
+        value={form?.form?.tenantName ?? ''}
+      />
 
-    <label for="subdomain">Subdomain</label>
-    <input
-      type="text"
-      id="subdomain"
-      name="subdomain"
-      class="input input-bordered"
-      required
-      value={form?.form?.subdomain ?? ''}
-    />
+      <label for="subdomain">Subdomain</label>
+      <input
+        type="text"
+        id="subdomain"
+        name="subdomain"
+        class="input input-bordered"
+        required
+        value={form?.form?.subdomain ?? ''}
+      />
 
-    <label for="username">Username</label>
-    <input
-      type="text"
-      id="username"
-      name="username"
-      class="input input-bordered"
-      required
-      value={form?.form?.username ?? ''}
-    />
+      <label for="username">Username</label>
+      <input
+        type="text"
+        id="username"
+        name="username"
+        class="input input-bordered"
+        required
+        value={form?.form?.username ?? ''}
+      />
 
-    <label for="email">Email</label>
-    <input
-      type="email"
-      id="email"
-      name="email"
-      class="input input-bordered"
-      required
-      value={form?.form?.email ?? ''}
-    />
+      <label for="email">Email</label>
+      <input
+        type="email"
+        id="email"
+        name="email"
+        class="input input-bordered"
+        required
+        value={form?.form?.email ?? ''}
+      />
 
-    <label for="password">Password</label>
-    <input
-      type="password"
-      id="password"
-      name="password"
-      class="input input-bordered"
-      required
-    />
+      <label for="password">Password</label>
+      <input
+        type="password"
+        id="password"
+        name="password"
+        class="input input-bordered"
+        required
+      />
 
-    <label for="confirmPassword">Confirm Password</label>
-    <input
-      type="password"
-      id="confirmPassword"
-      name="confirmPassword"
-      class="input input-bordered"
-      required
-    />
+      <label for="confirmPassword">Confirm Password</label>
+      <input
+        type="password"
+        id="confirmPassword"
+        name="confirmPassword"
+        class="input input-bordered"
+        required
+      />
 
-    <button type="submit" class="btn mt-4">Submit</button>
+      <button type="submit" class="btn mt-4">Submit</button>
+    {/if}
   </form>
 </main>

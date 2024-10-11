@@ -10,18 +10,11 @@ export const reroute: Reroute = ({ url }) => {
   const i88nPathname = i18n.reroute()({ url })
 
   const domain = getDomainAndType(url.host)
+
   if (domain.type === 'appDomain') {
     return i88nPathname
   } else {
     const tenantDomain = domain.domain
-
-    console.log(
-      'reroute: tenantDomain',
-      tenantDomain,
-      'i88nPathname',
-      i88nPathname,
-    )
-
     return `/${tenantDomain}${i88nPathname}`
   }
 }

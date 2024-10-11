@@ -1,5 +1,4 @@
 <script lang="ts">
-  import type { User } from 'lucia'
   import ThemeSwiter from './ThemeSwiter.svelte'
   import ChangeLanguage from './ChangeLanguage.svelte'
   import Cart from './Cart.svelte'
@@ -14,8 +13,9 @@
   import { icons } from '$lib/client/utils/icons'
   import { goto } from '$app/navigation'
 
-  const user = getUserContext()
+  export let tenantName = ""
 
+  const user = getUserContext()
 </script>
 
 <div class="drawer">
@@ -46,7 +46,7 @@
       </div>
       <div class="mx-2 flex-1 px-2">
         <a href="/" class="btn btn-ghost text-xl max-sm:hidden">
-          {website.siteShortTitle}
+          {tenantName || website.siteShortTitle}
         </a>
         <Breadcrumbs />
       </div>

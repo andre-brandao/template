@@ -46,8 +46,7 @@ export const authProviderTable = sqliteTable(
   {
     userId: text('user_id')
       .references(() => userTable.id)
-      .notNull()
-      .primaryKey(),
+      .notNull(),
     provider: text('provider', {
       enum: ['google', 'password'],
     }).notNull(),
@@ -55,7 +54,6 @@ export const authProviderTable = sqliteTable(
     meta_data: text('meta_data', { mode: 'json' }),
   },
   t => ({
-
     pk: primaryKey({ columns: [t.userId, t.provider] }),
   }),
 )

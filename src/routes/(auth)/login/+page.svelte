@@ -21,7 +21,12 @@
 <main class="flex min-h-[90vh] items-center justify-center bg-base-200">
   <div class="w-full max-w-sm rounded-lg bg-base-100 p-8 shadow-lg">
     <h1 class="text-center text-2xl font-semibold">{m.title_sign_in()}</h1>
-    <form method="post" action="?/login" use:enhance class="mt-6 flex flex-col gap-4">
+    <form
+      method="post"
+      action="?/login"
+      use:enhance
+      class="mt-6 flex flex-col gap-4"
+    >
       <!-- {#if form?.message && form.success}
         <div class="alert alert-success">{form.message}</div>
       {:else if form?.message}
@@ -55,6 +60,12 @@
     <p class="mt-4 text-center text-sm">
       <a href="/login/password" class="btn btn-outline btn-primary">
         Login with password
+      </a>
+    </p>
+
+    <p class="mt-4 text-center text-sm">
+      <a href="/login/google" class="btn btn-outline btn-primary">
+        Login with GOOGLE
       </a>
     </p>
   </div>

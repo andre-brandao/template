@@ -4,7 +4,11 @@ import { fail, redirect } from '@sveltejs/kit'
 import type { Actions, PageServerLoad } from './$types'
 
 import { user } from '$db/controller'
-import { lucia } from '$lib/server/auth'
+import {
+  deleteSessionTokenCookie,
+  invalidateSession,
+
+} from '$lib/server/auth'
 // import { emailTemplate, sendMail } from '$lib/server/email'
 
 export const load: PageServerLoad = async event => {
@@ -37,21 +41,16 @@ export const actions: Actions = {
       message: 'Magic link sent, Check your email',
     }
   },
-  logout: async ({ locals, cookies }) => {
+  logout: async event => {
     console.log('logout')
 
-    const { session } = locals
+    const { session } = event.locals
 
     if (!session) {
       return redirect(302, '/login')
     }
-    await lucia.invalidateSession(session.id)
-    const sessionCookie = lucia.createBlankSessionCookie()
-    cookies.set(sessionCookie.name, sessionCookie.value, {
-      path: '.',
-      ...sessionCookie.attributes,
-    })
-
+    await invalidateSession(session.id)
+    deleteSessionTokenCookie(event)
     return redirect(302, '/login')
   },
 }

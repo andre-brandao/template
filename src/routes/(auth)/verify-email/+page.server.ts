@@ -8,7 +8,7 @@ export const load = (async ({ locals }) => {
     return { status: 302, redirect: '/login' }
   }
 
-  if (user.email_verified) {
+  if (user.emailVerified) {
     return redirect(302, '/myprofile')
   }
 

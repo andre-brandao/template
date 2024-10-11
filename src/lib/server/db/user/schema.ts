@@ -7,9 +7,7 @@ import {
   // customType,
 } from 'drizzle-orm/sqlite-core'
 import { relations, sql } from 'drizzle-orm'
-import { addressTable, customerOrderTable } from '$db/schema'
-
-import { generateId, type DatabaseUser } from 'lucia'
+import { generateId, generateSessionToken } from '$lib/server/auth'
 
 export const userRoleEnum = ['customer', 'admin'] as const
 export type UserRole = (typeof userRoleEnum)[number]
@@ -42,20 +40,6 @@ export const userTable = sqliteTable('user', {
 export type SelectUser = typeof userTable.$inferSelect
 export type InsertUser = typeof userTable.$inferInsert
 
-// import { generateId } from 'lucia'
-export interface DUser {
-  id: string
-  role: UserRole
-  name: string
-  username: string
-  email: string
-  emailVerified: boolean
-  phone: string
-  phoneVerified: boolean
-  hasSubscription: boolean
-  meta: JSON
-}
-
 // AUTH TABLES
 export const sessionTable = sqliteTable('auth_session', {
   id: text('id').notNull().primaryKey(),
@@ -64,8 +48,12 @@ export const sessionTable = sqliteTable('auth_session', {
     .references(() => userTable.id, {
       onDelete: 'cascade',
     }),
-  expiresAt: integer('expires_at').notNull(),
+  expiresAt: integer('expires_at', {
+    mode: 'timestamp',
+  }).notNull(),
 })
+
+export type SelectSession = typeof sessionTable.$inferSelect
 
 export const userVerificationCodeTable = sqliteTable('auth_verification_code', {
   id: integer('id').notNull().primaryKey({ autoIncrement: true }),

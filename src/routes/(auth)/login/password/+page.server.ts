@@ -1,4 +1,8 @@
-import { lucia } from '$lib/server/auth'
+import {
+  createSession,
+  generateSessionToken,
+  setSessionTokenCookie,
+} from '$lib/server/auth'
 import { fail, redirect } from '@sveltejs/kit'
 
 import type { Actions, PageServerLoad } from './$types'
@@ -29,13 +33,9 @@ export const actions: Actions = {
     }
     const existingUser = data.user
 
-    const session = await lucia.createSession(existingUser.id, {})
-    const sessionCookie = lucia.createSessionCookie(session.id)
-    event.cookies.set(sessionCookie.name, sessionCookie.value, {
-      path: '.',
-      ...sessionCookie.attributes,
-    })
-
+    const token = generateSessionToken()
+    const session = await createSession(token, existingUser.id)
+    setSessionTokenCookie(event, token, session.expiresAt)
     if (!existingUser.emailVerified) {
       return redirect(302, '/verify-email')
     }

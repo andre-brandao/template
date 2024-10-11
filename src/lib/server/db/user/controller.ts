@@ -14,11 +14,11 @@ import {
 import { TimeSpan, createDate, isWithinExpirationDate } from 'oslo'
 import { generateRandomString, alphabet, sha256 } from 'oslo/crypto'
 import { encodeHex } from 'oslo/encoding'
-import { generateIdFromEntropySize, type User } from 'lucia'
 // import { hash, verify } from '@node-rs/argon2'
 import { hash, verify } from './password'
 import { LibsqlError } from '@libsql/client'
 import { emailTemplate, sendMail } from '$lib/server/services/email'
+import { generateId } from '$lib/server/auth'
 
 export function isValidEmail(email: string): boolean {
   return /.+@.+/.test(email)
@@ -86,7 +86,7 @@ export const user = {
       })
       return code
     },
-    verify: async function (user: User, code: string): Promise<boolean> {
+    verify: async function (user: SelectUser, code: string): Promise<boolean> {
       const [databaseCode] = await db
         .select()
         .from(userVerificationCodeTable)
@@ -115,7 +115,7 @@ export const user = {
         .delete(passwordResetCodeTable)
         .where(eq(passwordResetCodeTable.userId, userId))
         .all()
-      const tokenId = generateIdFromEntropySize(25) // 40 character
+      const tokenId = generateId(40) // 40 character
       const tokenHash = encodeHex(
         await sha256(new TextEncoder().encode(tokenId)),
       )
@@ -398,7 +398,6 @@ export const user = {
               email,
               emailVerified: false,
               password_hash: passwordHash,
-              
             })
             .returning()
 
@@ -475,7 +474,6 @@ export const user = {
       },
     },
   },
-  
 }
 
 async function createMagicLinkToken(
@@ -483,7 +481,7 @@ async function createMagicLinkToken(
   email: string,
 ): Promise<string> {
   await db.delete(magicLinkTable).where(eq(magicLinkTable.userId, userId)).all()
-  const tokenId = generateIdFromEntropySize(25) // 40 characters long
+  const tokenId = generateId(40) // 40 characters long
   await db.insert(magicLinkTable).values({
     id: tokenId,
     userId,

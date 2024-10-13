@@ -1,13 +1,16 @@
+// HOOKS
 import { i18n } from '$lib/i18n/i18n'
-import {
-  deleteSessionTokenCookie,
-  setSessionTokenCookie,
-  validateSessionToken,
-} from '$lib/server/auth/sessions'
 import type { Handle } from '@sveltejs/kit'
 import { sequence } from '@sveltejs/kit/hooks'
-
-import { bugReport } from '$db/controller'
+// TRPC
+import { createContext } from '$trpc/context'
+import { router } from '$trpc/router'
+import { createTRPCHandle } from 'trpc-sveltekit'
+// AUTH
+import { setSessionTokenCookie } from '$lib/server/auth/cookies'
+import { deleteSessionTokenCookie } from '$lib/server/auth/cookies'
+// DB CONTROLLERS
+import { sessionsC } from '$lib/server/auth/sessions'
 
 const handleSession: Handle = async ({ event, resolve }) => {
   const token = event.cookies.get('session') ?? null
@@ -17,7 +20,7 @@ const handleSession: Handle = async ({ event, resolve }) => {
     return resolve(event)
   }
 
-  const { session, user } = await validateSessionToken(token)
+  const { session, user } = await sessionsC.validateSessionToken(token)
 
   if (session !== null) {
     setSessionTokenCookie(event, token, session.expiresAt)
@@ -30,10 +33,6 @@ const handleSession: Handle = async ({ event, resolve }) => {
   return resolve(event)
 }
 
-import { createContext } from '$trpc/context'
-import { router } from '$trpc/router'
-import { createTRPCHandle } from 'trpc-sveltekit'
-
 const handleTRPC = createTRPCHandle({
   router,
   createContext,
@@ -45,18 +44,9 @@ const handleTRPC = createTRPCHandle({
     if (error.code === 'INTERNAL_SERVER_ERROR') {
       // TODO: send to bug reporting
       const userId = ctx?.locals.user?.id
-      bugReport.insertBugReport({
-        status: 'TODO',
-        text: 'Internal server error',
-        created_by: userId,
-        metadata: {
-          path,
-          type,
-          error,
-          input,
-          req,
-        },
-      })
+      console.log('userId', userId)
+      console.log('input', input)
+      console.log('req', req)
     }
   },
 })

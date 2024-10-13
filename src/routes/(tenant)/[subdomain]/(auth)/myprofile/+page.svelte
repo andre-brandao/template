@@ -55,11 +55,9 @@
 
         {#each sessions as s}
           <div class="rounded bg-base-300 p-1">
+    
             <p>
-              id: {s.id}
-            </p>
-            <p>
-              expiration: {new Date(s.expiresAt)}
+              expiration: {new Date(s.expiresAt).toDateString()}
             </p>
           </div>
         {/each}

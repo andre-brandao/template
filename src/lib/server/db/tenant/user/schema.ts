@@ -11,6 +11,7 @@ import { generateId } from '$lib/server/auth'
 
 export const userRoleEnum = ['customer', 'admin'] as const
 export type UserRole = (typeof userRoleEnum)[number]
+
 export const userTable = sqliteTable('user', {
   id: text('id')
     .notNull()

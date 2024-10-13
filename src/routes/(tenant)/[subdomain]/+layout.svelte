@@ -11,5 +11,7 @@
 
 
 <NavBar  tenantName={data.tenantInfo.name}>
-  <slot />
+  <div class="h-full overflow-y-scroll">
+    <slot />
+  </div>
 </NavBar>

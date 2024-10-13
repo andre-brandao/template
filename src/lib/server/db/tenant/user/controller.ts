@@ -58,7 +58,9 @@ export const user = (db: TenantDbType) => ({
     return db.select().from(userTable).where(eq(userTable.id, userId)).limit(1)
   },
   getSessions: function (userId: SelectUser['id']) {
-    return db.select().from(sessionTable).where(eq(sessionTable.userId, userId))
+    return db.select({
+      expiresAt: sessionTable.expiresAt,
+    }).from(sessionTable).where(eq(sessionTable.userId, userId))
   },
   create: function (user: InsertUser) {
     return db.insert(userTable).values(user)

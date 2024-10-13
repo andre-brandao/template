@@ -1,5 +1,5 @@
 import type { PageServerLoad, Actions } from './$types'
-import { user as userC } from '$lib/server/db/tenant/user/controller'
+import { userC as userC } from '$lib/server/db/tenant/user/controller'
 import { error, fail, redirect } from '@sveltejs/kit'
 export const load = (async ({ locals }) => {
   const user = locals.user
@@ -15,7 +15,7 @@ export const load = (async ({ locals }) => {
 
 export const actions: Actions = {
   default: async ({ request, locals, url }) => {
-    const {user, tenantDb} = locals
+    const { user, tenantDb } = locals
 
     if (!tenantDb) {
       return error(404, 'Tenant not found')

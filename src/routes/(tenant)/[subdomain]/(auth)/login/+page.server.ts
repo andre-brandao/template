@@ -3,7 +3,8 @@ import { error, fail, redirect } from '@sveltejs/kit'
 
 import type { Actions, PageServerLoad } from './$types'
 
-import { user } from '$db/tenant/controller'
+import { userC } from '$db/tenant/controller'
+import { deleteSessionTokenCookie } from '$lib/server/auth/cookies'
 // import { emailTemplate, sendMail } from '$lib/server/email'
 
 export const load: PageServerLoad = async event => {
@@ -25,7 +26,7 @@ export const actions: Actions = {
 
     const email = formData.get('email')
 
-    const { error: err } = await user(tenantDb).auth.login.magicLink.send({
+    const { error: err } = await userC(tenantDb).auth.login.magicLink.send({
       email,
       url,
     })
@@ -46,7 +47,7 @@ export const actions: Actions = {
     const { locals } = event
     console.log('logout')
 
-    const { session, lucia } = locals
+    const { session, tenantAuthManager: lucia } = locals
     if (!lucia) {
       return redirect(302, '/no-lucia')
     }
@@ -55,7 +56,7 @@ export const actions: Actions = {
       return redirect(302, '/login')
     }
     await lucia.invalidateSession(session.id)
-    lucia.deleteSessionTokenCookie(event)
+    deleteSessionTokenCookie(event)
 
     return redirect(302, '/login')
   },

@@ -1,11 +1,12 @@
 import type { PageServerLoad } from './$types'
 
-import { user } from '$db/tenant/controller'
+import { userC } from '$db/tenant/controller'
 import { error, redirect } from '@sveltejs/kit'
+import { setSessionTokenCookie } from '$lib/server/auth/cookies'
 
 export const load = (async event => {
   const { locals, params, setHeaders } = event
-  const { lucia, tenantDb } = locals
+  const { tenantAuthManager: lucia, tenantDb } = locals
 
   if (!tenantDb || !lucia) {
     return error(404, 'Tenant not found')
@@ -16,7 +17,7 @@ export const load = (async event => {
     'Referrer-Policy': 'strict-origin',
   })
   const { data, error: err } =
-    await user(tenantDb).auth.login.magicLink.validate(verificationToken)
+    await userC(tenantDb).auth.login.magicLink.validate(verificationToken)
 
   if (err) {
     return error(400, {
@@ -29,12 +30,12 @@ export const load = (async event => {
   try {
     await lucia.invalidateUserSessions(verifiedUser.id)
 
-    await user(tenantDb).update(verifiedUser.id, {
+    await userC(tenantDb).update(verifiedUser.id, {
       emailVerified: true,
     })
     const token = lucia.generateSessionToken()
     const session = await lucia.createSession(token, verifiedUser.id)
-    lucia.setSessionTokenCookie(event, token, session.expiresAt)
+    setSessionTokenCookie(event, token, session.expiresAt)
   } catch (e) {
     console.error(e)
     return error(500, {

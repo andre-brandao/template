@@ -2,7 +2,8 @@ import { error, fail, redirect } from '@sveltejs/kit'
 import type { Actions, PageServerLoad } from './$types'
 import { emailTemplate, sendMail } from '$lib/server/services/email'
 
-import { user } from '$db/tenant/controller'
+import { userC } from '$db/tenant/controller'
+import { setSessionTokenCookie } from '$lib/server/auth/cookies'
 
 export const load: PageServerLoad = async event => {
   if (event.locals.user) {
@@ -15,7 +16,7 @@ export const actions: Actions = {
   default: async event => {
     const { locals, request } = event
 
-    const { lucia, tenantDb } = locals
+    const { tenantAuthManager: lucia, tenantDb } = locals
 
     if (!tenantDb || !lucia) {
       return error(404, 'Tenant not found')
@@ -26,7 +27,7 @@ export const actions: Actions = {
     const password = formData.get('password')
     const email = formData.get('email')
 
-    const { data, error: err } = await user(
+    const { data, error: err } = await userC(
       tenantDb,
     ).auth.register.withPassword(username, email, password)
 
@@ -44,9 +45,9 @@ export const actions: Actions = {
 
     const token = lucia.generateSessionToken()
     const session = await lucia.createSession(token, userId)
-    lucia.setSessionTokenCookie(event, token, session.expiresAt)
+    setSessionTokenCookie(event, token, session.expiresAt)
 
-    const verificationCode = await user(tenantDb).verificationCode.generate(
+    const verificationCode = await userC(tenantDb).verificationCode.generate(
       userId,
       ueserEmail,
     )

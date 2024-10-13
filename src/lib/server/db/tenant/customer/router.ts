@@ -2,8 +2,8 @@ import { publicProcedure, router } from '$trpc/t'
 
 // import { z } from 'zod'
 import {
-  customer as customerController,
-  product as productController,
+  customerC as customerController,
+  productC as productController,
 } from '$db/tenant/controller'
 import { addressTable } from '$db/tenant/schema'
 

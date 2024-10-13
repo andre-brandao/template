@@ -1,14 +1,14 @@
 import type { PageServerLoad } from './$types'
 
-import { product } from '$db/tenant/controller'
+import { productC } from '$db/tenant/controller'
 import { error } from '@sveltejs/kit'
-export const load = (async ({locals}) => {
-  const {tenantDb} = locals
-  if(!tenantDb) {
+export const load = (async ({ locals }) => {
+  const { tenantDb } = locals
+  if (!tenantDb) {
     return error(404, 'Tenant not found')
   }
 
-  const products = await product(tenantDb).queryCategorysWithProducts()
+  const products = await productC(tenantDb).queryCategorysWithProducts()
   console.log(products)
 
   return { products }

@@ -2,13 +2,10 @@ import { publicProcedure, router } from '$trpc/t'
 
 import { z } from 'zod'
 
-import { user, user as userController } from '$db/tenant/controller'
-// import { lucia } from '$lib/server/auth'
-
-// import { generateId } from 'lucia'
-// import { LibsqlError } from '@libsql/client'
+import { userC, userC as userController } from '$db/tenant/controller'
 
 import { emailTemplate, sendMail } from '$lib/server/services/email'
+import { setSessionTokenCookie } from '$lib/server/auth/cookies'
 
 export const userRouter = router({
   resendEmailVerification: publicProcedure.query(async ({ ctx }) => {
@@ -21,10 +18,9 @@ export const userRouter = router({
       }
     }
 
-    const verificationCode = await user(ctx.tenantDb).verificationCode.generate(
-      localUser.id,
-      localUser.email,
-    )
+    const verificationCode = await userC(
+      ctx.tenantDb,
+    ).verificationCode.generate(localUser.id, localUser.email)
 
     await sendMail(
       localUser.email,
@@ -42,7 +38,7 @@ export const userRouter = router({
       }),
     )
     .query(async ({ ctx, input }) => {
-      const {  locals, lucia } = ctx
+      const { locals, lucia } = ctx
       const sessionId = locals.session?.id
       const { code } = input
 
@@ -78,7 +74,7 @@ export const userRouter = router({
       })
       const token = lucia.generateSessionToken()
       const session = await lucia.createSession(token, user.id)
-      lucia.setSessionTokenCookie(ctx, token, session.expiresAt)
+      setSessionTokenCookie(ctx, token, session.expiresAt)
 
       return {
         data: {

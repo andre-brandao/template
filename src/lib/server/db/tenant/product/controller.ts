@@ -20,7 +20,7 @@ import type {
 } from '$db/tenant/schema'
 // import { getRowCount } from '$db/utils'
 
-export const product = (db: TenantDbType) => ({
+export const productC = (db: TenantDbType) => ({
   tables: { productTable, productItemTable, productCategoryTable },
   // Product
   insertProduct: (data: InsertProduct) => {

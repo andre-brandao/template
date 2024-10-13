@@ -2,7 +2,7 @@ import { publicProcedure, router } from '$trpc/t'
 
 import { z } from 'zod'
 
-import { product as productController } from '$db/tenant/controller'
+import { productC as productController } from '$db/tenant/controller'
 
 import {
   productCategoryTable,

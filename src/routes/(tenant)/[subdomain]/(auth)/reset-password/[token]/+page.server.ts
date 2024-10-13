@@ -4,7 +4,8 @@ import type { PageServerLoad, Actions } from './$types'
 import { sha256 } from 'oslo/crypto'
 import { encodeHex } from 'oslo/encoding'
 
-import { user } from '$db/tenant/controller'
+import { userC } from '$db/tenant/controller'
+import { setSessionTokenCookie } from '$lib/server/auth/cookies'
 
 export const load = (async ({ params, setHeaders, locals }) => {
   const { tenantDb } = locals
@@ -24,9 +25,9 @@ export const load = (async ({ params, setHeaders, locals }) => {
     await sha256(new TextEncoder().encode(verificationToken)),
   )
 
-  const [token] = await user(tenantDb).passwordRecovery.getToken(tokenHash)
+  const [token] = await userC(tenantDb).passwordRecovery.getToken(tokenHash)
 
-  const [resetUser] = await user(tenantDb).getById(token.userId)
+  const [resetUser] = await userC(tenantDb).getById(token.userId)
 
   return {
     email: resetUser.email,
@@ -38,9 +39,9 @@ export const actions: Actions = {
   default: async event => {
     const { request, params, setHeaders, locals } = event
 
-    const { tenantDb, lucia } = locals
+    const { tenantDb, tenantAuthManager } = locals
 
-    if (!tenantDb || !lucia) {
+    if (!tenantDb || !tenantAuthManager) {
       return error(404, 'Tenant not found')
     }
 
@@ -54,7 +55,7 @@ export const actions: Actions = {
 
     const verificationToken = params.token
 
-    const { data, error: err } = await user(
+    const { data, error: err } = await userC(
       tenantDb,
     ).passwordRecovery.alterPassword(password, verificationToken)
 
@@ -65,12 +66,11 @@ export const actions: Actions = {
     }
 
     const userId = data.userId
-    await lucia.invalidateUserSessions(userId)
+    await tenantAuthManager.invalidateUserSessions(userId)
 
-    const token = lucia?.generateSessionToken()
-    const session = await lucia.createSession(token, userId)
-    lucia.setSessionTokenCookie(event, token, session.expiresAt)
-
+    const token = tenantAuthManager?.generateSessionToken()
+    const session = await tenantAuthManager.createSession(token, userId)
+    setSessionTokenCookie(event, token, session.expiresAt)
 
     return redirect(302, '/myprofile')
   },

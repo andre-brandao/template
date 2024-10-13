@@ -1,7 +1,7 @@
-export { product } from './product/controller'
+export { productC } from './product/controller'
 
-export { user } from './user/controller'
+export { userC } from './user/controller'
 
-export { image } from './image/controller'
+export { imageC } from './image/controller'
 
-export { customer } from './customer/controller'
+export { customerC } from './customer/controller'

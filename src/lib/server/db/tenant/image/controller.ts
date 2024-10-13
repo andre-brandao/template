@@ -5,7 +5,7 @@ import { type InsertImage, imageTable, type SelectImage } from './schema'
 import sharp from 'sharp'
 import type { TenantDbType } from '$db/tenant'
 
-export const image = (db: TenantDbType) => ({
+export const imageC = (db: TenantDbType) => ({
   insertImage: async function (img: {
     buff: Buffer
     name: string

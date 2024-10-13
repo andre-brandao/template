@@ -1,6 +1,6 @@
 import type { PageServerLoad } from './$types'
 
-import { product } from '$db/tenant/controller'
+import { productC } from '$db/tenant/controller'
 import { error } from '@sveltejs/kit'
 
 export const load = (async ({ params, locals }) => {
@@ -11,7 +11,7 @@ export const load = (async ({ params, locals }) => {
   }
 
   const id = Number(params.id)
-  const produto = await product(tenantDb).getProductByID(id)
+  const produto = await productC(tenantDb).getProductByID(id)
   console.log(produto)
 
   if (!produto) {

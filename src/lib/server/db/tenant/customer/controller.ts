@@ -13,10 +13,10 @@ import type {
 } from '$db/tenant/schema'
 import { eq, ne, or, sql } from 'drizzle-orm'
 
-import { product } from '$db/tenant/controller'
+import { productC } from '$db/tenant/controller'
 import type { TenantDbType } from '$db/tenant'
 
-export const customer = (db: TenantDbType) => ({
+export const customerC = (db: TenantDbType) => ({
   tables: {
     addressTable,
     customerOrderTable,
@@ -56,7 +56,7 @@ export const customer = (db: TenantDbType) => ({
         ...item,
         order_id: order.id,
       })
-      await product(db).insertStockTransaction({
+      await productC(db).insertStockTransaction({
         item_id: item.product_id,
         quantity: item.quantity,
         order_id: order.id,

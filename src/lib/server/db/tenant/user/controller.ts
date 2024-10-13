@@ -14,7 +14,7 @@ import {
 import { TimeSpan, createDate, isWithinExpirationDate } from 'oslo'
 import { generateRandomString, alphabet, sha256 } from 'oslo/crypto'
 import { encodeHex } from 'oslo/encoding'
-import { generateId } from '$lib/server/auth'
+import { generateId } from '$lib/server/auth/utils'
 // import { hash, verify } from '@node-rs/argon2'
 import { hash, verify } from './password'
 import { LibsqlError } from '@libsql/client'
@@ -25,7 +25,7 @@ export function isValidEmail(email: string): boolean {
   return /.+@.+/.test(email)
 }
 // /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-export const user = (db: TenantDbType) => ({
+export const userC = (db: TenantDbType) => ({
   getPublicInfo: function () {
     return db
       .select({
@@ -58,9 +58,12 @@ export const user = (db: TenantDbType) => ({
     return db.select().from(userTable).where(eq(userTable.id, userId)).limit(1)
   },
   getSessions: function (userId: SelectUser['id']) {
-    return db.select({
-      expiresAt: sessionTable.expiresAt,
-    }).from(sessionTable).where(eq(sessionTable.userId, userId))
+    return db
+      .select({
+        expiresAt: sessionTable.expiresAt,
+      })
+      .from(sessionTable)
+      .where(eq(sessionTable.userId, userId))
   },
   create: function (user: InsertUser) {
     return db.insert(userTable).values(user)
@@ -156,10 +159,10 @@ export const user = (db: TenantDbType) => ({
       const tokenHash = encodeHex(
         await sha256(new TextEncoder().encode(verificationToken)),
       )
-      const [token] = await user(db).passwordRecovery.getToken(tokenHash)
+      const [token] = await userC(db).passwordRecovery.getToken(tokenHash)
 
       if (token) {
-        await user(db).passwordRecovery.deleteToken(tokenHash)
+        await userC(db).passwordRecovery.deleteToken(tokenHash)
       }
 
       if (!token || !isWithinExpirationDate(token.expiresAt)) {
@@ -171,7 +174,7 @@ export const user = (db: TenantDbType) => ({
       }
 
       const passwordHash = await hash(password)
-      await user(db).update(token.userId, {
+      await userC(db).update(token.userId, {
         password_hash: passwordHash,
       })
 
@@ -233,10 +236,10 @@ export const user = (db: TenantDbType) => ({
             }
           }
 
-          let [existingUser] = await user(db).getByEmail(email)
+          let [existingUser] = await userC(db).getByEmail(email)
 
           if (!existingUser) {
-            const { data, error } = await user(db).auth.register.simple(email)
+            const { data, error } = await userC(db).auth.register.simple(email)
 
             if (error) {
               console.error(error)
@@ -251,7 +254,7 @@ export const user = (db: TenantDbType) => ({
           }
 
           try {
-            const verificationToken = await user(
+            const verificationToken = await userC(
               db,
             ).auth.login.magicLink.createToken(
               existingUser.id,
@@ -275,9 +278,9 @@ export const user = (db: TenantDbType) => ({
         },
         validate: async function (verificationToken: string) {
           const [token] =
-            await user(db).auth.login.magicLink.getToken(verificationToken)
+            await userC(db).auth.login.magicLink.getToken(verificationToken)
           if (token) {
-            await user(db).auth.login.magicLink.deleteToken(verificationToken)
+            await userC(db).auth.login.magicLink.deleteToken(verificationToken)
           }
 
           if (!token || !isWithinExpirationDate(token.expiresAt)) {
@@ -287,7 +290,7 @@ export const user = (db: TenantDbType) => ({
               },
             }
           }
-          const [userDB] = await user(db).getById(token.userId)
+          const [userDB] = await userC(db).getById(token.userId)
           if (!userDB || userDB.email !== token.email) {
             return {
               error: {
@@ -327,7 +330,7 @@ export const user = (db: TenantDbType) => ({
             },
           }
         }
-        const [existingUser] = await user(db).getByEmail(email)
+        const [existingUser] = await userC(db).getByEmail(email)
         if (!existingUser) {
           return {
             error: {
@@ -379,7 +382,7 @@ export const user = (db: TenantDbType) => ({
             },
           }
         } else {
-          const [exists] = await user(db).getByUsername(username)
+          const [exists] = await userC(db).getByUsername(username)
           if (exists) {
             return {
               error: {
@@ -401,7 +404,7 @@ export const user = (db: TenantDbType) => ({
             },
           }
         } else {
-          const [exists] = await user(db).getByEmail(email)
+          const [exists] = await userC(db).getByEmail(email)
           if (exists) {
             return {
               error: {
@@ -426,7 +429,7 @@ export const user = (db: TenantDbType) => ({
         const passwordHash = await hash(password)
 
         try {
-          const [newUser] = await user(db)
+          const [newUser] = await userC(db)
             .create({
               username,
               email,
@@ -474,7 +477,7 @@ export const user = (db: TenantDbType) => ({
         }
         try {
           const username = email.split('@')[0]
-          const [newUser] = await user(db)
+          const [newUser] = await userC(db)
             .create({
               email,
               username,

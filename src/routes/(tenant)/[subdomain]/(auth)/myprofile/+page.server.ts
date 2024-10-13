@@ -1,7 +1,7 @@
 import { redirect } from '@sveltejs/kit'
 import type { PageServerLoad } from './$types'
 
-import { user as userController } from '$db/tenant/controller'
+import { userC as userController } from '$db/tenant/controller'
 
 export const load = (async ({ locals, getClientAddress, platform }) => {
   const { user, session, tenantDb } = locals

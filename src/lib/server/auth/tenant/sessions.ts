@@ -1,26 +1,18 @@
-import type { TenantDbType } from './db/tenant'
+import type { TenantDbType } from '$db/tenant'
 import {
   sessionTable,
   userTable,
   type SelectUser,
   type SelectSession,
-} from './db/tenant/schema'
+} from '$db/tenant/schema'
 import { encodeBase32LowerCaseNoPadding } from '@oslojs/encoding'
 import { encodeHexLowerCase } from '@oslojs/encoding'
 import { sha256 } from '@oslojs/crypto/sha2'
 import { eq } from 'drizzle-orm'
-import type { RequestEvent } from '@sveltejs/kit'
 
 export type SessionValidationResult =
   | { session: SelectSession; user: SelectUser }
   | { session: null; user: null }
-
-export function generateId(len: number): string {
-  const bytes = new Uint8Array(len)
-  crypto.getRandomValues(bytes)
-  const token = encodeBase32LowerCaseNoPadding(bytes)
-  return token
-}
 
 export function generateSessionToken(): string {
   const bytes = new Uint8Array(20)
@@ -29,7 +21,7 @@ export function generateSessionToken(): string {
   return token
 }
 
-export function getAuthForTenant(db: TenantDbType) {
+export function createTenantAuthManager(db: TenantDbType) {
   return {
     generateSessionToken,
     createSession: async function (
@@ -88,29 +80,7 @@ export function getAuthForTenant(db: TenantDbType) {
     invalidateUserSessions: async function (userId: string): Promise<void> {
       await db.delete(sessionTable).where(eq(sessionTable.userId, userId))
     },
-
-    setSessionTokenCookie: function (
-      event: RequestEvent,
-      token: string,
-      expiresAt: Date,
-    ): void {
-      event.cookies.set('session', token, {
-        httpOnly: true,
-        sameSite: 'lax',
-        expires: expiresAt,
-        path: '/',
-      })
-    },
-
-    deleteSessionTokenCookie: function (event: RequestEvent): void {
-      event.cookies.set('session', '', {
-        httpOnly: true,
-        sameSite: 'lax',
-        maxAge: 0,
-        path: '/',
-      })
-    },
   }
 }
 
-export type LuciaType = ReturnType<typeof getAuthForTenant>
+export type TenantAuthManagerType = ReturnType<typeof createTenantAuthManager>

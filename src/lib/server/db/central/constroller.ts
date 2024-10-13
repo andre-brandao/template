@@ -2,7 +2,7 @@ import { centralDb as db } from '$db/central'
 import { tenants } from './schema'
 import { createClient } from '@tursodatabase/api'
 
-import { user } from '$db/tenant/controller'
+import { userC } from '$db/tenant/controller'
 import { isValidEmail } from '../tenant/user/controller'
 import { subdomainRegex } from '$lib/utils'
 import { eq } from 'drizzle-orm'
@@ -103,7 +103,7 @@ export async function createTenant(newTenantInfo: {
 
   const tenantDb = getTenantDbClient(databaseName)
 
-  const userData = await user(tenantDb)
+  const userData = await userC(tenantDb)
     .create({
       email,
       username,

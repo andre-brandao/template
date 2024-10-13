@@ -1,5 +1,5 @@
 import { i18n } from '$lib/i18n/i18n'
-import { getAuthForTenant } from '$lib/server/auth'
+import { createTenantAuthManager } from '$lib/server/auth/tenant/sessions'
 import { error, type Handle } from '@sveltejs/kit'
 import { sequence } from '@sveltejs/kit/hooks'
 import { createContext } from '$trpc/context'
@@ -7,6 +7,8 @@ import { router } from '$trpc/router'
 import { createTRPCHandle } from 'trpc-sveltekit'
 import { PUBLIC_DOMAIN } from '$env/static/public'
 import { getTenant } from '$lib/server/utils/getTenantInformation'
+import { setSessionTokenCookie } from '$lib/server/auth/cookies'
+import { deleteSessionTokenCookie } from '$lib/server/auth/cookies'
 
 // import { bugReport } from '$db/controller'
 
@@ -28,13 +30,12 @@ const handleSession: Handle = async ({ event, resolve }) => {
     error(404, { message: 'Not Found' })
   }
 
-
   event.locals.tenantDb = tenant.tenantDb
   event.locals.tenantInfo = tenant.tenantInfo!
 
   /* authenticate users of tenants with lucia */
-  const lucia = getAuthForTenant(tenant.tenantDb)
-  event.locals.lucia = lucia
+  const tenantAuthManager = createTenantAuthManager(tenant.tenantDb)
+  event.locals.tenantAuthManager = tenantAuthManager
 
   const token = event.cookies.get('session') ?? null
 
@@ -44,12 +45,12 @@ const handleSession: Handle = async ({ event, resolve }) => {
     return resolve(event)
   }
 
-  const { session, user } = await lucia.validateSessionToken(token)
+  const { session, user } = await tenantAuthManager.validateSessionToken(token)
 
   if (session !== null) {
-    lucia.setSessionTokenCookie(event, token, session.expiresAt)
+    setSessionTokenCookie(event, token, session.expiresAt)
   } else {
-    lucia.deleteSessionTokenCookie(event)
+    deleteSessionTokenCookie(event)
   }
   event.locals.user = user
   event.locals.session = session

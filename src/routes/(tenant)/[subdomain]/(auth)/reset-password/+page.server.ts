@@ -1,6 +1,6 @@
 import { error, fail } from '@sveltejs/kit'
 import type { PageServerLoad, Actions } from './$types'
-import { user } from '$db/tenant/controller'
+import { userC } from '$db/tenant/controller'
 import { emailTemplate, sendMail } from '$lib/server/services/email'
 
 export const load = (async () => {
@@ -9,7 +9,7 @@ export const load = (async () => {
 
 export const actions: Actions = {
   default: async ({ request, url, locals }) => {
-    const {tenantDb} = locals
+    const { tenantDb } = locals
 
     if (!tenantDb) {
       error(404, 'Tenant not found')
@@ -30,7 +30,7 @@ export const actions: Actions = {
       })
     }
 
-    const [existingUser] = await user(tenantDb).getByEmail(email)
+    const [existingUser] = await userC(tenantDb).getByEmail(email)
 
     if (!existingUser) {
       return fail(400, {
@@ -38,9 +38,9 @@ export const actions: Actions = {
       })
     }
 
-    const verificationToken = await user(tenantDb).passwordRecovery.createToken(
-      existingUser.id,
-    )
+    const verificationToken = await userC(
+      tenantDb,
+    ).passwordRecovery.createToken(existingUser.id)
     // const verificationLink =
     //   'http://localhost:3000/reset-password/' + verificationToken
     const verificationLink = `${url.origin}/reset-password/${verificationToken}`

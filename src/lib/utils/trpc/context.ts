@@ -8,9 +8,9 @@ export async function createContext(event: RequestEvent) {
   const tenantDb = event.locals.tenantDb
   const tenantInfo = event.locals.tenantInfo
 
-  const lucia = event.locals.lucia
+  const lucia = event.locals.tenantAuthManager
 
-  if(!tenantDb || !tenantInfo || !lucia) {
+  if (!tenantDb || !tenantInfo || !lucia) {
     throw new TRPCError({
       code: 'NOT_FOUND',
       message: 'Tenant not found',

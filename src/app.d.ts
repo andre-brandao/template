@@ -18,7 +18,9 @@ declare global {
         createdAt: string
         databaseName: string
       } | null
-      lucia: import('$lib/server/auth').LuciaType | null
+      tenantAuthManager:
+        | import('$lib/server/auth/tenant/sessions').TenantAuthManagerType
+        | null
 
       user: SelectUser | null
       session: SelectSession | null

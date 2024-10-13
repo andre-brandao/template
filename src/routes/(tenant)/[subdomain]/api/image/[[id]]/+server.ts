@@ -1,6 +1,6 @@
 import type { RequestHandler } from './$types'
 
-import { image } from '$db/tenant/controller'
+import { imageC } from '$db/tenant/controller'
 
 export const GET: RequestHandler = async ({ params, locals }) => {
   const id = Number(params.id)
@@ -9,7 +9,7 @@ export const GET: RequestHandler = async ({ params, locals }) => {
     return new Response('Not found', { status: 404 })
   }
 
-  const [{ img }] = await image(tenantDb).getImageByID(id)
+  const [{ img }] = await imageC(tenantDb).getImageByID(id)
 
   if (!img) {
     return new Response('Not found', { status: 404 })
@@ -40,7 +40,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 
     const imageBuffer = Buffer.from(await imageFile.arrayBuffer())
 
-    const [{ img_id }] = await image(tenantDb).insertImage({
+    const [{ img_id }] = await imageC(tenantDb).insertImage({
       buff: imageBuffer,
       name,
       uploaded_by: user.id,

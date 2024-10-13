@@ -3,7 +3,7 @@ import {
   deleteSessionTokenCookie,
   setSessionTokenCookie,
   validateSessionToken,
-} from '$lib/server/auth'
+} from '$lib/server/auth/sessions'
 import type { Handle } from '@sveltejs/kit'
 import { sequence } from '@sveltejs/kit/hooks'
 

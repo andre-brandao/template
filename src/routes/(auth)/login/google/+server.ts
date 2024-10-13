@@ -1,18 +1,17 @@
 import type { RequestHandler } from './$types'
 
-import { generateState, generateCodeVerifier, Google } from 'arctic'
+import { generateState, generateCodeVerifier } from 'arctic'
 
-import { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET } from '$env/static/private'
+import { google } from '$lib/server/auth/oauth'
 
 export const GET: RequestHandler = async event => {
   const state = generateState()
   const codeVerifier = generateCodeVerifier()
 
-  const url = new Google(
-    GOOGLE_CLIENT_ID,
-    GOOGLE_CLIENT_SECRET,
-    event.url.origin + '/login/google/callback',
-  ).createAuthorizationURL(state, codeVerifier, ['openid', 'profile'])
+  const url = google.createAuthorizationURL(state, codeVerifier, [
+    'openid',
+    'profile',
+  ])
 
   event.cookies.set('google_oauth_state', state, {
     path: '/',

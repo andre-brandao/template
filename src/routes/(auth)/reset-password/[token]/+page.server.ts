@@ -5,12 +5,8 @@ import { sha256 } from 'oslo/crypto'
 import { encodeHex } from 'oslo/encoding'
 
 import { user } from '$db/controller'
-import {
-  invalidateUserSessions,
-  createSession,
-  setSessionTokenCookie,
-  generateSessionToken,
-} from '$lib/server/auth'
+import { sessionsC } from '$lib/server/auth/sessions'
+import { setSessionTokenCookie } from '$lib/server/auth/cookies'
 
 export const load = (async ({ params, setHeaders }) => {
   const verificationToken = params.token
@@ -60,11 +56,11 @@ export const actions: Actions = {
 
     const userId = data.userId
 
-    await invalidateUserSessions(userId)
-    const token = generateSessionToken()
-    const session = await createSession(token, userId)
+    await  sessionsC.invalidateUserSessions(userId)
+    const token =  sessionsC.generateSessionToken()
+    const session = await  sessionsC.createSession(token, userId)
     setSessionTokenCookie(event, token, session.expiresAt)
-    
+
     return redirect(302, '/myprofile')
   },
 }

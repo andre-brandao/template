@@ -1,12 +1,8 @@
 import type { PageServerLoad } from './$types'
-import {
-  createSession,
-  setSessionTokenCookie,
-  invalidateUserSessions,
-  generateSessionToken,
-} from '$lib/server/auth'
+import { sessionsC } from '$lib/server/auth/sessions'
 import { user } from '$db/controller'
 import { error, redirect } from '@sveltejs/kit'
+import { setSessionTokenCookie } from '$lib/server/auth/cookies'
 
 export const load = (async event => {
   const { params, setHeaders } = event
@@ -28,14 +24,14 @@ export const load = (async event => {
   const verifiedUser = data.user
 
   try {
-    await invalidateUserSessions(verifiedUser.id)
+    await  sessionsC.invalidateUserSessions(verifiedUser.id)
 
     await user.update(verifiedUser.id, {
       emailVerified: true,
     })
 
-    const token = generateSessionToken()
-    const session = await createSession(token, verifiedUser.id)
+    const token =  sessionsC.generateSessionToken()
+    const session = await  sessionsC.createSession(token, verifiedUser.id)
     setSessionTokenCookie(event, token, session.expiresAt)
   } catch (e) {
     console.error(e)
@@ -43,8 +39,6 @@ export const load = (async event => {
       message: 'Failed to verify email',
     })
   }
-
-
 
   return redirect(302, '/')
 }) satisfies PageServerLoad

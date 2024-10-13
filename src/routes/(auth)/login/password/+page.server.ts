@@ -1,8 +1,5 @@
-import {
-  createSession,
-  generateSessionToken,
-  setSessionTokenCookie,
-} from '$lib/server/auth'
+import { sessionsC } from '$lib/server/auth/sessions'
+import { setSessionTokenCookie } from '$lib/server/auth/cookies'
 import { fail, redirect } from '@sveltejs/kit'
 
 import type { Actions, PageServerLoad } from './$types'
@@ -33,8 +30,8 @@ export const actions: Actions = {
     }
     const existingUser = data.user
 
-    const token = generateSessionToken()
-    const session = await createSession(token, existingUser.id)
+    const token = sessionsC.generateSessionToken()
+    const session = await sessionsC.createSession(token, existingUser.id)
     setSessionTokenCookie(event, token, session.expiresAt)
     if (!existingUser.emailVerified) {
       return redirect(302, '/verify-email')

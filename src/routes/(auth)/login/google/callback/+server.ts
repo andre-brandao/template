@@ -1,20 +1,11 @@
 import type { RequestHandler } from './$types'
-import {
-  generateSessionToken,
-  createSession,
-  setSessionTokenCookie,
-} from '$lib/server/auth'
-// import { google } from '$lib/server/oauth'
-
+import { sessionsC } from '$lib/server/auth/sessions'
 import { user } from '$db/controller'
-
-import { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET } from '$env/static/private'
-
-import { Google, decodeIdToken, type OAuth2Tokens } from 'arctic'
+import { google } from '$lib/server/auth/oauth'
+import { decodeIdToken, type OAuth2Tokens } from 'arctic'
+import { setSessionTokenCookie } from '$lib/server/auth/cookies'
 
 export const GET: RequestHandler = async event => {
-  const { url } = event
-
   const code = event.url.searchParams.get('code')
   const state = event.url.searchParams.get('state')
 
@@ -38,11 +29,7 @@ export const GET: RequestHandler = async event => {
 
   let tokens: OAuth2Tokens
   try {
-    tokens = await new Google(
-      GOOGLE_CLIENT_ID,
-      GOOGLE_CLIENT_SECRET,
-      url.origin + '/login/google/callback',
-    ).validateAuthorizationCode(code, codeVerifier)
+    tokens = await google.validateAuthorizationCode(code, codeVerifier)
   } catch (e) {
     console.error(e)
     // Invalid code or client credentials
@@ -67,8 +54,8 @@ export const GET: RequestHandler = async event => {
   )
 
   if (existingUser !== null) {
-    const sessionToken = generateSessionToken()
-    const session = await createSession(sessionToken, existingUser.id)
+    const sessionToken = sessionsC.generateSessionToken()
+    const session = await  sessionsC.createSession(sessionToken, existingUser.id)
     setSessionTokenCookie(event, sessionToken, session.expiresAt)
     return new Response(null, {
       status: 302,
@@ -93,8 +80,8 @@ export const GET: RequestHandler = async event => {
     meta_data: claims,
   })
 
-  const sessionToken = generateSessionToken()
-  const session = await createSession(sessionToken, newUser.id)
+  const sessionToken = sessionsC.generateSessionToken()
+  const session = await  sessionsC.createSession(sessionToken, newUser.id)
   setSessionTokenCookie(event, sessionToken, session.expiresAt)
   return new Response(null, {
     status: 302,

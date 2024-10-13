@@ -21,7 +21,7 @@ import { encodeHex } from 'oslo/encoding'
 import { hash, verify } from './password'
 import { LibsqlError } from '@libsql/client'
 import { emailTemplate, sendMail } from '$lib/server/services/email'
-import { generateId } from '$lib/server/auth'
+import { generateId } from '$lib/server/auth/sessions'
 
 export function isValidEmail(email: string): boolean {
   return /.+@.+/.test(email)

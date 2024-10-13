@@ -5,10 +5,9 @@ import type { Actions, PageServerLoad } from './$types'
 
 import { user } from '$db/controller'
 import {
-  deleteSessionTokenCookie,
-  invalidateSession,
-
-} from '$lib/server/auth'
+sessionsC,
+} from '$lib/server/auth/sessions'
+import { deleteSessionTokenCookie } from '$lib/server/auth/cookies'
 // import { emailTemplate, sendMail } from '$lib/server/email'
 
 export const load: PageServerLoad = async event => {
@@ -49,7 +48,7 @@ export const actions: Actions = {
     if (!session) {
       return redirect(302, '/login')
     }
-    await invalidateSession(session.id)
+    await  sessionsC.invalidateSession(session.id)
     deleteSessionTokenCookie(event)
     return redirect(302, '/login')
   },

@@ -14,7 +14,7 @@ import {
   invalidateUserSessions,
   setSessionTokenCookie,
   validateSessionToken,
-} from '$lib/server/auth'
+} from '$lib/server/auth/sessions'
 
 export const userRouter = router({
   resendEmailVerification: publicProcedure.query(async ({ ctx }) => {
@@ -48,7 +48,7 @@ export const userRouter = router({
       }),
     )
     .query(async ({ ctx, input }) => {
-      const {  locals } = ctx
+      const { locals } = ctx
       const sessionId = locals.session?.id
       const { code } = input
 

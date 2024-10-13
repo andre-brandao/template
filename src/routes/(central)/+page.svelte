@@ -26,12 +26,7 @@
 
     {#if form?.data?.domain}
       <!-- succsess your domain can be found here  -->
-      <a
-        href="{form.data.domain}"
-        target="_blank"
-        
-        class="btn mt-4"
-      >
+      <a href={form.data.domain} target="_blank" class="btn mt-4">
         {form.data.domain}
       </a>
     {:else}

@@ -63,9 +63,6 @@ importers:
         specifier: ^3.23.8
         version: 3.23.8
     devDependencies:
-      '@andre-brandao/svelte-headless-table':
-        specifier: ^0.18.6
-        version: 0.18.6(svelte@5.0.0)
       '@faker-js/faker':
         specifier: ^9.0.3
         version: 9.0.3
@@ -172,11 +169,6 @@ packages:
   '@ampproject/remapping@2.3.0':
     resolution: {integrity: sha512-30iZtAPgz+LTIYoeivqYo853f02jBYSd5uGnGpkFV0M3xOt9aN73erkgYAmZU43x4VfqcnLxW9Kpg3R5LC4YYw==}
     engines: {node: '>=6.0.0'}
-
-  '@andre-brandao/svelte-headless-table@0.18.6':
-    resolution: {integrity: sha512-YvY5Fjt8nHA/LSd+5m2YWWabBmjqUvyVJjjvP6+8CmcEM8StoL1ts6nCP/ssnqVZIcoKVa7jYSNaRY03NJCxjA==}
-    peerDependencies:
-      svelte: ^4.0.0 || ^5.0.0-next.1
 
   '@drizzle-team/brocli@0.10.1':
     resolution: {integrity: sha512-AHy0vjc+n/4w/8Mif+w86qpppHuF3AyXbcWW+R/W7GNA3F5/p2nuhlkCJaTXSLZheB4l1rtHzOfr9A7NwoR/Zg==}
@@ -3097,16 +3089,6 @@ packages:
       svelte:
         optional: true
 
-  svelte-keyed@2.0.0:
-    resolution: {integrity: sha512-7TeEn+QbJC2OJrHiuM0T8vMBkms3DNpTE+Ir+NtnVBnBMA78aL4f1ft9t0Hn/pBbD/TnIXi4YfjFRAgtN+DZ5g==}
-    peerDependencies:
-      svelte: ^4.0.0
-
-  svelte-render@2.0.1:
-    resolution: {integrity: sha512-RpB0SurwXm4xhjvHHtjeqMmvd645FURb79GFOotScOSqnKK5vpqBgoBPGC0pp+E/eZgDSQ9rRAdn/+N4ys1mXQ==}
-    peerDependencies:
-      svelte: ^4.0.0
-
   svelte-sonner@0.3.28:
     resolution: {integrity: sha512-K3AmlySeFifF/cKgsYNv5uXqMVNln0NBAacOYgmkQStLa/UoU0LhfAACU6Gr+YYC8bOCHdVmFNoKuDbMEsppJg==}
     peerDependencies:
@@ -3117,11 +3099,6 @@ packages:
     peerDependencies:
       '@stripe/stripe-js': ^3 || ^4
       svelte: ^3 || ^4
-
-  svelte-subscribe@2.0.1:
-    resolution: {integrity: sha512-eKXIjLxB4C7eQWPqKEdxcGfNXm2g/qJ67zmEZK/GigCZMfrTR3m7DPY93R6MX+5uoqM1FRYxl8LZ1oy4URWi2A==}
-    peerDependencies:
-      svelte: ^4.0.0
 
   svelte@5.0.0:
     resolution: {integrity: sha512-jv2IvTtakG58DqZMo6fY3T6HFmGV4iDQH2lSUyfmCEYaoa+aCNcF+9rERbdDvT4XDF0nQBg6TEoJn0dirED8VQ==}
@@ -3414,13 +3391,6 @@ snapshots:
     dependencies:
       '@jridgewell/gen-mapping': 0.3.5
       '@jridgewell/trace-mapping': 0.3.25
-
-  '@andre-brandao/svelte-headless-table@0.18.6(svelte@5.0.0)':
-    dependencies:
-      svelte: 5.0.0
-      svelte-keyed: 2.0.0(svelte@5.0.0)
-      svelte-render: 2.0.1(svelte@5.0.0)
-      svelte-subscribe: 2.0.1(svelte@5.0.0)
 
   '@drizzle-team/brocli@0.10.1': {}
 
@@ -6116,15 +6086,6 @@ snapshots:
     optionalDependencies:
       svelte: 5.0.0
 
-  svelte-keyed@2.0.0(svelte@5.0.0):
-    dependencies:
-      svelte: 5.0.0
-
-  svelte-render@2.0.1(svelte@5.0.0):
-    dependencies:
-      svelte: 5.0.0
-      svelte-subscribe: 2.0.1(svelte@5.0.0)
-
   svelte-sonner@0.3.28(svelte@5.0.0):
     dependencies:
       svelte: 5.0.0
@@ -6132,10 +6093,6 @@ snapshots:
   svelte-stripe@1.2.1(@stripe/stripe-js@4.8.0)(svelte@5.0.0):
     dependencies:
       '@stripe/stripe-js': 4.8.0
-      svelte: 5.0.0
-
-  svelte-subscribe@2.0.1(svelte@5.0.0):
-    dependencies:
       svelte: 5.0.0
 
   svelte@5.0.0:

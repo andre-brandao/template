@@ -8,6 +8,7 @@
     ThFilter,
     Pagination,
     RowsPerPage,
+    Th,
     Search,
     type State,
   } from '@vincjo/datatables/server'
@@ -50,6 +51,7 @@
           <ThFilter {table} field="id" />
           <ThFilter {table} field="email" />
           <ThFilter {table} field="name" />
+          <Th />
         </tr>
       </thead>
       <tbody>

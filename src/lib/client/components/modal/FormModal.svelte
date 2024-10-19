@@ -6,35 +6,31 @@
   import { type Component, type ComponentProps } from 'svelte'
   import CurrencyInput from '../input/CurrencyInput.svelte'
 
-  interface Field<
-    T = any,
-  > {
-    name: keyof T
-    value?: any
-    label: string
-    type:
-      | 'text'
-      | 'number'
-      | 'email'
-      | 'password'
-      | 'textarea'
-      | 'select'
-      | 'checkbox'
-      | 'component'
-      | 'currency'
-    required?: boolean
-    annotation?: string
-    placeholder?: string
-    validate?: (value: any) => { valid: boolean; message: string }
-  }
-
-  interface FormProps<T> {
-    fields: Field<T>[]
+  interface FormProps {
+    fields: {
+      name: keyof Item
+      value?: any
+      label: string
+      type:
+        | 'text'
+        | 'number'
+        | 'email'
+        | 'password'
+        | 'textarea'
+        | 'select'
+        | 'checkbox'
+        | 'component'
+        | 'currency'
+      required?: boolean
+      annotation?: string
+      placeholder?: string
+      validate?: (value: any) => { valid: boolean; message: string }
+    }[]
     title: string
-    save: (toSave: T) => Promise<string | undefined>
+    save: (toSave: Item) => Promise<string | undefined>
   }
 
-  let { fields, title, save }: FormProps<Item> = $props()
+  let { fields, title, save }: FormProps = $props()
 
   let isLoading = $state(false)
 
@@ -153,7 +149,7 @@
             required={field.required}
             bind:value={field.value}
           ></textarea>
-        <!-- {:else if field.type === 'component' && field.component}
+          <!-- {:else if field.type === 'component' && field.component}
           <svelte:component
             this={field.component.ref}
             bind:value={field.value}

@@ -44,12 +44,7 @@
               description: data.description,
               category_id: category_id,
             })
-            // columnsData = columnsData.map(col => {
-            //   if (col.id === category_id) {
-            //     col.items.push(resp)
-            //   }
-            //   return col
-            // })
+
             products = products.map(cat => {
               if (cat.id === category_id) {
                 cat.products.push(resp)
@@ -112,7 +107,7 @@
 </script>
 
 <div
-  class="container sticky top-2 mx-auto flex items-center justify-between gap-3 rounded bg-base-200 p-2 z-30"
+  class="container sticky top-2 z-30 mx-auto flex items-center justify-between gap-3 rounded bg-base-200 p-2"
 >
   <p class="text-5xl">Produtos</p>
   <button class="btn btn-primary" onclick={handleAddCategory}>

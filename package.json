@@ -23,7 +23,6 @@
     "db:check": "drizzle-kit check"
   },
   "devDependencies": {
-    "@andre-brandao/svelte-headless-table": "^0.18.6",
     "@faker-js/faker": "^9.0.3",
     "@inlang/paraglide-js": "1.11.3",
     "@playwright/test": "^1.48.1",
@@ -35,6 +34,7 @@
     "@trpc/server": "^10.45.2",
     "@types/eslint": "^9.6.1",
     "@types/nodemailer": "^6.4.16",
+    "@vincjo/datatables": "2.0.0-runes.45",
     "autoprefixer": "^10.4.20",
     "daisyui": "^4.12.13",
     "drizzle-kit": "^0.26.2",

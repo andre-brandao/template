@@ -1,240 +1,75 @@
 <script lang="ts">
+  import { navigating } from '$app/stores'
+  import { SSRFilters } from '$lib/client/components/table/filter.svelte'
+  import {
+    TableHandler,
+    Datatable,
+    ThSort,
+    ThFilter,
+    Pagination,
+    RowsPerPage,
+    Th,
+    Search,
+    type State,
+  } from '@vincjo/datatables/server'
+
   import type { PageData } from './$types'
 
   let { data }: { data: PageData } = $props()
 
-  import {
-    createTable,
-    Subscribe,
-    Render,
-    createRender,
-    type DataLabel,
-    type Column,
-    type Table,
-  } from '@andre-brandao/svelte-headless-table'
-  import {
-    addSortBy,
-    addColumnOrder,
-    addColumnFilters,
-    addSelectedRows,
-    addResizedColumns,
-    addGridLayout,
-    addPagination,
-  } from '@andre-brandao/svelte-headless-table/plugins'
-  import {
-    readable,
-    writable,
-    type Writable,
-    type Readable,
-  } from 'svelte/store'
-  import TextFilter from '$components/table/filters/TextFilter.svelte'
-  import { page } from '$app/stores'
+  const filters = new SSRFilters()
 
-  import SelectIndicator from '$components/table/edit/SelectIndicator.svelte'
-  import EditableCell from '$components/table/edit/EditableCell.svelte'
-  import { goto } from '$app/navigation'
-  import { onDestroy, onMount } from 'svelte'
-  import {
-    SSRTable,
-    SSRFilter,
-    type SSRTableProps,
-  } from '$components/table/ssr/index.svelte'
-  import { debounce } from '$lib/utils'
-
-  const usernameFilter = debounce(SSRFilter.update_many, 500)
-  const emailFilter = debounce(SSRFilter.update_many, 500)
-  console.log(data)
-
-  const tableRows = writable(data.rows ?? [])
-
-  $effect(() => {
-    console.log('data.rows', data.rows)
-
-    tableRows.set(data.rows)
+  const table = new TableHandler(data.rows, {
+    rowsPerPage: 10,
+    totalRows: data.count,
   })
 
-  let Filters = $derived($page.url)
-
-  function Filters_get(name: string) {
-    return Filters.searchParams.get(name)
-  }
-
-  function Filters_update(name: string, value: string) {
-    const url = new URL(Filters)
-    if (value !== '') url.searchParams.set(name, value)
-    else url.searchParams.delete(name)
-
-    goto(url, { keepFocus: true })
-  }
-
-  function Filters_clear(...params: string[]) {
-    const url = new URL(Filters)
-    params.forEach(p => url.searchParams.delete(p))
-    goto(url, { keepFocus: true })
-  }
-
-  function Filters_isFiltered(...params: string[]) {
-    return params.length > 0 && params.some(p => Filters.searchParams.has(p))
-  }
-
-  function Filters_update_many(params: Record<string, string>) {
-    const url = new URL(Filters)
-    Object.entries(params).forEach(([name, value]) => {
-      if (!value) {
-        url.searchParams.delete(name)
-      }
-      if (value !== '') url.searchParams.set(name, value)
-      else url.searchParams.delete(name)
-    })
-
-    const searchParams = url.pathname + url.search
-    goto(searchParams, { keepFocus: true })
-  }
+  table.setPage(Number(filters.get('page')) || 1)
+  table.load(async s => {
+    console.log(s)
+    filters.fromState(s)
+    await $navigating?.complete
+    return data.rows
+  })
 </script>
 
-<SSRTable
-  count={readable(data.count)}
-  {tableRows}
-  columns={table => [
-    // table.display({
-    //   id: 'selected',
-    //   header: '',
-    //   cell: ({ row, column }, { pluginStates }) => {
-    //     const { isSomeSubRowsSelected, isSelected } =
-    //       pluginStates.select.getRowState(row)
-    //     return createRender(SelectIndicator, {
-    //       isSelected,
-    //       isSomeSubRowsSelected,
-    //     })
-    //   },
-    // }),
-    table.column({
-      header: 'ID',
-      accessor: 'id',
-    }),
-    table.column({
-      header: 'Name',
-      accessor: 'username',
-      cell: ({ column, row, value }) =>
-        createRender(EditableCell, {
-          row,
-          column,
-          value,
-          onUpdateValue: (
-            rowDataId: string,
-            columnId: string,
-            newValue: unknown,
-          ) => {
-            console.log(rowDataId, columnId, newValue)
-            // In this case, the dataId of each item is its index in $tableRows.
-            // You can also handle any server-synchronization necessary here.
-            const idx = parseInt(rowDataId)
-            const currentItem = $tableRows[idx]
-            const key = columnId // Cast as `keyof YourDataItem`
-            const newItem = { ...currentItem, [key]: newValue }
-            console.log(newItem)
-            $tableRows[idx] = newItem
-            $tableRows = $tableRows
-            // Handle any server-synchronization.
+<main class="container mx-auto h-full">
+  <Datatable {table}>
+    <!-- {#snippet header()}
+      <Search {table} />
+     
+    {/snippet} -->
+    <table class="table table-zebra">
+      <thead>
+        <tr>
+          <ThSort {table} field="id">ID</ThSort>
+          <ThSort {table} field="email">Email</ThSort>
+          <ThSort {table} field="name">Name</ThSort>
+          <ThSort {table} field="emailVerified">Verified</ThSort>
+        </tr>
+        <tr>
+          <ThFilter {table} field="id" />
+          <ThFilter {table} field="email" />
+          <ThFilter {table} field="name" />
+          <Th />
+        </tr>
+      </thead>
+      <tbody>
+        {#each table.rows as row}
+          <tr>
+            <td>{row.id}</td>
+            <td><b>{row.email}</b></td>
+            <td><b>{row.name}</b></td>
 
-
-
-            
-          },
-        }),
-      plugins: {
-        sort: {
-          invert: false,
-          // disable: true,
-        },
-        filter: {
-          initialFilterValue: '',
-          render: ({ filterValue, values, preFilteredValues }) =>
-            createRender(TextFilter, {
-              filterValue,
-              values,
-              preFilteredValues,
-              change: value => {
-                console.log('change username', value)
-
-                Filters_update('username', value)
-              },
-            }),
-        },
-      },
-    }),
-    table.column({
-      header: 'Email',
-      accessor: 'email',
-      cell: ({ column, row, value }) =>
-        createRender(EditableCell, {
-          row,
-          column,
-          value,
-          onUpdateValue: (
-            rowDataId: string,
-            columnId: string,
-            newValue: unknown,
-          ) => {
-            console.log(rowDataId, columnId, newValue)
-            // In this case, the dataId of each item is its index in $tableRows.
-            // You can also handle any server-synchronization necessary here.
-            const idx = parseInt(rowDataId)
-            const currentItem = $tableRows[idx]
-            const key = columnId // Cast as `keyof YourDataItem`
-            const newItem = { ...currentItem, [key]: newValue }
-            console.log(newItem)
-            $tableRows[idx] = newItem
-            $tableRows = $tableRows
-            // Handle any server-synchronization.
-          },
-        }),
-
-      plugins: {
-        sort: {
-          invert: false,
-          // disable: true,
-        },
-        filter: {
-          initialFilterValue: '',
-          render: ({ filterValue, values, preFilteredValues }) =>
-            createRender(TextFilter, {
-              filterValue,
-              values,
-              preFilteredValues,
-              change: value => Filters_update('email', value),
-            }),
-        },
-      },
-    }),
-    table.column({
-      header: 'Verified',
-      accessor: 'emailVerified',
-      // cell: EditableCell
-      cell: ({ column, row, value }) =>
-        createRender(EditableCell, {
-          row,
-          column,
-          value,
-          onUpdateValue: (
-            rowDataId: string,
-            columnId: string,
-            newValue: unknown,
-          ) => {
-            newValue = newValue === 'true'
-            console.log(rowDataId, columnId, newValue)
-            // In this case, the dataId of each item is its index in $tableRows.
-            // You can also handle any server-synchronization necessary here.
-            const idx = parseInt(rowDataId)
-            const currentItem = $tableRows[idx]
-            const key = columnId // Cast as `keyof YourDataItem`
-            const newItem = { ...currentItem, [key]: newValue }
-            console.log(newItem)
-            $tableRows[idx] = newItem
-            $tableRows = $tableRows
-            // Handle any server-synchronization.
-          },
-        }),
-    }),
-  ]}
-/>
+            <td><span>{row.emailVerified ? '✅' : '❌'}</span></td>
+          </tr>
+        {/each}
+      </tbody>
+    </table>
+    {#snippet footer()}
+      <RowsPerPage {table} />
+      <div></div>
+      <Pagination {table} />
+    {/snippet}
+  </Datatable>
+</main>

@@ -13,22 +13,6 @@
 
   let products = data.products
 
-  // async function handleDeleteProduct(id: number) {
-  //   try {
-  //     await trpc($page).product.deleteProduct.mutate(id)
-
-  //     toast.success('Item deletado com sucesso!')
-  //     columnsData = columnsData.map(col => {
-  //       col.items = col.items.filter(item => item.id !== id)
-  //       return col
-  //     })
-  //     //TODO: Fix delete update sem recarregar
-  //     // window.location.reload()
-  //   } catch (error: any) {
-  //     toast.error(error.message)
-  //   }
-  // }
-
   function handleAddProduct(category_id: number) {
     console.log('add product')
     modal.open(
@@ -113,18 +97,6 @@
               },
               ...products,
             ]
-
-            // columnsData = [
-            //   {
-            //     id: resp.id,
-            //     category: {
-            //       ...resp,
-            //       products: [],
-            //     },
-            //     items: [],
-            //   },
-            //   ...columnsData,
-            // ]
 
             console.log(resp)
             // window.location.reload()

@@ -20,7 +20,7 @@ export const load = (async ({ url }) => {
   const email = searchParams.get('email')
 
   const sortId = searchParams.get('sort_id')
-  const sortOrder = searchParams.get('sort_order')
+  const sortOrder = searchParams.get('sort_direction')
 
   let query = db
     .select()
@@ -43,6 +43,8 @@ export const load = (async ({ url }) => {
 
   try {
     const rows = await withPagination(query, page, pageSize)
+
+    console.log(rows)
 
     const total = await db.select({ count: count() }).from(schema.userTable)
 

@@ -8,7 +8,7 @@ import {
   // customType,
 } from 'drizzle-orm/sqlite-core'
 import { relations, sql } from 'drizzle-orm'
-import { generateId, generateSessionToken } from '$lib/server/auth/sessions'
+import { generateId } from '$lib/server/auth/sessions'
 
 export const userRoleEnum = ['customer', 'admin'] as const
 export type UserRole = (typeof userRoleEnum)[number]

@@ -8,13 +8,8 @@ import { user as userController } from '$db/controller'
 // import { LibsqlError } from '@libsql/client'
 
 import { emailTemplate, sendMail } from '$lib/server/services/email'
-import {
-  createSession,
-  generateSessionToken,
-  invalidateUserSessions,
-  setSessionTokenCookie,
-  validateSessionToken,
-} from '$lib/server/auth/sessions'
+import { sessionsC } from '$lib/server/auth/sessions'
+import { setSessionTokenCookie } from '$lib/server/auth/cookies'
 
 export const userRouter = router({
   resendEmailVerification: publicProcedure.query(async ({ ctx }) => {
@@ -59,7 +54,7 @@ export const userRouter = router({
         }
       }
 
-      const { user } = await validateSessionToken(sessionId)
+      const { user } = await sessionsC.validateSessionToken(sessionId)
       if (!user) {
         return {
           error: 'Not authenticated',
@@ -76,13 +71,13 @@ export const userRouter = router({
         }
       }
 
-      await invalidateUserSessions(user.id)
+      await sessionsC.invalidateUserSessions(user.id)
       await userController.update(user.id, {
         emailVerified: true,
       })
 
-      const token = generateSessionToken()
-      const session = await createSession(token, user.id)
+      const token = sessionsC.generateSessionToken()
+      const session = await sessionsC.createSession(token, user.id)
       setSessionTokenCookie(ctx, token, session.expiresAt)
 
       // const sessionCookie = lucia.createSessionCookie(session.id)

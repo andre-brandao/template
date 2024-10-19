@@ -2,7 +2,7 @@
 import { faker } from '@faker-js/faker'
 // import faker from "https://cdnjs.cloudflare.com/ajax/libs/Faker/3.1.0/faker.min.js";
 import { hash } from '../src/lib/server/db/user/password'
-import { generateId } from 'lucia'
+import { generateId } from '../src/lib/server/auth/sessions'
 import fs from 'fs'
 import { image, product, user } from '../src/lib/server/db/controller'
 
@@ -24,7 +24,7 @@ async function seedUsers() {
       username: 'administrator',
       name: 'André Brandão',
       role: 'admin',
-      password_hash: await hash('senha123'),
+      
     })
   } catch (error) {
     console.error('Failed to insert administrator:', error)
@@ -35,7 +35,7 @@ async function seedUsers() {
       await user.create({
         email: faker.internet.email(),
         username: faker.internet.userName(),
-        password_hash: await hash('password'),
+        
       })
     } catch (error) {
       console.error(`Failed to insert user ${i}:`, error)

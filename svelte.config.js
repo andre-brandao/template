@@ -28,7 +28,7 @@ const config = {
       "$utils/client": './src/lib/client/utils',
       "$utils/server": './src/lib/server/utils',
       $trpc: './src/lib/utils/trpc',
-      $modal: './src/lib/components/modal',
+      $modal: './src/lib/client/components/modal',
       $msgs: './src/lib/i18n/paraglide/messages',
     },
   },

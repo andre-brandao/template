@@ -39,7 +39,7 @@ function createModal() {
     })
   }
 
-  const alert = (args: ComponentProps<Alert>) => {
+  const alert = (args: ComponentProps<typeof Alert>) => {
     open(Alert, args)
   }
   return {

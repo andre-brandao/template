@@ -4,8 +4,6 @@ import { z } from 'zod'
 
 import { user as userController } from '$db/controller'
 
-// import { generateId } from 'lucia'
-// import { LibsqlError } from '@libsql/client'
 
 import { emailTemplate, sendMail } from '$lib/server/services/email'
 import { sessionsC } from '$lib/server/auth/sessions'
@@ -79,12 +77,6 @@ export const userRouter = router({
       const token = sessionsC.generateSessionToken()
       const session = await sessionsC.createSession(token, user.id)
       setSessionTokenCookie(ctx, token, session.expiresAt)
-
-      // const sessionCookie = lucia.createSessionCookie(session.id)
-      // cookies.set(sessionCookie.name, sessionCookie.value, {
-      //   path: '.',
-      //   ...sessionCookie.attributes,
-      // })
 
       return {
         data: {

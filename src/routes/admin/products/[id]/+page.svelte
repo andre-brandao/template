@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { PageData } from './$types'
   import { modal, FormModal } from '$modal'
-  import type { InsertProductItem } from '../../../../../drizzle/schema'
+  import type { InsertProductItem } from '$db/schema'
   import { trpc } from '$lib/utils/trpc/client'
   import { page } from '$app/stores'
   import ProductItem from './ProductItem.svelte'
@@ -13,7 +13,7 @@
 
   let produto = data.prod
   function handleAddItem() {
-    modal.open(FormModal<InsertProductItem>, {
+    modal.open(FormModal, {
       title: 'Add Product Item',
       fields: [
         {

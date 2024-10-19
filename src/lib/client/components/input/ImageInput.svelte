@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { uploadImage, getImagePath } from '$utils'
+  import { uploadImage, getImagePath } from '$lib/client/utils/image'
   import { toast } from 'svelte-sonner'
 
   export let name = 'PlaceholderName'
@@ -54,7 +54,7 @@
     width="100"
     height="100"
     src={getImagePath(image_id)}
-    alt="{name}"
+    alt={name}
     class="rounded-lg"
   />
 

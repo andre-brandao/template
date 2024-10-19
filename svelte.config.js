@@ -24,12 +24,11 @@ const config = {
       $lib: './src/lib',
       $db: './src/lib/server/db',
       $components: './src/lib/client/components',
-      $utils: './src/lib/utils',
-      "$utils/client": './src/lib/client/utils',
-      "$utils/server": './src/lib/server/utils',
       $trpc: './src/lib/utils/trpc',
       $modal: './src/lib/client/components/modal',
       $msgs: './src/lib/i18n/paraglide/messages',
+      $utils: './src/lib/utils',
+
     },
   },
 }

@@ -1,8 +1,6 @@
 import { sessionsC } from '$lib/server/auth/sessions'
 import { fail, redirect } from '@sveltejs/kit'
-// import { generateId } from 'lucia'
-// import { hash } from '@node-rs/argon2'
-// import { LibsqlError } from '@libsql/client'
+
 
 import type { Actions, PageServerLoad } from './$types'
 import { emailTemplate, sendMail } from '$lib/server/services/email'

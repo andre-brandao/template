@@ -13,7 +13,8 @@ import {
   userTable,
 } from '$lib/server/db/schema'
 import { eq } from 'drizzle-orm'
-import type { User } from 'lucia'
+
+import type { SelectUser as User } from '$db/schema'
 
 // ! Uncomment this line when seeding the database
 export const stripe = new Stripe(
@@ -27,7 +28,7 @@ export const stripe = new Stripe(
 export const sCustomer = {
   create: async (user: User) => {
     const sCustomer = await stripe.customers.create({
-      name: user.name,
+      name: user.username,
       email: user.email,
     })
 

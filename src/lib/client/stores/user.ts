@@ -1,7 +1,7 @@
 import { writable, type Writable } from 'svelte/store'
 import { getContext, setContext } from 'svelte'
 
-import type { User } from 'lucia'
+import type { SelectUser as User } from '$db/schema'
 
 const USER_STORE_KEY = 'user'
 

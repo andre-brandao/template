@@ -1,5 +1,4 @@
 <script lang="ts">
-  import type { User } from 'lucia'
   import ThemeSwiter from './ThemeSwiter.svelte'
   import ChangeLanguage from './ChangeLanguage.svelte'
   import Cart from './Cart.svelte'

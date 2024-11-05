@@ -36,6 +36,7 @@
     "@types/nodemailer": "^6.4.16",
     "@vincjo/datatables": "2.0.0-runes.45",
     "autoprefixer": "^10.4.20",
+    "bits-ui": "1.0.0-next.45",
     "daisyui": "^4.12.13",
     "drizzle-kit": "^0.26.2",
     "eslint": "^9.13.0",
@@ -67,6 +68,7 @@
     "clsx": "^2.1.1",
     "drizzle-orm": "^0.35.2",
     "drizzle-zod": "^0.5.1",
+    "lucide-svelte": "^0.454.0",
     "nodemailer": "^6.9.15",
     "oslo": "^1.2.1",
     "sharp": "^0.33.5",
@@ -74,6 +76,8 @@
     "superjson": "^2.2.1",
     "svelte-sonner": "^0.3.28",
     "tailwind-merge": "^2.5.4",
+    "tailwind-variants": "^0.2.1",
+    "tailwindcss-animate": "^1.0.7",
     "trpc-sveltekit": "^3.6.2",
     "zod": "^3.23.8"
   }

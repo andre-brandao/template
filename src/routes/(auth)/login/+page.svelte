@@ -1,4 +1,4 @@
-<script lang="ts">
+<!-- <script lang="ts">
   import * as m from '$lib/i18n/paraglide/messages'
   import SEO, { getSEOProps } from '$components/SEO/index.svelte'
   import { enhance } from '$app/forms'
@@ -27,11 +27,6 @@
       use:enhance
       class="mt-6 flex flex-col gap-4"
     >
-      <!-- {#if form?.message && form.success}
-        <div class="alert alert-success">{form.message}</div>
-      {:else if form?.message}
-        <div class="alert alert-error">{form.message}</div>
-      {/if} -->
       {#if form}
         <Info {...form} />
       {/if}
@@ -69,4 +64,20 @@
       </a>
     </p>
   </div>
-</main>
+</main> -->
+
+<script lang="ts">
+  import type { ActionData } from './$types'
+  import Info from '$components/Info.svelte'
+
+  export let form: ActionData
+  import LoginForm from '$lib/client/components/login-form.svelte'
+</script>
+
+<div class="flex h-screen w-full items-center justify-center px-4">
+  <LoginForm>
+    {#if form}
+      <Info {...form} />
+    {/if}
+  </LoginForm>
+</div>

@@ -67,6 +67,8 @@
 </main> -->
 
 <script lang="ts">
+  import * as m from '$lib/i18n/paraglide/messages'
+  import SEO, { getSEOProps } from '$components/SEO/index.svelte'
   import type { ActionData } from './$types'
   import Info from '$components/Info.svelte'
 
@@ -74,6 +76,12 @@
   import LoginForm from '$lib/client/components/login-form.svelte'
 </script>
 
+<SEO
+  {...getSEOProps({
+    title: m.title_sign_in(),
+    description: 'Sign in to your account',
+  })}
+/>
 <div class="flex h-screen w-full items-center justify-center px-4">
   <LoginForm>
     {#if form}

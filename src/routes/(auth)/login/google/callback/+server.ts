@@ -47,13 +47,16 @@ export const GET: RequestHandler = async event => {
   const username = claims.name
   // @ts-expect-error claims is not null
   const email = claims.email
+  
+  console.log('google data', email, username, googleUserId)
+
 
   const existingUser = await user.getUserFromAuthProvider(
     'google',
     googleUserId,
   )
 
-  if (existingUser !== null) {
+  if (existingUser) {
     const sessionToken = sessionsC.generateSessionToken()
     const session = await  sessionsC.createSession(sessionToken, existingUser.id)
     setSessionTokenCookie(event, sessionToken, session.expiresAt)

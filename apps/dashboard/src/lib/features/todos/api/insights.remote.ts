@@ -7,14 +7,14 @@ function auth() {
   if (Actor.use().type !== 'user') redirect(303, '/login');
 }
 
-export const getCounts = query(Insights.Range, async (input) => {
+export const getStats = query(Insights.Range, async (input) => {
   auth();
-  return Insights.counts(input);
+  return Insights.stats(input);
 });
 
-export const getOverdue = query(async () => {
+export const getStatus = query(Insights.Range, async (input) => {
   auth();
-  return Insights.overdue();
+  return Insights.status(input);
 });
 
 export const getDue = query(async () => {

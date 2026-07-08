@@ -29,30 +29,53 @@ export namespace Insights {
     return and(gte(col, new Date(range.start)), lt(col, new Date(Date.parse(range.end) + DAY)))
   }
 
-  export const counts = fn(Range, (input) =>
-    Database.use(async (tx) => {
-      const rows = await tx
+  function grouped(input: Range) {
+    return Database.use((tx) =>
+      tx
         .select({ status: TodoTable.status, total: count() })
         .from(TodoTable)
         .where(and(mine(), within(TodoTable.timeCreated, input)))
         .groupBy(TodoTable.status)
-        .orderBy(asc(TodoTable.status))
-      return Object.fromEntries([
-        ...TodoStatuses.map((status) => [status, 0] as const),
-        ...rows.map((row) => [row.status, row.total] as const),
-      ]) as Record<string, number>
-    }),
-  )
+        .orderBy(asc(TodoTable.status)),
+    )
+  }
 
-  export const overdue = fn(z.void(), () =>
-    Database.use((tx) =>
-      tx
-        .select({ total: count() })
-        .from(TodoTable)
-        .where(and(mine(), ne(TodoTable.status, "done"), lt(TodoTable.dueDate, new Date())))
-        .then((rows) => rows[0]?.total ?? 0),
-    ),
-  )
+  /** Everything the stat tiles need, precomputed in one call. */
+  export const stats = fn(Range, async (input) => {
+    const [rows, overdue] = await Promise.all([
+      grouped(input),
+      Database.use((tx) =>
+        tx
+          .select({ total: count() })
+          .from(TodoTable)
+          .where(and(mine(), ne(TodoTable.status, "done"), lt(TodoTable.dueDate, new Date())))
+          .then((rows) => rows[0]?.total ?? 0),
+      ),
+    ] as const)
+    const total = rows.reduce((sum, row) => sum + row.total, 0)
+    const done = rows.find((row) => row.status === "done")?.total ?? 0
+    return {
+      total,
+      done,
+      progress: rows.find((row) => row.status === "in_progress")?.total ?? 0,
+      rate: total === 0 ? 0 : Math.round((done / total) * 100),
+      overdue,
+    }
+  })
+
+  /** Per-status totals with bar widths (pct of the largest bucket) precomputed. */
+  export const status = fn(Range, async (input) => {
+    const found = new Map((await grouped(input)).map((row) => [row.status, row.total]))
+    const merged = [...new Set([...TodoStatuses, ...found.keys()])].map((status) => ({
+      status,
+      total: found.get(status) ?? 0,
+    }))
+    const max = Math.max(1, ...merged.map((row) => row.total))
+    return {
+      total: merged.reduce((sum, row) => sum + row.total, 0),
+      rows: merged.map((row) => ({ ...row, pct: (row.total / max) * 100 })),
+    }
+  })
 
   export const due = fn(z.void(), () =>
     Database.use((tx) =>
@@ -119,11 +142,12 @@ export namespace Insights {
           .groupBy(ended)
           .then((rows) => new Map(rows.map((row) => [row.day, row.total]))),
       ] as const)
-      return buckets(input, unit).map((day) => ({
+      const series = buckets(input, unit).map((day) => ({
         day,
         created: created.get(day) ?? 0,
         completed: completed.get(day) ?? 0,
       }))
+      return { active: series.some((point) => point.created > 0 || point.completed > 0), series }
     })
   })
 }

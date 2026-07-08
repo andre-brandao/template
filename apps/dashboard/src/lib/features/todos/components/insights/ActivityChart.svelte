@@ -7,14 +7,14 @@
 
 	let { series }: { series: Point[] } = $props();
 
-	const data = $derived(series.map((point) => ({ ...point, date: new Date(`${point.day}T00:00:00`) })));
+	const date = (point: Point) => new Date(`${point.day}T00:00:00`);
 	const short = (date: Date) => date.toLocaleDateString('en', { month: 'short', day: 'numeric' });
 	const whole = (value: number) => (Number.isInteger(value) ? String(value) : '');
 </script>
 
 <Chart
-	{data}
-	x="date"
+	data={series}
+	x={date}
 	yDomain={[0, null]}
 	yNice
 	series={[

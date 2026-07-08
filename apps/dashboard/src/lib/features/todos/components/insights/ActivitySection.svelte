@@ -6,15 +6,14 @@
 
 	let { range }: { range: Range } = $props();
 
-	const series = $derived(await getActivity(range));
-	const active = $derived(series.some((point) => point.created > 0 || point.completed > 0));
+	const activity = $derived(await getActivity(range));
 </script>
 
 <Section title="Activity">
-	{#if active}
+	{#if activity.active}
 		<!-- {#key}: layerchart 2.0.0-next crashes the tab on in-place data updates; remount instead -->
-		{#key series}
-			<ActivityChart {series} />
+		{#key activity.series}
+			<ActivityChart series={activity.series} />
 		{/key}
 	{:else}
 		<p class="empty">No activity in this range</p>

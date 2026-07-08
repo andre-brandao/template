@@ -1,22 +1,23 @@
 <script lang="ts">
 	import type { Range } from '@template/ui';
-	import { getCounts, getOverdue } from '../../api/insights.remote';
+	import { getStats } from '../../api/insights.remote';
 	import StatTile from './StatTile.svelte';
 
 	let { range }: { range: Range } = $props();
 
-	const counts = $derived(await getCounts(range));
-	const overdue = $derived(await getOverdue());
-	const total = $derived(Object.values(counts).reduce((sum, n) => sum + n, 0));
-	const done = $derived(counts.done ?? 0);
-	const rate = $derived(total === 0 ? 0 : Math.round((done / total) * 100));
+	const stats = $derived(await getStats(range));
 </script>
 
 <div class="tiles">
-	<StatTile label="Created" value={String(total)} hint="in range" />
-	<StatTile label="Completion" value="{rate}%" hint="{done} done" />
-	<StatTile label="In progress" value={String(counts.in_progress ?? 0)} />
-	<StatTile label="Overdue" value={String(overdue)} hint="all time" tone={overdue > 0 ? 'danger' : 'default'} />
+	<StatTile label="Created" value={String(stats.total)} hint="in range" />
+	<StatTile label="Completion" value="{stats.rate}%" hint="{stats.done} done" />
+	<StatTile label="In progress" value={String(stats.progress)} />
+	<StatTile
+		label="Overdue"
+		value={String(stats.overdue)}
+		hint="all time"
+		tone={stats.overdue > 0 ? 'danger' : 'default'}
+	/>
 </div>
 
 <style>

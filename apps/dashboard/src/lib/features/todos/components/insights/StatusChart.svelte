@@ -1,20 +1,17 @@
 <script lang="ts">
 	import { color, label } from '../../status';
 
-	let { counts }: { counts: Record<string, number> } = $props();
-
-	const entries = $derived(Object.entries(counts));
-	const max = $derived(Math.max(1, ...entries.map(([, total]) => total)));
+	let { rows }: { rows: { status: string; total: number; pct: number }[] } = $props();
 </script>
 
 <!-- Plain HTML bars: layerchart's Bars mark infinite-loops on client render (2.0.0-next.66). -->
 <div class="bars">
-	{#each entries as [status, total] (status)}
-		<span class="name">{label(status)}</span>
+	{#each rows as row (row.status)}
+		<span class="name">{label(row.status)}</span>
 		<span class="track">
-			<span class="bar" style:width="{(total / max) * 100}%" style:background={color(status)}></span>
+			<span class="bar" style:width="{row.pct}%" style:background={color(row.status)}></span>
 		</span>
-		<span class="count">{total}</span>
+		<span class="count">{row.total}</span>
 	{/each}
 </div>
 

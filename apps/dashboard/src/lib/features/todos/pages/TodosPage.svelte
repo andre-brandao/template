@@ -1,0 +1,89 @@
+<script lang="ts">
+	import { z } from 'zod';
+	import { query } from '$lib/params';
+	import { getTodos } from '../api/todos.remote';
+	import TodoForm from '../components/form/TodoForm.svelte';
+	import TodoCard from '../components/card/TodoCard.svelte';
+	import KanbanBoard from '../components/kanban/KanbanBoard.svelte';
+	import TodoTable from '../components/table/TodoTable.svelte';
+	import TodoFilters from '../components/TodoFilters.svelte';
+	import ViewSelector from '../components/ViewSelector.svelte';
+
+	const params = query(
+		z.object({
+			q: z.string().default(''),
+			status: z.string().array().default([]),
+			view: z.enum(['list', 'board', 'table']).default('list')
+		})
+	);
+
+	const todos = $derived(
+		await getTodos({
+			status: params.status.length ? params.status : undefined,
+			q: params.q || undefined
+		})
+	);
+</script>
+
+<h1>Todos</h1>
+
+<div class="toolbar">
+	<TodoFilters
+		filters={{ statuses: params.status, search: params.q }}
+		onchange={(next) => params.update({ status: next.statuses, q: next.search })}
+	/>
+	<span class="sep"></span>
+	<ViewSelector view={params.view} onchange={(view) => params.update({ view })} />
+</div>
+
+<TodoForm />
+
+{#if params.view === 'list'}
+	<div class="list">
+		{#each todos as todo (todo.id)}
+			<TodoCard {todo} />
+		{/each}
+		{#if todos.length === 0}
+			<p class="empty">No tasks match this filter</p>
+		{/if}
+	</div>
+{:else if params.view === 'board'}
+	<KanbanBoard {todos} />
+{:else}
+	<TodoTable {todos} />
+{/if}
+
+<style>
+	h1 {
+		margin: 0 0 0.75em;
+		font-size: 1.4em;
+	}
+
+	.toolbar {
+		display: flex;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: 0.75em;
+		margin-bottom: 1.25em;
+	}
+
+	.sep {
+		width: 1px;
+		align-self: stretch;
+		background: var(--border);
+		margin-left: auto;
+	}
+
+	.list {
+		display: flex;
+		flex-direction: column;
+		gap: 0.75em;
+		max-height: 65vh;
+		overflow-y: auto;
+		scrollbar-width: thin;
+	}
+
+	.empty {
+		color: var(--dim);
+	}
+</style>

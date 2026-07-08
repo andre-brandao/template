@@ -1,0 +1,40 @@
+{
+  "name": "@template/core",
+  "private": true,
+  "type": "module",
+  "sideEffects": false,
+  "module": "index.ts",
+  "exports": {
+    "./*": "./src/*/index.ts",
+    "./actor": "./src/actor.ts",
+    "./common": "./src/common.ts",
+    "./context": "./src/context.ts",
+    "./error": "./src/error.ts",
+    "./examples": "./src/examples.ts",
+    "./identifier": "./src/identifier.ts",
+    "./drizzle/*": "./src/drizzle/*.ts",
+    "./email/*": "./src/email/*.ts",
+    "./user/*": "./src/user/*.ts",
+    "./util/*": "./src/util/*.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "bun test",
+    "db:push": "drizzle-kit push",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate"
+  },
+  "dependencies": {
+    "drizzle-orm": "catalog:",
+    "postgres": "catalog:",
+    "ulid": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@types/bun": "catalog:",
+    "drizzle-kit": "catalog:"
+  },
+  "peerDependencies": {
+    "typescript": "catalog:"
+  }
+}

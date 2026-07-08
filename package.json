@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json.schemastore.org/package.json",
+  "name": "@dev-template",
+  "private": true,
+  "workspaces": {
+    "catalog": {
+      "@cloudflare/workers-types": "^4.20260424.1",
+      "@types/bun": "1.3.13",
+      "postgres": "^3.4.8",
+      "drizzle-kit": "^1.0.0-rc.2",
+      "drizzle-orm": "^1.0.0-rc.2",
+      "hono": "^4.11.3",
+      "ulid": "^3.0.2",
+      "zod": "^4.3.5",
+      "sst": "^4.11.0",
+      "typescript": "^6"
+    },
+    "catalogs": {
+      "build": {},
+      "frontend": {
+        "@sveltejs/adapter-cloudflare": "^7.2.6",
+        "@sveltejs/adapter-auto": "^7.0.1",
+        "@sveltejs/kit": "^2.50.2",
+        "@sveltejs/vite-plugin-svelte": "^6.2.4",
+        "@tailwindcss/vite": "^4.1.18",
+        "runed": "^0.37.1",
+        "daisyui": "^5.0.0",
+        "svelte": "^5.51.0",
+        "svelte-check": "^4.4.2",
+        "tailwindcss": "^4.1.18",
+        "vite": "^7.3.1",
+        "vite-plugin-devtools-json": "^1.0.0"
+      },
+      "testing": {
+        "@happy-dom/global-registrator": "^20.8.9",
+        "@testing-library/svelte": "^5.3.1"
+      }
+    },
+    "packages": [
+      "packages/*",
+      "packages/sdk/ts",
+      "apps/*",
+      "scripts"
+    ]
+  },
+  "type": "module",
+  "scripts": {
+    "dev": "bun run scripts/dev.ts",
+    "clean": "rm -rf node_modules **/node_modules",
+    "fmt": "oxfmt",
+    "fmt:check": "oxfmt --check",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "test": "bun --filter '*' test",
+    "typecheck": "bun --filter '*' typecheck",
+    "fallow": "fallow health --hotspots --top 3 && fallow dead-code && fallow dupes",
+    "fallow:health": "fallow health --hotspots --top 3",
+    "fallow:dead-code": "fallow dead-code",
+    "fallow:dupes": "fallow dupes",
+    "fallow:json": "fallow health --hotspots --top 3 --format json --quiet && fallow dead-code --format json --quiet && fallow dupes --format json --quiet"
+  },
+  "dependencies": {
+    "sst": "^4.13.1"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260511.1",
+    "@types/bun": "catalog:",
+    "fallow": "^2.71.1",
+    "oxfmt": "^0.49.0",
+    "oxlint": "^1.64.0"
+  },
+  "peerDependencies": {
+    "typescript": "^6.0.3"
+  }
+}

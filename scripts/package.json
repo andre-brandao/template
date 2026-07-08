@@ -1,0 +1,16 @@
+{
+  "name": "scripts",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bun dev.ts",
+    "seed": "bun seed.ts",
+    "db:migrate": "bunx sst shell bun \"migrate.ts\""
+  },
+  "dependencies": {
+    "@electric-sql/pglite": "^0.3.14",
+    "@electric-sql/pglite-socket": "^0.0.19",
+    "@template/core": "workspace:*",
+    "drizzle-orm": "catalog:"
+  }
+}

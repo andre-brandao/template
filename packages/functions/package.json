@@ -6,16 +6,20 @@
   "module": "src/index.ts",
   "exports": {
     ".": "./src/index.ts",
-    "./api": "./src/api/index.ts"
+    "./api": "./src/api/index.ts",
+    "./mcp": "./src/mcp/index.ts"
   },
   "scripts": {
     "dev": "bun run --hot src/index.ts",
+    "dev:mcp": "bun run --hot src/mcp/serve.ts",
     "typecheck": "tsc --noEmit",
     "test": "bun test",
     "gen:spec": "bun run scripts/gen-spec.ts"
   },
   "dependencies": {
+    "@hono/mcp": "^0.3.1",
     "@hono/standard-validator": "^0.2.2",
+    "@modelcontextprotocol/sdk": "^1.29.0",
     "@template/core": "workspace:*",
     "hono": "catalog:",
     "hono-openapi": "^1.1.2",

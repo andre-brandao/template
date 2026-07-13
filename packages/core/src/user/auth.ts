@@ -21,15 +21,7 @@ export namespace Auth {
   export const register = fn(
     z.object({ name: z.string().min(1), email: z.email(), password: z.string().min(8) }),
     async (input) => {
-      const existing = await Database.use((tx) =>
-        tx
-          .select({ id: ProviderTable.id })
-          .from(ProviderTable)
-          .where(
-            and(eq(ProviderTable.providerId, "email"), eq(ProviderTable.accountId, input.email)),
-          )
-          .then((rows) => rows.at(0)),
-      );
+      const existing = await account(input.email);
       if (existing)
         throw new VisibleError(
           "validation",
@@ -55,13 +47,7 @@ export namespace Auth {
   );
 
   export const login = fn(z.object({ email: z.email(), password: z.string() }), async (input) => {
-    const provider = await Database.use((tx) =>
-      tx
-        .select({ userID: ProviderTable.userID, password: ProviderTable.password })
-        .from(ProviderTable)
-        .where(and(eq(ProviderTable.providerId, "email"), eq(ProviderTable.accountId, input.email)))
-        .then((rows) => rows.at(0)),
-    );
+    const provider = await account(input.email);
     if (!provider?.password)
       throw new VisibleError(
         "authentication",
@@ -93,6 +79,20 @@ export namespace Auth {
         .then((rows) => rows.at(0)?.userID ?? null),
     ),
   );
+
+  function account(email: string) {
+    return Database.use((tx) =>
+      tx
+        .select({
+          id: ProviderTable.id,
+          userID: ProviderTable.userID,
+          password: ProviderTable.password,
+        })
+        .from(ProviderTable)
+        .where(and(eq(ProviderTable.providerId, "email"), eq(ProviderTable.accountId, email)))
+        .then((rows) => rows.at(0)),
+    );
+  }
 
   async function createSession(userID: string) {
     const token = createToken();

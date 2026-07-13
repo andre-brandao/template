@@ -31,15 +31,15 @@
 		"svelte": "^5.0.0"
 	},
 	"devDependencies": {
-		"@sveltejs/adapter-auto": "^7.0.1",
-		"@sveltejs/kit": "^2.63.0",
+		"@sveltejs/adapter-auto": "catalog:frontend",
+		"@sveltejs/kit": "catalog:frontend",
 		"@sveltejs/package": "^2.5.8",
-		"@sveltejs/vite-plugin-svelte": "^7.1.2",
+		"@sveltejs/vite-plugin-svelte": "catalog:frontend",
 		"publint": "^0.3.21",
-		"svelte": "^5.56.1",
-		"svelte-check": "^4.6.0",
-		"typescript": "^6.0.3",
-		"vite": "^8.0.16"
+		"svelte": "catalog:frontend",
+		"svelte-check": "catalog:frontend",
+		"typescript": "catalog:",
+		"vite": "catalog:frontend"
 	},
 	"keywords": [
 		"svelte"

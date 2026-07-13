@@ -1,0 +1,26 @@
+{
+  "name": "@template/cli",
+  "version": "1.0.0",
+  "private": true,
+  "bin": {
+    "template-cli": "src/index.ts"
+  },
+  "type": "module",
+  "module": "src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "bun test",
+    "build": "bun build --compile --outfile bin/template-cli src/index.ts"
+  },
+  "dependencies": {
+    "@template/core": "workspace:*",
+    "@template/functions": "workspace:*",
+    "@template/sdk": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/bun": "catalog:"
+  },
+  "peerDependencies": {
+    "typescript": "catalog:"
+  }
+}

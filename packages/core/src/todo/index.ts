@@ -67,7 +67,10 @@ export namespace Todo {
   );
 
   export const list = fn(
-    Common.PaginatedInput.extend({ status: Status.array().optional(), search: z.string().optional() }),
+    Common.PaginatedInput.extend({
+      status: Status.array().optional(),
+      search: z.string().optional(),
+    }),
     (input) => {
       const { page, pageSize, limit, offset } = Common.page(input);
       const conditions = [eq(TodoTable.userID, Actor.userID()), isNull(TodoTable.timeDeleted)];

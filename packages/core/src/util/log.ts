@@ -8,37 +8,26 @@ export namespace Log {
   export function create(tags?: Record<string, any>) {
     tags = tags || {};
 
+    const prefix = (extra?: Record<string, any>) =>
+      Object.entries({
+        ...use().tags,
+        ...tags,
+        ...extra,
+      })
+        .map(([key, value]) => `${key}=${value}`)
+        .join(" ");
+
     const result = {
       info(msg: string, extra?: Record<string, any>) {
-        const prefix = Object.entries({
-          ...use().tags,
-          ...tags,
-          ...extra,
-        })
-          .map(([key, value]) => `${key}=${value}`)
-          .join(" ");
-        console.log(prefix, msg);
+        console.log(prefix(extra), msg);
         return result;
       },
       warn(msg: string, extra?: Record<string, any>) {
-        const prefix = Object.entries({
-          ...use().tags,
-          ...tags,
-          ...extra,
-        })
-          .map(([key, value]) => `${key}=${value}`)
-          .join(" ");
-        console.warn(prefix, msg);
+        console.warn(prefix(extra), msg);
         return result;
       },
       error(error: Error) {
-        const prefix = Object.entries({
-          ...use().tags,
-          ...tags,
-        })
-          .map(([key, value]) => `${key}=${value}`)
-          .join(" ");
-        console.error(prefix, error);
+        console.error(prefix(), error);
         return result;
       },
       tag(key: string, value: string) {

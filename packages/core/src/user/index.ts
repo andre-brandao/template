@@ -12,9 +12,9 @@ export namespace User {
   export const Info = z
     .object({
       id: z.string().meta({ description: Common.IdDescription, example: Examples.User.id }),
-      name: z.string(),
-      email: z.string(),
-      emailVerified: z.boolean(),
+      name: z.string().min(1),
+      email: z.string().email(),
+      emailVerified: z.boolean().optional(),
       image: z.string().nullable(),
     })
     .meta({
@@ -26,10 +26,10 @@ export namespace User {
 
   export const create = fn(
     z.object({
-      name: z.string().min(1),
-      email: z.email(),
-      emailVerified: z.boolean().optional(),
-      image: z.string().nullable().optional(),
+      name: Info.shape.name,
+      email: Info.shape.email,
+      emailVerified: Info.shape.emailVerified,
+      image: Info.shape.image.optional(),
     }),
     async (input) => {
       const id = Identifier.create("user");
@@ -46,7 +46,7 @@ export namespace User {
     },
   );
 
-  export const fromID = fn(z.string(), (id) =>
+  export const fromID = fn(Info.shape.id, (id) =>
     Database.use((tx) =>
       tx
         .select()
@@ -56,7 +56,7 @@ export namespace User {
     ),
   );
 
-  export const fromEmail = fn(z.string(), (email) =>
+  export const fromEmail = fn(Info.shape.email, (email) =>
     Database.use((tx) =>
       tx
         .select()
@@ -67,7 +67,7 @@ export namespace User {
   );
 
   export const update = fn(
-    z.object({ name: z.string().min(1).optional(), image: z.string().nullable().optional() }),
+    z.object({ name: Info.shape.name.optional(), image: Info.shape.image.optional() }),
     (input) =>
       Database.use((tx) =>
         tx

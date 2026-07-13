@@ -23,7 +23,7 @@ export namespace Todo {
     .object({
       id: z.string().meta({ description: Common.IdDescription, example: Examples.Todo.id }),
       userID: z.string(),
-      title: z.string(),
+      title: z.string().min(0).max(2000),
       status: Status,
       dueDate: z.iso.datetime().nullable(),
     })
@@ -36,9 +36,9 @@ export namespace Todo {
 
   export const create = fn(
     z.object({
-      title: z.string().min(1).max(2000),
+      title: Info.shape.title,
       status: Status.optional(),
-      dueDate: z.iso.datetime().optional(),
+      dueDate: Info.shape.dueDate.optional(),
     }),
     async (input) => {
       const id = Identifier.create("todo");
@@ -67,12 +67,12 @@ export namespace Todo {
   );
 
   export const list = fn(
-    Common.PaginatedInput.extend({ status: Status.array().optional(), q: z.string().optional() }),
+    Common.PaginatedInput.extend({ status: Status.array().optional(), search: z.string().optional() }),
     (input) => {
       const { page, pageSize, limit, offset } = Common.page(input);
       const conditions = [eq(TodoTable.userID, Actor.userID()), isNull(TodoTable.timeDeleted)];
       if (input.status?.length) conditions.push(inArray(TodoTable.status, input.status));
-      if (input.q) conditions.push(ilike(TodoTable.title, `%${input.q}%`));
+      if (input.search) conditions.push(ilike(TodoTable.title, `%${input.search}%`));
       const where = and(...conditions);
       return Database.use(async (tx) => {
         const [rows, totalRows] = await Promise.all([
@@ -90,7 +90,7 @@ export namespace Todo {
     },
   );
 
-  export const fromID = fn(z.string(), (id) =>
+  export const fromID = fn(Info.shape.id, (id) =>
     Database.use((tx) =>
       tx
         .select()
@@ -108,10 +108,10 @@ export namespace Todo {
 
   export const update = fn(
     z.object({
-      id: z.string(),
-      title: z.string().min(1).max(2000).optional(),
+      id: Info.shape.id,
+      title: Info.shape.title,
       status: Status.optional(),
-      dueDate: z.iso.datetime().optional(),
+      dueDate: Info.shape.dueDate.optional(),
     }),
     async ({ id, ...patch }) => {
       const existing = await fromID.force(id);
@@ -128,7 +128,7 @@ export namespace Todo {
           .set({
             ...(patch.title !== undefined ? { title: patch.title } : {}),
             ...(patch.status !== undefined ? { status: patch.status } : {}),
-            ...(patch.dueDate !== undefined ? { dueDate: new Date(patch.dueDate) } : {}),
+            ...(patch.dueDate ? { dueDate: new Date(patch.dueDate) } : {}),
             timeUpdated: new Date(),
           })
           .where(and(eq(TodoTable.id, id), eq(TodoTable.userID, Actor.userID()))),
@@ -136,7 +136,7 @@ export namespace Todo {
     },
   );
 
-  export const remove = fn(z.string(), async (id) => {
+  export const remove = fn(Info.shape.id, async (id) => {
     const existing = await fromID.force(id);
     if (!existing)
       throw new VisibleError("not_found", ErrorCodes.NotFound.RESOURCE_NOT_FOUND, "Todo not found");

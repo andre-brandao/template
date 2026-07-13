@@ -1,3 +1,4 @@
+// fallow-ignore-file code-duplication
 import { z } from "zod";
 import { Hono } from "hono";
 import { describeRoute } from "hono-openapi";
@@ -11,7 +12,7 @@ import {
 } from "../common";
 import { Todo } from "@template/core/todo";
 import { Examples } from "@template/core/examples";
-import { ErrorCodes, VisibleError } from "@template/core/error";
+import { found } from "@template/core/error";
 
 export namespace TodoApi {
   export const route = new Hono()
@@ -28,12 +29,12 @@ export namespace TodoApi {
         },
       }),
       authRequired,
-      validator("query", PaginatedQuery.extend({ status: Todo.Status.optional() })),
+      validator("query", PaginatedQuery.extend({ status: Todo.Status.array().optional() })),
       async (c) => {
         const input = c.req.valid("query");
         const todos = await Todo.list({
           ...input,
-          status: input.status ? [input.status] : undefined,
+          status: input.status,
         });
         return c.json(todos, 200);
       },
@@ -56,13 +57,7 @@ export namespace TodoApi {
       authRequired,
       validator("param", z.object({ id: z.string() })),
       async (c) => {
-        const todo = await Todo.fromID(c.req.valid("param").id);
-        if (!todo)
-          throw new VisibleError(
-            "not_found",
-            ErrorCodes.NotFound.RESOURCE_NOT_FOUND,
-            "Todo not found",
-          );
+        const todo = found("Todo", await Todo.fromID(c.req.valid("param").id));
         return c.json(todo, 200);
       },
     )

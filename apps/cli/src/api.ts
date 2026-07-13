@@ -74,11 +74,16 @@ export async function api(rest: string[]) {
   // Invoke as a member so `this` binds to the client instance.
   const call = client as unknown as Record<string, (p: unknown) => Promise<Result>>;
   const res = await call[method]!(params(strip(raw, ["--token", "--url"])));
+  output(res);
+}
+
+type Result = { data?: unknown; error?: unknown };
+
+/** Print `res.data` as JSON, or print the error and exit non-zero. */
+export function output(res: Result) {
   if (res.error) {
     console.error(JSON.stringify(res.error, null, 2));
     process.exit(1);
   }
   console.log(JSON.stringify(res.data, null, 2));
 }
-
-type Result = { data?: unknown; error?: unknown };

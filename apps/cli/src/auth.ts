@@ -1,4 +1,4 @@
-import { sdk } from "./api";
+import { sdk, output } from "./api";
 import { value } from "./args";
 import * as config from "./config";
 
@@ -35,9 +35,5 @@ export async function logout() {
 
 export async function whoami() {
   const res = await sdk(await config.token(), await config.url()).getMe();
-  if (res.error) {
-    console.error(JSON.stringify(res.error, null, 2));
-    process.exit(1);
-  }
-  console.log(JSON.stringify(res.data, null, 2));
+  output(res);
 }

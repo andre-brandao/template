@@ -1,3 +1,4 @@
+// fallow-ignore-file unused-file
 import { createClient } from "@template/sdk/client";
 import { TemplateSdk } from "@template/sdk";
 import { app } from "@template/functions/api";

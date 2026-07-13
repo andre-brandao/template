@@ -1,13 +1,15 @@
 {
   "$schema": "https://raw.githubusercontent.com/fallow-rs/fallow/main/schema.json",
   "entry": [
-    "libs/*/build.ts",
+    "packages/ui/src/lib/index.ts",
     "packages/*/src/**/*.test.ts",
     "packages/*/test/**/*.ts",
     "packages/functions/**/*.ts",
     "scripts/**/*.ts",
     "infra/**/*.ts",
-    "sst.config.ts"
+    "sst.config.ts",
+    "**/build.ts",
+    "**/adapter/*.ts"
   ],
   "ignorePatterns": ["**/*.gen.ts"],
   "ignoreDependencies": ["@hono/standard-validator"]

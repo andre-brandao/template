@@ -109,7 +109,7 @@ export namespace Todo {
   export const update = fn(
     z.object({
       id: Info.shape.id,
-      title: Info.shape.title,
+      title: Info.shape.title.optional(),
       status: Status.optional(),
       dueDate: Info.shape.dueDate.optional(),
     }),

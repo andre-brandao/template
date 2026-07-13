@@ -1,12 +1,12 @@
 import { z } from "zod";
 import { and, asc, count, desc, eq, ilike, inArray, isNull } from "drizzle-orm";
 import { fn } from "../util/fn";
+import { found } from "../error";
 import { Database } from "../drizzle";
 import { Actor } from "../actor";
 import { Common } from "../common";
 import { Examples } from "../examples";
 import { Identifier } from "../identifier";
-import { ErrorCodes, VisibleError } from "../error";
 import { TodoStatuses, TodoTable } from "./todo.sql";
 
 export { Insights } from "./insights";
@@ -117,13 +117,7 @@ export namespace Todo {
       dueDate: Info.shape.dueDate.optional(),
     }),
     async ({ id, ...patch }) => {
-      const existing = await fromID.force(id);
-      if (!existing)
-        throw new VisibleError(
-          "not_found",
-          ErrorCodes.NotFound.RESOURCE_NOT_FOUND,
-          "Todo not found",
-        );
+      found("Todo", await fromID.force(id));
 
       return Database.use((tx) =>
         tx
@@ -140,9 +134,7 @@ export namespace Todo {
   );
 
   export const remove = fn(Info.shape.id, async (id) => {
-    const existing = await fromID.force(id);
-    if (!existing)
-      throw new VisibleError("not_found", ErrorCodes.NotFound.RESOURCE_NOT_FOUND, "Todo not found");
+    found("Todo", await fromID.force(id));
 
     return Database.use((tx) =>
       tx

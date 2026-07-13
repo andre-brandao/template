@@ -1,12 +1,12 @@
-import { z } from "zod"
-import { eq } from "drizzle-orm"
-import { fn } from "../util/fn"
-import { Database } from "../drizzle"
-import { Actor } from "../actor"
-import { Common } from "../common"
-import { Examples } from "../examples"
-import { Identifier } from "../identifier"
-import { UserTable } from "./user.sql"
+import { z } from "zod";
+import { eq } from "drizzle-orm";
+import { fn } from "../util/fn";
+import { Database } from "../drizzle";
+import { Actor } from "../actor";
+import { Common } from "../common";
+import { Examples } from "../examples";
+import { Identifier } from "../identifier";
+import { UserTable } from "./user.sql";
 
 export namespace User {
   export const Info = z
@@ -21,8 +21,8 @@ export namespace User {
       ref: "User",
       description: "A user account.",
       example: Examples.User,
-    })
-  export type Info = z.infer<typeof Info>
+    });
+  export type Info = z.infer<typeof Info>;
 
   export const create = fn(
     z.object({
@@ -32,7 +32,7 @@ export namespace User {
       image: z.string().nullable().optional(),
     }),
     async (input) => {
-      const id = Identifier.create("user")
+      const id = Identifier.create("user");
       await Database.use((tx) =>
         tx.insert(UserTable).values({
           id,
@@ -41,10 +41,10 @@ export namespace User {
           emailVerified: input.emailVerified ?? false,
           image: input.image ?? null,
         }),
-      )
-      return id
+      );
+      return id;
     },
-  )
+  );
 
   export const fromID = fn(z.string(), (id) =>
     Database.use((tx) =>
@@ -54,7 +54,7 @@ export namespace User {
         .where(eq(UserTable.id, id))
         .then((rows) => rows.at(0) ?? null),
     ),
-  )
+  );
 
   export const fromEmail = fn(z.string(), (email) =>
     Database.use((tx) =>
@@ -64,7 +64,7 @@ export namespace User {
         .where(eq(UserTable.email, email))
         .then((rows) => rows.at(0) ?? null),
     ),
-  )
+  );
 
   export const update = fn(
     z.object({ name: z.string().min(1).optional(), image: z.string().nullable().optional() }),
@@ -75,5 +75,5 @@ export namespace User {
           .set({ ...input, timeUpdated: new Date() })
           .where(eq(UserTable.id, Actor.userID())),
       ),
-  )
+  );
 }

@@ -1,22 +1,23 @@
-import { z } from "zod"
-import { and, asc, count, desc, eq, ilike, inArray, isNull } from "drizzle-orm"
-import { fn } from "../util/fn"
-import { Database } from "../drizzle"
-import { Actor } from "../actor"
-import { Common } from "../common"
-import { Examples } from "../examples"
-import { Identifier } from "../identifier"
-import { ErrorCodes, VisibleError } from "../error"
-import { TodoStatuses, TodoTable } from "./todo.sql"
+import { z } from "zod";
+import { and, asc, count, desc, eq, ilike, inArray, isNull } from "drizzle-orm";
+import { fn } from "../util/fn";
+import { Database } from "../drizzle";
+import { Actor } from "../actor";
+import { Common } from "../common";
+import { Examples } from "../examples";
+import { Identifier } from "../identifier";
+import { ErrorCodes, VisibleError } from "../error";
+import { TodoStatuses, TodoTable } from "./todo.sql";
 
-export { Insights } from "./insights"
+export { Insights } from "./insights";
 
 export namespace Todo {
   export const Status = z.string().trim().min(1).max(64).meta({
-    description: "Status of a todo item. Any short label; defaults are pending, in_progress and done.",
+    description:
+      "Status of a todo item. Any short label; defaults are pending, in_progress and done.",
     example: "pending",
-  })
-  export type Status = z.infer<typeof Status>
+  });
+  export type Status = z.infer<typeof Status>;
 
   export const Info = z
     .object({
@@ -30,10 +31,8 @@ export namespace Todo {
       ref: "Todo",
       description: "A todo item that belongs to a user.",
       example: Examples.Todo,
-    })
-  export type Info = z.infer<typeof Info>
-
-
+    });
+  export type Info = z.infer<typeof Info>;
 
   export const create = fn(
     z.object({
@@ -42,7 +41,7 @@ export namespace Todo {
       dueDate: z.iso.datetime().optional(),
     }),
     async (input) => {
-      const id = Identifier.create("todo")
+      const id = Identifier.create("todo");
       await Database.use((tx) =>
         tx.insert(TodoTable).values({
           id,
@@ -51,10 +50,10 @@ export namespace Todo {
           status: input.status,
           dueDate: input.dueDate ? new Date(input.dueDate) : null,
         }),
-      )
-      return id
+      );
+      return id;
     },
-  )
+  );
 
   export const statuses = fn(z.void(), () =>
     Database.use((tx) =>
@@ -65,16 +64,16 @@ export namespace Todo {
         .orderBy(asc(TodoTable.status))
         .then((rows) => [...new Set([...TodoStatuses, ...rows.map((row) => row.status)])]),
     ),
-  )
+  );
 
   export const list = fn(
     Common.PaginatedInput.extend({ status: Status.array().optional(), q: z.string().optional() }),
     (input) => {
-      const { page, pageSize, limit, offset } = Common.page(input)
-      const conditions = [eq(TodoTable.userID, Actor.userID()), isNull(TodoTable.timeDeleted)]
-      if (input.status?.length) conditions.push(inArray(TodoTable.status, input.status))
-      if (input.q) conditions.push(ilike(TodoTable.title, `%${input.q}%`))
-      const where = and(...conditions)
+      const { page, pageSize, limit, offset } = Common.page(input);
+      const conditions = [eq(TodoTable.userID, Actor.userID()), isNull(TodoTable.timeDeleted)];
+      if (input.status?.length) conditions.push(inArray(TodoTable.status, input.status));
+      if (input.q) conditions.push(ilike(TodoTable.title, `%${input.q}%`));
+      const where = and(...conditions);
       return Database.use(async (tx) => {
         const [rows, totalRows] = await Promise.all([
           tx
@@ -85,21 +84,27 @@ export namespace Todo {
             .limit(limit)
             .offset(offset),
           tx.select({ total: count() }).from(TodoTable).where(where),
-        ] as const)
-        return { data: rows.map(serialize), page, pageSize, total: totalRows[0]?.total ?? 0 }
-      })
+        ] as const);
+        return { data: rows.map(serialize), page, pageSize, total: totalRows[0]?.total ?? 0 };
+      });
     },
-  )
+  );
 
   export const fromID = fn(z.string(), (id) =>
     Database.use((tx) =>
       tx
         .select()
         .from(TodoTable)
-        .where(and(eq(TodoTable.id, id), eq(TodoTable.userID, Actor.userID()), isNull(TodoTable.timeDeleted)))
+        .where(
+          and(
+            eq(TodoTable.id, id),
+            eq(TodoTable.userID, Actor.userID()),
+            isNull(TodoTable.timeDeleted),
+          ),
+        )
         .then((rows) => (rows[0] ? serialize(rows[0]) : null)),
     ),
-  )
+  );
 
   export const update = fn(
     z.object({
@@ -109,9 +114,13 @@ export namespace Todo {
       dueDate: z.iso.datetime().optional(),
     }),
     async ({ id, ...patch }) => {
-      const existing = await fromID.force(id)
+      const existing = await fromID.force(id);
       if (!existing)
-        throw new VisibleError("not_found", ErrorCodes.NotFound.RESOURCE_NOT_FOUND, "Todo not found")
+        throw new VisibleError(
+          "not_found",
+          ErrorCodes.NotFound.RESOURCE_NOT_FOUND,
+          "Todo not found",
+        );
 
       return Database.use((tx) =>
         tx
@@ -123,22 +132,22 @@ export namespace Todo {
             timeUpdated: new Date(),
           })
           .where(and(eq(TodoTable.id, id), eq(TodoTable.userID, Actor.userID()))),
-      )
+      );
     },
-  )
+  );
 
   export const remove = fn(z.string(), async (id) => {
-    const existing = await fromID.force(id)
+    const existing = await fromID.force(id);
     if (!existing)
-      throw new VisibleError("not_found", ErrorCodes.NotFound.RESOURCE_NOT_FOUND, "Todo not found")
+      throw new VisibleError("not_found", ErrorCodes.NotFound.RESOURCE_NOT_FOUND, "Todo not found");
 
     return Database.use((tx) =>
       tx
         .update(TodoTable)
         .set({ timeDeleted: new Date() })
         .where(and(eq(TodoTable.id, id), eq(TodoTable.userID, Actor.userID()))),
-    )
-  })
+    );
+  });
 
   function serialize(row: typeof TodoTable.$inferSelect): Info {
     return {
@@ -147,6 +156,6 @@ export namespace Todo {
       title: row.title,
       status: row.status,
       dueDate: row.dueDate?.toISOString() ?? null,
-    }
+    };
   }
 }

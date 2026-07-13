@@ -1,35 +1,35 @@
 {
-	"name": "dashboard",
-	"private": true,
-	"version": "0.0.1",
-	"type": "module",
-	"scripts": {
-		"dev": "vite dev",
-		"build": "vite build",
-		"preview": "vite preview",
-		"prepare": "svelte-kit sync || echo ''",
-		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
-		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"
-	},
-	"dependencies": {
-		"@template/core": "workspace:*",
-		"@template/functions": "workspace:*",
-		"@template/sdk": "workspace:*",
-		"@template/ui": "workspace:*",
-		"layerchart": "^2.0.0-next.66",
-		"runed": "catalog:frontend",
-		"zod": "catalog:"
-	},
-	"devDependencies": {
-		"@types/bun": "catalog:",
-		"@sveltejs/adapter-node": "catalog:frontend",
-		"@sveltejs/kit": "catalog:frontend",
-		"@sveltejs/vite-plugin-svelte": "catalog:frontend",
-		"@tailwindcss/vite": "catalog:frontend",
-		"svelte": "catalog:frontend",
-		"svelte-check": "catalog:frontend",
-		"tailwindcss": "catalog:frontend",
-		"typescript": "catalog:",
-		"vite": "catalog:frontend"
-	}
+  "name": "dashboard",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite dev",
+    "build": "vite build",
+    "preview": "vite preview",
+    "prepare": "svelte-kit sync || echo ''",
+    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+    "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"
+  },
+  "dependencies": {
+    "@template/core": "workspace:*",
+    "@template/functions": "workspace:*",
+    "@template/sdk": "workspace:*",
+    "@template/ui": "workspace:*",
+    "layerchart": "^2.0.0-next.66",
+    "runed": "catalog:frontend",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@sveltejs/adapter-node": "catalog:frontend",
+    "@sveltejs/kit": "catalog:frontend",
+    "@sveltejs/vite-plugin-svelte": "catalog:frontend",
+    "@tailwindcss/vite": "catalog:frontend",
+    "@types/bun": "catalog:",
+    "svelte": "catalog:frontend",
+    "svelte-check": "catalog:frontend",
+    "tailwindcss": "catalog:frontend",
+    "typescript": "catalog:",
+    "vite": "catalog:frontend"
+  }
 }

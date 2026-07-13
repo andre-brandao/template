@@ -1,5 +1,5 @@
-import { error, invalid } from '@sveltejs/kit';
-import { VisibleError } from '@template/core/error';
+import { error, invalid } from "@sveltejs/kit";
+import { VisibleError } from "@template/core/error";
 
 /**
  * Schema validation only catches malformed input — business errors (invalid
@@ -9,10 +9,10 @@ import { VisibleError } from '@template/core/error';
  * error response.
  */
 export async function guard<T>(fn: () => Promise<T>): Promise<T> {
-	try {
-		return await fn();
-	} catch (err) {
-		if (err instanceof VisibleError) invalid(err.message);
-		error(500, 'Internal Error');
-	}
+  try {
+    return await fn();
+  } catch (err) {
+    if (err instanceof VisibleError) invalid(err.message);
+    error(500, "Internal Error");
+  }
 }

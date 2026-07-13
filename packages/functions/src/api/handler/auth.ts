@@ -6,7 +6,9 @@ import { Auth } from "@template/core/user/auth";
 
 const Session = z.object({
   userID: z.string().meta({ description: "The logged-in user's ID." }),
-  token: z.string().meta({ description: "Bearer session token. Include as `Authorization: Bearer <token>`." }),
+  token: z
+    .string()
+    .meta({ description: "Bearer session token. Include as `Authorization: Bearer <token>`." }),
 });
 
 export namespace AuthApi {
@@ -18,7 +20,10 @@ export namespace AuthApi {
         summary: "Register",
         description: "Create a new user with an email/password and start a session.",
         responses: {
-          200: { content: { "application/json": { schema: Result(Session) } }, description: "New session." },
+          200: {
+            content: { "application/json": { schema: Result(Session) } },
+            description: "New session.",
+          },
           400: ErrorResponses[400],
           500: ErrorResponses[500],
         },
@@ -36,7 +41,10 @@ export namespace AuthApi {
         summary: "Login",
         description: "Exchange an email/password for a new session.",
         responses: {
-          200: { content: { "application/json": { schema: Result(Session) } }, description: "New session." },
+          200: {
+            content: { "application/json": { schema: Result(Session) } },
+            description: "New session.",
+          },
           400: ErrorResponses[400],
           401: ErrorResponses[401],
           500: ErrorResponses[500],
@@ -55,7 +63,10 @@ export namespace AuthApi {
         summary: "Logout",
         description: "Invalidate the current session.",
         responses: {
-          200: { content: { "application/json": { schema: Result(z.literal("ok")) } }, description: "Logged out." },
+          200: {
+            content: { "application/json": { schema: Result(z.literal("ok")) } },
+            description: "Logged out.",
+          },
           401: ErrorResponses[401],
           500: ErrorResponses[500],
         },

@@ -31,14 +31,22 @@ export const routes = app
 
     if (error instanceof HTTPException) {
       return c.json(
-        { type: "validation", code: ErrorCodes.Validation.INVALID_PARAMETER, message: "Invalid request" },
+        {
+          type: "validation",
+          code: ErrorCodes.Validation.INVALID_PARAMETER,
+          message: "Invalid request",
+        },
         400,
       );
     }
 
     log.error(error instanceof Error ? error : new Error(String(error)));
     return c.json(
-      { type: "internal", code: ErrorCodes.Server.INTERNAL_ERROR, message: "Internal server error" },
+      {
+        type: "internal",
+        code: ErrorCodes.Server.INTERNAL_ERROR,
+        message: "Internal server error",
+      },
       500,
     );
   });
@@ -46,5 +54,8 @@ export const routes = app
 app.get("/healthz", async (c) => {
   const { Database } = await import("@template/core/drizzle");
   const dbCheck = await Database.healthcheck();
-  return c.json({ status: dbCheck.status, db: dbCheck.message }, dbCheck.status === "ok" ? 200 : 503);
+  return c.json(
+    { status: dbCheck.status, db: dbCheck.message },
+    dbCheck.status === "ok" ? 200 : 503,
+  );
 });

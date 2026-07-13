@@ -16,7 +16,11 @@ export const PaginatedQuery = z.object({
 });
 
 /** OpenAPI 200 response for a paginated list route — wraps `Common.Page(item)` so handlers don't repeat it. */
-export function PaginatedResponse<T extends z.ZodType>(item: T, description: string, example: z.infer<T>) {
+export function PaginatedResponse<T extends z.ZodType>(
+  item: T,
+  description: string,
+  example: z.infer<T>,
+) {
   return {
     content: {
       "application/json": {
@@ -55,7 +59,11 @@ export const validator = function <S extends z.ZodType, Target extends keyof Val
     const issues = result.error;
     if (issues.length === 0) {
       return c.json(
-        { type: "validation", code: ErrorCodes.Validation.INVALID_PARAMETER, message: "Invalid request data" },
+        {
+          type: "validation",
+          code: ErrorCodes.Validation.INVALID_PARAMETER,
+          message: "Invalid request data",
+        },
         400,
       );
     }
@@ -91,7 +99,11 @@ export const ErrorResponses = {
     content: {
       "application/json": {
         schema: resolver(ErrorResponse.meta({ description: "Validation error" })),
-        example: { type: "validation", code: "invalid_parameter", message: "The request was invalid" },
+        example: {
+          type: "validation",
+          code: "invalid_parameter",
+          message: "The request was invalid",
+        },
       },
     },
     description: "Bad Request",
@@ -100,7 +112,11 @@ export const ErrorResponses = {
     content: {
       "application/json": {
         schema: resolver(ErrorResponse.meta({ description: "Authentication error" })),
-        example: { type: "authentication", code: "unauthorized", message: "Authentication required" },
+        example: {
+          type: "authentication",
+          code: "unauthorized",
+          message: "Authentication required",
+        },
       },
     },
     description: "Unauthorized",
@@ -109,7 +125,11 @@ export const ErrorResponses = {
     content: {
       "application/json": {
         schema: resolver(ErrorResponse.meta({ description: "Permission error" })),
-        example: { type: "forbidden", code: "permission_denied", message: "You do not have permission" },
+        example: {
+          type: "forbidden",
+          code: "permission_denied",
+          message: "You do not have permission",
+        },
       },
     },
     description: "Forbidden",
@@ -118,7 +138,11 @@ export const ErrorResponses = {
     content: {
       "application/json": {
         schema: resolver(ErrorResponse.meta({ description: "Not found error" })),
-        example: { type: "not_found", code: "resource_not_found", message: "The requested resource could not be found" },
+        example: {
+          type: "not_found",
+          code: "resource_not_found",
+          message: "The requested resource could not be found",
+        },
       },
     },
     description: "Not Found",

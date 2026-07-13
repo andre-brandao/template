@@ -44,7 +44,7 @@
   "type": "module",
   "scripts": {
     "dev": "bun run scripts/dev.ts",
-    "gen": "bun --cwd packages/functions run gen:spec && bun --cwd packages/sdk/ts run gen",
+    "gen": "bun run --filter '@template/functions' gen:spec && bun run --filter '@template/sdk' gen",
     "clean": "rm -rf node_modules **/node_modules",
     "fmt": "oxfmt",
     "fmt:check": "oxfmt --check",

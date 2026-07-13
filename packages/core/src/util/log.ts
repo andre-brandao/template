@@ -5,8 +5,6 @@ export namespace Log {
     tags: Record<string, any>;
   }>();
 
-
-
   export function create(tags?: Record<string, any>) {
     tags = tags || {};
 
@@ -44,7 +42,7 @@ export namespace Log {
         return result;
       },
       tag(key: string, value: string) {
-        if (tags) tags[key] = value
+        if (tags) tags[key] = value;
         return result;
       },
       clone() {

@@ -26,7 +26,9 @@ The format and length of IDs may change over time.`;
         data: z.array(item),
         page: z.number().meta({ description: "Page number returned." }),
         pageSize: z.number().meta({ description: "Number of entities per page." }),
-        total: z.number().meta({ description: "Total number of matching entities across all pages." }),
+        total: z
+          .number()
+          .meta({ description: "Total number of matching entities across all pages." }),
       })
       .meta({ description: "A page of results." });
   }

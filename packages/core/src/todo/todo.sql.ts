@@ -1,7 +1,7 @@
-import { index, pgTable as table, text } from "drizzle-orm/pg-core"
-import { id, timestamp, timestamps, ulid } from "../drizzle/types"
+import { index, pgTable as table, text } from "drizzle-orm/pg-core";
+import { id, timestamp, timestamps, ulid } from "../drizzle/types";
 
-export const TodoStatuses = ["pending", "in_progress", "done"] as const
+export const TodoStatuses = ["pending", "in_progress", "done"] as const;
 
 export const TodoTable = table(
   "todo",
@@ -14,4 +14,4 @@ export const TodoTable = table(
     dueDate: timestamp("due_date"),
   },
   (table) => [index("todo_user").on(table.userID)],
-)
+);

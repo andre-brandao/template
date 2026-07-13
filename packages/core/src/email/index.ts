@@ -1,7 +1,6 @@
 import { Context } from "../context";
 import { Log } from "../util/log";
 
-
 export namespace Email {
   const log = Log.create({ namespace: "email" });
 

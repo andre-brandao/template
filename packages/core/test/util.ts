@@ -7,7 +7,10 @@ export function testEmail() {
 }
 
 /** Creates a user directly (bypassing the register/login flow) and runs the callback as that user. */
-export function withTestUser(name: string, cb: (ctx: { userID: string; email: string }) => Promise<any>) {
+export function withTestUser(
+  name: string,
+  cb: (ctx: { userID: string; email: string }) => Promise<any>,
+) {
   return it(name, async () => {
     const email = testEmail();
     const userID = await User.create({ name: "Test User", email });

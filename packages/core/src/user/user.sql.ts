@@ -1,5 +1,5 @@
-import { boolean, pgTable as table, uniqueIndex, text } from "drizzle-orm/pg-core"
-import { id, timestamps } from "../drizzle/types"
+import { boolean, pgTable as table, uniqueIndex, text } from "drizzle-orm/pg-core";
+import { id, timestamps } from "../drizzle/types";
 
 export const UserTable = table(
   "user",
@@ -12,4 +12,4 @@ export const UserTable = table(
     image: text("image"),
   },
   (table) => [uniqueIndex("user_email").on(table.email)],
-)
+);

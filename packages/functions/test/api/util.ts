@@ -48,7 +48,10 @@ export function setupApiTest() {
   };
 
   const del = async (path: string, headers?: Record<string, string>) => {
-    return app.request(path, { method: "delete", headers: { authorization: `Bearer ${token}`, ...headers } });
+    return app.request(path, {
+      method: "delete",
+      headers: { authorization: `Bearer ${token}`, ...headers },
+    });
   };
 
   const noAuth = (...args: Parameters<typeof app.request>) => app.request(...args);

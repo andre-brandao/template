@@ -28,7 +28,11 @@ export namespace UserApi {
     async (c) => {
       const user = await User.fromID(Actor.userID());
       if (!user)
-        throw new VisibleError("not_found", ErrorCodes.NotFound.RESOURCE_NOT_FOUND, "User not found");
+        throw new VisibleError(
+          "not_found",
+          ErrorCodes.NotFound.RESOURCE_NOT_FOUND,
+          "User not found",
+        );
       return c.json(user, 200);
     },
   );

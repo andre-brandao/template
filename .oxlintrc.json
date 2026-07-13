@@ -36,10 +36,5 @@
     "builtin": true
   },
   "globals": {},
-  "ignorePatterns": [
-    "**/node_modules/**",
-    "**/dist/**",
-    "infra/**",
-    "sst.config.ts"
-  ]
+  "ignorePatterns": ["**/node_modules/**", "**/dist/**", "infra/**", "sst.config.ts"]
 }

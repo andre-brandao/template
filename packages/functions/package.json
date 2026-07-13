@@ -15,8 +15,8 @@
     "gen:spec": "bun run scripts/gen-spec.ts"
   },
   "dependencies": {
-    "@template/core": "workspace:*",
     "@hono/standard-validator": "^0.2.2",
+    "@template/core": "workspace:*",
     "hono": "catalog:",
     "hono-openapi": "^1.1.2",
     "zod": "catalog:"

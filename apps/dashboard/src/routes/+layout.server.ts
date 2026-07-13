@@ -1,5 +1,5 @@
-import type { LayoutServerLoad } from './$types';
+import type { LayoutServerLoad } from "./$types";
 
 export const load: LayoutServerLoad = ({ locals }) => {
-	return { loggedIn: Boolean(locals.token) };
+  return { loggedIn: Boolean(locals.token) };
 };

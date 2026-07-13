@@ -9,10 +9,6 @@
     "infra/**/*.ts",
     "sst.config.ts"
   ],
-  "ignorePatterns": [
-    "**/*.gen.ts"
-  ],
-  "ignoreDependencies": [
-    "@hono/standard-validator"
-  ]
+  "ignorePatterns": ["**/*.gen.ts"],
+  "ignoreDependencies": ["@hono/standard-validator"]
 }

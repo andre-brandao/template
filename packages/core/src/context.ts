@@ -1,7 +1,7 @@
 import { AsyncLocalStorage } from "node:async_hooks";
 
 export namespace Context {
-  export class NotFound extends Error { }
+  export class NotFound extends Error {}
 
   export type Provider<R> = (fn: () => R) => R;
 

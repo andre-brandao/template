@@ -76,12 +76,14 @@ export class SchemaValidator {
 
     if (schema.properties) {
       const props: Record<string, OpenAPISchema> = {};
-      for (const [k, v] of Object.entries(schema.properties)) props[k] = this.resolve(v, spec, seen);
+      for (const [k, v] of Object.entries(schema.properties))
+        props[k] = this.resolve(v, spec, seen);
       schema = { ...schema, properties: props };
     }
     if (schema.items) schema = { ...schema, items: this.resolve(schema.items, spec, seen) };
     for (const key of ["allOf", "oneOf", "anyOf"] as const) {
-      if (schema[key]) schema = { ...schema, [key]: schema[key]!.map((s) => this.resolve(s, spec, seen)) };
+      if (schema[key])
+        schema = { ...schema, [key]: schema[key]!.map((s) => this.resolve(s, spec, seen)) };
     }
     return schema;
   }
@@ -239,7 +241,8 @@ export class SchemaValidator {
     switch (type) {
       case "object": {
         const out: Record<string, any> = {};
-        if (schema.properties) for (const [k, v] of Object.entries(schema.properties)) out[k] = this.sample(v);
+        if (schema.properties)
+          for (const [k, v] of Object.entries(schema.properties)) out[k] = this.sample(v);
         return out;
       }
       case "array":
@@ -287,7 +290,8 @@ export class SchemaValidator {
     }
 
     const operation = spec.paths?.[apiPath]?.[method.toLowerCase()];
-    const responseSpec = operation?.responses?.[response.status]?.content?.["application/json"]?.schema;
+    const responseSpec =
+      operation?.responses?.[response.status]?.content?.["application/json"]?.schema;
 
     if (!responseSpec) {
       console.warn(`No response schema for ${method.toUpperCase()} ${path} [${response.status}]`);
@@ -316,7 +320,8 @@ export class SchemaValidator {
     if (!bodySchema) return null;
 
     const resolved = this.resolve(bodySchema, spec);
-    if (resolved.type !== "object" || !resolved.required?.length || !resolved.properties) return null;
+    if (resolved.type !== "object" || !resolved.required?.length || !resolved.properties)
+      return null;
 
     const body = this.sample(resolved);
     const field = resolved.required[0]!;

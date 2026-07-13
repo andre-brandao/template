@@ -1,10 +1,10 @@
-import { query } from '$app/server';
-import { redirect } from '@sveltejs/kit';
-import { Insights } from '@template/core/todo';
-import { Actor } from '@template/core/actor';
+import { query } from "$app/server";
+import { redirect } from "@sveltejs/kit";
+import { Insights } from "@template/core/todo";
+import { Actor } from "@template/core/actor";
 
 function auth() {
-  if (Actor.use().type !== 'user') redirect(303, '/login');
+  if (Actor.use().type !== "user") redirect(303, "/login");
 }
 
 export const getStats = query(Insights.Range, async (input) => {

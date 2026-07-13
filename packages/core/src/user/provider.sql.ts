@@ -1,8 +1,8 @@
-import { index, pgTable as table, text, uniqueIndex, varchar } from "drizzle-orm/pg-core"
-import { id, timestamps, ulid } from "../drizzle/types"
+import { index, pgTable as table, text, uniqueIndex, varchar } from "drizzle-orm/pg-core";
+import { id, timestamps, ulid } from "../drizzle/types";
 
-export const ProviderIds = ["email", "github", "google"] as const
-export type ProviderId = (typeof ProviderIds)[number]
+export const ProviderIds = ["email", "github", "google"] as const;
+export type ProviderId = (typeof ProviderIds)[number];
 
 export const ProviderTable = table(
   "provider",
@@ -18,4 +18,4 @@ export const ProviderTable = table(
     uniqueIndex("provider_account").on(table.providerId, table.accountId),
     index("provider_user").on(table.userID),
   ],
-)
+);

@@ -39,11 +39,11 @@ export namespace Database {
       logger:
         process.env.DRIZZLE_LOG === "true"
           ? {
-            logQuery(query, params) {
-              log.info("query", { query });
-              log.info("params", { params });
-            },
-          }
+              logQuery(query, params) {
+                log.info("query", { query });
+                log.info("params", { params });
+              },
+            }
           : undefined,
     });
   }
@@ -120,7 +120,7 @@ export namespace Database {
     const effects: (() => void | Promise<void>)[] = [];
     const result = await client().transaction(
       async (tx) => TransactionContext.provide({ tx, effects }, () => callback(tx)),
-      config
+      config,
     );
     await Promise.all(effects.map((effect) => effect()));
     return result as T;

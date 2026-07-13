@@ -1,5 +1,5 @@
-import { index, pgTable as table, varchar } from "drizzle-orm/pg-core"
-import { timestamp, timestamps, ulid } from "../drizzle/types"
+import { index, pgTable as table, varchar } from "drizzle-orm/pg-core";
+import { timestamp, timestamps, ulid } from "../drizzle/types";
 
 export const SessionTable = table(
   "session",
@@ -10,4 +10,4 @@ export const SessionTable = table(
     expiresAt: timestamp("expires_at").notNull(),
   },
   (table) => [index("session_user").on(table.userID)],
-)
+);

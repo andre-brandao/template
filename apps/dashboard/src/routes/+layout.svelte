@@ -5,8 +5,11 @@
 	import PreLoadingIndicator from './PreLoadingIndicator.svelte';
 	import Topbar from '$lib/components/layout/Topbar.svelte';
 	import Sidebar from '$lib/components/layout/Sidebar.svelte';
+	import { provide } from '$lib/features/auth/context';
 
 	let { data, children } = $props();
+
+	const me = provide(data.user);
 </script>
 
 <svelte:head><link rel="icon" href={favicon} /></svelte:head>
@@ -16,9 +19,9 @@
 {/if}
 
 <div class="shell">
-	<Topbar loggedIn={data.loggedIn} />
+	<Topbar />
 	<div class="body">
-		{#if data.loggedIn}
+		{#if me}
 			<Sidebar />
 		{/if}
 		<main>

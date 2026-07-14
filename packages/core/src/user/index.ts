@@ -7,6 +7,7 @@ import { Common } from "../common";
 import { Examples } from "../examples";
 import { Identifier } from "../identifier";
 import { UserTable } from "./user.sql";
+import { ProviderIds, ProviderTable } from "./provider.sql";
 
 export namespace User {
   export const Info = z
@@ -23,6 +24,46 @@ export namespace User {
       example: Examples.User,
     });
   export type Info = z.infer<typeof Info>;
+
+  /**
+   * A login provider, connected or not. Not exposed over the HTTP API — the
+   * dashboard reads this straight from core.
+   */
+  export const Provider = z.object({
+    id: z.enum(ProviderIds),
+    /** The identity held at the provider — an email, or its own user id. Null when not connected. */
+    accountId: z.string().nullable(),
+    connected: z.boolean(),
+    timeCreated: z.iso.datetime().nullable(),
+  });
+  export type Provider = z.infer<typeof Provider>;
+
+  /**
+   * Every known provider with its connection state — not just the connected
+   * ones — so the profile can offer the rest. Passwords are never selected.
+   */
+  export const providers = fn(z.void(), () =>
+    Database.use(async (tx) => {
+      const rows = await tx
+        .select({
+          providerId: ProviderTable.providerId,
+          accountId: ProviderTable.accountId,
+          timeCreated: ProviderTable.timeCreated,
+        })
+        .from(ProviderTable)
+        .where(eq(ProviderTable.userID, Actor.userID()));
+
+      return ProviderIds.map((id) => {
+        const row = rows.find((row) => row.providerId === id);
+        return {
+          id,
+          accountId: row?.accountId ?? null,
+          connected: Boolean(row),
+          timeCreated: row?.timeCreated.toISOString() ?? null,
+        };
+      });
+    }),
+  );
 
   export const create = fn(
     z.object({

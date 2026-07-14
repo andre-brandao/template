@@ -1,11 +1,13 @@
 <script lang="ts">
-	let { data } = $props();
+	import { user } from '$lib/features/auth/context';
+
+	const me = user();
 </script>
 
 <section>
 	<h1>Todos</h1>
 	<p>A small dashboard for tracking work — capture todos, move them through stages, and see how things trend over time.</p>
-	{#if data.loggedIn}
+	{#if me}
 		<div class="actions">
 			<a href="/todos">Todos</a>
 			<a href="/insights">Insights</a>

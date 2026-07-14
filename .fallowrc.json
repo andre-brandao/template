@@ -12,7 +12,7 @@
     "**/adapter/*.ts"
   ],
   "ignorePatterns": ["**/*.gen.ts"],
-  "ignoreDependencies": ["@hono/standard-validator"],
+  "ignoreDependencies": ["@hono/standard-validator", "@template/ui"],
   "ignoreUnresolvedImports": ["@template/ui"],
   "overrides": [
     {

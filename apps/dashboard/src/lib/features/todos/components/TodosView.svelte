@@ -1,6 +1,6 @@
 <script lang='ts'>
 	import type { Todo } from '@template/core/todo';
-  import TodoCard from './card/TodoCard.svelte';
+  import TodoList from './list/TodoList.svelte';
   import KanbanBoard from './kanban/KanbanBoard.svelte';
   import TodoTable from './table/TodoTable.svelte';
 
@@ -10,20 +10,16 @@
   };
 
   let { todos, view }: Props = $props();
+
+  const views = {
+    list: TodoList,
+    board: KanbanBoard,
+    table: TodoTable,
+  }
+
+  const SelectedView = $derived(views[view]);
 </script>
 
-
-{#if view === 'list'}
-	<div class="list">
-		{#each todos as todo (todo.id)}
-			<TodoCard {todo} />
-		{/each}
-		{#if todos.length === 0}
-			<p class="empty">No tasks match this filter</p>
-		{/if}
-	</div>
-{:else if view === 'board'}
-	<KanbanBoard {todos} />
-{:else}
-	<TodoTable {todos} />
+{#if SelectedView}
+  <SelectedView {todos} />
 {/if}

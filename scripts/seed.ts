@@ -59,6 +59,11 @@ function due(i: number) {
   return new Date(Date.now() + (i - 10) * 24 * 60 * 60 * 1000).toISOString();
 }
 
+function status(i: number) {
+  if (i < 11 || i >= 16) return pick(statuses);
+  return i % 2 === 0 ? "pending" : "in_progress";
+}
+
 const result = await Database.provide(url, async () => {
   const user = await User.fromEmail(email);
   const auth = user
@@ -72,10 +77,9 @@ const result = await Database.provide(url, async () => {
     await Promise.all(
       Array.from({ length: count }, async (_, i) => {
         const id = await Todo.create({ title: title(), dueDate: due(i) });
-        const status =
-          i >= 11 && i < 16 ? (i % 2 === 0 ? "pending" : "in_progress") : pick(statuses);
-        if (status === "pending") return;
-        await Todo.update({ id, status });
+        const s = status(i);
+        if (s === "pending") return;
+        await Todo.update({ id, status: s });
       }),
     );
   });

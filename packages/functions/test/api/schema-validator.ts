@@ -197,7 +197,8 @@ export class SchemaValidator {
     null: SchemaValidator.primitive("null", (d) => d === null),
   };
 
-  // fallow-ignore-next-line complexity reason: test-only recursive OpenAPI validator
+  // test-only recursive OpenAPI validator
+  // fallow-ignore-next-line complexity
   private static validate(data: any, schema: OpenAPISchema, errors: string[], path = "$"): boolean {
     if (!schema) return true;
     if (schema.nullable && data === null) return true;
@@ -233,7 +234,8 @@ export class SchemaValidator {
     boolean: () => true,
   };
 
-  // fallow-ignore-next-line complexity reason: test-only recursive OpenAPI sample builder
+  // test-only recursive OpenAPI sample builder
+  // fallow-ignore-next-line complexity
   private static sample(schema: OpenAPISchema): any {
     if (!schema) return null;
     if (schema.example !== undefined) return schema.example;

@@ -33,7 +33,17 @@ export namespace Database {
   const providedByUrl = new Map<string, PostgresJsDatabase>();
 
   function createDb(url: string): PostgresJsDatabase {
-    const client = pg(url, { connect_timeout: 10, prepare: false, max: 1, idle_timeout: 20 });
+    const client = pg(url, {
+      connect_timeout: 10,
+      prepare: false,
+      max: 1,
+      idle_timeout: 20,
+      // pglite emits a DEBUG notice per parse/bind; postgres.js console.logs every notice by default
+      onnotice: (notice) => {
+        if (notice.severity === "DEBUG") return;
+        log.info(notice.message ?? "notice", { severity: notice.severity, code: notice.code });
+      },
+    });
     return drizzle({
       client,
       logger:

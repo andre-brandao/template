@@ -11,20 +11,12 @@
     "**/build.ts",
     "**/adapter/*.ts"
   ],
-  "ignorePatterns": [
-    "**/*.gen.ts"
-  ],
-  "ignoreDependencies": [
-    "@hono/standard-validator"
-  ],
-  "ignoreUnresolvedImports": [
-    "@template/ui"
-  ],
+  "ignorePatterns": ["**/*.gen.ts"],
+  "ignoreDependencies": ["@hono/standard-validator"],
+  "ignoreUnresolvedImports": ["@template/ui"],
   "overrides": [
     {
-      "files": [
-        "packages/ui/**"
-      ],
+      "files": ["packages/ui/**"],
       "rules": {
         "unrendered-components": "off"
       }

@@ -235,7 +235,8 @@ export class SchemaValidator {
   private static sample(schema: OpenAPISchema): any {
     if (!schema) return null;
     if (schema.example !== undefined) return schema.example;
-    if (schema.allOf) return schema.allOf.reduce((acc, s) => Object.assign(acc, this.sample(s)), {});
+    if (schema.allOf)
+      return schema.allOf.reduce((acc, s) => Object.assign(acc, this.sample(s)), {});
     if (schema.oneOf?.[0]) return this.sample(schema.oneOf[0]);
     if (schema.anyOf?.[0]) return this.sample(schema.anyOf[0]);
     if (schema.enum?.length) return schema.enum[0];
@@ -297,7 +298,12 @@ export class SchemaValidator {
 
   static async createInvalidRequestBody(path: string, method = "post"): Promise<any> {
     const resolved = await this.requestSchema(path, method);
-    if (!resolved || resolved.type !== "object" || !resolved.required?.length || !resolved.properties)
+    if (
+      !resolved ||
+      resolved.type !== "object" ||
+      !resolved.required?.length ||
+      !resolved.properties
+    )
       return null;
 
     const body = this.sample(resolved);

@@ -2,6 +2,8 @@
 	import { dev } from '$app/environment';
 	import { Button, Card } from '@template/ui';
 	import { register } from '../api/login.remote';
+
+	const seed = (v: string) => (dev ? v : '');
 </script>
 
 {#each register.fields.allIssues() ?? [] as issue}
@@ -12,21 +14,15 @@
 	<form {...register}>
 		<label class="field">
 			<span>Name</span>
-			<input {...dev ? register.fields.name.as('text', 'Dev User') : register.fields.name.as('text')} />
+			<input {...register.fields.name.as('text', seed('Dev User'))} />
 		</label>
 		<label class="field">
 			<span>Email</span>
-			<input
-				{...dev ? register.fields.email.as('email', 'dev@example.com') : register.fields.email.as('email')}
-			/>
+			<input {...register.fields.email.as('email', seed('dev@example.com'))} />
 		</label>
 		<label class="field">
 			<span>Password</span>
-			<input
-				{...dev
-					? register.fields.password.as('password', 'password123')
-					: register.fields.password.as('password')}
-			/>
+			<input {...register.fields.password.as('password', seed('password123'))} />
 		</label>
 		<Button type="submit" pending={!!register.pending}>Register</Button>
 	</form>

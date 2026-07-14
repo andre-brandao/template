@@ -29,8 +29,10 @@ export function query<S extends z.ZodObject>(schema: S) {
     const url = new URL(page.url);
     for (const [key, value] of Object.entries(next)) {
       url.searchParams.delete(key);
-      for (const v of [value ?? []].flat())
-        if (v || v === 0) url.searchParams.append(key, String(v));
+      [value ?? []]
+        .flat()
+        .filter((v) => v || v === 0)
+        .forEach((v) => url.searchParams.append(key, String(v)));
     }
     goto(url, { replaceState: true, noScroll: true, keepFocus: true });
   }

@@ -47,24 +47,20 @@ function usage() {
   process.exit(1);
 }
 
-export async function serve(rest: string[]) {
-  const target = rest[0];
-
-  if (target === "api") {
+const targets: Record<string, () => void | Promise<void>> = {
+  api: () => {
     const port = Number(process.env.PORT) || 3000;
     serveApp(apiApp, port);
     console.log(`API running at http://localhost:${port}`);
-    return;
-  }
-
-  if (target === "mcp") {
+  },
+  mcp: () => {
     const port = Number(process.env.MCP_PORT) || 3001;
     serveApp(mcpApp, port);
     console.log(`MCP running at http://localhost:${port}/mcp`);
-    return;
-  }
+  },
+  dashboard,
+};
 
-  if (target === "dashboard") return dashboard();
-
-  usage();
+export async function serve(rest: string[]) {
+  return (targets[rest[0]!] ?? usage)();
 }

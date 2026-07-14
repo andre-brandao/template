@@ -90,27 +90,16 @@ export function setupApiTest() {
 
     const originalPath = path.toLowerCase();
 
-    const pathParamNames = new Set<string>();
-    const pathSegments = path.split("/").filter((x) => x.startsWith(":"));
-    if (pathSegments.length > 0) {
-      const paramsObj: Record<string, string> = Object.fromEntries(
-        pathSegments
-          .map((x) => {
-            pathParamNames.add(x.slice(1));
-            return [x.slice(1), params![x.slice(1)]];
-          })
-          .filter(([x, y]) => x && y),
-      );
-      path = path.replace(/:[^/]+/g, (x) => paramsObj[x.slice(1)]!);
-    }
+    const pathNames = new Set(
+      path
+        .split("/")
+        .filter((x) => x.startsWith(":"))
+        .map((x) => x.slice(1)),
+    );
+    path = path.replace(/:[^/]+/g, (x) => params![x.slice(1)]!);
 
-    if (params) {
-      const queryEntries = Object.entries(params).filter(([k]) => !pathParamNames.has(k));
-      if (queryEntries.length > 0) {
-        const qs = new URLSearchParams(queryEntries).toString();
-        path = `${path}?${qs}`;
-      }
-    }
+    const query = Object.entries(params ?? {}).filter(([k]) => !pathNames.has(k));
+    if (query.length > 0) path = `${path}?${new URLSearchParams(query)}`;
 
     const statusCodes = await SchemaValidator.getRouteResponseStatusCodes(originalPath, method);
     const requiresAuth = statusCodes.includes(401);

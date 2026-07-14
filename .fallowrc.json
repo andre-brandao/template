@@ -13,5 +13,6 @@
   ],
   "ignorePatterns": ["**/*.gen.ts"],
   "ignoreDependencies": ["@hono/standard-validator"],
+  "ignoreUnresolvedImports": ["@template/ui"],
   "overrides": [{ "files": ["packages/ui/**"], "rules": { "unrendered-components": "off" } }]
 }

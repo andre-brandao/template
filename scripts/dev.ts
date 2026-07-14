@@ -1,29 +1,46 @@
 #!/usr/bin/env bun
 
-import { Database } from "@template/core/drizzle";
-
 const root = `${import.meta.dir}/..`;
-const url = process.env.DATABASE_URL ?? Database.DEFAULT_URL;
-const env = { ...process.env, DATABASE_URL: url };
 const decoder = new TextDecoder();
 const children = new Set<ReturnType<typeof Bun.spawn>>();
 type IO = "pipe" | "inherit" | "ignore";
 
+const pgport = Number(process.env.PGPORT ?? 5432);
+const url =
+  process.env.DATABASE_URL ?? `postgresql://postgres:password@127.0.0.1:${pgport}/postgres`;
+const env = { ...process.env, DATABASE_URL: url, PGPORT: String(pgport) };
+
 const servers = [
-  { name: "api", cwd: `${root}/packages/functions`, cmd: ["bun", "run", "dev"], color: "\x1b[36m" },
+  {
+    name: "api",
+    cwd: `${root}/packages/functions`,
+    cmd: ["bun", "run", "dev"],
+    port: Number(process.env.PORT ?? 3000),
+    env: (port: number) => ({ PORT: String(port) }),
+    color: "\x1b[36m",
+  },
   {
     name: "mcp",
     cwd: `${root}/packages/functions`,
     cmd: ["bun", "run", "dev:mcp"],
+    port: Number(process.env.MCP_PORT ?? 3001),
+    env: (port: number) => ({ MCP_PORT: String(port) }),
     color: "\x1b[35m",
   },
-  { name: "web", cwd: `${root}/apps/dashboard`, cmd: ["bun", "run", "dev"], color: "\x1b[33m" },
+  {
+    name: "web",
+    cwd: `${root}/apps/dashboard`,
+    // strictPort so a clash is loud instead of silently drifting to another port
+    cmd: (port: number) => ["bun", "run", "dev", "--port", String(port), "--strictPort"],
+    port: Number(process.env.WEB_PORT ?? 5173),
+    color: "\x1b[33m",
+  },
 ];
 
-function spawn(cmd: string[], cwd: string, out: IO = "inherit", err: IO = out) {
+function spawn(cmd: string[], cwd: string, out: IO = "inherit", err: IO = out, extra?: object) {
   const child = Bun.spawn(cmd, {
     cwd,
-    env,
+    env: extra ? { ...env, ...extra } : env,
     stdin: "inherit",
     stdout: out,
     stderr: err,
@@ -62,7 +79,7 @@ process.on("SIGTERM", async () => {
   process.exit(0);
 });
 
-console.log("Starting database...");
+console.log(`Starting database on ${pgport}...`);
 const db = spawn(["bun", "pglite.ts"], import.meta.dir, "pipe", "ignore");
 const stdout = db.stdout;
 if (!(stdout instanceof ReadableStream)) throw new Error("Database stdout unavailable");
@@ -82,10 +99,11 @@ if (code !== 0) {
   process.exit(code);
 }
 
-console.log("Starting servers...");
+console.log(`Starting servers... ${servers.map((s) => `${s.name}=${s.port}`).join(" ")}`);
 const exit = await Promise.race(
   servers.map((server) => {
-    const child = spawn(server.cmd, server.cwd, "pipe");
+    const cmd = typeof server.cmd === "function" ? server.cmd(server.port) : server.cmd;
+    const child = spawn(cmd, server.cwd, "pipe", "pipe", server.env?.(server.port));
     const tag = `${server.color}${server.name.padEnd(3)}\x1b[0m │ `;
     for (const stream of [child.stdout, child.stderr]) {
       if (stream instanceof ReadableStream) void pipe(stream, tag);

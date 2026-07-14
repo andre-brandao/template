@@ -8,6 +8,7 @@
 	import TodoTable from '../components/table/TodoTable.svelte';
 	import TodoFilters from '../components/TodoFilters.svelte';
 	import ViewSelector from '../components/ViewSelector.svelte';
+    import TodosView from '../components/TodosView.svelte';
 
 	const params = query(
 		z.object({
@@ -38,20 +39,7 @@
 
 <TodoForm />
 
-{#if params.view === 'list'}
-	<div class="list">
-		{#each todos as todo (todo.id)}
-			<TodoCard {todo} />
-		{/each}
-		{#if todos.length === 0}
-			<p class="empty">No tasks match this filter</p>
-		{/if}
-	</div>
-{:else if params.view === 'board'}
-	<KanbanBoard {todos} />
-{:else}
-	<TodoTable {todos} />
-{/if}
+<TodosView {todos} view={params.view} />
 
 <style>
 	h1 {

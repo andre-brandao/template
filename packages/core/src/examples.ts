@@ -19,4 +19,15 @@ export namespace Examples {
     status: "pending",
     dueDate: null,
   } as const;
+
+  export const Key = {
+    id: Id("key"),
+    type: "api",
+    name: "laptop",
+    key: "sk-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+    display: "sk-XXXX...XXXX",
+    timeUsed: null,
+    expiresAt: null,
+    current: false,
+  } as const;
 }

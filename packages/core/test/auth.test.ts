@@ -16,7 +16,7 @@ describe("auth", () => {
     const user = await User.fromID(userID);
     expect(user?.email).toBe(email);
 
-    const sessionUserID = await Auth.verifySession(token);
+    const sessionUserID = await Auth.verify(token);
     expect(sessionUserID).toBe(userID);
   });
 
@@ -43,7 +43,7 @@ describe("auth", () => {
     const { token } = await Auth.register({ name: "Test User", email, password: "hunter2222" });
 
     await Auth.logout(token);
-    const sessionUserID = await Auth.verifySession(token);
+    const sessionUserID = await Auth.verify(token);
     expect(sessionUserID).toBeNull();
   });
 });

@@ -10,8 +10,12 @@ import {
 } from "./client";
 import { client } from "./client.gen";
 import type {
+  DeleteKeyByIdErrors,
+  DeleteKeyByIdResponses,
   DeleteTodoByIdErrors,
   DeleteTodoByIdResponses,
+  GetKeyErrors,
+  GetKeyResponses,
   GetMeErrors,
   GetMeResponses,
   GetTodoByIdErrors,
@@ -26,6 +30,8 @@ import type {
   PostAuthLogoutResponses,
   PostAuthRegisterErrors,
   PostAuthRegisterResponses,
+  PostKeyErrors,
+  PostKeyResponses,
   PostTodoErrors,
   PostTodoResponses,
 } from "./types.gen";
@@ -198,6 +204,70 @@ export class TemplateSdk extends HeyApiClient {
       security: [{ scheme: "bearer", type: "http" }],
       url: "/auth/logout",
       ...options,
+    });
+  }
+
+  /**
+   * List keys
+   *
+   * List the current user's API keys and active sessions. Session secrets are withheld; the key authenticating this request is flagged `current`.
+   */
+  public getKey<ThrowOnError extends boolean = false>(
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<GetKeyResponses, GetKeyErrors, ThrowOnError> {
+    return (options?.client ?? this.client).get<GetKeyResponses, GetKeyErrors, ThrowOnError>({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/key",
+      ...options,
+    });
+  }
+
+  /**
+   * Create key
+   *
+   * Mint a named API key for the current user. API keys do not expire.
+   */
+  public postKey<ThrowOnError extends boolean = false>(
+    parameters: {
+      name: string;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<PostKeyResponses, PostKeyErrors, ThrowOnError> {
+    const params = buildClientParams([parameters], [{ args: [{ in: "body", key: "name" }] }]);
+    return (options?.client ?? this.client).post<PostKeyResponses, PostKeyErrors, ThrowOnError>({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/key",
+      ...options,
+      ...params,
+      headers: {
+        "Content-Type": "application/json",
+        ...options?.headers,
+        ...params.headers,
+      },
+    });
+  }
+
+  /**
+   * Revoke key
+   *
+   * Revoke an API key or a session. The secret stops authenticating immediately — revoking your own session logs you out.
+   */
+  public deleteKeyById<ThrowOnError extends boolean = false>(
+    parameters: {
+      id: string;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<DeleteKeyByIdResponses, DeleteKeyByIdErrors, ThrowOnError> {
+    const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
+    return (options?.client ?? this.client).delete<
+      DeleteKeyByIdResponses,
+      DeleteKeyByIdErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/key/{id}",
+      ...options,
+      ...params,
     });
   }
 

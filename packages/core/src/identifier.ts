@@ -6,6 +6,7 @@ export namespace Identifier {
     user: "usr",
     provider: "prv",
     todo: "tod",
+    key: "key",
   } as const;
 
   export function create(prefix: keyof typeof prefixes, given?: string): string {

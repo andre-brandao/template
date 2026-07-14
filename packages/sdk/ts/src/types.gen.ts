@@ -46,6 +46,42 @@ export type ErrorResponse = {
 };
 
 /**
+ * An API key or an active session belonging to a user.
+ */
+export type Key = {
+  /**
+   * Unique object identifier.
+   * The format and length of IDs may change over time.
+   */
+  id: string;
+  /**
+   * `api` keys are user-minted and never expire; `session` keys back a login.
+   */
+  type: "session" | "api";
+  name: string;
+  /**
+   * The secret, for `api` keys only. Null for `session` keys — a login token is never handed back out.
+   */
+  key: string | null;
+  /**
+   * Masked secret, safe to show in a list.
+   */
+  display: string;
+  /**
+   * When the key last authenticated a request.
+   */
+  timeUsed: string | null;
+  /**
+   * When the key stops working. Null for `api` keys.
+   */
+  expiresAt: string | null;
+  /**
+   * Whether this is the key authenticating the current request.
+   */
+  current: boolean;
+};
+
+/**
  * A todo item that belongs to a user.
  */
 export type Todo = {
@@ -207,6 +243,105 @@ export type PostAuthLogoutResponses = {
 };
 
 export type PostAuthLogoutResponse = PostAuthLogoutResponses[keyof PostAuthLogoutResponses];
+
+export type GetKeyData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/key";
+};
+
+export type GetKeyErrors = {
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Internal Server Error
+   */
+  500: ErrorResponse;
+};
+
+export type GetKeyError = GetKeyErrors[keyof GetKeyErrors];
+
+export type GetKeyResponses = {
+  /**
+   * The user's keys and sessions.
+   */
+  200: Array<Key>;
+};
+
+export type GetKeyResponse = GetKeyResponses[keyof GetKeyResponses];
+
+export type PostKeyData = {
+  body: {
+    name: string;
+  };
+  path?: never;
+  query?: never;
+  url: "/key";
+};
+
+export type PostKeyErrors = {
+  /**
+   * Bad Request
+   */
+  400: ErrorResponse;
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Internal Server Error
+   */
+  500: ErrorResponse;
+};
+
+export type PostKeyError = PostKeyErrors[keyof PostKeyErrors];
+
+export type PostKeyResponses = {
+  /**
+   * The created key, including its secret.
+   */
+  200: Key;
+};
+
+export type PostKeyResponse = PostKeyResponses[keyof PostKeyResponses];
+
+export type DeleteKeyByIdData = {
+  body?: never;
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/key/{id}";
+};
+
+export type DeleteKeyByIdErrors = {
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Not Found
+   */
+  404: ErrorResponse;
+  /**
+   * Internal Server Error
+   */
+  500: ErrorResponse;
+};
+
+export type DeleteKeyByIdError = DeleteKeyByIdErrors[keyof DeleteKeyByIdErrors];
+
+export type DeleteKeyByIdResponses = {
+  /**
+   * Revoked.
+   */
+  200: "ok";
+};
+
+export type DeleteKeyByIdResponse = DeleteKeyByIdResponses[keyof DeleteKeyByIdResponses];
 
 export type GetTodoData = {
   body?: never;

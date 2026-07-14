@@ -1,21 +1,14 @@
 import { z } from "zod";
-import { and, eq, gt } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { fn } from "../util/fn";
+import { Key } from "../key";
 import { Database } from "../drizzle";
 import { ErrorCodes, VisibleError } from "../error";
 import { Identifier } from "../identifier";
 import { UserTable } from "./user.sql";
 import { ProviderTable } from "./provider.sql";
-import { SessionTable } from "./session.sql";
 
 const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000;
-
-function createToken() {
-  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  const array = new Uint32Array(48);
-  crypto.getRandomValues(array);
-  return Array.from(array, (n) => chars[n % chars.length]!).join("");
-}
 
 export namespace Auth {
   export const register = fn(
@@ -42,7 +35,7 @@ export namespace Auth {
         });
       });
 
-      return createSession(userID);
+      return session(userID);
     },
   );
 
@@ -63,22 +56,12 @@ export namespace Auth {
         "Invalid email or password",
       );
 
-    return createSession(provider.userID);
+    return session(provider.userID);
   });
 
-  export const logout = fn(z.string(), (token) =>
-    Database.use((tx) => tx.delete(SessionTable).where(eq(SessionTable.id, token))),
-  );
+  export const logout = fn(z.string(), (token) => Key.revoke(token));
 
-  export const verifySession = fn(z.string(), (token) =>
-    Database.use((tx) =>
-      tx
-        .select({ userID: SessionTable.userID })
-        .from(SessionTable)
-        .where(and(eq(SessionTable.id, token), gt(SessionTable.expiresAt, new Date())))
-        .then((rows) => rows.at(0)?.userID ?? null),
-    ),
-  );
+  export const verify = fn(z.string(), (token) => Key.verify(token));
 
   function account(email: string) {
     return Database.use((tx) =>
@@ -94,15 +77,14 @@ export namespace Auth {
     );
   }
 
-  async function createSession(userID: string) {
-    const token = createToken();
-    await Database.use((tx) =>
-      tx.insert(SessionTable).values({
-        id: token,
-        userID,
-        expiresAt: new Date(Date.now() + SESSION_TTL_MS),
-      }),
-    );
-    return { userID, token };
+  /** A login is just a `session` key — same secret shape as an API key, but it expires. */
+  async function session(userID: string) {
+    const key = await Key.create({
+      userID,
+      type: "session",
+      name: "session",
+      expiresAt: new Date(Date.now() + SESSION_TTL_MS),
+    });
+    return { userID, token: key.key };
   }
 }

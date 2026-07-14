@@ -16,12 +16,12 @@ export const auth: MiddlewareHandler = async (c, next) => {
       );
     }
 
-    const userID = await Auth.verifySession(match[1]);
+    const userID = await Auth.verify(match[1]);
     if (!userID)
       throw new VisibleError(
         "authentication",
         ErrorCodes.Authentication.INVALID_TOKEN,
-        "Invalid or expired session token",
+        "Invalid or expired token",
       );
 
     return Actor.provide("user", { userID }, next);

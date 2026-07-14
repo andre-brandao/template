@@ -15,7 +15,7 @@ const handleAuth: Handle = async ({ event, resolve }) => {
   const token = event.cookies.get("token");
   event.locals.token = token;
 
-  const userID = token ? await Auth.verifySession(token) : null;
+  const userID = token ? await Auth.verify(token) : null;
   if (!userID) return Actor.provide("public", {}, () => resolve(event));
 
   return Actor.provide("user", { userID }, () => resolve(event));

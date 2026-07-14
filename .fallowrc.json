@@ -12,6 +12,16 @@
     "**/adapter/*.ts"
   ],
   "ignorePatterns": ["**/*.gen.ts"],
+  "health": {
+    "thresholdOverrides": [
+      {
+        "files": ["**/*.svelte"],
+        "maxCrap": 110,
+        "maxUnitSize": 150,
+        "reason": "A Svelte <template> counts every {#if}/{#each}/class:/ternary as a branch and carries its <style> block in the line count, and components have no unit coverage — so CRAP (cyclomatic^2 at 0% coverage) and unit size flag ordinary markup rather than real complexity. maxCyclomatic (20) and maxCognitive (15) still apply and remain the real guard."
+      }
+    ]
+  },
   "ignoreDependencies": ["@hono/standard-validator", "@template/ui"],
   "ignoreUnresolvedImports": ["@template/ui"],
   "overrides": [

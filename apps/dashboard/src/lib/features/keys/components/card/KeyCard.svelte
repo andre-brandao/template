@@ -1,43 +1,37 @@
 <script lang="ts">
 	import type { Key } from '@template/core/key';
 	import { Button } from '@template/ui';
-	import { removeKey } from '../../api/keys.remote';
+	import RevokeForm from '../RevokeForm.svelte';
 
 	let { key }: { key: Key.Info } = $props();
 
-	const revoke = $derived(removeKey.for(key.id));
+	let shown = $state(false);
 
 	// Non-null for `api` keys, which is all this card is ever given.
 	const secret = $derived(key.key);
-
-	let shown = $state(false);
-
+	const text = $derived(shown && secret ? secret : key.display);
+	const toggle = $derived(shown ? 'Hide' : 'Reveal');
 	const used = $derived(
 		key.timeUsed ? `last used ${new Date(key.timeUsed).toLocaleDateString()}` : 'never used'
 	);
+
+	const copy = () => secret && navigator.clipboard.writeText(secret);
 </script>
 
 <li>
-	{#each revoke.fields.allIssues() ?? [] as issue}
-		<p class="error">{issue.message}</p>
-	{/each}
-
 	<div class="meta">
 		<span class="name">{key.name}</span>
 		<span class="used">{used}</span>
 	</div>
 
-	<code class:revealed={shown}>{shown && secret ? secret : key.display}</code>
+	<code class:revealed={shown}>{text}</code>
 
 	<div class="actions">
 		{#if secret}
-			<Button onclick={() => (shown = !shown)}>{shown ? 'Hide' : 'Reveal'}</Button>
-			<Button onclick={() => navigator.clipboard.writeText(secret)}>Copy</Button>
+			<Button onclick={() => (shown = !shown)}>{toggle}</Button>
+			<Button onclick={copy}>Copy</Button>
 		{/if}
-		<form {...revoke}>
-			<input {...revoke.fields.id.as('hidden', key.id)} />
-			<Button variant="danger" type="submit" pending={!!revoke.pending}>Revoke</Button>
-		</form>
+		<RevokeForm id={key.id} />
 	</div>
 </li>
 
@@ -86,11 +80,5 @@
 		align-items: center;
 		gap: 0.4em;
 		margin-left: auto;
-	}
-
-	.error {
-		flex-basis: 100%;
-		margin: 0 0 0.4em;
-		color: var(--danger, crimson);
 	}
 </style>

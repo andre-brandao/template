@@ -1,46 +1,35 @@
 <script lang="ts">
 	import type { Key } from '@template/core/key';
-	import { Button } from '@template/ui';
-	import { removeKey } from '../../api/keys.remote';
+	import RevokeForm from '../RevokeForm.svelte';
 
 	let { session }: { session: Key.Info } = $props();
 
-	const revoke = $derived(removeKey.for(session.id));
-
+	const label = $derived(session.current ? 'This device' : 'Other device');
+	const action = $derived(session.current ? 'Sign out' : 'Revoke');
 	const used = $derived(
 		session.timeUsed
 			? `last active ${new Date(session.timeUsed).toLocaleString()}`
 			: 'never active'
 	);
-
 	const expires = $derived(
-		session.expiresAt ? `expires ${new Date(session.expiresAt).toLocaleDateString()}` : null
+		session.expiresAt ? ` · expires ${new Date(session.expiresAt).toLocaleDateString()}` : ''
 	);
 </script>
 
 <li class:current={session.current}>
-	{#each revoke.fields.allIssues() ?? [] as issue}
-		<p class="error">{issue.message}</p>
-	{/each}
-
 	<div class="meta">
 		<span class="name">
-			{session.current ? 'This device' : 'Other device'}
+			{label}
 			{#if session.current}<span class="badge">current</span>{/if}
 		</span>
-		<span class="sub">{used}{expires ? ` · ${expires}` : ''}</span>
+		<span class="sub">{used}{expires}</span>
 	</div>
 
 	<!-- Masked only: a session secret is never handed back out, so there is nothing to reveal. -->
 	<code>{session.display}</code>
 
 	<div class="actions">
-		<form {...revoke}>
-			<input {...revoke.fields.id.as('hidden', session.id)} />
-			<Button variant="danger" type="submit" pending={!!revoke.pending}>
-				{session.current ? 'Sign out' : 'Revoke'}
-			</Button>
-		</form>
+		<RevokeForm id={session.id} label={action} />
 	</div>
 </li>
 
@@ -104,11 +93,5 @@
 		align-items: center;
 		gap: 0.4em;
 		margin-left: auto;
-	}
-
-	.error {
-		flex-basis: 100%;
-		margin: 0 0 0.4em;
-		color: var(--danger, crimson);
 	}
 </style>

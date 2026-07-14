@@ -97,7 +97,7 @@
     "packages/sdk/ts": {
       "name": "@template/sdk",
       "devDependencies": {
-        "@hey-api/openapi-ts": "0.94.3",
+        "@hey-api/openapi-ts": "catalog:build",
         "@types/bun": "catalog:",
       },
       "peerDependencies": {
@@ -147,6 +147,7 @@
   },
   "catalogs": {
     "build": {
+      "@hey-api/openapi-ts": "0.94.3",
     },
     "frontend": {
       "@sveltejs/adapter-auto": "^7.0.1",

@@ -10,8 +10,7 @@ export function createFetchWithRetry(timeoutMs = DEFAULT_TIMEOUT_MS): typeof fet
   return async (input, init) => {
     const applyTimeout = (req: RequestInfo | URL, reqInit?: RequestInit) => {
       const timeout = AbortSignal.timeout(timeoutMs);
-      const merge = (sig?: AbortSignal | null) =>
-        sig ? AbortSignal.any([sig, timeout]) : timeout;
+      const merge = (sig?: AbortSignal | null) => (sig ? AbortSignal.any([sig, timeout]) : timeout);
       if (req instanceof Request)
         return [new Request(req, { signal: merge(req.signal) }), undefined] as const;
       return [req, { ...reqInit, signal: merge(reqInit?.signal) }] as const;

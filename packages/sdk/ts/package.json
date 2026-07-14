@@ -14,7 +14,7 @@
     "gen": "bun run build.ts"
   },
   "devDependencies": {
-    "@hey-api/openapi-ts": "0.94.3",
+    "@hey-api/openapi-ts": "catalog:build",
     "@types/bun": "catalog:"
   },
   "peerDependencies": {

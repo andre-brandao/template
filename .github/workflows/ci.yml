@@ -74,6 +74,16 @@ jobs:
       - run: bun install --frozen-lockfile
       - run: bun run lint:ci
 
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - run: bun install --frozen-lockfile
+      - run: bun run fmt:check
+
   trivy:
     runs-on: ubuntu-latest
     permissions:
@@ -81,14 +91,12 @@ jobs:
       security-events: write
     steps:
       - uses: actions/checkout@v4
-      - name: Run Trivy vulnerability scanner
+      - name: Trivy scan (SARIF report, all severities)
         uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: fs
           scan-ref: .
           ignore-unfixed: true
-          severity: CRITICAL,HIGH
-          exit-code: "1"
           format: sarif
           output: trivy-results.sarif
       - name: Upload Trivy results to Security tab
@@ -96,3 +104,13 @@ jobs:
         if: always()
         with:
           sarif_file: trivy-results.sarif
+      - name: Trivy gate (fail on HIGH/CRITICAL)
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          ignore-unfixed: true
+          severity: CRITICAL,HIGH
+          exit-code: "1"
+          format: table
+          skip-setup-trivy: true

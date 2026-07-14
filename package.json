@@ -15,7 +15,7 @@
     },
     "catalogs": {
       "build": {
-        "@hey-api/openapi-ts": "0.94.3"
+        "@hey-api/openapi-ts": "0.99.0"
       },
       "frontend": {
         "@sveltejs/adapter-auto": "^7.0.1",

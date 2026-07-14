@@ -599,7 +599,9 @@ const seeded = examples.replace(
 );
 if (seeded === examples) {
   console.warn(`Could not wire examples.ts automatically; add this to the Examples namespace:`);
-  console.warn(`  export const ${pascal} = { id: Id("${name}"), userID: Id("user"), title: "Example ${name}" } as const;`);
+  console.warn(
+    `  export const ${pascal} = { id: Id("${name}"), userID: Id("user"), title: "Example ${name}" } as const;`,
+  );
 }
 if (seeded !== examples) await Bun.write(`${root}/packages/core/src/examples.ts`, seeded);
 

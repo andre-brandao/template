@@ -15,9 +15,7 @@
   },
   "devDependencies": {
     "@hey-api/openapi-ts": "catalog:build",
-    "@types/bun": "catalog:"
-  },
-  "peerDependencies": {
-    "typescript": "catalog:"
+    "@types/bun": "catalog:",
+    "typescript": "5.9.3"
   }
 }

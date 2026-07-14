@@ -15,7 +15,7 @@ export type User = {
   id: string;
   name: string;
   email: string;
-  emailVerified: boolean;
+  emailVerified?: boolean;
   image: string | null;
 };
 
@@ -214,10 +214,7 @@ export type GetTodoData = {
   query?: {
     page?: number;
     pageSize?: number;
-    /**
-     * Status of a todo item. Any short label; defaults are pending, in_progress and done.
-     */
-    status?: string;
+    status?: Array<string>;
   };
   url: "/todo";
 };
@@ -265,7 +262,7 @@ export type PostTodoData = {
      * Status of a todo item. Any short label; defaults are pending, in_progress and done.
      */
     status?: string;
-    dueDate?: string;
+    dueDate?: string | null;
   };
   path?: never;
   query?: never;
@@ -375,7 +372,7 @@ export type PatchTodoByIdData = {
      * Status of a todo item. Any short label; defaults are pending, in_progress and done.
      */
     status?: string;
-    dueDate?: string;
+    dueDate?: string | null;
   };
   path: {
     id: string;

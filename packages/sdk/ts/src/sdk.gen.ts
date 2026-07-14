@@ -3,7 +3,9 @@
 import {
   buildClientParams,
   type Client,
+  type ClientMeta,
   type Options as Options2,
+  type RequestResult,
   type TDataShape,
 } from "./client";
 import { client } from "./client.gen";
@@ -31,7 +33,8 @@ import type {
 export type Options<
   TData extends TDataShape = TDataShape,
   ThrowOnError extends boolean = boolean,
-> = Options2<TData, ThrowOnError> & {
+  TResponse = unknown,
+> = Options2<TData, ThrowOnError, TResponse> & {
   /**
    * You can provide a client instance returned by `createClient()` instead of
    * individual options. This might be also useful if you want to implement a
@@ -42,7 +45,7 @@ export type Options<
    * You can pass arbitrary values through the `meta` object. This can be
    * used to access values that aren't defined as part of the SDK function.
    */
-  meta?: Record<string, unknown>;
+  meta?: keyof ClientMeta extends never ? Record<string, unknown> : ClientMeta;
 };
 
 class HeyApiClient {
@@ -74,7 +77,8 @@ class HeyApiRegistry<T> {
 }
 
 export class TemplateSdk extends HeyApiClient {
-  public static readonly __registry = new HeyApiRegistry<TemplateSdk>();
+  public static readonly __registry: HeyApiRegistry<TemplateSdk> =
+    new HeyApiRegistry<TemplateSdk>();
 
   constructor(args?: { client?: Client; key?: string }) {
     super(args);
@@ -86,7 +90,9 @@ export class TemplateSdk extends HeyApiClient {
    *
    * Get the profile of the currently authenticated user.
    */
-  public getMe<ThrowOnError extends boolean = false>(options?: Options<never, ThrowOnError>) {
+  public getMe<ThrowOnError extends boolean = false>(
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<GetMeResponses, GetMeErrors, ThrowOnError> {
     return (options?.client ?? this.client).get<GetMeResponses, GetMeErrors, ThrowOnError>({
       security: [{ scheme: "bearer", type: "http" }],
       url: "/me",
@@ -106,7 +112,7 @@ export class TemplateSdk extends HeyApiClient {
       password: string;
     },
     options?: Options<never, ThrowOnError>,
-  ) {
+  ): RequestResult<PostAuthRegisterResponses, PostAuthRegisterErrors, ThrowOnError> {
     const params = buildClientParams(
       [parameters],
       [
@@ -147,7 +153,7 @@ export class TemplateSdk extends HeyApiClient {
       password: string;
     },
     options?: Options<never, ThrowOnError>,
-  ) {
+  ): RequestResult<PostAuthLoginResponses, PostAuthLoginErrors, ThrowOnError> {
     const params = buildClientParams(
       [parameters],
       [
@@ -183,7 +189,7 @@ export class TemplateSdk extends HeyApiClient {
    */
   public postAuthLogout<ThrowOnError extends boolean = false>(
     options?: Options<never, ThrowOnError>,
-  ) {
+  ): RequestResult<PostAuthLogoutResponses, PostAuthLogoutErrors, ThrowOnError> {
     return (options?.client ?? this.client).post<
       PostAuthLogoutResponses,
       PostAuthLogoutErrors,
@@ -204,10 +210,10 @@ export class TemplateSdk extends HeyApiClient {
     parameters?: {
       page?: number;
       pageSize?: number;
-      status?: string;
+      status?: Array<string>;
     },
     options?: Options<never, ThrowOnError>,
-  ) {
+  ): RequestResult<GetTodoResponses, GetTodoErrors, ThrowOnError> {
     const params = buildClientParams(
       [parameters],
       [
@@ -235,10 +241,10 @@ export class TemplateSdk extends HeyApiClient {
     parameters: {
       title: string;
       status?: string;
-      dueDate?: string;
+      dueDate?: string | null;
     },
     options?: Options<never, ThrowOnError>,
-  ) {
+  ): RequestResult<PostTodoResponses, PostTodoErrors, ThrowOnError> {
     const params = buildClientParams(
       [parameters],
       [
@@ -272,7 +278,7 @@ export class TemplateSdk extends HeyApiClient {
       id: string;
     },
     options?: Options<never, ThrowOnError>,
-  ) {
+  ): RequestResult<DeleteTodoByIdResponses, DeleteTodoByIdErrors, ThrowOnError> {
     const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
     return (options?.client ?? this.client).delete<
       DeleteTodoByIdResponses,
@@ -294,7 +300,7 @@ export class TemplateSdk extends HeyApiClient {
       id: string;
     },
     options?: Options<never, ThrowOnError>,
-  ) {
+  ): RequestResult<GetTodoByIdResponses, GetTodoByIdErrors, ThrowOnError> {
     const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
     return (options?.client ?? this.client).get<
       GetTodoByIdResponses,
@@ -316,10 +322,10 @@ export class TemplateSdk extends HeyApiClient {
       id: string;
       title?: string;
       status?: string;
-      dueDate?: string;
+      dueDate?: string | null;
     },
     options?: Options<never, ThrowOnError>,
-  ) {
+  ): RequestResult<PatchTodoByIdResponses, PatchTodoByIdErrors, ThrowOnError> {
     const params = buildClientParams(
       [parameters],
       [

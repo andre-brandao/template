@@ -55,6 +55,10 @@ jobs:
       pull-requests: write
     steps:
       - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - run: bun install --frozen-lockfile
       - uses: fallow-rs/fallow@v2
         with:
           format: sarif

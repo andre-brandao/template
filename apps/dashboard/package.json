@@ -16,7 +16,7 @@
     "@template/functions": "workspace:*",
     "@template/sdk": "workspace:*",
     "@template/ui": "workspace:*",
-    "layerchart": "^2.0.0-next.66",
+    "layerchart": "^2.0.1",
     "zod": "catalog:"
   },
   "devDependencies": {

@@ -75,34 +75,29 @@ await Bun.write(
   `import { z } from "zod";
 import { and, count, desc, eq, ilike, isNull } from "drizzle-orm";
 import { fn } from "../util/fn";
+import { found } from "../error";
 import { Database } from "../drizzle";
 import { Actor } from "../actor";
 import { Common } from "../common";
+import { Examples } from "../examples";
 import { Identifier } from "../identifier";
-import { ErrorCodes, VisibleError } from "../error";
 import { ${pascal}Table } from "./${name}.sql";
 
 export namespace ${pascal} {
-  export const Example = {
-    id: "${prefix}_XXXXXXXXXXXXXXXXXXXXXXXXX",
-    userID: "usr_XXXXXXXXXXXXXXXXXXXXXXXXX",
-    title: "Example ${name}",
-  };
-
   export const Info = z
     .object({
-      id: z.string().meta({ description: Common.IdDescription, example: Example.id }),
+      id: z.string().meta({ description: Common.IdDescription, example: Examples.${pascal}.id }),
       userID: z.string(),
-      title: z.string(),
+      title: z.string().min(0).max(2000),
     })
     .meta({
       ref: "${pascal}",
       description: "A ${name} that belongs to a user.",
-      example: Example,
+      example: Examples.${pascal},
     });
   export type Info = z.infer<typeof Info>;
 
-  export const create = fn(z.object({ title: z.string().min(1).max(2000) }), async (input) => {
+  export const create = fn(z.object({ title: Info.shape.title.min(1) }), async (input) => {
     const id = Identifier.create("${name}");
     await Database.use((tx) =>
       tx.insert(${pascal}Table).values({ id, userID: Actor.userID(), title: input.title }),
@@ -130,7 +125,7 @@ export namespace ${pascal} {
     });
   });
 
-  export const fromID = fn(z.string(), (id) =>
+  export const fromID = fn(Info.shape.id, (id) =>
     Database.use((tx) =>
       tx
         .select()
@@ -147,33 +142,21 @@ export namespace ${pascal} {
   );
 
   export const update = fn(
-    z.object({ id: z.string(), title: z.string().min(1).max(2000) }),
-    async (input) => {
-      const existing = await fromID.force(input.id);
-      if (!existing)
-        throw new VisibleError(
-          "not_found",
-          ErrorCodes.NotFound.RESOURCE_NOT_FOUND,
-          "${pascal} not found",
-        );
+    z.object({ id: Info.shape.id, title: Info.shape.title.min(1) }),
+    async ({ id, title }) => {
+      found("${pascal}", await fromID.force(id));
 
       return Database.use((tx) =>
         tx
           .update(${pascal}Table)
-          .set({ title: input.title, timeUpdated: new Date() })
-          .where(and(eq(${pascal}Table.id, input.id), eq(${pascal}Table.userID, Actor.userID()))),
+          .set({ title, timeUpdated: new Date() })
+          .where(and(eq(${pascal}Table.id, id), eq(${pascal}Table.userID, Actor.userID()))),
       );
     },
   );
 
-  export const remove = fn(z.string(), async (id) => {
-    const existing = await fromID.force(id);
-    if (!existing)
-      throw new VisibleError(
-        "not_found",
-        ErrorCodes.NotFound.RESOURCE_NOT_FOUND,
-        "${pascal} not found",
-      );
+  export const remove = fn(Info.shape.id, async (id) => {
+    found("${pascal}", await fromID.force(id));
 
     return Database.use((tx) =>
       tx
@@ -230,7 +213,8 @@ describe("${name}", () => {
 
 await Bun.write(
   targets.handler,
-  `import { z } from "zod";
+  `// fallow-ignore-file code-duplication
+import { z } from "zod";
 import { Hono } from "hono";
 import { describeRoute } from "hono-openapi";
 import {
@@ -242,7 +226,8 @@ import {
   authRequired,
 } from "../common";
 import { ${pascal} } from "@template/core/${name}";
-import { ErrorCodes, VisibleError } from "@template/core/error";
+import { Examples } from "@template/core/examples";
+import { found } from "@template/core/error";
 
 export namespace ${pascal}Api {
   export const route = new Hono()
@@ -253,7 +238,7 @@ export namespace ${pascal}Api {
         summary: "List ${plural}",
         description: "List the current user's ${plural}. Paginated.",
         responses: {
-          200: PaginatedResponse(${pascal}.Info, "A page of ${plural}.", ${pascal}.Example),
+          200: PaginatedResponse(${pascal}.Info, "A page of ${plural}.", Examples.${pascal}),
           401: ErrorResponses[401],
           500: ErrorResponses[500],
         },
@@ -270,7 +255,7 @@ export namespace ${pascal}Api {
         responses: {
           200: {
             content: {
-              "application/json": { schema: Result(${pascal}.Info), example: ${pascal}.Example },
+              "application/json": { schema: Result(${pascal}.Info), example: Examples.${pascal} },
             },
             description: "The ${name}.",
           },
@@ -281,16 +266,7 @@ export namespace ${pascal}Api {
       }),
       authRequired,
       validator("param", z.object({ id: z.string() })),
-      async (c) => {
-        const row = await ${pascal}.fromID(c.req.valid("param").id);
-        if (!row)
-          throw new VisibleError(
-            "not_found",
-            ErrorCodes.NotFound.RESOURCE_NOT_FOUND,
-            "${pascal} not found",
-          );
-        return c.json(row, 200);
-      },
+      async (c) => c.json(found("${pascal}", await ${pascal}.fromID(c.req.valid("param").id)), 200),
     )
     .post(
       "/",
@@ -609,6 +585,24 @@ await Bun.write(
   ids.replace("\n  } as const;", `\n    ${name}: "${prefix}",\n  } as const;`),
 );
 
+const examples = await Bun.file(`${root}/packages/core/src/examples.ts`).text();
+const seeded = examples.replace(
+  /\n}\s*$/,
+  `\n
+  export const ${pascal} = {
+    id: Id("${name}"),
+    userID: Id("user"),
+    title: "Example ${name}",
+  } as const;
+}
+`,
+);
+if (seeded === examples) {
+  console.warn(`Could not wire examples.ts automatically; add this to the Examples namespace:`);
+  console.warn(`  export const ${pascal} = { id: Id("${name}"), userID: Id("user"), title: "Example ${name}" } as const;`);
+}
+if (seeded !== examples) await Bun.write(`${root}/packages/core/src/examples.ts`, seeded);
+
 const api = await Bun.file(`${root}/packages/functions/src/api/routes.ts`).text();
 const wired = api
   .replace(
@@ -640,13 +634,27 @@ if (tooled === mcp) {
 }
 if (tooled !== mcp) await Bun.write(`${root}/packages/functions/src/mcp/index.ts`, tooled);
 
+const nav = `${root}/apps/dashboard/src/lib/components/layout/Sidebar.svelte`;
+const bar = await Bun.file(nav).text();
+const linked = bar.replace(
+  /(\{ href: '\/insights', label: 'Insights' \})\n/,
+  `$1,\n\t\t{ href: '/${plural}', label: '${pascal}s' }\n`,
+);
+if (linked === bar) {
+  console.warn(`Could not wire Sidebar.svelte automatically; add this link yourself:`);
+  console.warn(`  { href: '/${plural}', label: '${pascal}s' }`);
+}
+if (linked !== bar) await Bun.write(nav, linked);
+
 console.log(`Created feature "${name}":`);
 for (const target of Object.values(targets)) console.log(`  ${target.replace(`${root}/`, "")}`);
-console.log(`Wired: identifier prefix "${prefix}", route /${name}, MCP ${name}_* tools`);
+console.log(
+  `Wired: identifier prefix "${prefix}", Examples.${pascal}, route /${name}, MCP ${name}_* tools, /${plural} sidebar link`,
+);
 console.log(`
 Next steps:
   - restart \`bun dev\` (drizzle pushes the new "${name}" table on startup)
   - \`bun run gen\` to refresh the OpenAPI spec + SDK
-  - add a sidebar link to /${plural} in apps/dashboard/src/lib/components/layout/Sidebar.svelte
+  - typecheck: \`cd packages/core && bun typecheck\`
   - tests: \`cd packages/core && bun test ${name}\`
 `);

@@ -75,6 +75,7 @@ jobs:
         if: always()
         with:
           sarif_file: fallow-results.sarif
+          category: fallow
 
   lint:
     runs-on: ubuntu-latest
@@ -116,6 +117,7 @@ jobs:
         if: always()
         with:
           sarif_file: trivy-results.sarif
+          category: trivy
       - name: Trivy gate (fail on HIGH/CRITICAL)
         uses: aquasecurity/trivy-action@v0.36.0
         with:

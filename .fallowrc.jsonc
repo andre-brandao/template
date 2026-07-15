@@ -9,7 +9,7 @@
     "infra/**/*.ts",
     "sst.config.ts",
     "**/build.ts",
-    "**/adapter/*.ts"
+    "**/adapter/*.ts",
   ],
   "ignorePatterns": ["**/*.gen.ts"],
   "health": {
@@ -18,51 +18,61 @@
         "files": ["**/*.svelte"],
         "maxCrap": 110,
         "maxUnitSize": 150,
-        "reason": "A Svelte <template> counts every {#if}/{#each}/class:/ternary as a branch and carries its <style> block in the line count, and components have no unit coverage — so CRAP (cyclomatic^2 at 0% coverage) and unit size flag ordinary markup rather than real complexity. maxCyclomatic (20) and maxCognitive (15) still apply and remain the real guard."
+        "reason": "A Svelte <template> counts every {#if}/{#each}/class:/ternary as a branch and carries its <style> block in the line count, and components have no unit coverage — so CRAP (cyclomatic^2 at 0% coverage) and unit size flag ordinary markup rather than real complexity. maxCyclomatic (20) and maxCognitive (15) still apply and remain the real guard.",
       },
       {
         "files": ["scripts/**/*.ts"],
         "maxCrap": 420,
-        "reason": "Dev orchestration scripts spawn real subprocesses and have no unit coverage, so CRAP (cyclomatic^2 at 0% coverage) inflates on ordinary control flow. 420 = the 20^2+20 ceiling of the maxCyclomatic guard, so cyclomatic (20) and cognitive (15) remain the real guard."
-      }
-    ]
+        "reason": "Dev orchestration scripts spawn real subprocesses and have no unit coverage, so CRAP (cyclomatic^2 at 0% coverage) inflates on ordinary control flow. 420 = the 20^2+20 ceiling of the maxCyclomatic guard, so cyclomatic (20) and cognitive (15) remain the real guard.",
+      },
+    ],
   },
   "ignoreDependencies": ["@hono/standard-validator", "@template/ui"],
   "ignoreUnresolvedImports": ["@template/ui"],
   "boundaries": {
+    // Zones glob over `apps/*` (not a fixed `root`) so every SvelteKit app under
+    // apps/ — the current dashboard and a future apps/admin — inherits the same
+    // layered rules with zero new config. `root` is a literal prefix and can't
+    // glob, so the wildcard lives in the patterns. apps/cli is flat files and
+    // matches none of these, so it stays unzoned.
     "zones": [
-      { "name": "app", "root": "apps/dashboard/", "patterns": ["src/routes/**"] },
+      { "name": "app", "patterns": ["apps/*/src/routes/**"] },
+      // autoDiscover splits features/* into per-slice zones (features/auth,
+      // features/todos, …) so siblings can't import each other. It needs a literal
+      // directory and can't glob apps/*, so add one line per app. Uncomment admin
+      // when apps/admin lands.
       {
         "name": "features",
-        "root": "apps/dashboard/",
-        "patterns": ["src/lib/features/**"],
-        "autoDiscover": ["src/lib/features"]
+        "patterns": ["apps/*/src/lib/features/**"],
+        "autoDiscover": [
+          "apps/dashboard/src/lib/features",
+          // "apps/admin/src/lib/features",
+        ],
       },
-      { "name": "server", "root": "apps/dashboard/", "patterns": ["src/lib/server/**"] },
+      { "name": "server", "patterns": ["apps/*/src/lib/server/**"] },
       {
         "name": "shared",
-        "root": "apps/dashboard/",
         "patterns": [
-          "src/lib/components/**",
-          "src/lib/utils/**",
-          "src/lib/assets/**",
-          "src/lib/index.ts"
-        ]
-      }
+          "apps/*/src/lib/components/**",
+          "apps/*/src/lib/utils/**",
+          "apps/*/src/lib/assets/**",
+          "apps/*/src/lib/index.ts",
+        ],
+      },
     ],
     "rules": [
       { "from": "app", "allow": ["features", "server", "shared"] },
       { "from": "features", "allow": ["server", "shared"] },
       { "from": "server", "allow": ["shared"] },
-      { "from": "shared", "allow": [] }
-    ]
+      { "from": "shared", "allow": [] },
+    ],
   },
   "overrides": [
     {
       "files": ["packages/ui/**"],
       "rules": {
-        "unrendered-components": "off"
-      }
-    }
-  ]
+        "unrendered-components": "off",
+      },
+    },
+  ],
 }

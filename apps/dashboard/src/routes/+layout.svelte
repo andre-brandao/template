@@ -9,10 +9,10 @@
 
 	let { data, children } = $props();
 
-	const me = provide(data.user);
-
-	$effect(() => {
-		provide(data.user);
+	const me = provide({
+		get current() {
+			return data.user;
+		}
 	});
 </script>
 
@@ -25,7 +25,7 @@
 <div class="shell">
 	<Topbar />
 	<div class="body">
-		{#if me}
+		{#if me.current}
 			<Sidebar />
 		{/if}
 		<main>

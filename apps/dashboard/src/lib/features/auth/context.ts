@@ -7,4 +7,4 @@ type User = { name: string; email: string; image: string | null };
  * depth. Context is per-request, so unlike a module-level `$state` this can't
  * leak one user's data into the next user's SSR render.
  */
-export const [user, provide] = createContext<User | null>();
+export const [user, provide] = createContext<{ readonly current: User | null }>();

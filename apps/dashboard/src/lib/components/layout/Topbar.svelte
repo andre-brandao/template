@@ -12,13 +12,13 @@
 <header>
 	<a href="/" class="brand"><span class="dot"></span>Todos</a>
 
-	{#if me}
+	{#if me.current}
 		<div class="side">
 			<a class="me" href="/profile" aria-current={active ? 'page' : undefined}>
-				<Avatar name={me.name} image={me.image} />
+				<Avatar name={me.current.name} image={me.current.image} />
 				<span class="meta">
-					<span class="name">{me.name}</span>
-					<span class="email">{me.email}</span>
+					<span class="name">{me.current.name}</span>
+					<span class="email">{me.current.email}</span>
 				</span>
 			</a>
 			<a href="/logout">Log out</a>

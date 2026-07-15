@@ -2,12 +2,13 @@
 	import { user } from '$lib/features/auth/context';
 
 	const me = user();
+	const current = $derived(me.current);
 </script>
 
 <section>
 	<h1>Todos</h1>
 	<p>A small dashboard for tracking work — capture todos, move them through stages, and see how things trend over time.</p>
-	{#if me}
+	{#if current}
 		<div class="actions">
 			<a href="/todos">Todos</a>
 			<a href="/insights">Insights</a>

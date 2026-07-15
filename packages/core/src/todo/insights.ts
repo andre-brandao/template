@@ -132,6 +132,27 @@ export namespace Insights {
     return out;
   }
 
+  /** Per-day created counts over the range for a GitHub-style contribution grid. */
+  export const calendar = fn(Range, (input) => {
+    const day = sql<string>`to_char(date_trunc('day', ${TodoTable.timeCreated} at time zone 'utc'), 'YYYY-MM-DD')`;
+    return Database.use(async (tx) => {
+      const rows = await tx
+        .select({ day, total: count() })
+        .from(TodoTable)
+        .where(and(mine(), within(TodoTable.timeCreated, input)))
+        .groupBy(day)
+        .orderBy(asc(day));
+      const max = Math.max(0, ...rows.map((row) => row.total));
+      return {
+        start: input.start,
+        end: input.end,
+        max,
+        total: rows.reduce((sum, row) => sum + row.total, 0),
+        days: rows.map((row) => ({ day: row.day, count: row.total })),
+      };
+    });
+  });
+
   export const activity = fn(Range, (input) => {
     // Bucket coarser as ranges grow: keeps point counts chart-friendly (~31 max).
     const days = span(input);

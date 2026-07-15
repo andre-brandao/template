@@ -5,6 +5,7 @@
 	import { debounce } from '$lib/utils/debounce';
 	import StatsSection from '../components/insights/StatsSection.svelte';
 	import ActivitySection from '../components/insights/ActivitySection.svelte';
+	import CalendarSection from '../components/insights/CalendarSection.svelte';
 	import DueSection from '../components/insights/DueSection.svelte';
 	import StatusSection from '../components/insights/StatusSection.svelte';
 	import Skeleton from '../components/insights/Skeleton.svelte';
@@ -39,6 +40,11 @@
 	<svelte:boundary>
 		<ActivitySection {range} />
 		{#snippet pending()}<Skeleton height="382px" />{/snippet}
+	</svelte:boundary>
+
+	<svelte:boundary>
+		<CalendarSection {range} />
+		{#snippet pending()}<Skeleton height="220px" />{/snippet}
 	</svelte:boundary>
 
 	<svelte:boundary>

@@ -25,6 +25,12 @@
   --danger: #d3684f;
   --series-1: #cd8030;
   --series-2: #27a87e;
+  /* GitHub-style contribution ramp: 0 = empty, 4 = busiest */
+  --cal-0: var(--surface-2);
+  --cal-1: color-mix(in oklab, var(--accent) 28%, var(--surface-2));
+  --cal-2: color-mix(in oklab, var(--accent) 52%, var(--surface-2));
+  --cal-3: color-mix(in oklab, var(--accent) 76%, var(--surface-2));
+  --cal-4: var(--accent);
   --radius: 8px;
   --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-mono: ui-monospace, "JetBrains Mono", "SF Mono", "Cascadia Code", monospace;

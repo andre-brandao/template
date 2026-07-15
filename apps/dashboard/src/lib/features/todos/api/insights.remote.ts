@@ -26,3 +26,8 @@ export const getActivity = query(Insights.Range, async (input) => {
   auth();
   return Insights.activity(input);
 });
+
+export const getCalendar = query(Insights.Range, async (input) => {
+  auth();
+  return Insights.calendar(input);
+});

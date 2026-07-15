@@ -32,7 +32,12 @@
   "boundaries": {
     "zones": [
       { "name": "app", "root": "apps/dashboard/", "patterns": ["src/routes/**"] },
-      { "name": "features", "root": "apps/dashboard/", "patterns": ["src/lib/features/**"], "autoDiscover": ["src/lib/features"] },
+      {
+        "name": "features",
+        "root": "apps/dashboard/",
+        "patterns": ["src/lib/features/**"],
+        "autoDiscover": ["src/lib/features"]
+      },
       { "name": "server", "root": "apps/dashboard/", "patterns": ["src/lib/server/**"] },
       {
         "name": "shared",

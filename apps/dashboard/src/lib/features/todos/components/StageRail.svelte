@@ -24,5 +24,6 @@
 		flex: 1;
 		height: 4px;
 		border-radius: 2px;
+		transition: background 0.3s ease;
 	}
 </style>

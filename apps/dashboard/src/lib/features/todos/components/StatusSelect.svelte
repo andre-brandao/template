@@ -34,6 +34,7 @@
 		background: color-mix(in srgb, var(--c) 12%, transparent);
 		color: var(--c);
 		cursor: pointer;
+		transition: color 0.3s ease, background 0.3s ease, border-color 0.3s ease;
 	}
 
 	select:disabled {

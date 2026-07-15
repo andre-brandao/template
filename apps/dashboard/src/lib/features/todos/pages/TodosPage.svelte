@@ -1,6 +1,6 @@
 <script lang="ts">
   import { z } from 'zod'
-  import { query } from '$lib/params'
+  import { query } from '$lib/utils/params'
   import { getTodos } from '../api/todos.remote'
   import TodoForm from '../components/form/TodoForm.svelte'
   import TodoFilters from '../components/TodoFilters.svelte'

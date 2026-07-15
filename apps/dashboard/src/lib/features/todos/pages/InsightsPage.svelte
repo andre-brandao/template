@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { z } from 'zod';
-	import { query } from '$lib/params';
+	import { query } from '$lib/utils/params';
 	import { RangePicker, last, valid, type Range } from '@template/ui';
-	import { debounce } from '$lib/debounce';
+	import { debounce } from '$lib/utils/debounce';
 	import StatsSection from '../components/insights/StatsSection.svelte';
 	import ActivitySection from '../components/insights/ActivitySection.svelte';
 	import DueSection from '../components/insights/DueSection.svelte';

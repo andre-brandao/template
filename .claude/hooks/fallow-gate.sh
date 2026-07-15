@@ -31,11 +31,14 @@ fi
 if command -v fallow >/dev/null 2>&1; then
   RUNNER=(fallow)
   BIN_DESC="$(command -v fallow)"
+elif command -v bunx >/dev/null 2>&1 && VER_PROBE="$(bunx fallow --version 2>/dev/null || true)" && [[ "$VER_PROBE" == fallow* ]]; then
+  RUNNER=(bunx fallow)
+  BIN_DESC="bunx fallow"
 elif command -v npx >/dev/null 2>&1 && VER_PROBE="$(npx --no-install fallow --version 2>/dev/null || true)" && [[ "$VER_PROBE" == fallow* ]]; then
   RUNNER=(npx --no-install fallow)
   BIN_DESC="npx --no-install fallow"
 else
-  echo "fallow-gate: fallow binary not found (tried PATH and npx --no-install), skipping audit." >&2
+  echo "fallow-gate: fallow binary not found (tried PATH, bunx, and npx --no-install), skipping audit." >&2
   exit 0
 fi
 

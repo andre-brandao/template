@@ -65,22 +65,56 @@
           "apps/*/src/lib/index.ts",
         ],
       },
+      // Shared workspace packages, one root-scoped zone each. `root` strips the
+      // package prefix so `src/**` matches within it. These carry the backend/
+      // design-system layering the app zones consume.
+      {
+        "name": "core",
+        "root": "packages/core/",
+        "patterns": ["src/**"],
+      },
+      {
+        "name": "functions",
+        "root": "packages/functions/",
+        "patterns": ["src/**"],
+      },
+      {
+        "name": "ui",
+        "root": "packages/ui/",
+        "patterns": ["src/**"],
+      },
     ],
     "rules": [
+      // App layer: routes wire the shell, features own a vertical slice, server is
+      // request-only glue. All may reach the design system + backend they consume.
       {
         "from": "app",
-        "allow": ["features", "server", "shared"],
+        "allow": ["features", "server", "shared", "core"],
       },
       {
         "from": "features",
-        "allow": ["server", "shared"],
+        "allow": ["server", "shared", "core", "ui"],
       },
       {
         "from": "server",
-        "allow": ["shared"],
+        "allow": ["shared", "core", "functions"],
       },
       {
         "from": "shared",
+        "allow": [],
+      },
+      // Backend / design-system layering. Dependencies flow one way toward core;
+      // core and ui are leaves — nothing internal below them.
+      {
+        "from": "functions",
+        "allow": ["core"],
+      },
+      {
+        "from": "core",
+        "allow": [],
+      },
+      {
+        "from": "ui",
         "allow": [],
       },
     ],

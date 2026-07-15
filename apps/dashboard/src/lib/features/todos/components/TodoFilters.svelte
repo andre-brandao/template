@@ -3,7 +3,7 @@
 </script>
 
 <script lang="ts">
-	import { debounce } from '$lib/debounce';
+	import { debounce } from '$lib/utils/debounce';
 	import { getStatuses } from '../api/todos.remote';
 	import { label } from '../status';
 

@@ -23,7 +23,7 @@
 {/if}
 
 <div class="shell">
-	<Topbar />
+	<Topbar user={me.current} />
 	<div class="body">
 		{#if me.current}
 			<Sidebar />

@@ -1,9 +1,8 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import Avatar from '../Avatar.svelte';
-	import { user } from '$lib/features/auth/context';
 
-	const me = user();
+	let { user }: { user: { name: string; email: string; image: string | null } | null } = $props();
 
 	// The user chip is the only way into the profile — there is no sidebar link.
 	const active = $derived(page.url.pathname.startsWith('/profile'));
@@ -12,13 +11,13 @@
 <header>
 	<a href="/" class="brand"><span class="dot"></span>Todos</a>
 
-	{#if me.current}
+	{#if user}
 		<div class="side">
 			<a class="me" href="/profile" aria-current={active ? 'page' : undefined}>
-				<Avatar name={me.current.name} image={me.current.image} />
+				<Avatar name={user.name} image={user.image} />
 				<span class="meta">
-					<span class="name">{me.current.name}</span>
-					<span class="email">{me.current.email}</span>
+					<span class="name">{user.name}</span>
+					<span class="email">{user.email}</span>
 				</span>
 			</a>
 			<a href="/logout">Log out</a>

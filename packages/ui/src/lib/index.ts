@@ -2,6 +2,7 @@
 
 // input
 export { default as Button } from "./input/Button.svelte";
+export { default as Input } from "./input/Input.svelte";
 export { default as RangePicker, last, valid, type Range } from "./input/RangePicker.svelte";
 
 // ui

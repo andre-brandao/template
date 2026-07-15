@@ -13,12 +13,12 @@
   "sideEffects": [
     "**/*.css"
   ],
-  "types": "./dist/index.d.ts",
-  "svelte": "./dist/index.js",
+  "types": "./src/lib/index.ts",
+  "svelte": "./src/lib/index.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "svelte": "./dist/index.js"
+      "types": "./src/lib/index.ts",
+      "svelte": "./src/lib/index.ts"
     }
   },
   "scripts": {

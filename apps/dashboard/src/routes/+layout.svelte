@@ -10,6 +10,10 @@
 	let { data, children } = $props();
 
 	const me = provide(data.user);
+
+	$effect(() => {
+		provide(data.user);
+	});
 </script>
 
 <svelte:head><link rel="icon" href={favicon} /></svelte:head>

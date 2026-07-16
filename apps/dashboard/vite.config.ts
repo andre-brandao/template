@@ -4,25 +4,34 @@ import tailwindcss from "@tailwindcss/vite";
 import { sveltekit } from "@sveltejs/kit/vite";
 import { defineConfig } from "vite";
 
-const selectedAdapter = process.env.SVELTE_ADAPTER;
 
 const adapter = await (async () => {
-  switch (selectedAdapter) {
-    case "cloudflare":
-      const { default: adapterCloudflare } = await import("@sveltejs/adapter-cloudflare");
-      return adapterCloudflare();
-    case "bun":
-      const { default: adapterBun } = await import("svelte-adapter-bun");
-      return adapterBun();
-    case "sst-aws":
-      const { default: adapterAws } = await import("svelte-kit-sst");
-      return adapterAws();
-    case "node":
-    default:
-      const { default: adapterNode } = await import("@sveltejs/adapter-node");
-      return adapterNode();
+  const map = {
+    "cloudflare": async () => {
+      const { default: adapter } = await import("@sveltejs/adapter-cloudflare");
+      return adapter();
+    },
+    "bun": async () => {
+      const { default: adapter } = await import("svelte-adapter-bun");
+      return adapter();
+    },
+    "sst-aws": async () => {
+      const { default: adapter } = await import("svelte-kit-sst");
+      return adapter();
+    },
+    "node": async () => {
+      const { default: adapter } = await import("@sveltejs/adapter-node");
+      return adapter();
+    },
+  } as const
+  const selected = process.env.SVELTE_ADAPTER;
+
+  if (!selected || !Object.keys(map).includes(selected)) {
+    return map["node"]();
   }
+  return map[selected as keyof typeof map]();
 })();
+
 
 export default defineConfig({
   plugins: [

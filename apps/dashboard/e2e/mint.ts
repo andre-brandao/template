@@ -4,7 +4,7 @@ import { Key } from "@template/core/key";
 
 const TTL = 30 * 24 * 60 * 60 * 1000;
 
-// Mints a real session against the same pglite the app reads, so a `token`
+// Mints a real session against the same database the app reads, so a `token`
 // cookie carrying `key` authenticates the browser (hooks.server.ts → Key.verify).
 // `role` is threaded through for when a role column lands — informational today.
 // Imports core submodules only; never `@template/core/user/auth` (the sole

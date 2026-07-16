@@ -4,12 +4,12 @@ const ci = !!process.env.CI;
 const port = 4173;
 const base = `http://127.0.0.1:${port}`;
 
-// The app under test and the mint helper (fixtures.ts) share one pglite over a
-// socket — global-setup starts it on this port and exports DATABASE_URL to both.
-const pgport = "5433";
-const url = `postgresql://postgres:password@127.0.0.1:${pgport}/postgres`;
+// e2e runs against a real Postgres on a dedicated database; global-setup creates
+// and migrates it. Point local runs at your dev Postgres via E2E_PG (default
+// matches the repo's docker compose); CI provides one as a service.
+const pg = process.env.E2E_PG ?? "postgresql://postgres:password@127.0.0.1:5432";
+const url = `${pg}/${process.env.E2E_DB ?? "template_e2e"}`;
 process.env.DATABASE_URL = url;
-process.env.PGPORT = pgport;
 
 export default defineConfig({
   testDir: ".",
@@ -22,7 +22,6 @@ export default defineConfig({
   timeout: 30_000,
   expect: { timeout: 10_000 },
   globalSetup: "./global-setup.ts",
-  globalTeardown: "./global-teardown.ts",
   use: {
     baseURL: base,
     trace: "on-first-retry",
@@ -33,7 +32,7 @@ export default defineConfig({
     url: `${base}/healthz`,
     reuseExistingServer: !ci,
     timeout: 120_000,
-    env: { SVELTE_ADAPTER: "node", DATABASE_URL: url, PGPORT: pgport },
+    env: { SVELTE_ADAPTER: "node", DATABASE_URL: url },
   },
   projects: [
     { name: "chromium", use: { ...devices["Desktop Chrome"] } },

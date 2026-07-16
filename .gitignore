@@ -43,3 +43,5 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 junit.xml
 # sst
 .sst
+
+sst-env.d.ts

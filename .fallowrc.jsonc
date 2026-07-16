@@ -27,16 +27,10 @@
       },
     ],
   },
-  // SvelteKit adapters are chosen at build time via `SVELTE_ADAPTER` and pulled in with a
-  // dynamic `import()` in apps/dashboard/vite.config.ts, which dead-code tracing can't
-  // follow — so they read as unused devDependencies. All three are live build targets.
-  "ignoreDependencies": [
-    "@hono/standard-validator",
-    "@template/ui",
-    "@sveltejs/adapter-cloudflare",
-    "@sveltejs/adapter-node",
-    "svelte-adapter-bun",
-  ],
+  // @cloudflare/workers-types has no direct import — app.d.ts hand-rolls its Platform env
+  // types — but it's kept for the workerd/adapter-cloudflare build to resolve Worker runtime
+  // globals, so removing it risks breaking the Cloudflare target. Suppress the false positive.
+  "ignoreDependencies": ["@hono/standard-validator", "@template/ui", "@cloudflare/workers-types"],
   "ignoreUnresolvedImports": ["@template/ui"],
   "boundaries": {
     // Zones glob over `apps/*` (not a fixed `root`) so every SvelteKit app under

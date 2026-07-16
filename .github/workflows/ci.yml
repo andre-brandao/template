@@ -161,29 +161,51 @@ jobs:
     runs-on: ubuntu-latest
     needs: [typecheck, test, fallow, lint, format, trivy, build]
     if: always()
+    permissions:
+      contents: read
+      actions: read
     steps:
       - name: Summarize results
-        env:
-          results: ${{ toJSON(needs) }}
-        run: |
-          echo "## CI summary" >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "| Job | Result |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| --- | --- |" >> "$GITHUB_STEP_SUMMARY"
-          fail=0
-          echo "$results" | jq -r 'to_entries[] | "\(.key)\t\(.value.result)"' | while IFS=$'\t' read -r job result; do
-            case "$result" in
-              success) icon="✅" ;;
-              skipped) icon="⏭️" ;;
-              cancelled) icon="🚫" ;;
-              *) icon="❌" ;;
-            esac
-            echo "| $job | $icon $result |" >> "$GITHUB_STEP_SUMMARY"
-          done
-          # Fail this job if any needed job did not succeed (ignoring skipped)
-          if echo "$results" | jq -e 'to_entries | any(.value.result != "success" and .value.result != "skipped")' >/dev/null; then
-            echo "" >> "$GITHUB_STEP_SUMMARY"
-            echo "> One or more jobs failed." >> "$GITHUB_STEP_SUMMARY"
-            fail=1
-          fi
-          exit $fail
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // The needs context has no timing, so read per-job durations from the run's jobs API.
+            const res = await github.rest.actions.listJobsForWorkflowRun({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: context.runId,
+              per_page: 100,
+            });
+            const jobs = res.data.jobs.filter((j) => j.name !== context.job);
+            const dur = (s, e) => {
+              const secs = Math.round((Date.parse(e) - Date.parse(s)) / 1000);
+              return `${Math.floor(secs / 60)}m ${secs % 60}s`;
+            };
+            const icon = (c) =>
+              ({ success: "✅", skipped: "⏭️", cancelled: "🚫" })[c] ?? "❌";
+            const done = jobs.filter((j) => j.started_at && j.completed_at);
+            const total = done.length
+              ? Math.round(
+                  (Math.max(...done.map((j) => Date.parse(j.completed_at))) -
+                    Math.min(...done.map((j) => Date.parse(j.started_at)))) / 1000,
+                )
+              : 0;
+            const fail = jobs.some(
+              (j) => j.conclusion !== "success" && j.conclusion !== "skipped",
+            );
+            core.summary
+              .addHeading("CI summary", 2)
+              .addTable([
+                ["Job", "Result", "Duration"].map((data) => ({ data, header: true })),
+                ...jobs.map((j) => [
+                  j.name,
+                  `${icon(j.conclusion)} ${j.conclusion ?? "running"}`,
+                  j.started_at && j.completed_at ? dur(j.started_at, j.completed_at) : "—",
+                ]),
+              ])
+              .addRaw(`**Total:** ${Math.floor(total / 60)}m ${total % 60}s`);
+            if (fail) {
+              core.summary.addRaw("\n\n> One or more jobs failed.");
+              core.setFailed("One or more jobs failed.");
+            }
+            await core.summary.write();

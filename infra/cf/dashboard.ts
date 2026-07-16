@@ -1,8 +1,8 @@
 import { createHash } from "crypto"
 import { readdirSync, statSync } from "fs"
-import { database, hyperdrive } from "./database.ts";
+import { database, hyperdrive } from "./database";
 import { environment } from "./secrets";
-import { domain } from './stage.ts'
+import { domain } from './stage'
 
 // export const r2 = new sst.cloudflare.Bucket("Artifacts");
 

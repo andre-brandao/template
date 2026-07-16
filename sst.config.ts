@@ -20,7 +20,6 @@ export default $config({
           await $`bun sst remove`;
           return;
         }
-        await $`bun run build`.cwd("./apps/dashboard");
         await $`bun sst deploy`;
         // if (event.type === "branch" && event.branch === "dev")
         //   await $`bun run test`.cwd("./packages/functions");
@@ -30,8 +29,9 @@ export default $config({
   async run() {
     const outputs = {};
     const { readdirSync } = await import("fs");
-    for (const value of readdirSync("./infra/")) {
-      const result = await import("./infra/" + value);
+    const prefix = "./infra/cf/";
+    for (const value of readdirSync(prefix)) {
+      const result = await import(prefix + value);
       if (result.outputs) Object.assign(outputs, result.outputs);
     }
     return outputs;

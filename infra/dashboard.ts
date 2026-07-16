@@ -27,8 +27,12 @@ const build = new command.local.Command("DashboardBuild", {
   triggers: [hash],
 })
 
+// Gate the worker's esbuild bundling on the DashboardBuild command. `dependsOn` only
+// orders the Cloudflare Script resource; the local esbuild step (Runtime.Build) fires as
+// soon as `handler` resolves. Threading `build.stdout` makes the handler an Output that is
+// only known after the build ran, so `_worker.js` exists on disk before esbuild reads it.
 const dashboard = new sst.cloudflare.Worker("Dashboard", {
-  handler: "./apps/dashboard/.svelte-kit/cloudflare/_worker.js",
+  handler: build.stdout.apply(() => "./apps/dashboard/.svelte-kit/cloudflare/_worker.js"),
   url: true,
   domain,
   assets: {

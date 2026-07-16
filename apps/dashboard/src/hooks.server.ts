@@ -10,7 +10,6 @@ import { dev } from "$app/environment";
 
 const log = Log.create({ namespace: "dashboard.hooks.server" });
 
-
 const handleDb: Handle = ({ event, resolve }) => {
   // On Cloudflare the Hyperdrive binding exposes a pooled connection string at runtime;
   // fall back to DATABASE_URL for local/node dev where the binding is absent.
@@ -31,46 +30,22 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 
 export const handle = sequence(handleDb, handleAuth);
 
-export const handleError: HandleServerError = async ({ error, event, status, message }) => {
-  if (status === 404) {
-    return { message: "Not found" };
-  }
-  log.info(`Error occurred during request to ${event.url.pathname}: ${message}`, {
-    status,
-    message,
-  });
+export const handleError: HandleServerError = ({ error, event, status, message }) => {
+  if (status === 404) return { message: "Not found" };
+
+  const path = event.url.pathname;
+  log.info(`Error occurred during request to ${path}: ${message}`, { status, message });
+
   if (error instanceof VisibleError) {
-    log.warn(error.message, {
-      status,
-      code: error.code,
-      path: event.url.pathname,
-    });
-    return {
-      message: error.message,
-      code: error.code,
-    };
+    log.warn(error.message, { status, code: error.code, path });
+    return { message: error.message, code: error.code };
   }
 
-  if (error instanceof Error) {
-    log.warn("unhandled error instance", {
-      status,
-      message: error.message,
-      event: event.url.pathname,
-    });
-    if (dev) {
-      return { message: error.message };
-    }
-    return { message: "An unexpected error occurred." };
-  }
-
-  log.warn("unhandled error type", {
+  const detail = error instanceof Error ? error.message : String(error);
+  log.warn(error instanceof Error ? "unhandled error instance" : "unhandled error type", {
     status,
-    message,
-    event: event.url.pathname,
-    error: String(error),
+    message: detail,
+    path,
   });
-  if (dev) {
-    return { message: String(error) };
-  }
-  return { message: "An unexpected error occurred." };
+  return { message: dev ? detail : "An unexpected error occurred." };
 };

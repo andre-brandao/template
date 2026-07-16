@@ -27,7 +27,16 @@
       },
     ],
   },
-  "ignoreDependencies": ["@hono/standard-validator", "@template/ui"],
+  // SvelteKit adapters are chosen at build time via `SVELTE_ADAPTER` and pulled in with a
+  // dynamic `import()` in apps/dashboard/vite.config.ts, which dead-code tracing can't
+  // follow — so they read as unused devDependencies. All three are live build targets.
+  "ignoreDependencies": [
+    "@hono/standard-validator",
+    "@template/ui",
+    "@sveltejs/adapter-cloudflare",
+    "@sveltejs/adapter-node",
+    "svelte-adapter-bun",
+  ],
   "ignoreUnresolvedImports": ["@template/ui"],
   "boundaries": {
     // Zones glob over `apps/*` (not a fixed `root`) so every SvelteKit app under

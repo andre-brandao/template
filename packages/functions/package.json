@@ -23,6 +23,7 @@
     "@template/core": "workspace:*",
     "hono": "catalog:",
     "hono-openapi": "^1.1.2",
+    "sst": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {

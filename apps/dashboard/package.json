@@ -17,6 +17,7 @@
     "@template/sdk": "workspace:*",
     "@template/ui": "workspace:*",
     "layerchart": "^2.0.1",
+    "sst": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {

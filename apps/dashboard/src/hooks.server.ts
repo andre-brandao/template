@@ -8,12 +8,14 @@ import { VisibleError } from "@template/core/error";
 import { Log } from "@template/core/util/log";
 import { dev } from "$app/environment";
 
-
 const log = Log.create({ namespace: "dashboard.hooks.server" });
 
 
 const handleDb: Handle = ({ event, resolve }) => {
-  const url = env.DATABASE_URL ?? Database.DEFAULT_URL;
+  // On Cloudflare the Hyperdrive binding exposes a pooled connection string at runtime;
+  // fall back to DATABASE_URL for local/node dev where the binding is absent.
+  const url =
+    event.platform?.env?.Hyperdrive?.connectionString ?? env.DATABASE_URL ?? Database.DEFAULT_URL;
   return Database.provide(url, () => resolve(event));
 };
 

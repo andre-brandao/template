@@ -5,7 +5,7 @@
     "": {
       "name": "@dev-template",
       "dependencies": {
-        "sst": "4.17.1",
+        "sst": "catalog:",
       },
       "devDependencies": {
         "@cloudflare/workers-types": "5.20260715.1",
@@ -45,6 +45,7 @@
         "@template/sdk": "workspace:*",
         "@template/ui": "workspace:*",
         "layerchart": "^2.0.1",
+        "sst": "catalog:",
         "zod": "catalog:",
       },
       "devDependencies": {
@@ -88,6 +89,7 @@
         "@template/core": "workspace:*",
         "hono": "catalog:",
         "hono-openapi": "^1.1.2",
+        "sst": "catalog:",
         "zod": "catalog:",
       },
       "devDependencies": {
@@ -141,6 +143,7 @@
     "drizzle-orm": "^1.0.0-rc.2",
     "hono": "^4.11.3",
     "postgres": "^3.4.8",
+    "sst": "4.17.1",
     "typescript": "^7.0.0",
     "ulid": "^3.0.2",
     "zod": "^4.3.5",

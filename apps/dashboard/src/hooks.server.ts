@@ -5,6 +5,12 @@ import { Database } from "@template/core/drizzle";
 import { Actor } from "@template/core/actor";
 import { Auth } from "@template/core/user/auth";
 import { VisibleError } from "@template/core/error";
+import { Log } from "@template/core/util/log";
+import { dev } from "$app/environment";
+
+
+const log = Log.create({ namespace: "dashboard.hooks.server" });
+
 
 const handleDb: Handle = ({ event, resolve }) => {
   const url = env.DATABASE_URL ?? Database.DEFAULT_URL;
@@ -23,7 +29,46 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 
 export const handle = sequence(handleDb, handleAuth);
 
-export const handleError: HandleServerError = ({ error }) => {
-  if (error instanceof VisibleError) return { message: error.message };
-  return { message: "Internal Error" };
+export const handleError: HandleServerError = async ({ error, event, status, message }) => {
+  if (status === 404) {
+    return { message: "Not found" };
+  }
+  log.info(`Error occurred during request to ${event.url.pathname}: ${message}`, {
+    status,
+    message,
+  });
+  if (error instanceof VisibleError) {
+    log.warn(error.message, {
+      status,
+      code: error.code,
+      path: event.url.pathname,
+    });
+    return {
+      message: error.message,
+      code: error.code,
+    };
+  }
+
+  if (error instanceof Error) {
+    log.warn("unhandled error instance", {
+      status,
+      message: error.message,
+      event: event.url.pathname,
+    });
+    if (dev) {
+      return { message: error.message };
+    }
+    return { message: "An unexpected error occurred." };
+  }
+
+  log.warn("unhandled error type", {
+    status,
+    message,
+    event: event.url.pathname,
+    error: String(error),
+  });
+  if (dev) {
+    return { message: String(error) };
+  }
+  return { message: "An unexpected error occurred." };
 };

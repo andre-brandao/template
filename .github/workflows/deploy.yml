@@ -1,0 +1,150 @@
+name: Deploy
+run-name: "Deploy${{ github.event_name == 'pull_request' && format(' #{0}', github.event.pull_request.number) || github.ref_name }}"
+
+on:
+  push:
+    branches:
+      - prod
+      - dev
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - dev
+
+concurrency:
+  group: sst-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || github.ref_name }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+      pull-requests: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref || github.ref }}
+          fetch-depth: 0
+
+      - uses: actions/cache@v5
+        with:
+          path: |
+            .sst
+          key: ${{ runner.os }}-sst
+
+      - uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - uses: actions/setup-node@v1
+        with:
+          node-version: "24"
+
+      - name: deps
+        run: bun install --frozen-lockfile
+
+      - name: Compute stage
+        run: echo "STAGE=${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || github.ref_name }}" >> "$GITHUB_ENV"
+
+      # - uses: developing-software/agents/actions/event/init@dev
+      #   with:
+      #     token: ${{ secrets.AGENTS_TOKEN }}
+      #     type: deploy
+      #     tags: |
+      #       env:${{ env.STAGE }}
+      #       tool:sst
+      #       ${{ github.event_name == 'pull_request' && format('gh:pr:{0}', github.event.pull_request.number) || '' }}
+      #       ${{ github.event_name == 'pull_request' && format('gh:branch:{0}', github.event.pull_request.head.ref) || '' }}
+      #       ${{ github.event_name == 'pull_request' && format('gh:base:{0}', github.event.pull_request.base.ref) || '' }}
+      #     data: >-
+      #       {"stage":"${{ env.STAGE }}","tool":"sst"}
+
+      # - name: Attach PR data
+      #   if: github.event_name == 'pull_request'
+      #   uses: developing-software/agents/actions/event/data@dev
+      #   with:
+      #     key: pr
+      #     data: |
+      #       {
+      #         "number": ${{ github.event.pull_request.number }},
+      #         "title": ${{ toJSON(github.event.pull_request.title) }},
+      #         "author": "${{ github.event.pull_request.user.login }}",
+      #         "headRef": "${{ github.event.pull_request.head.ref }}",
+      #         "baseRef": "${{ github.event.pull_request.base.ref }}",
+      #         "headSha": "${{ github.event.pull_request.head.sha }}",
+      #         "url": "${{ github.event.pull_request.html_url }}"
+      #       }
+
+      - name: Deploy
+        id: deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_DEFAULT_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_DEFAULT_ACCOUNT_ID }}
+          PLANETSCALE_SERVICE_TOKEN_ID: ${{ secrets.PLANETSCALE_SERVICE_TOKEN_ID }}
+          PLANETSCALE_SERVICE_TOKEN: ${{ secrets.PLANETSCALE_SERVICE_TOKEN }}
+
+        run: |
+          bunx sst install
+          bunx sst deploy --stage=${{ env.STAGE }}
+
+      # - name: Capture deploy outputs
+      #   if: success()
+      #   run: |
+      #     if [ -f .sst/outputs.json ]; then
+      #       mkdir -p "$DEV_AGENTS_RESULTS_DIR/outputs"
+      #       cp .sst/outputs.json "$DEV_AGENTS_RESULTS_DIR/outputs/data.json"
+      #     fi
+
+      - name: Upsert deploy preview comment
+        if: success() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        env:
+          TOOL: sst
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            const tool = process.env.TOOL;
+            const outputsPath = path.join(process.env.DEV_AGENTS_RESULTS_DIR, 'outputs', 'data.json');
+            if (!fs.existsSync(outputsPath)) {
+              core.info(`No outputs file at ${outputsPath} — skipping preview comment.`);
+              return;
+            }
+            const outputs = JSON.parse(fs.readFileSync(outputsPath, 'utf8'));
+            const marker = `<!-- deploy:${tool} -->`;
+            const stage = process.env.STAGE;
+
+            const lines = [
+              marker,
+              `## ${tool.toUpperCase()} preview deployed`,
+              '',
+              `**Stage:** \`${stage}\``,
+              '',
+            ];
+            const entries = Object.entries(outputs).filter(([, v]) => typeof v === 'string' && v);
+            if (entries.length === 0) {
+              lines.push('_No outputs captured._');
+            } else {
+              lines.push('| Output | URL |', '| --- | --- |');
+              for (const [key, value] of entries) {
+                const url = /^https?:\/\//.test(value) ? value : `https://${value}`;
+                lines.push(`| \`${key}\` | ${url} |`);
+              }
+            }
+            const body = lines.join('\n');
+
+            const { owner, repo } = context.repo;
+            const issue_number = parseInt(process.env.PR_NUMBER);
+            const existing = await github.paginate(github.rest.issues.listComments, {
+              owner, repo, issue_number, per_page: 100,
+            });
+            const found = existing.find(c => c.body && c.body.includes(marker));
+            if (found) {
+              await github.rest.issues.updateComment({ owner, repo, comment_id: found.id, body });
+            } else {
+              await github.rest.issues.createComment({ owner, repo, issue_number, body });
+            }

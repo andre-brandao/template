@@ -1,0 +1,88 @@
+name: template
+
+# Shared config for the three app services that run off the one app image.
+x-app: &app
+  build:
+    context: ../..
+    dockerfile: infra/docker/Dockerfile
+    target: runtime
+  image: template-app
+  env_file: .env
+  restart: unless-stopped
+
+services:
+  postgres:
+    image: postgres:17
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      POSTGRES_DB: ${POSTGRES_DB:-postgres}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-postgres}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # One-shot: runs `drizzle-kit migrate`, then exits. Own image (adds Node,
+  # which drizzle-kit needs for node:sqlite); entrypoint set in the Dockerfile.
+  migrate:
+    build:
+      context: ../..
+      dockerfile: infra/docker/Dockerfile
+      target: migrate
+    image: template-migrate
+    env_file: .env
+    restart: "no"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  api:
+    <<: *app
+    command: ["serve", "api"]
+    environment:
+      PORT: 3000
+    ports:
+      - "8080:3000"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test:
+        - CMD
+        - bun
+        - -e
+        - "await fetch('http://localhost:3000/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mcp:
+    <<: *app
+    command: ["serve", "mcp"]
+    environment:
+      MCP_PORT: 3001
+    ports:
+      - "3001:3001"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  dashboard:
+    <<: *app
+    command: ["serve", "dashboard"]
+    environment:
+      PORT: 3000
+    ports:
+      - "3000:3000"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+volumes:
+  pgdata:

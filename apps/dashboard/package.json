@@ -30,6 +30,7 @@
     "svelte": "catalog:frontend",
     "svelte-adapter-bun": "^1.0.1",
     "svelte-check": "catalog:frontend",
+    "svelte-kit-sst": "^2.43.5",
     "tailwindcss": "catalog:frontend",
     "typescript": "catalog:",
     "vite": "catalog:frontend"

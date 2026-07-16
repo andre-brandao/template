@@ -14,6 +14,9 @@ const adapter = await (async () => {
     case "bun":
       const { default: adapterBun } = await import("svelte-adapter-bun");
       return adapterBun();
+    case "sst-aws":
+      const { default: adapterAws } = await import("svelte-kit-sst");
+      return adapterAws();
     case "node":
     default:
       const { default: adapterNode } = await import("@sveltejs/adapter-node");

@@ -1,0 +1,16 @@
+node_modules
+**/node_modules
+.svelte-kit
+**/.svelte-kit
+apps/dashboard/build
+.sst
+.direnv
+.git
+.github
+.bkp
+.env
+**/.env
+*.log
+**/*.test.ts
+**/junit.xml
+apps/cli/bin

@@ -1,5 +1,5 @@
 name: Deploy
-run-name: "Deploy${{ github.event_name == 'pull_request' && format(' #{0}', github.event.pull_request.number) || github.ref_name }}"
+run-name: "Deploy ${{ github.event_name == 'pull_request' && format(' #{0}', github.event.pull_request.number) || github.ref_name }}"
 
 on:
   push:
@@ -17,6 +17,8 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    env:
+      STAGE: ${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || github.ref_name }}
     permissions:
       id-token: write
       contents: read
@@ -44,9 +46,6 @@ jobs:
 
       - name: deps
         run: bun install --frozen-lockfile
-
-      - name: Compute stage
-        run: echo "STAGE=${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || github.ref_name }}" >> "$GITHUB_ENV"
 
       # - uses: developing-software/agents/actions/event/init@dev
       #   with:

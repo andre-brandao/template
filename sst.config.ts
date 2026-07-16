@@ -27,13 +27,10 @@ export default $config({
     },
   },
   async run() {
+    const infra = await import("./infra/cf");
     const outputs = {};
-    const { readdirSync } = await import("fs");
-    const prefix = "./infra/cf/";
-    for (const value of readdirSync(prefix)) {
-      const result = await import(prefix + value);
-      if (result.outputs) Object.assign(outputs, result.outputs);
-    }
+    for (const mod of Object.values(infra))
+      if ("outputs" in mod) Object.assign(outputs, mod.outputs);
     return outputs;
   },
 });

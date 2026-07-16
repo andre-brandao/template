@@ -12,6 +12,11 @@
     "**/adapter/*.ts",
   ],
   "ignorePatterns": ["**/*.gen.ts"],
+  // infra/*/stage.ts share a small boilerplate header across cloud targets
+  // (aws, cf); the overlap is stage-setup wiring, not logic worth extracting.
+  "duplicates": {
+    "ignore": ["infra/**"],
+  },
   "health": {
     "thresholdOverrides": [
       {

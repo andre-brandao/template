@@ -14,6 +14,7 @@ function server() {
 }
 
 export const app = new Hono()
+  .get("/healthz", (c) => c.json({ status: "ok" }))
   .use(auth)
   .all("/mcp", authRequired, async (c) => {
     const transport = new StreamableHTTPTransport();

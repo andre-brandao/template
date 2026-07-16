@@ -19,6 +19,9 @@ const handleDb: Handle = ({ event, resolve }) => {
 };
 
 const handleAuth: Handle = async ({ event, resolve }) => {
+  // Health probes don't need an actor; skip it so they don't spam logs.
+  if (event.url.pathname === "/healthz") return resolve(event);
+
   const token = event.cookies.get("token");
   event.locals.token = token;
 

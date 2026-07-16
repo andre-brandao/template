@@ -2,14 +2,13 @@ import tailwindcss from "@tailwindcss/vite";
 import { sveltekit } from "@sveltejs/kit/vite";
 import { defineConfig } from "vite";
 
-
 const adapter = await (async () => {
   const map = {
-    "cloudflare": async () => {
+    cloudflare: async () => {
       const { default: adapter } = await import("@sveltejs/adapter-cloudflare");
       return adapter();
     },
-    "bun": async () => {
+    bun: async () => {
       const { default: adapter } = await import("svelte-adapter-bun");
       return adapter();
     },
@@ -17,11 +16,11 @@ const adapter = await (async () => {
       const { default: adapter } = await import("svelte-kit-sst");
       return adapter();
     },
-    "node": async () => {
+    node: async () => {
       const { default: adapter } = await import("@sveltejs/adapter-node");
       return adapter();
     },
-  } as const
+  } as const;
   const selected = process.env.SVELTE_ADAPTER;
 
   if (!selected || !Object.keys(map).includes(selected)) {
@@ -29,7 +28,6 @@ const adapter = await (async () => {
   }
   return map[selected as keyof typeof map]();
 })();
-
 
 export default defineConfig({
   plugins: [

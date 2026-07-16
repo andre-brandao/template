@@ -157,9 +157,29 @@ jobs:
           SVELTE_ADAPTER: ${{ matrix.adapter }}
         run: bun run build
 
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - run: bun install --frozen-lockfile
+      - name: Install Playwright browsers
+        working-directory: apps/dashboard
+        run: bunx playwright install --with-deps
+      - name: Run e2e
+        run: bun run --filter dashboard test:e2e
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: apps/dashboard/e2e/playwright-report
+          if-no-files-found: warn
+
   report:
     runs-on: ubuntu-latest
-    needs: [typecheck, test, fallow, lint, format, trivy, build]
+    needs: [typecheck, test, fallow, lint, format, trivy, build, e2e]
     if: always()
     permissions:
       contents: read

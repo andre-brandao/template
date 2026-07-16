@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { and, eq } from "drizzle-orm";
 import { fn } from "../util/fn";
+import { Password } from "../util/password";
 import { Key } from "../key";
 import { Database } from "../drizzle";
 import { ErrorCodes, VisibleError } from "../error";
@@ -22,7 +23,7 @@ export namespace Auth {
           "Email is already registered",
         );
 
-      const password = await Bun.password.hash(input.password);
+      const password = await Password.hash(input.password);
       const userID = Identifier.create("user");
       await Database.transaction(async (tx) => {
         await tx.insert(UserTable).values({ id: userID, name: input.name, email: input.email });
@@ -48,7 +49,7 @@ export namespace Auth {
         "Invalid email or password",
       );
 
-    const valid = await Bun.password.verify(input.password, provider.password);
+    const valid = await Password.verify(input.password, provider.password);
     if (!valid)
       throw new VisibleError(
         "authentication",

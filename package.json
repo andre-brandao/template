@@ -31,6 +31,7 @@
       },
       "testing": {
         "@happy-dom/global-registrator": "^20.8.9",
+        "@playwright/test": "^1.50.0",
         "@testing-library/svelte": "^5.3.1"
       }
     },
@@ -63,6 +64,7 @@
     "lint:fix": "oxlint --fix",
     "test": "bun --filter '*' test",
     "test:ci": "bun --filter '*' test --reporter=junit --reporter-outfile=junit.xml",
+    "test:e2e": "bun run --filter dashboard test:e2e",
     "typecheck": "bun --filter '*' typecheck"
   },
   "dependencies": {

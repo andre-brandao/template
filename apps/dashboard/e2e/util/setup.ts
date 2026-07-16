@@ -9,7 +9,7 @@ import { Database, sql } from "@template/core/drizzle";
 const base = process.env.E2E_PG ?? "postgresql://postgres:password@127.0.0.1:5432";
 const db = process.env.E2E_DB ?? "template_e2e";
 const url = `${base}/${db}`;
-const dir = fileURLToPath(new URL("../../../packages/core/migrations", import.meta.url));
+const dir = fileURLToPath(new URL("../../../../packages/core/migrations", import.meta.url));
 
 export default async function () {
   await ensure();
@@ -25,7 +25,7 @@ function ensure() {
   return Database.provide(`${base}/postgres`, () =>
     Database.use(async (tx) => {
       const rows = await tx.execute(sql`select 1 from pg_database where datname = ${db}`);
-      // @ts-expect-error
+      // @ts-expect-error it works
       if (rows.length === 0) await tx.execute(sql.raw(`create database "${db}"`));
     }),
   );

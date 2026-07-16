@@ -1,4 +1,4 @@
-import { test, expect } from "./fixtures";
+import { test, expect } from "../util/fixtures";
 
 test("an authenticated user sees the app nav", async ({ page, as }) => {
   await as("user");

@@ -4,7 +4,7 @@ const ci = !!process.env.CI;
 const port = 4173;
 const base = `http://127.0.0.1:${port}`;
 
-// e2e runs against a real Postgres on a dedicated database; global-setup creates
+// e2e runs against a real Postgres on a dedicated database; util/setup.ts creates
 // and migrates it. Point local runs at your dev Postgres via E2E_PG (default
 // matches the repo's docker compose); CI provides one as a service.
 const pg = process.env.E2E_PG ?? "postgresql://postgres:password@127.0.0.1:5432";
@@ -12,7 +12,7 @@ const url = `${pg}/${process.env.E2E_DB ?? "template_e2e"}`;
 process.env.DATABASE_URL = url;
 
 export default defineConfig({
-  testDir: ".",
+  testDir: "./tests",
   testMatch: "**/*.e2e.ts",
   outputDir: "./test-results",
   fullyParallel: true,
@@ -21,7 +21,7 @@ export default defineConfig({
   reporter: [["html", { outputFolder: "playwright-report", open: "never" }], ["line"]],
   timeout: 30_000,
   expect: { timeout: 10_000 },
-  globalSetup: "./global-setup.ts",
+  globalSetup: "./util/setup.ts",
   use: {
     baseURL: base,
     trace: "on-first-retry",

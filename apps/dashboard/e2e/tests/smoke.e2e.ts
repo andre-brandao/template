@@ -1,4 +1,4 @@
-import { test, expect } from "./fixtures";
+import { test, expect } from "../util/fixtures";
 
 test("landing page renders for an anonymous visitor", async ({ page }) => {
   await page.goto("/");

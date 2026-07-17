@@ -124,10 +124,17 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
+            const stage = process.env.STAGE;
             const body = [
               '<!-- deploy:sst -->',
               '## ⚠️ Preview environment removed',
               '',
-              `The SST stage \`${process.env.STAGE}\` was destroyed because this PR is closed.`,
+              `The SST stage \`${stage}\` was torn down because this PR is closed.`,
+              '',
+              'If anything is left over, remove it manually:',
+              '',
+              '```sh',
+              `bunx sst remove --stage=${stage}`,
+              '```',
             ].join('\n');
             await require('./.github/comment.js')({ github, context, body });

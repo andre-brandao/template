@@ -1,6 +1,6 @@
 // Upsert a single PR comment identified by the marker on its first line.
 module.exports = async ({ github, context, body }) => {
-  const marker = body.split('\n')[0];
+  const marker = body.split("\n")[0];
   const { owner, repo } = context.repo;
   const issue_number = context.payload.pull_request.number;
   const found = (

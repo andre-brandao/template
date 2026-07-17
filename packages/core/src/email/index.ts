@@ -30,6 +30,11 @@ export namespace Email {
     return ctx.provide(sender, fn);
   }
 
+  /** Curried form of `provide` for composition via `Context.withProviders`. */
+  export function provider(sender: SenderPort) {
+    return <R>(fn: () => R) => provide(sender, fn);
+  }
+
   export function use(): SenderPort {
     try {
       return ctx.use();

@@ -114,6 +114,11 @@ export namespace Database {
     return DatabaseContext.provide({ db }, fn);
   }
 
+  /** Curried form of `provide` for composition via `Context.withProviders`. */
+  export function provider(url: string) {
+    return <R>(fn: () => R) => provide(url, fn);
+  }
+
   /**
    * Closes and forgets the pooled client for `url`. Lets pglite's single connection
    * pass between dev processes: the auth server releases it after each request so the

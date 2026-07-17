@@ -1,4 +1,5 @@
 import { MemoryStorage } from "@openauthjs/openauth/storage/memory";
+import { Context } from "@template/core/context";
 import { Database } from "@template/core/drizzle";
 import { Email } from "@template/core/email";
 import { createConsoleSender } from "@template/core/email/adapter/console";
@@ -14,7 +15,11 @@ Bun.serve({
   // dashboard needs it back the moment login redirects there.
   fetch: async (req) => {
     try {
-      return await Database.provide(url, () => Email.provide(sender, () => app.fetch(req)));
+      return await Context.withProviders(
+        () => app.fetch(req),
+        Database.provider(url),
+        Email.provider(sender),
+      );
     } finally {
       await Database.release(url);
     }

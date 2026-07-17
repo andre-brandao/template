@@ -14,7 +14,7 @@ export type Config = {
 const dir = `${process.env.XDG_CONFIG_HOME ?? `${process.env.HOME}/.config`}/template`;
 const file = `${dir}/config.json`;
 
-export async function read(): Promise<Config> {
+async function read(): Promise<Config> {
   const f = Bun.file(file);
   if (await f.exists()) return f.json();
   return {};

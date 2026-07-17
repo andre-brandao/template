@@ -1,6 +1,9 @@
 {
   "$schema": "https://raw.githubusercontent.com/fallow-rs/fallow/main/schema.json",
   "entry": [
+    // Invoked from GitHub Actions via `require('./.github/comment.cjs')` in a
+    // workflow `script` step; fallow can't parse the YAML call, so mark it a root.
+    ".github/comment.cjs",
     "packages/ui/src/lib/index.ts",
     "packages/*/src/**/*.test.ts",
     "packages/*/test/**/*.ts",
@@ -29,6 +32,11 @@
         "files": ["scripts/**/*.ts"],
         "maxCrap": 420,
         "reason": "Dev orchestration scripts spawn real subprocesses and have no unit coverage, so CRAP (cyclomatic^2 at 0% coverage) inflates on ordinary control flow. 420 = the 20^2+20 ceiling of the maxCyclomatic guard, so cyclomatic (20) and cognitive (15) remain the real guard.",
+      },
+      {
+        "files": ["packages/functions/src/auth/**", "apps/cli/src/auth.ts"],
+        "maxCrap": 420,
+        "reason": "The OpenAuth issuer config and CLI login flow dispatch per provider (password/code/github/google) and are exercised end-to-end, not by unit tests, so CRAP (cyclomatic^2 at 0% coverage) inflates on ordinary provider-dispatch branches. 420 = the 20^2+20 ceiling of the maxCyclomatic guard, so cyclomatic (20) and cognitive (15) remain the real guard.",
       },
     ],
   },

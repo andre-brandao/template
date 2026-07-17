@@ -2,7 +2,7 @@ import { MemoryStorage } from "@openauthjs/openauth/storage/memory";
 import { Database } from "@template/core/drizzle";
 import { Email } from "@template/core/email";
 import { createConsoleSender } from "@template/core/email/adapter/console";
-import { createAuth } from "./index";
+import { createAuth } from "../index";
 
 const url = process.env.DATABASE_URL ?? Database.DEFAULT_URL;
 const app = createAuth(MemoryStorage({ persist: process.env.AUTH_PERSIST }));

@@ -5,7 +5,7 @@ import { subdomain } from "./stage";
 const authKv = new sst.cloudflare.Kv("AuthKv");
 
 const auth = new sst.cloudflare.Worker("Auth", {
-  handler: "./packages/functions/src/auth/worker.ts",
+  handler: "./packages/functions/src/auth/target/worker.ts",
   domain: subdomain("auth"),
   url: true,
   environment,

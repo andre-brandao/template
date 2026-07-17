@@ -3,7 +3,7 @@ import { environment } from "./secrets";
 import { subdomain } from "./stage";
 
 const api = new sst.cloudflare.Worker("Api", {
-  handler: "./packages/functions/src/api/worker.ts",
+  handler: "./packages/functions/src/api/target/worker.ts",
   domain: subdomain("api"),
   url: true,
   environment,

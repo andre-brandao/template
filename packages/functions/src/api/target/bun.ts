@@ -1,4 +1,4 @@
-import { app } from "./api/routes";
+import { app } from "../routes";
 
 const port = parseInt(process.env.PORT!) || 3000;
 console.log(`Running at http://localhost:${port}`);

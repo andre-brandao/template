@@ -3,7 +3,7 @@ import { environment } from "./secrets";
 import { subdomain } from "./stage";
 
 const mcp = new sst.cloudflare.Worker("Mcp", {
-  handler: "./packages/functions/src/mcp/worker.ts",
+  handler: "./packages/functions/src/mcp/target/worker.ts",
   domain: subdomain("mcp"),
   url: true,
   environment,

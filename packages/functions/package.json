@@ -3,18 +3,18 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "module": "src/index.ts",
+  "module": "src/api/index.ts",
   "exports": {
-    ".": "./src/index.ts",
+    ".": "./src/api/index.ts",
     "./api": "./src/api/index.ts",
     "./auth": "./src/auth/index.ts",
     "./auth/*": "./src/auth/*.ts",
     "./mcp": "./src/mcp/index.ts"
   },
   "scripts": {
-    "dev": "bun run --hot src/index.ts",
-    "dev:mcp": "bun run --hot src/mcp/serve.ts",
-    "dev:auth": "bun run --hot src/auth/dev.ts",
+    "dev": "bun run --hot src/api/target/bun.ts",
+    "dev:mcp": "bun run --hot src/mcp/target/bun.ts",
+    "dev:auth": "bun run --hot src/auth/target/bun.ts",
     "typecheck": "tsc --noEmit",
     "test": "bun test",
     "gen:spec": "bun run scripts/gen-spec.ts"

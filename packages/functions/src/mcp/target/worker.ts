@@ -1,6 +1,6 @@
 import type { ExecutionContext } from "@cloudflare/workers-types";
 import { Database } from "@template/core/drizzle";
-import { app } from "./index";
+import { app } from "../index";
 
 interface Env {
   Hyperdrive: { connectionString: string };

@@ -79,7 +79,7 @@ jobs:
               '',
               ...(rows.length ? ['| Output | URL |', '| --- | --- |', ...rows] : ['_No outputs._']),
             ].join('\n');
-            await require('./.github/comment.js')({ github, context, body });
+            await require('./.github/comment.cjs')({ github, context, body });
 
   # Only ever removes ephemeral `pr-<number>` stages — never prod/dev.
   remove:
@@ -129,7 +129,7 @@ jobs:
               '<!-- deploy:sst -->',
               '## ⚠️ Preview environment removed',
               '',
-              `The SST stage \`${stage}\` was torn down because this PR is closed.`,
+              `The SST stage \`${stage}\` was torn down because this PR was merged or closed.`,
               '',
               'If anything is left over, remove it manually:',
               '',
@@ -137,4 +137,4 @@ jobs:
               `bunx sst remove --stage=${stage}`,
               '```',
             ].join('\n');
-            await require('./.github/comment.js')({ github, context, body });
+            await require('./.github/comment.cjs')({ github, context, body });

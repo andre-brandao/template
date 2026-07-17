@@ -18,7 +18,11 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: ci,
   retries: ci ? 2 : 0,
-  reporter: [["html", { outputFolder: "playwright-report", open: "never" }], ["line"]],
+  reporter: [
+    ["html", { outputFolder: "playwright-report", open: "never" }],
+    // `github` emits inline PR annotations for failures; only meaningful in CI. Line locally.
+    ci ? ["github"] : ["line"],
+  ],
   timeout: 30_000,
   expect: { timeout: 10_000 },
   globalSetup: "./util/setup.ts",

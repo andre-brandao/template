@@ -2,9 +2,13 @@
   "mcpServers": {
     "svelte": {
       "type": "stdio",
-      "command": "npx",
+      "command": "bunx",
       "env": {},
       "args": ["-y", "@sveltejs/mcp"]
     }
+  },
+  "playwright-test": {
+    "command": "bunx",
+    "args": ["playwright", "run-test-mcp-server"]
   }
 }

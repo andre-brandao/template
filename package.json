@@ -73,9 +73,9 @@
   "devDependencies": {
     "@cloudflare/workers-types": "5.20260715.1",
     "@types/bun": "catalog:",
-    "fallow": "^3.4.2",
-    "oxfmt": "^0.58.0",
-    "oxlint": "^1.73.0"
+    "fallow": "^3.6.0",
+    "oxfmt": "^0.59.0",
+    "oxlint": "^1.74.0"
   },
   "peerDependencies": {
     "typescript": "catalog:"

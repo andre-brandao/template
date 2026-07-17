@@ -100,7 +100,9 @@ export namespace Auth {
           expiresAt: ProviderTable.tokenExpiresAt,
         })
         .from(ProviderTable)
-        .where(and(eq(ProviderTable.userID, Actor.userID()), eq(ProviderTable.providerId, provider)))
+        .where(
+          and(eq(ProviderTable.userID, Actor.userID()), eq(ProviderTable.providerId, provider)),
+        )
         .then((rows) => {
           const row = rows.at(0);
           return row?.access ? row : null;

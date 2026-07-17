@@ -53,7 +53,10 @@ export namespace KeyApi {
       authRequired,
       validator(
         "json",
-        z.object({ name: Key.Info.shape.name, expiresInDays: z.number().int().positive().optional() }),
+        z.object({
+          name: Key.Info.shape.name,
+          expiresInDays: z.number().int().positive().optional(),
+        }),
       ),
       async (c) => {
         const body = c.req.valid("json");

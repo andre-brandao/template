@@ -1,7 +1,8 @@
 import { beforeAll, describe, expect, it, mock } from "bun:test";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
-import { Auth } from "@template/core/user/auth";
+import { User } from "@template/core/user";
+import { Key } from "@template/core/key";
 import { app } from "../src/mcp";
 
 let token: string;
@@ -19,12 +20,11 @@ async function connect() {
 describe("mcp", () => {
   beforeAll(async () => {
     console.log = mock();
-    const session = await Auth.register({
+    const userID = await User.create({
       name: "Test User",
       email: `test-${crypto.randomUUID()}@example.com`,
-      password: "hunter2222",
     });
-    token = session.token;
+    token = (await Key.create({ userID, name: "test" })).key;
   });
 
   it("lists todo tools", async () => {

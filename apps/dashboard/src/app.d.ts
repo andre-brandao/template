@@ -7,7 +7,7 @@ declare global {
       code?: string;
     }
     interface Locals {
-      token?: string;
+      session: import("$lib/server/session").Session | null;
     }
     // interface PageData {}
     // interface PageState {}

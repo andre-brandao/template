@@ -1,6 +1,7 @@
 import { beforeAll, expect, test as _test, mock } from "bun:test";
 import { app } from "../../src/api/routes";
-import { Auth } from "@template/core/user/auth";
+import { User } from "@template/core/user";
+import { Key } from "@template/core/key";
 import { Actor } from "@template/core/actor";
 import { z } from "zod";
 
@@ -22,9 +23,8 @@ export function setupApiTest() {
     console.error = mock();
 
     const email = `test-${crypto.randomUUID()}@example.com`;
-    const session = await Auth.register({ name: "Test User", email, password: "hunter2222" });
-    userID = session.userID;
-    token = session.token;
+    userID = await User.create({ name: "Test User", email });
+    token = (await Key.create({ userID, name: "test" })).key;
   });
 
   const get = async (path: string, headers?: Record<string, string>) => {

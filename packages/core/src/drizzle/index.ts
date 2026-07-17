@@ -31,9 +31,11 @@ export namespace Database {
   const DatabaseContext = Context.create<{ db: PostgresJsDatabase }>();
   let cachedDb: PostgresJsDatabase | undefined;
   const providedByUrl = new Map<string, PostgresJsDatabase>();
+  // Raw pg clients behind the provided dbs, so `release` can close them.
+  const clientsByUrl = new Map<string, ReturnType<typeof pg>>();
 
-  function createDb(url: string): PostgresJsDatabase {
-    const client = pg(url, {
+  function createDb(url: string): { db: PostgresJsDatabase; sql: ReturnType<typeof pg> } {
+    const sql = pg(url, {
       connect_timeout: 10,
       prepare: false,
       max: 1,
@@ -44,8 +46,8 @@ export namespace Database {
         log.info(notice.message ?? "notice", { severity: notice.severity, code: notice.code });
       },
     });
-    return drizzle({
-      client,
+    const db = drizzle({
+      client: sql,
       logger:
         process.env.DRIZZLE_LOG === "true"
           ? {
@@ -56,6 +58,7 @@ export namespace Database {
             }
           : undefined,
     });
+    return { db, sql };
   }
 
   function client(): PostgresJsDatabase {
@@ -68,10 +71,10 @@ export namespace Database {
 
       log.warn("no database context, falling back to env");
       if (process.env.NODE_ENV === "test") {
-        cachedDb ??= createDb(process.env.DATABASE_URL ?? DEFAULT_URL);
+        cachedDb ??= createDb(process.env.DATABASE_URL ?? DEFAULT_URL).db;
         return cachedDb;
       }
-      return createDb(process.env.DATABASE_URL ?? DEFAULT_URL);
+      return createDb(process.env.DATABASE_URL ?? DEFAULT_URL).db;
     }
   }
 
@@ -103,10 +106,25 @@ export namespace Database {
   export function provide<T>(url: string, fn: () => T): T {
     let db = providedByUrl.get(url);
     if (!db) {
-      db = createDb(url);
+      const made = createDb(url);
+      db = made.db;
       providedByUrl.set(url, db);
+      clientsByUrl.set(url, made.sql);
     }
     return DatabaseContext.provide({ db }, fn);
+  }
+
+  /**
+   * Closes and forgets the pooled client for `url`. Lets pglite's single connection
+   * pass between dev processes: the auth server releases it after each request so the
+   * dashboard can read once login redirects back. A no-op if nothing is pooled.
+   */
+  export async function release(url: string) {
+    const sql = clientsByUrl.get(url);
+    if (!sql) return;
+    providedByUrl.delete(url);
+    clientsByUrl.delete(url);
+    await sql.end({ timeout: 5 });
   }
 
   export async function effect(effect: () => any | Promise<any>): Promise<void> {

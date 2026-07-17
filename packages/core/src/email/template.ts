@@ -20,6 +20,18 @@ export namespace Template {
     await Email.send({ from: "hello", to: user.email, subject: "Welcome!", body });
   }
 
+  export async function sendLoginCode(email: string, code: string) {
+    const body = [
+      `Your login code is ${code}.`,
+      ``,
+      `It expires shortly. If you didn't request it, you can ignore this email.`,
+      ``,
+      `– The Team`,
+    ].join("\n");
+
+    await Email.send({ from: "hello", to: email, subject: `Your login code: ${code}`, body });
+  }
+
   export async function sendProfileUpdated(userID: string) {
     const user = await User.fromID(userID);
     if (!user?.email) return;

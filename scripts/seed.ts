@@ -4,11 +4,10 @@ import { Actor } from "@template/core/actor";
 import { Database, sql } from "@template/core/drizzle";
 import { Todo } from "@template/core/todo";
 import { Auth } from "@template/core/user/auth";
-import { User } from "@template/core/user";
+import { Key } from "@template/core/key";
 
 const url = process.env.DATABASE_URL ?? Database.DEFAULT_URL;
 const email = process.env.SEED_EMAIL ?? "dev@example.com";
-const password = process.env.SEED_PASSWORD ?? "password123";
 const name = process.env.SEED_NAME ?? "Dev User";
 
 const count = Number(process.env.SEED_TODO_COUNT ?? 260);
@@ -77,12 +76,10 @@ function status() {
 }
 
 const result = await Database.provide(url, async () => {
-  const user = await User.fromEmail(email);
-  const auth = user
-    ? await Auth.login({ email, password })
-    : await Auth.register({ name, email, password });
+  const userID = await Auth.provision({ provider: "email", accountId: email, email, name });
+  const key = await Key.create({ userID, name: "seed" });
 
-  await Actor.provide("user", { userID: auth.userID }, async () => {
+  await Actor.provide("user", { userID }, async () => {
     const list = await Todo.list({ page: 1, pageSize: 100 });
     if (list.total > 0) return;
 
@@ -106,10 +103,9 @@ const result = await Database.provide(url, async () => {
     );
   });
 
-  return auth;
+  return key;
 });
 
 console.log("Seed completed");
 console.log(`Email: ${email}`);
-console.log(`Password: ${password}`);
-console.log(`Token: ${result.token}`);
+console.log(`API key: ${result.key}`);

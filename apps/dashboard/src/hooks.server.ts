@@ -3,10 +3,10 @@ import type { Handle, HandleServerError } from "@sveltejs/kit";
 import { env } from "$env/dynamic/private";
 import { Database } from "@template/core/drizzle";
 import { Actor } from "@template/core/actor";
-import { Auth } from "@template/core/user/auth";
 import { VisibleError } from "@template/core/error";
 import { Log } from "@template/core/util/log";
 import { dev } from "$app/environment";
+import { read } from "$lib/server/session";
 
 const log = Log.create({ namespace: "dashboard.hooks.server" });
 
@@ -22,13 +22,11 @@ const handleAuth: Handle = async ({ event, resolve }) => {
   // Health probes don't need an actor; skip it so they don't spam logs.
   if (event.url.pathname === "/healthz") return resolve(event);
 
-  const token = event.cookies.get("token");
-  event.locals.token = token;
+  const session = await read(event);
+  event.locals.session = session;
+  if (!session) return Actor.provide("public", {}, () => resolve(event));
 
-  const userID = token ? await Auth.verify(token) : null;
-  if (!userID) return Actor.provide("public", {}, () => resolve(event));
-
-  return Actor.provide("user", { userID }, () => resolve(event));
+  return Actor.provide("user", { userID: session.userID }, () => resolve(event));
 };
 
 export const handle = sequence(handleDb, handleAuth);

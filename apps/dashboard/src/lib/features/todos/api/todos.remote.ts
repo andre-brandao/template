@@ -18,7 +18,7 @@ export const getTodos = query(
     return data;
 
     // API/SDK version, kept as an example of calling the HTTP API instead of core directly:
-    // const { data } = await api(getRequestEvent().locals.token).getTodo(input);
+    // const { data } = await api().getTodo(input);
     // return data?.data ?? [];
   },
 );
@@ -41,7 +41,7 @@ export const createTodo = form(
     auth();
     await guard(() => Todo.create({ ...input, status: input.status || undefined }));
 
-    // const { error } = await api(getRequestEvent().locals.token).postTodo(input);
+    // const { error } = await api().postTodo(input);
     // if (error) return { message: error.message };
   },
 );

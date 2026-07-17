@@ -33,7 +33,7 @@ export namespace Actor {
       } as any,
       () => {
         return Log.provide({ ...properties }, () => {
-          log.info("provided");
+          // log.info("provided");
           return cb();
         });
       },

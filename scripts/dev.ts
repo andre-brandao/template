@@ -8,7 +8,14 @@ type IO = "pipe" | "inherit" | "ignore";
 const pgport = Number(process.env.PGPORT ?? 5432);
 const url =
   process.env.DATABASE_URL ?? `postgresql://postgres:password@127.0.0.1:${pgport}/postgres`;
-const env = { ...process.env, DATABASE_URL: url, PGPORT: String(pgport) };
+const authport = Number(process.env.AUTH_PORT ?? 3002);
+const env = {
+  ...process.env,
+  DATABASE_URL: url,
+  PGPORT: String(pgport),
+  AUTH_URL: process.env.AUTH_URL ?? `http://localhost:${authport}`,
+  SESSION_SECRET: process.env.SESSION_SECRET ?? "dev-session-secret",
+};
 
 const servers = [
   {
@@ -26,6 +33,14 @@ const servers = [
     port: Number(process.env.MCP_PORT ?? 3001),
     env: (port: number) => ({ MCP_PORT: String(port) }),
     color: "\x1b[35m",
+  },
+  {
+    name: "auth",
+    cwd: `${root}/packages/functions`,
+    cmd: ["bun", "run", "dev:auth"],
+    port: authport,
+    env: (port: number) => ({ PORT: String(port) }),
+    color: "\x1b[34m",
   },
   {
     name: "web",
@@ -99,12 +114,14 @@ if (code !== 0) {
   process.exit(code);
 }
 
+const separatorWidth = Math.max(...servers.map((server) => server.name.length));
+
 console.log(`Starting servers... ${servers.map((s) => `${s.name}=${s.port}`).join(" ")}`);
 const exit = await Promise.race(
   servers.map((server) => {
     const cmd = typeof server.cmd === "function" ? server.cmd(server.port) : server.cmd;
     const child = spawn(cmd, server.cwd, "pipe", "pipe", server.env?.(server.port));
-    const tag = `${server.color}${server.name.padEnd(3)}\x1b[0m │ `;
+    const tag = `${server.color}${server.name.padEnd(separatorWidth)}\x1b[0m │ `;
     for (const stream of [child.stdout, child.stderr]) {
       if (stream instanceof ReadableStream) void pipe(stream, tag);
     }

@@ -7,3 +7,4 @@ export { default as RangePicker, last, valid, type Range } from "./input/RangePi
 
 // ui
 export { default as Card } from "./ui/Card.svelte";
+export { default as Drawer, type Side } from "./ui/Drawer.svelte";

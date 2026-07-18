@@ -6,6 +6,7 @@ import DOMPurify from "isomorphic-dompurify";
 export function createCarta() {
   return new Carta({
     sanitizer: DOMPurify.sanitize,
+    theme: "github-dark",
     extensions: [
       attachment({
         supportedMimeTypes: ["image/png", "image/jpeg", "image/gif", "image/svg+xml"],

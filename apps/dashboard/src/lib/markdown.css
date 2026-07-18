@@ -1,0 +1,113 @@
+/* Recolors carta-md's default (light) theme to match this app's dark UI. */
+
+.carta-theme__default {
+  --border-color: var(--border);
+  --selection-color: color-mix(in oklab, var(--accent) 30%, transparent);
+  --focus-outline: var(--accent);
+  --hover-color: var(--surface-2);
+  --caret-color: var(--ink);
+  --text-color: var(--muted);
+}
+
+.carta-theme__default.carta-editor {
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.carta-theme__default .carta-toolbar {
+  background: var(--surface);
+}
+
+.carta-theme__default .carta-toolbar-left button.carta-active {
+  color: var(--ink);
+}
+
+.carta-theme__default .carta-icons-menu {
+  background: var(--surface-2);
+}
+
+.carta-theme__default .carta-input,
+.carta-theme__default .carta-renderer {
+  background: var(--surface);
+  color: var(--ink);
+  height: 280px;
+  scrollbar-width: thin;
+}
+
+.carta-theme__default .carta-input textarea {
+  color: var(--ink);
+  background: transparent;
+}
+
+.carta-theme__default .carta-icon-full:hover {
+  color: var(--ink);
+}
+
+.carta-drop-overlay {
+  --icon-color: var(--accent-ink);
+  --bg-color: var(--accent);
+  --border-color: color-mix(in oklab, var(--accent-ink) 55%, transparent);
+}
+
+.markdown-body {
+  color: var(--ink);
+  line-height: 1.6;
+  overflow-wrap: break-word;
+}
+
+.markdown-body :is(h1, h2, h3, h4, h5, h6) {
+  margin: 1em 0 0.4em;
+  line-height: 1.3;
+}
+
+.markdown-body :is(h1, h2, h3, h4, h5, h6):first-child {
+  margin-top: 0;
+}
+
+.markdown-body p {
+  margin: 0.6em 0;
+}
+
+.markdown-body a {
+  color: var(--accent);
+}
+
+.markdown-body code {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+}
+
+.markdown-body :not(pre) > code {
+  background: var(--surface-2);
+  padding: 0.15em 0.4em;
+  border-radius: 4px;
+}
+
+.markdown-body pre {
+  padding: 0.8em 1em;
+  border-radius: var(--radius);
+  overflow-x: auto;
+  background: var(--surface-2) !important;
+}
+
+.markdown-body blockquote {
+  border-left: 3px solid var(--border-bright);
+  margin: 0.8em 0;
+  padding: 0.2em 1em;
+  color: var(--muted);
+}
+
+.markdown-body img {
+  max-width: 100%;
+  border-radius: var(--radius);
+}
+
+.markdown-body :is(ul, ol) {
+  padding-left: 1.4em;
+}
+
+.markdown-body hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 1.2em 0;
+}

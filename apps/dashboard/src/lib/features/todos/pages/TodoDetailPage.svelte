@@ -1,21 +1,35 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { Button, Card } from '@template/ui';
-	import { Markdown } from 'carta-md';
+	import { Markdown, MarkdownEditor } from 'carta-md';
 	import 'carta-md/default.css';
 	import '@cartamd/plugin-attachment/default.css';
+	import '$lib/markdown.css';
 	import { createCarta } from '$lib/markdown';
-	import { getTodo, getEvents, removeTodo } from '../api/todos.remote';
+	import { getTodo, getEvents, removeTodo, updateTodo } from '../api/todos.remote';
 	import StatePill from '../components/StatePill.svelte';
 	import StateToggle from '../components/StateToggle.svelte';
 	import TagList from '../components/TagList.svelte';
 	import ActivityFeed from '../components/ActivityFeed.svelte';
 
 	let { id }: { id: string } = $props();
-	const todo = $derived(await getTodo(id));
+	// `$derived(await query())` only re-subscribes when its args change, not when the
+	// query is refreshed in place — `gen` is read (and bumped after a save) purely to
+	// force this derived to re-evaluate and pick up the refreshed value.
+	let gen = $state(0);
+	const todo = $derived((gen, await getTodo(id)));
 	const events = $derived(await getEvents(todo.id));
 	const remove = $derived(removeTodo.for(todo.id));
+	const update = $derived(updateTodo.for(todo.id));
 	const carta = createCarta();
+
+	let editing = $state(false);
+	let body = $state('');
+
+	function edit() {
+		body = todo.body ?? '';
+		editing = true;
+	}
 </script>
 
 <a class="back" href="/todos">&larr; Back to todos</a>
@@ -37,10 +51,33 @@
 		<p class="due">Due {new Date(todo.dueDate).toLocaleDateString()}</p>
 	{/if}
 
-	{#if todo.body}
-		<div class="body">
-			<Markdown {carta} value={todo.body} />
-		</div>
+	{#if editing}
+		<form
+			class="edit"
+			{...update.enhance(async (f) => {
+				await f.submit();
+				await getTodo(todo.id).refresh();
+				gen++;
+				editing = false;
+			})}
+		>
+			<input {...update.fields.id.as('hidden', todo.id)} />
+			<MarkdownEditor {carta} bind:value={body} />
+			<input type="hidden" {...update.fields.body.as('hidden', body)} />
+			<div class="edit-actions">
+				<Button type="submit" pending={!!update.pending}>Save</Button>
+				<Button variant="ghost" type="button" onclick={() => (editing = false)}>Cancel</Button>
+			</div>
+		</form>
+	{:else}
+		{#if todo.body}
+			<div class="body">
+				<Markdown {carta} value={todo.body} />
+			</div>
+		{:else}
+			<p class="empty-body">No description yet.</p>
+		{/if}
+		<Button variant="ghost" onclick={edit}>{todo.body ? 'Edit description' : 'Add description'}</Button>
 	{/if}
 
 	<div class="actions">
@@ -94,6 +131,23 @@
 
 	.body {
 		margin-top: 1em;
+	}
+
+	.empty-body {
+		color: var(--dim);
+		font-size: 0.9em;
+		font-style: italic;
+		margin: 1em 0 0;
+	}
+
+	.edit {
+		margin-top: 1em;
+	}
+
+	.edit-actions {
+		display: flex;
+		gap: 0.5em;
+		margin-top: 0.6em;
 	}
 
 	.actions {

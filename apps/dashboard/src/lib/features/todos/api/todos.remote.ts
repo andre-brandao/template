@@ -78,6 +78,20 @@ export const reopenTodo = form(z.object({ id: Todo.Info.shape.id }), async (inpu
   await guard(() => Todo.update({ id: input.id, state: "open" }));
 });
 
+export const updateTodo = form(
+  z.object({
+    id: Todo.Info.shape.id,
+    body: z
+      .string()
+      .optional()
+      .transform((s) => s || null),
+  }),
+  async (input) => {
+    auth();
+    await guard(() => Todo.update(input));
+  },
+);
+
 export const removeTodo = form(z.object({ id: Todo.Info.shape.id }), async (input) => {
   auth();
   await guard(() => Todo.remove(input.id));

@@ -4,7 +4,9 @@
 	import { closeTodo, reopenTodo } from '../api/todos.remote';
 
 	let { todo }: { todo: Todo.Info } = $props();
-	const close = $derived(closeTodo.for(todo.id));
+	// Two forms can't share one binding instance, so completed/not-planned each get their own key.
+	const close = $derived(closeTodo.for(`${todo.id}:completed`));
+	const closeNotPlanned = $derived(closeTodo.for(`${todo.id}:not_planned`));
 	const reopen = $derived(reopenTodo.for(todo.id));
 </script>
 
@@ -15,10 +17,10 @@
 			<input {...close.fields.reason.as('hidden', 'completed')} />
 			<Button variant="primary" type="submit" pending={!!close.pending}>Close as completed</Button>
 		</form>
-		<form {...close}>
-			<input {...close.fields.id.as('hidden', todo.id)} />
-			<input {...close.fields.reason.as('hidden', 'not_planned')} />
-			<Button variant="ghost" type="submit" pending={!!close.pending}>Close as not planned</Button>
+		<form {...closeNotPlanned}>
+			<input {...closeNotPlanned.fields.id.as('hidden', todo.id)} />
+			<input {...closeNotPlanned.fields.reason.as('hidden', 'not_planned')} />
+			<Button variant="ghost" type="submit" pending={!!closeNotPlanned.pending}>Close as not planned</Button>
 		</form>
 	{:else}
 		<form {...reopen}>

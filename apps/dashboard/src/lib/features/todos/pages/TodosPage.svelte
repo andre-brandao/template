@@ -1,6 +1,7 @@
 <script lang="ts">
   import { z } from 'zod'
   import { query } from '$lib/utils/params'
+  import { Button, Drawer } from '@template/ui'
   import { getTodos } from '../api/todos.remote'
   import TodoForm from '../components/form/TodoForm.svelte'
   import TodoFilters from '../components/TodoFilters.svelte'
@@ -21,6 +22,8 @@
       q: params.q || undefined,
     }),
   )
+
+  let adding = $state(false)
 </script>
 
 <h1>Todos</h1>
@@ -36,9 +39,13 @@
     view={params.view}
     onchange={(view) => params.update({ view })}
   />
+  <Button onclick={() => (adding = true)}>New todo</Button>
 </div>
 
-<TodoForm />
+<Drawer bind:open={adding}>
+  <h2>New todo</h2>
+  <TodoForm onsuccess={() => (adding = false)} />
+</Drawer>
 
 <TodosView {todos} view={params.view} />
 
@@ -61,5 +68,10 @@
     align-self: stretch;
     background: var(--border);
     margin-left: auto;
+  }
+
+  h2 {
+    margin: 0 0 1em;
+    font-size: 1.15em;
   }
 </style>

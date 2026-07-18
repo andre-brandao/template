@@ -3,8 +3,11 @@
 	import { MarkdownEditor } from 'carta-md';
 	import 'carta-md/default.css';
 	import '@cartamd/plugin-attachment/default.css';
+	import '$lib/markdown.css';
 	import { createCarta } from '$lib/markdown';
 	import { createTodo } from '../../api/todos.remote';
+
+	let { onsuccess }: { onsuccess?: () => void } = $props();
 
 	const carta = createCarta();
 	let body = $state('');
@@ -19,6 +22,7 @@
 	{...createTodo.enhance(async (f) => {
 		await f.submit();
 		body = '';
+		onsuccess?.();
 	})}
 >
 	<div class="row">

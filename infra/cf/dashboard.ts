@@ -1,10 +1,10 @@
 import { createHash } from "crypto"
 import { readdirSync, statSync } from "fs"
 import { database, hyperdrive } from "./database";
+import { files } from "./storage";
 import { environment } from "./secrets";
 import { subdomain } from './stage'
 
-// export const r2 = new sst.cloudflare.Bucket("Artifacts");
 
 const dir = `${process.cwd()}/apps/dashboard`
 
@@ -44,7 +44,8 @@ const dashboard = new sst.cloudflare.Worker("Dashboard", {
   environment,
   link: [
     database,
-    hyperdrive
+    hyperdrive,
+    files
   ],
   placement: {
     region: "aws:sa-east-1",

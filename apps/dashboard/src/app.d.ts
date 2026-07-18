@@ -14,6 +14,7 @@ declare global {
     interface Platform {
       env?: {
         Hyperdrive?: { connectionString: string };
+        Files?: import("@cloudflare/workers-types").R2Bucket;
       };
     }
   }

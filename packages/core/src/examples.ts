@@ -33,6 +33,15 @@ export namespace Examples {
     current: false,
   } as const;
 
+  export const File = {
+    id: Id("file"),
+    userID: Id("user"),
+    filename: "screenshot.png",
+    contentType: "image/png",
+    size: 102400,
+    timeCreated: "2026-06-07T00:00:00.000Z",
+  } as const;
+
   export const Event = {
     id: Id("event"),
     userID: Id("user"),

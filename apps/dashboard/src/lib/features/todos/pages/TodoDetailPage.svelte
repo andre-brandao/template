@@ -1,9 +1,10 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { Button, Card } from '@template/ui';
-	import { Carta, Markdown } from 'carta-md';
+	import { Markdown } from 'carta-md';
 	import 'carta-md/default.css';
-	import DOMPurify from 'isomorphic-dompurify';
+	import '@cartamd/plugin-attachment/default.css';
+	import { createCarta } from '$lib/markdown';
 	import { getTodo, getEvents, removeTodo } from '../api/todos.remote';
 	import StatePill from '../components/StatePill.svelte';
 	import StateToggle from '../components/StateToggle.svelte';
@@ -14,7 +15,7 @@
 	const todo = $derived(await getTodo(id));
 	const events = $derived(await getEvents(todo.id));
 	const remove = $derived(removeTodo.for(todo.id));
-	const carta = new Carta({ sanitizer: DOMPurify.sanitize });
+	const carta = createCarta();
 </script>
 
 <a class="back" href="/todos">&larr; Back to todos</a>

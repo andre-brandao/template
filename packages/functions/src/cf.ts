@@ -1,8 +1,9 @@
-import type { Hyperdrive, KVNamespace, SendEmail } from "@cloudflare/workers-types";
+import type { Hyperdrive, KVNamespace, R2Bucket, SendEmail } from "@cloudflare/workers-types";
 
 /** Bindings shared by every Cloudflare worker target. */
 export interface Env {
   Hyperdrive: Hyperdrive;
+  Files: R2Bucket;
 }
 
 /** Auth worker extras: OpenAuth storage KV and the email service binding. */

@@ -39,6 +39,14 @@ export function setupApiTest() {
     });
   };
 
+  const postForm = async (path: string, form: FormData, headers?: Record<string, string>) => {
+    return app.request(path, {
+      method: "post",
+      headers: { authorization: `Bearer ${token}`, ...headers },
+      body: form,
+    });
+  };
+
   const patch = async (path: string, body: any, headers?: Record<string, string>) => {
     return app.request(path, {
       method: "patch",
@@ -152,6 +160,7 @@ export function setupApiTest() {
   return {
     get,
     post,
+    postForm,
     patch,
     del,
     noAuth,

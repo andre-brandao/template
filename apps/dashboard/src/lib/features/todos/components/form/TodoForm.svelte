@@ -1,11 +1,12 @@
 <script lang="ts">
 	import { Button } from '@template/ui';
-	import { Carta, MarkdownEditor } from 'carta-md';
+	import { MarkdownEditor } from 'carta-md';
 	import 'carta-md/default.css';
-	import DOMPurify from 'isomorphic-dompurify';
+	import '@cartamd/plugin-attachment/default.css';
+	import { createCarta } from '$lib/markdown';
 	import { createTodo } from '../../api/todos.remote';
 
-	const carta = new Carta({ sanitizer: DOMPurify.sanitize });
+	const carta = createCarta();
 	let body = $state('');
 </script>
 

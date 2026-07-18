@@ -6,6 +6,7 @@ import { Log } from "@template/core/util/log";
 import { KeyApi } from "./handler/key";
 import { UserApi } from "./handler/user";
 import { TodoApi } from "./handler/todo";
+import { FileApi } from "./handler/file";
 import { auth } from "./middleware";
 
 const log = Log.create({ namespace: "api" });
@@ -34,6 +35,7 @@ export const routes = app
   .route("/", UserApi.route)
   .route("/key", KeyApi.route)
   .route("/todo", TodoApi.route)
+  .route("/file", FileApi.route)
   .onError((error, c) => {
     if (error instanceof VisibleError) {
       return c.json<ErrorResponseType>(error.toResponse(), error.statusCode());

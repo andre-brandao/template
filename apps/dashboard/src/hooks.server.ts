@@ -2,6 +2,8 @@ import { sequence } from "@sveltejs/kit/hooks";
 import type { Handle, HandleServerError } from "@sveltejs/kit";
 import { env } from "$env/dynamic/private";
 import { Database } from "@template/core/drizzle";
+import { Storage } from "@template/core/storage";
+import { createR2Storage } from "@template/core/storage/adapter/r2";
 import { Actor } from "@template/core/actor";
 import { VisibleError } from "@template/core/error";
 import { Log } from "@template/core/util/log";
@@ -18,6 +20,15 @@ const handleDb: Handle = ({ event, resolve }) => {
   return Database.provide(url, () => resolve(event));
 };
 
+const handleStorage: Handle = ({ event, resolve }) => {
+  // On Cloudflare the Files R2 binding is available; fall back to env-driven
+  // fs/s3 for local dev and the Docker self-host target.
+  const port = event.platform?.env?.Files
+    ? createR2Storage(event.platform.env.Files)
+    : Storage.fromEnv(env);
+  return Storage.provide(port, () => resolve(event));
+};
+
 const handleAuth: Handle = async ({ event, resolve }) => {
   // Health probes don't need an actor; skip it so they don't spam logs.
   if (event.url.pathname === "/healthz") return resolve(event);
@@ -29,7 +40,7 @@ const handleAuth: Handle = async ({ event, resolve }) => {
   return Actor.provide("user", { userID: session.userID }, () => resolve(event));
 };
 
-export const handle = sequence(handleDb, handleAuth);
+export const handle = sequence(handleDb, handleStorage, handleAuth);
 
 export const handleError: HandleServerError = ({ error, event, status, message }) => {
   if (status === 404) return { message: "Not found" };

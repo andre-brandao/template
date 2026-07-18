@@ -29,6 +29,9 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 .cache
 *.tsbuildinfo
 
+# local file storage (STORAGE_DRIVER=fs default dir)
+.data
+
 # IntelliJ based IDEs
 .idea
 

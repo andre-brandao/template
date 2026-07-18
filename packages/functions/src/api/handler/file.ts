@@ -87,7 +87,7 @@ export namespace FileApi {
       validator("param", z.object({ id: z.string() })),
       async (c) => {
         const content = found("File", await File.content(c.req.valid("param").id));
-        return new Response(content.bytes, {
+        return new Response(new Blob([new Uint8Array(content.bytes)]), {
           status: 200,
           headers: { "Content-Type": content.contentType },
         });

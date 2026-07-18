@@ -9,7 +9,7 @@ export const GET: RequestHandler = async ({ params }) => {
   const content = await File.content(params.id);
   if (!content) error(404, "Not found");
 
-  return new Response(content.bytes, {
+  return new Response(new Blob([new Uint8Array(content.bytes)]), {
     headers: { "content-type": content.contentType },
   });
 };

@@ -17,7 +17,7 @@ export namespace Template {
       `– The Team`,
     ].join("\n");
 
-    await Email.send({ from: "hello", to: user.email, subject: "Welcome!", body });
+    await Email.send({ to: user.email, subject: "Welcome!", body });
   }
 
   export async function sendLoginCode(email: string, code: string) {
@@ -29,7 +29,7 @@ export namespace Template {
       `– The Team`,
     ].join("\n");
 
-    await Email.send({ from: "hello", to: email, subject: `Your login code: ${code}`, body });
+    await Email.send({ to: email, subject: `Your login code: ${code}`, body });
   }
 
   export async function sendProfileUpdated(userID: string) {
@@ -46,6 +46,6 @@ export namespace Template {
       `– The Team`,
     ].join("\n");
 
-    await Email.send({ from: "hello", to: user.email, subject: "Your profile was updated", body });
+    await Email.send({ to: user.email, subject: "Your profile was updated", body });
   }
 }

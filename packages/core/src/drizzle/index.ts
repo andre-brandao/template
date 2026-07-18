@@ -163,16 +163,20 @@ export namespace Database {
     return (input: Input) => use(async (tx) => callback(input, tx));
   }
 
-  export async function healthcheck(): Promise<{ status: "ok" | "degraded"; message: string }> {
+  export async function healthcheck(): Promise<{
+    status: "ok" | "degraded";
+    message: string;
+    cause?: string;
+  }> {
     try {
       await Database.use((tx) => tx.execute(sql`SELECT 1`));
       return { status: "ok", message: "ok" };
     } catch (err) {
-      log.error(err instanceof Error ? err : new Error(String(err)));
-      return {
-        status: "degraded",
-        message: err instanceof Error ? err.message : "unreachable",
-      };
+      const e = err instanceof Error ? err : new Error(String(err));
+      log.error(e);
+      const cause = e.cause instanceof Error ? e.cause.message : undefined;
+      if (cause) log.error(e.cause as Error);
+      return { status: "degraded", message: e.message, cause };
     }
   }
 }

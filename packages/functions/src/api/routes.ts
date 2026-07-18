@@ -16,7 +16,10 @@ export const app = new Hono();
 app.get("/healthz", async (c) => {
   const { Database } = await import("@template/core/drizzle");
   const check = await Database.healthcheck();
-  return c.json({ status: check.status, db: check.message }, check.status === "ok" ? 200 : 503);
+  return c.json(
+    { status: check.status, db: check.message, cause: check.cause },
+    check.status === "ok" ? 200 : 503,
+  );
 });
 
 app

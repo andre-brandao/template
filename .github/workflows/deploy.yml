@@ -1,5 +1,5 @@
 name: Deploy
-run-name: "Deploy ${{ github.event_name == 'pull_request' && format(' #{0}', github.event.pull_request.number) || github.ref_name }}"
+run-name: "${{ github.event.action == 'closed' && 'Remove' || 'Deploy' }} ${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || github.ref_name }}"
 
 on:
   push:

@@ -10,6 +10,7 @@
 	const remove = $derived(removeTodo.for(todo.id));
 </script>
 
+<!-- fallow-ignore-next-line code-duplication -->
 <Card>
 	{#each remove.fields.allIssues() ?? [] as issue, i (i)}
 		<p class="error">{issue.message}</p>
@@ -24,6 +25,7 @@
 
 	<div class="actions">
 		<StateToggle {todo} />
+		<!-- fallow-ignore-next-line code-duplication -->
 		<form {...remove}>
 			<input {...remove.fields.id.as('hidden', todo.id)} />
 			<Button variant="danger" type="submit" pending={!!remove.pending}>Delete</Button>

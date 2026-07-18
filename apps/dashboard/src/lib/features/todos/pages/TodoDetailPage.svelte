@@ -20,6 +20,7 @@
 
 <a class="back" href="/todos">&larr; Back to todos</a>
 
+<!-- fallow-ignore-next-line code-duplication -->
 <Card>
 	{#each remove.fields.allIssues() ?? [] as issue, i (i)}
 		<p class="error">{issue.message}</p>
@@ -44,6 +45,7 @@
 
 	<div class="actions">
 		<StateToggle {todo} />
+		<!-- fallow-ignore-next-line code-duplication -->
 		<form {...remove.enhance(async (f) => {
 			await f.submit();
 			goto('/todos');

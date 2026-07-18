@@ -12,9 +12,7 @@ export interface R2BucketLike {
     value: Uint8Array,
     options?: { httpMetadata?: { contentType?: string } },
   ): Promise<unknown>;
-  get(
-    key: string,
-  ): Promise<{
+  get(key: string): Promise<{
     arrayBuffer(): Promise<ArrayBuffer>;
     httpMetadata?: { contentType?: string };
   } | null>;

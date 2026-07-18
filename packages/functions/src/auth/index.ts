@@ -46,7 +46,7 @@ const build: Record<string, () => Provider | null> = {
 };
 
 function providers() {
-  const want = (process.env.AUTH_PROVIDERS ?? "password,code,github,google")
+  const want = (process.env.AUTH_PROVIDERS?.trim() || "password,code,github,google")
     .split(",")
     .map((s) => s.trim())
     .filter(Boolean);

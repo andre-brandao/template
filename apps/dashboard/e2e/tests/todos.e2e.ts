@@ -15,8 +15,8 @@ test("creating a todo through the form shows it in the list", async ({ page, as 
 });
 
 test("existing todos are listed", async ({ page, as }) => {
-  const { uid } = await as("user");
-  await seed(uid, ["Buy milk", "Renew passport"]);
+  const session = await as("user");
+  await seed(session.userID, ["Buy milk", "Renew passport"]);
 
   await page.goto("/todos");
 

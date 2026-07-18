@@ -3,7 +3,6 @@ import { logger } from "hono/logger";
 import { HTTPException } from "hono/http-exception";
 import { VisibleError, ErrorCodes, type ErrorResponseType } from "@template/core/error";
 import { Log } from "@template/core/util/log";
-import { AuthApi } from "./handler/auth";
 import { KeyApi } from "./handler/key";
 import { UserApi } from "./handler/user";
 import { TodoApi } from "./handler/todo";
@@ -30,7 +29,6 @@ app
 
 export const routes = app
   .route("/", UserApi.route)
-  .route("/auth", AuthApi.route)
   .route("/key", KeyApi.route)
   .route("/todo", TodoApi.route)
   .onError((error, c) => {

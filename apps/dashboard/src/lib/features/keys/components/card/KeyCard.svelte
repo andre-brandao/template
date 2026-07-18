@@ -14,6 +14,9 @@
 	const used = $derived(
 		key.timeUsed ? `last used ${new Date(key.timeUsed).toLocaleDateString()}` : 'never used'
 	);
+	const expires = $derived(
+		key.expiresAt ? `expires ${new Date(key.expiresAt).toLocaleDateString()}` : 'never expires'
+	);
 
 	const copy = () => secret && navigator.clipboard.writeText(secret);
 </script>
@@ -21,7 +24,7 @@
 <li>
 	<div class="meta">
 		<span class="name">{key.name}</span>
-		<span class="used">{used}</span>
+		<span class="used">{used} · {expires}</span>
 	</div>
 
 	<code class:revealed={shown}>{text}</code>

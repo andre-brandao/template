@@ -15,13 +15,13 @@ export namespace KeyApi {
         tags: ["Key"],
         summary: "List keys",
         description:
-          "List the current user's API keys and active sessions. Session secrets are withheld; the key authenticating this request is flagged `current`.",
+          "List the current user's API keys. The key authenticating this request is flagged `current`.",
         responses: {
           200: {
             content: {
               "application/json": { schema: Result(Key.Info.array()), example: [Examples.Key] },
             },
-            description: "The user's keys and sessions.",
+            description: "The user's keys.",
           },
           401: ErrorResponses[401],
           500: ErrorResponses[500],
@@ -38,7 +38,8 @@ export namespace KeyApi {
       describeRoute({
         tags: ["Key"],
         summary: "Create key",
-        description: "Mint a named API key for the current user. API keys do not expire.",
+        description:
+          "Mint a named API key for the current user. Pass `expiresInDays` to set an expiry; omit it for a key that never expires.",
         responses: {
           200: {
             content: { "application/json": { schema: Result(Key.Info), example: Examples.Key } },
@@ -50,12 +51,21 @@ export namespace KeyApi {
         },
       }),
       authRequired,
-      validator("json", Key.create.schema.pick({ name: true })),
+      validator(
+        "json",
+        z.object({
+          name: Key.Info.shape.name,
+          expiresInDays: z.number().int().positive().optional(),
+        }),
+      ),
       async (c) => {
+        const body = c.req.valid("json");
         const key = await Key.create({
           userID: Actor.userID(),
-          type: "api",
-          name: c.req.valid("json").name,
+          name: body.name,
+          expiresAt: body.expiresInDays
+            ? new Date(Date.now() + body.expiresInDays * 86_400_000)
+            : null,
         });
         return c.json(key, 200);
       },
@@ -65,8 +75,7 @@ export namespace KeyApi {
       describeRoute({
         tags: ["Key"],
         summary: "Revoke key",
-        description:
-          "Revoke an API key or a session. The secret stops authenticating immediately — revoking your own session logs you out.",
+        description: "Revoke an API key. The secret stops authenticating immediately.",
         responses: {
           200: {
             content: { "application/json": { schema: Result(z.literal("ok")) } },

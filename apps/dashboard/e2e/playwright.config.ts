@@ -11,6 +11,10 @@ const pg = process.env.E2E_PG ?? "postgresql://postgres:password@127.0.0.1:5432"
 const url = `${pg}/${process.env.E2E_DB ?? "template_e2e"}`;
 process.env.DATABASE_URL = url;
 
+// Same secret in the test process (mint seals the cookie) and the app server (hooks read it).
+const secret = process.env.SESSION_SECRET ?? "e2e-session-secret";
+process.env.SESSION_SECRET = secret;
+
 export default defineConfig({
   testDir: "./tests",
   testMatch: "**/*.e2e.ts",
@@ -36,7 +40,7 @@ export default defineConfig({
     url: `${base}/healthz`,
     reuseExistingServer: !ci,
     timeout: 120_000,
-    env: { SVELTE_ADAPTER: "node", DATABASE_URL: url },
+    env: { SVELTE_ADAPTER: "node", DATABASE_URL: url, SESSION_SECRET: secret },
   },
   projects: [
     { name: "chromium", use: { ...devices["Desktop Chrome"] } },

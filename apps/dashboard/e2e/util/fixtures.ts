@@ -15,7 +15,7 @@ export const test = base.extend<Fixtures>({
   as: async ({ context, baseURL }, use) => {
     await use(async (role = "user", opts = {}) => {
       const session = await mint(role, opts);
-      await context.addCookies([{ name: "token", value: session.token, url: baseURL! }]);
+      await context.addCookies([{ name: "auth", value: session.cookie, url: baseURL! }]);
       return session;
     });
   },

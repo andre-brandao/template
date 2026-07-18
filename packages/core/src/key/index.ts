@@ -7,7 +7,7 @@ import { Common } from "../common";
 import { Database } from "../drizzle";
 import { Examples } from "../examples";
 import { Identifier } from "../identifier";
-import { KeyTable, KeyTypes } from "./key.sql";
+import { KeyTable } from "./key.sql";
 
 const CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
@@ -15,14 +15,8 @@ export namespace Key {
   export const Info = z
     .object({
       id: z.string().meta({ description: Common.IdDescription, example: Examples.Key.id }),
-      type: z.enum(KeyTypes).meta({
-        description: "`api` keys are user-minted and never expire; `session` keys back a login.",
-      }),
       name: z.string().min(1).max(255),
-      key: z.string().nullable().meta({
-        description:
-          "The secret, for `api` keys only. Null for `session` keys — a login token is never handed back out.",
-      }),
+      key: z.string().meta({ description: "The secret. Handed back in full so it can be copied." }),
       display: z.string().meta({ description: "Masked secret, safe to show in a list." }),
       timeUsed: z.iso
         .datetime()
@@ -31,27 +25,26 @@ export namespace Key {
       expiresAt: z.iso
         .datetime()
         .nullable()
-        .meta({ description: "When the key stops working. Null for `api` keys." }),
+        .meta({ description: "When the key stops working. Null means it never expires." }),
       current: z
         .boolean()
         .meta({ description: "Whether this is the key authenticating the current request." }),
     })
     .meta({
       ref: "Key",
-      description: "An API key or an active session belonging to a user.",
+      description: "An API key belonging to a user.",
       example: Examples.Key,
     });
   export type Info = z.infer<typeof Info>;
 
   /**
-   * Takes `userID` rather than reading the actor, because register/login mint a
-   * key before there is an actor to read. Unlike `list`, this returns the raw
-   * secret — it's the only time a `session` secret is ever handed out.
+   * Takes `userID` rather than reading the actor, so callers can mint a key for a
+   * user before an actor exists. Returns the raw secret — the convenient time to
+   * copy it, though `list` hands it back too.
    */
   export const create = fn(
     z.object({
       userID: Identifier.schema("user"),
-      type: z.enum(KeyTypes).optional(),
       name: Info.shape.name,
       expiresAt: z.date().nullable().optional(),
     }),
@@ -62,13 +55,12 @@ export namespace Key {
           .values({
             id: Identifier.create("key"),
             userID: input.userID,
-            type: input.type ?? "api",
             name: input.name,
             key: token(),
             expiresAt: input.expiresAt ?? null,
           })
           .returning()
-          .then((rows) => ({ ...serialize(rows[0]!), key: rows[0]!.key })),
+          .then((rows) => serialize(rows[0]!)),
       ),
   );
 
@@ -85,9 +77,8 @@ export namespace Key {
   );
 
   /**
-   * Every live key the user has — API keys *and* sessions, so they can see and
-   * revoke logins from other devices. Pass the caller's own secret to have its
-   * key flagged `current`; `session` secrets are withheld either way.
+   * Every live key the user has. Pass the caller's own secret to have its key
+   * flagged `current`.
    */
   export const list = fn(z.string().optional(), (current) =>
     Database.use((tx) =>
@@ -100,7 +91,7 @@ export namespace Key {
     ),
   );
 
-  /** Revokes an API key or a session — including the caller's own, which logs them out. */
+  /** Revokes an API key — the secret stops authenticating immediately. */
   export const remove = fn(Info.shape.id, async (id) =>
     found(
       "Key",
@@ -121,17 +112,7 @@ export namespace Key {
     ),
   );
 
-  /** Revokes by secret rather than id — the logout path holds the token, not the id. */
-  export const revoke = fn(z.string(), (key) =>
-    Database.use((tx) =>
-      tx
-        .update(KeyTable)
-        .set({ timeDeleted: new Date() })
-        .where(and(eq(KeyTable.key, key), isNull(KeyTable.timeDeleted))),
-    ),
-  );
-
-  /** Unexpired: `api` keys have no expiry, `session` keys must not be past theirs. */
+  /** Unexpired: no expiry set, or expiry still in the future. */
   function live() {
     return or(isNull(KeyTable.expiresAt), gt(KeyTable.expiresAt, new Date()));
   }
@@ -145,9 +126,8 @@ export namespace Key {
   function serialize(row: typeof KeyTable.$inferSelect, current?: string): Info {
     return {
       id: row.id,
-      type: row.type,
       name: row.name,
-      key: row.type === "api" ? row.key : null,
+      key: row.key,
       display: `${row.key.slice(0, 7)}...${row.key.slice(-4)}`,
       timeUsed: row.timeUsed?.toISOString() ?? null,
       expiresAt: row.expiresAt?.toISOString() ?? null,

@@ -22,7 +22,6 @@ export namespace Examples {
 
   export const Key = {
     id: Id("key"),
-    type: "api",
     name: "laptop",
     key: "sk-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
     display: "sk-XXXX...XXXX",

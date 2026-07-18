@@ -24,12 +24,6 @@ import type {
   GetTodoResponses,
   PatchTodoByIdErrors,
   PatchTodoByIdResponses,
-  PostAuthLoginErrors,
-  PostAuthLoginResponses,
-  PostAuthLogoutErrors,
-  PostAuthLogoutResponses,
-  PostAuthRegisterErrors,
-  PostAuthRegisterResponses,
   PostKeyErrors,
   PostKeyResponses,
   PostTodoErrors,
@@ -107,110 +101,9 @@ export class TemplateSdk extends HeyApiClient {
   }
 
   /**
-   * Register
-   *
-   * Create a new user with an email/password and start a session.
-   */
-  public postAuthRegister<ThrowOnError extends boolean = false>(
-    parameters: {
-      name: string;
-      email: string;
-      password: string;
-    },
-    options?: Options<never, ThrowOnError>,
-  ): RequestResult<PostAuthRegisterResponses, PostAuthRegisterErrors, ThrowOnError> {
-    const params = buildClientParams(
-      [parameters],
-      [
-        {
-          args: [
-            { in: "body", key: "name" },
-            { in: "body", key: "email" },
-            { in: "body", key: "password" },
-          ],
-        },
-      ],
-    );
-    return (options?.client ?? this.client).post<
-      PostAuthRegisterResponses,
-      PostAuthRegisterErrors,
-      ThrowOnError
-    >({
-      security: [{ scheme: "bearer", type: "http" }],
-      url: "/auth/register",
-      ...options,
-      ...params,
-      headers: {
-        "Content-Type": "application/json",
-        ...options?.headers,
-        ...params.headers,
-      },
-    });
-  }
-
-  /**
-   * Login
-   *
-   * Exchange an email/password for a new session.
-   */
-  public postAuthLogin<ThrowOnError extends boolean = false>(
-    parameters: {
-      email: string;
-      password: string;
-    },
-    options?: Options<never, ThrowOnError>,
-  ): RequestResult<PostAuthLoginResponses, PostAuthLoginErrors, ThrowOnError> {
-    const params = buildClientParams(
-      [parameters],
-      [
-        {
-          args: [
-            { in: "body", key: "email" },
-            { in: "body", key: "password" },
-          ],
-        },
-      ],
-    );
-    return (options?.client ?? this.client).post<
-      PostAuthLoginResponses,
-      PostAuthLoginErrors,
-      ThrowOnError
-    >({
-      security: [{ scheme: "bearer", type: "http" }],
-      url: "/auth/login",
-      ...options,
-      ...params,
-      headers: {
-        "Content-Type": "application/json",
-        ...options?.headers,
-        ...params.headers,
-      },
-    });
-  }
-
-  /**
-   * Logout
-   *
-   * Invalidate the current session.
-   */
-  public postAuthLogout<ThrowOnError extends boolean = false>(
-    options?: Options<never, ThrowOnError>,
-  ): RequestResult<PostAuthLogoutResponses, PostAuthLogoutErrors, ThrowOnError> {
-    return (options?.client ?? this.client).post<
-      PostAuthLogoutResponses,
-      PostAuthLogoutErrors,
-      ThrowOnError
-    >({
-      security: [{ scheme: "bearer", type: "http" }],
-      url: "/auth/logout",
-      ...options,
-    });
-  }
-
-  /**
    * List keys
    *
-   * List the current user's API keys and active sessions. Session secrets are withheld; the key authenticating this request is flagged `current`.
+   * List the current user's API keys. The key authenticating this request is flagged `current`.
    */
   public getKey<ThrowOnError extends boolean = false>(
     options?: Options<never, ThrowOnError>,
@@ -225,15 +118,26 @@ export class TemplateSdk extends HeyApiClient {
   /**
    * Create key
    *
-   * Mint a named API key for the current user. API keys do not expire.
+   * Mint a named API key for the current user. Pass `expiresInDays` to set an expiry; omit it for a key that never expires.
    */
   public postKey<ThrowOnError extends boolean = false>(
     parameters: {
       name: string;
+      expiresInDays?: number;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<PostKeyResponses, PostKeyErrors, ThrowOnError> {
-    const params = buildClientParams([parameters], [{ args: [{ in: "body", key: "name" }] }]);
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "body", key: "name" },
+            { in: "body", key: "expiresInDays" },
+          ],
+        },
+      ],
+    );
     return (options?.client ?? this.client).post<PostKeyResponses, PostKeyErrors, ThrowOnError>({
       security: [{ scheme: "bearer", type: "http" }],
       url: "/key",
@@ -250,7 +154,7 @@ export class TemplateSdk extends HeyApiClient {
   /**
    * Revoke key
    *
-   * Revoke an API key or a session. The secret stops authenticating immediately — revoking your own session logs you out.
+   * Revoke an API key. The secret stops authenticating immediately.
    */
   public deleteKeyById<ThrowOnError extends boolean = false>(
     parameters: {

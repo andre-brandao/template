@@ -1,91 +1,112 @@
 import { z } from "zod";
 import { and, eq } from "drizzle-orm";
 import { fn } from "../util/fn";
-import { Password } from "../util/password";
-import { Key } from "../key";
+import { Actor } from "../actor";
 import { Database } from "../drizzle";
-import { ErrorCodes, VisibleError } from "../error";
 import { Identifier } from "../identifier";
+import { User } from "./index";
 import { UserTable } from "./user.sql";
-import { ProviderTable } from "./provider.sql";
-
-const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000;
+import { ProviderIds, ProviderTable } from "./provider.sql";
 
 export namespace Auth {
-  export const register = fn(
-    z.object({ name: z.string().min(1), email: z.email(), password: z.string().min(8) }),
-    async (input) => {
-      const existing = await account(input.email);
-      if (existing)
-        throw new VisibleError(
-          "validation",
-          ErrorCodes.Validation.ALREADY_EXISTS,
-          "Email is already registered",
-        );
+  const Tokens = z.object({
+    access: z.string(),
+    refresh: z.string().nullable().optional(),
+    expiresAt: z.date().nullable().optional(),
+  });
+  export type Tokens = z.infer<typeof Tokens>;
 
-      const password = await Password.hash(input.password);
-      const userID = Identifier.create("user");
-      await Database.transaction(async (tx) => {
-        await tx.insert(UserTable).values({ id: userID, name: input.name, email: input.email });
+  /**
+   * Resolves an authenticated identity to a `userID`, called from the OpenAuth
+   * issuer's `success` handler. Idempotent: a returning login lands on the same
+   * user. A new provider for a known email links onto that user, so a password
+   * account and a GitHub login for one address share a single user. Any `tokens`
+   * (from an OAuth provider) are stored on the provider row and refreshed on every
+   * login, so the app can later call that provider's API as the user.
+   */
+  export const provision = fn(
+    z.object({
+      provider: z.enum(ProviderIds),
+      /** The identity at the provider — its own id, or the email for email/code. */
+      accountId: z.string(),
+      email: z.email(),
+      name: z.string().min(1).optional(),
+      tokens: Tokens.optional(),
+    }),
+    (input) =>
+      Database.transaction(async (tx) => {
+        const tokens = input.tokens && {
+          accessToken: input.tokens.access,
+          refreshToken: input.tokens.refresh ?? null,
+          tokenExpiresAt: input.tokens.expiresAt ?? null,
+        };
+
+        const byProvider = await tx
+          .select({ userID: ProviderTable.userID })
+          .from(ProviderTable)
+          .where(
+            and(
+              eq(ProviderTable.providerId, input.provider),
+              eq(ProviderTable.accountId, input.accountId),
+            ),
+          )
+          .then((rows) => rows.at(0)?.userID);
+        if (byProvider) {
+          if (tokens)
+            await tx
+              .update(ProviderTable)
+              .set({ ...tokens, timeUpdated: new Date() })
+              .where(
+                and(
+                  eq(ProviderTable.providerId, input.provider),
+                  eq(ProviderTable.accountId, input.accountId),
+                ),
+              );
+          return byProvider;
+        }
+
+        const byEmail = await tx
+          .select({ id: UserTable.id })
+          .from(UserTable)
+          .where(eq(UserTable.email, input.email))
+          .then((rows) => rows.at(0)?.id);
+
+        const userID =
+          byEmail ?? (await User.create({ name: input.name ?? input.email, email: input.email }));
+
         await tx.insert(ProviderTable).values({
           id: Identifier.create("provider"),
           userID,
-          providerId: "email",
-          accountId: input.email,
-          password,
+          providerId: input.provider,
+          accountId: input.accountId,
+          ...tokens,
         });
-      });
 
-      return session(userID);
-    },
+        return userID;
+      }),
   );
 
-  export const login = fn(z.object({ email: z.email(), password: z.string() }), async (input) => {
-    const provider = await account(input.email);
-    if (!provider?.password)
-      throw new VisibleError(
-        "authentication",
-        ErrorCodes.Authentication.INVALID_CREDENTIALS,
-        "Invalid email or password",
-      );
-
-    const valid = await Password.verify(input.password, provider.password);
-    if (!valid)
-      throw new VisibleError(
-        "authentication",
-        ErrorCodes.Authentication.INVALID_CREDENTIALS,
-        "Invalid email or password",
-      );
-
-    return session(provider.userID);
-  });
-
-  export const logout = fn(z.string(), (token) => Key.revoke(token));
-
-  export const verify = fn(z.string(), (token) => Key.verify(token));
-
-  function account(email: string) {
-    return Database.use((tx) =>
+  /**
+   * The stored OAuth tokens for the current user's connection to `provider`, or
+   * null if not connected. Returns the raw secrets — server-only, for calling the
+   * provider's API as the user.
+   */
+  export const tokens = fn(z.enum(ProviderIds), (provider) =>
+    Database.use((tx) =>
       tx
         .select({
-          id: ProviderTable.id,
-          userID: ProviderTable.userID,
-          password: ProviderTable.password,
+          access: ProviderTable.accessToken,
+          refresh: ProviderTable.refreshToken,
+          expiresAt: ProviderTable.tokenExpiresAt,
         })
         .from(ProviderTable)
-        .where(and(eq(ProviderTable.providerId, "email"), eq(ProviderTable.accountId, email)))
-        .then((rows) => rows.at(0)),
-    );
-  }
-
-  /** A login is just a `session` key — same secret shape as an API key, but it expires. */
-  async function session(userID: string) {
-    const key = await Key.create({
-      userID,
-      type: "session",
-      name: "session",
-      expiresAt: new Date(Date.now() + SESSION_TTL_MS),
-    });
-    return { userID, token: key.key };
-  }
+        .where(
+          and(eq(ProviderTable.userID, Actor.userID()), eq(ProviderTable.providerId, provider)),
+        )
+        .then((rows) => {
+          const row = rows.at(0);
+          return row?.access ? row : null;
+        }),
+    ),
+  );
 }

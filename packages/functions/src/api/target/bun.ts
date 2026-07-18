@@ -1,9 +1,7 @@
-import { app } from "./api/routes";
+import { bun } from "../../target";
+import { app } from "../routes";
 
 const port = parseInt(process.env.PORT!) || 3000;
 console.log(`Running at http://localhost:${port}`);
 
-export default {
-  port,
-  fetch: app.fetch,
-};
+export default bun(app, port);

@@ -82,6 +82,30 @@ services:
       timeout: 5s
       retries: 5
 
+  auth:
+    <<: *app
+    command: ["serve", "auth"]
+    environment:
+      PORT: 3002
+      # File-backed MemoryStorage so a single-node restart keeps sessions and passwords.
+      AUTH_PERSIST: /data/auth.json
+    ports:
+      - "3002:3002"
+    volumes:
+      - authdata:/data
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test:
+        - CMD
+        - bun
+        - -e
+        - "await fetch('http://localhost:3002/.well-known/jwks.json').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   dashboard:
     <<: *app
     command: ["serve", "dashboard"]
@@ -92,6 +116,8 @@ services:
     depends_on:
       migrate:
         condition: service_completed_successfully
+      auth:
+        condition: service_healthy
     healthcheck:
       test:
         - CMD
@@ -104,3 +130,4 @@ services:
 
 volumes:
   pgdata:
+  authdata:

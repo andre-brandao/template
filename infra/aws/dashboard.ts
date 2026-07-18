@@ -1,4 +1,4 @@
-import { database } from "./database"
+import { database, url } from "./database"
 import { environment } from "./secrets"
 import { domain } from "./stage"
 
@@ -9,7 +9,7 @@ const dashboard = new sst.aws.SvelteKit("Dashboard", {
   environment: {
     ...environment,
     SVELTE_ADAPTER: "sst-aws",
-    DATABASE_URL: $interpolate`postgresql://${database.username}:${database.password}@${database.host}:${database.port}/${database.database}?sslmode=require`,
+    DATABASE_URL: url,
   },
 })
 

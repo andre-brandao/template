@@ -46,7 +46,7 @@ export type ErrorResponse = {
 };
 
 /**
- * An API key or an active session belonging to a user.
+ * An API key belonging to a user.
  */
 export type Key = {
   /**
@@ -54,15 +54,11 @@ export type Key = {
    * The format and length of IDs may change over time.
    */
   id: string;
-  /**
-   * `api` keys are user-minted and never expire; `session` keys back a login.
-   */
-  type: "session" | "api";
   name: string;
   /**
-   * The secret, for `api` keys only. Null for `session` keys — a login token is never handed back out.
+   * The secret. Handed back in full so it can be copied.
    */
-  key: string | null;
+  key: string;
   /**
    * Masked secret, safe to show in a list.
    */
@@ -72,7 +68,7 @@ export type Key = {
    */
   timeUsed: string | null;
   /**
-   * When the key stops working. Null for `api` keys.
+   * When the key stops working. Null means it never expires.
    */
   expiresAt: string | null;
   /**
@@ -128,122 +124,6 @@ export type GetMeResponses = {
 
 export type GetMeResponse = GetMeResponses[keyof GetMeResponses];
 
-export type PostAuthRegisterData = {
-  body: {
-    name: string;
-    email: string;
-    password: string;
-  };
-  path?: never;
-  query?: never;
-  url: "/auth/register";
-};
-
-export type PostAuthRegisterErrors = {
-  /**
-   * Bad Request
-   */
-  400: ErrorResponse;
-  /**
-   * Internal Server Error
-   */
-  500: ErrorResponse;
-};
-
-export type PostAuthRegisterError = PostAuthRegisterErrors[keyof PostAuthRegisterErrors];
-
-export type PostAuthRegisterResponses = {
-  /**
-   * New session.
-   */
-  200: {
-    /**
-     * The logged-in user's ID.
-     */
-    userID: string;
-    /**
-     * Bearer session token. Include as `Authorization: Bearer <token>`.
-     */
-    token: string;
-  };
-};
-
-export type PostAuthRegisterResponse = PostAuthRegisterResponses[keyof PostAuthRegisterResponses];
-
-export type PostAuthLoginData = {
-  body: {
-    email: string;
-    password: string;
-  };
-  path?: never;
-  query?: never;
-  url: "/auth/login";
-};
-
-export type PostAuthLoginErrors = {
-  /**
-   * Bad Request
-   */
-  400: ErrorResponse;
-  /**
-   * Unauthorized
-   */
-  401: ErrorResponse;
-  /**
-   * Internal Server Error
-   */
-  500: ErrorResponse;
-};
-
-export type PostAuthLoginError = PostAuthLoginErrors[keyof PostAuthLoginErrors];
-
-export type PostAuthLoginResponses = {
-  /**
-   * New session.
-   */
-  200: {
-    /**
-     * The logged-in user's ID.
-     */
-    userID: string;
-    /**
-     * Bearer session token. Include as `Authorization: Bearer <token>`.
-     */
-    token: string;
-  };
-};
-
-export type PostAuthLoginResponse = PostAuthLoginResponses[keyof PostAuthLoginResponses];
-
-export type PostAuthLogoutData = {
-  body?: never;
-  path?: never;
-  query?: never;
-  url: "/auth/logout";
-};
-
-export type PostAuthLogoutErrors = {
-  /**
-   * Unauthorized
-   */
-  401: ErrorResponse;
-  /**
-   * Internal Server Error
-   */
-  500: ErrorResponse;
-};
-
-export type PostAuthLogoutError = PostAuthLogoutErrors[keyof PostAuthLogoutErrors];
-
-export type PostAuthLogoutResponses = {
-  /**
-   * Logged out.
-   */
-  200: "ok";
-};
-
-export type PostAuthLogoutResponse = PostAuthLogoutResponses[keyof PostAuthLogoutResponses];
-
 export type GetKeyData = {
   body?: never;
   path?: never;
@@ -266,7 +146,7 @@ export type GetKeyError = GetKeyErrors[keyof GetKeyErrors];
 
 export type GetKeyResponses = {
   /**
-   * The user's keys and sessions.
+   * The user's keys.
    */
   200: Array<Key>;
 };
@@ -276,6 +156,7 @@ export type GetKeyResponse = GetKeyResponses[keyof GetKeyResponses];
 export type PostKeyData = {
   body: {
     name: string;
+    expiresInDays?: number;
   };
   path?: never;
   query?: never;

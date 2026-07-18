@@ -100,26 +100,14 @@
             "description": "Unique object identifier.\nThe format and length of IDs may change over time.",
             "example": "key_XXXXXXXXXXXXXXXXXXXXXXXXX"
           },
-          "type": {
-            "type": "string",
-            "enum": ["session", "api"],
-            "description": "`api` keys are user-minted and never expire; `session` keys back a login."
-          },
           "name": {
             "type": "string",
             "minLength": 1,
             "maxLength": 255
           },
           "key": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "The secret, for `api` keys only. Null for `session` keys — a login token is never handed back out."
+            "type": "string",
+            "description": "The secret. Handed back in full so it can be copied."
           },
           "display": {
             "type": "string",
@@ -149,18 +137,17 @@
                 "type": "null"
               }
             ],
-            "description": "When the key stops working. Null for `api` keys."
+            "description": "When the key stops working. Null means it never expires."
           },
           "current": {
             "type": "boolean",
             "description": "Whether this is the key authenticating the current request."
           }
         },
-        "required": ["id", "type", "name", "key", "display", "timeUsed", "expiresAt", "current"],
-        "description": "An API key or an active session belonging to a user.",
+        "required": ["id", "name", "key", "display", "timeUsed", "expiresAt", "current"],
+        "description": "An API key belonging to a user.",
         "example": {
           "id": "key_XXXXXXXXXXXXXXXXXXXXXXXXX",
-          "type": "api",
           "name": "laptop",
           "key": "sk-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
           "display": "sk-XXXX...XXXX",
@@ -286,247 +273,12 @@
         }
       }
     },
-    "/auth/register": {
-      "post": {
-        "operationId": "postAuthRegister",
-        "tags": ["Auth"],
-        "summary": "Register",
-        "description": "Create a new user with an email/password and start a session.",
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "userID": {
-                      "type": "string",
-                      "description": "The logged-in user's ID."
-                    },
-                    "token": {
-                      "type": "string",
-                      "description": "Bearer session token. Include as `Authorization: Bearer <token>`."
-                    }
-                  },
-                  "required": ["userID", "token"]
-                }
-              }
-            },
-            "description": "New session."
-          },
-          "400": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "validation",
-                  "code": "invalid_parameter",
-                  "message": "The request was invalid"
-                }
-              }
-            },
-            "description": "Bad Request"
-          },
-          "500": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "internal",
-                  "code": "internal_error",
-                  "message": "Internal server error"
-                }
-              }
-            },
-            "description": "Internal Server Error"
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "name": {
-                    "type": "string",
-                    "minLength": 1
-                  },
-                  "email": {
-                    "type": "string",
-                    "format": "email",
-                    "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
-                  },
-                  "password": {
-                    "type": "string",
-                    "minLength": 8
-                  }
-                },
-                "required": ["name", "email", "password"]
-              }
-            }
-          }
-        }
-      }
-    },
-    "/auth/login": {
-      "post": {
-        "operationId": "postAuthLogin",
-        "tags": ["Auth"],
-        "summary": "Login",
-        "description": "Exchange an email/password for a new session.",
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "userID": {
-                      "type": "string",
-                      "description": "The logged-in user's ID."
-                    },
-                    "token": {
-                      "type": "string",
-                      "description": "Bearer session token. Include as `Authorization: Bearer <token>`."
-                    }
-                  },
-                  "required": ["userID", "token"]
-                }
-              }
-            },
-            "description": "New session."
-          },
-          "400": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "validation",
-                  "code": "invalid_parameter",
-                  "message": "The request was invalid"
-                }
-              }
-            },
-            "description": "Bad Request"
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "authentication",
-                  "code": "unauthorized",
-                  "message": "Authentication required"
-                }
-              }
-            },
-            "description": "Unauthorized"
-          },
-          "500": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "internal",
-                  "code": "internal_error",
-                  "message": "Internal server error"
-                }
-              }
-            },
-            "description": "Internal Server Error"
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "email": {
-                    "type": "string",
-                    "format": "email",
-                    "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
-                  },
-                  "password": {
-                    "type": "string"
-                  }
-                },
-                "required": ["email", "password"]
-              }
-            }
-          }
-        }
-      }
-    },
-    "/auth/logout": {
-      "post": {
-        "operationId": "postAuthLogout",
-        "tags": ["Auth"],
-        "summary": "Logout",
-        "description": "Invalidate the current session.",
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "string",
-                  "const": "ok"
-                }
-              }
-            },
-            "description": "Logged out."
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "authentication",
-                  "code": "unauthorized",
-                  "message": "Authentication required"
-                }
-              }
-            },
-            "description": "Unauthorized"
-          },
-          "500": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "internal",
-                  "code": "internal_error",
-                  "message": "Internal server error"
-                }
-              }
-            },
-            "description": "Internal Server Error"
-          }
-        }
-      }
-    },
     "/key": {
       "get": {
         "operationId": "getKey",
         "tags": ["Key"],
         "summary": "List keys",
-        "description": "List the current user's API keys and active sessions. Session secrets are withheld; the key authenticating this request is flagged `current`.",
+        "description": "List the current user's API keys. The key authenticating this request is flagged `current`.",
         "responses": {
           "200": {
             "content": {
@@ -540,7 +292,6 @@
                 "example": [
                   {
                     "id": "key_XXXXXXXXXXXXXXXXXXXXXXXXX",
-                    "type": "api",
                     "name": "laptop",
                     "key": "sk-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
                     "display": "sk-XXXX...XXXX",
@@ -551,7 +302,7 @@
                 ]
               }
             },
-            "description": "The user's keys and sessions."
+            "description": "The user's keys."
           },
           "401": {
             "content": {
@@ -589,7 +340,7 @@
         "operationId": "postKey",
         "tags": ["Key"],
         "summary": "Create key",
-        "description": "Mint a named API key for the current user. API keys do not expire.",
+        "description": "Mint a named API key for the current user. Pass `expiresInDays` to set an expiry; omit it for a key that never expires.",
         "responses": {
           "200": {
             "content": {
@@ -599,7 +350,6 @@
                 },
                 "example": {
                   "id": "key_XXXXXXXXXXXXXXXXXXXXXXXXX",
-                  "type": "api",
                   "name": "laptop",
                   "key": "sk-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
                   "display": "sk-XXXX...XXXX",
@@ -668,6 +418,11 @@
                     "type": "string",
                     "minLength": 1,
                     "maxLength": 255
+                  },
+                  "expiresInDays": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991
                   }
                 },
                 "required": ["name"]
@@ -682,7 +437,7 @@
         "operationId": "deleteKeyById",
         "tags": ["Key"],
         "summary": "Revoke key",
-        "description": "Revoke an API key or a session. The secret stops authenticating immediately — revoking your own session logs you out.",
+        "description": "Revoke an API key. The secret stops authenticating immediately.",
         "responses": {
           "200": {
             "content": {

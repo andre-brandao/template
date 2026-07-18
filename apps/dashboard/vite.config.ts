@@ -10,6 +10,7 @@ function cloudflaredPg(): PluginOption {
     // unenv-sst has nothing to stub.
     name: "postgres-cloudflare",
     enforce: "pre",
+    // fallow-ignore-next-line complexity
     async resolveId(id, importer, options) {
       if (id === "postgres" && options?.ssr) {
         const resolved = await this.resolve(id, importer, {

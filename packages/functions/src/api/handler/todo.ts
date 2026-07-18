@@ -21,7 +21,7 @@ export namespace TodoApi {
       describeRoute({
         tags: ["Todo"],
         summary: "List todos",
-        description: "List the current user's todos, optionally filtered by status. Paginated.",
+        description: "List the current user's todos, optionally filtered by state. Paginated.",
         responses: {
           200: PaginatedResponse(Todo.Info, "A page of todos.", Examples.Todo),
           401: ErrorResponses[401],
@@ -29,13 +29,9 @@ export namespace TodoApi {
         },
       }),
       authRequired,
-      validator("query", PaginatedQuery.extend({ status: Todo.Status.array().optional() })),
+      validator("query", PaginatedQuery.extend({ state: Todo.State.optional() })),
       async (c) => {
-        const input = c.req.valid("query");
-        const todos = await Todo.list({
-          ...input,
-          status: input.status,
-        });
+        const todos = await Todo.list(c.req.valid("query"));
         return c.json(todos, 200);
       },
     )

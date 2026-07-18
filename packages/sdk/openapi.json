@@ -44,7 +44,12 @@
             ]
           }
         },
-        "required": ["id", "name", "email", "image"],
+        "required": [
+          "id",
+          "name",
+          "email",
+          "image"
+        ],
         "description": "A user account.",
         "example": {
           "id": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX",
@@ -68,28 +73,45 @@
               "internal"
             ],
             "description": "The error type category",
-            "examples": ["validation", "authentication"]
+            "examples": [
+              "validation",
+              "authentication"
+            ]
           },
           "code": {
             "type": "string",
             "description": "Machine-readable error code identifier",
-            "examples": ["invalid_parameter", "missing_required_field", "unauthorized"]
+            "examples": [
+              "invalid_parameter",
+              "missing_required_field",
+              "unauthorized"
+            ]
           },
           "message": {
             "type": "string",
             "description": "Human-readable error message",
-            "examples": ["The request was invalid", "Authentication required"]
+            "examples": [
+              "The request was invalid",
+              "Authentication required"
+            ]
           },
           "param": {
             "description": "The parameter that caused the error (if applicable)",
-            "examples": ["email", "user_id"],
+            "examples": [
+              "email",
+              "user_id"
+            ],
             "type": "string"
           },
           "details": {
             "description": "Additional error context information"
           }
         },
-        "required": ["type", "code", "message"],
+        "required": [
+          "type",
+          "code",
+          "message"
+        ],
         "description": "Not found error"
       },
       "Key": {
@@ -144,7 +166,15 @@
             "description": "Whether this is the key authenticating the current request."
           }
         },
-        "required": ["id", "name", "key", "display", "timeUsed", "expiresAt", "current"],
+        "required": [
+          "id",
+          "name",
+          "key",
+          "display",
+          "timeUsed",
+          "expiresAt",
+          "current"
+        ],
         "description": "An API key belonging to a user.",
         "example": {
           "id": "key_XXXXXXXXXXXXXXXXXXXXXXXXX",
@@ -172,12 +202,46 @@
             "minLength": 0,
             "maxLength": 2000
           },
-          "status": {
+          "body": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 20000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "state": {
             "type": "string",
-            "minLength": 1,
-            "maxLength": 64,
-            "description": "Status of a todo item. Any short label; defaults are pending, in_progress and done.",
-            "example": "pending"
+            "enum": [
+              "open",
+              "closed"
+            ]
+          },
+          "stateReason": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "completed",
+                  "not_planned"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "tags": {
+            "maxItems": 20,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            }
           },
           "dueDate": {
             "anyOf": [
@@ -192,13 +256,25 @@
             ]
           }
         },
-        "required": ["id", "userID", "title", "status", "dueDate"],
+        "required": [
+          "id",
+          "userID",
+          "title",
+          "body",
+          "state",
+          "stateReason",
+          "tags",
+          "dueDate"
+        ],
         "description": "A todo item that belongs to a user.",
         "example": {
           "id": "tod_XXXXXXXXXXXXXXXXXXXXXXXXX",
           "userID": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX",
           "title": "Write the quarterly report",
-          "status": "pending",
+          "body": null,
+          "state": "open",
+          "stateReason": null,
+          "tags": [],
           "dueDate": null
         }
       }
@@ -219,7 +295,9 @@
     "/me": {
       "get": {
         "operationId": "getMe",
-        "tags": ["User"],
+        "tags": [
+          "User"
+        ],
         "summary": "Get current user",
         "description": "Get the profile of the currently authenticated user.",
         "responses": {
@@ -276,7 +354,9 @@
     "/key": {
       "get": {
         "operationId": "getKey",
-        "tags": ["Key"],
+        "tags": [
+          "Key"
+        ],
         "summary": "List keys",
         "description": "List the current user's API keys. The key authenticating this request is flagged `current`.",
         "responses": {
@@ -338,7 +418,9 @@
       },
       "post": {
         "operationId": "postKey",
-        "tags": ["Key"],
+        "tags": [
+          "Key"
+        ],
         "summary": "Create key",
         "description": "Mint a named API key for the current user. Pass `expiresInDays` to set an expiry; omit it for a key that never expires.",
         "responses": {
@@ -425,7 +507,9 @@
                     "maximum": 9007199254740991
                   }
                 },
-                "required": ["name"]
+                "required": [
+                  "name"
+                ]
               }
             }
           }
@@ -435,7 +519,9 @@
     "/key/{id}": {
       "delete": {
         "operationId": "deleteKeyById",
-        "tags": ["Key"],
+        "tags": [
+          "Key"
+        ],
         "summary": "Revoke key",
         "description": "Revoke an API key. The secret stops authenticating immediately.",
         "responses": {
@@ -511,9 +597,11 @@
     "/todo": {
       "get": {
         "operationId": "getTodo",
-        "tags": ["Todo"],
+        "tags": [
+          "Todo"
+        ],
         "summary": "List todos",
-        "description": "List the current user's todos, optionally filtered by status. Paginated.",
+        "description": "List the current user's todos, optionally filtered by state. Paginated.",
         "responses": {
           "200": {
             "content": {
@@ -540,7 +628,12 @@
                       "description": "Total number of matching entities across all pages."
                     }
                   },
-                  "required": ["data", "page", "pageSize", "total"],
+                  "required": [
+                    "data",
+                    "page",
+                    "pageSize",
+                    "total"
+                  ],
                   "description": "A page of results."
                 },
                 "example": {
@@ -549,7 +642,10 @@
                       "id": "tod_XXXXXXXXXXXXXXXXXXXXXXXXX",
                       "userID": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX",
                       "title": "Write the quarterly report",
-                      "status": "pending",
+                      "body": null,
+                      "state": "open",
+                      "stateReason": null,
+                      "tags": [],
                       "dueDate": null
                     }
                   ],
@@ -612,23 +708,22 @@
           },
           {
             "in": "query",
-            "name": "status",
+            "name": "state",
             "schema": {
-              "type": "array",
-              "items": {
-                "type": "string",
-                "minLength": 1,
-                "maxLength": 64,
-                "description": "Status of a todo item. Any short label; defaults are pending, in_progress and done.",
-                "example": "pending"
-              }
+              "type": "string",
+              "enum": [
+                "open",
+                "closed"
+              ]
             }
           }
         ]
       },
       "post": {
         "operationId": "postTodo",
-        "tags": ["Todo"],
+        "tags": [
+          "Todo"
+        ],
         "summary": "Create todo",
         "responses": {
           "200": {
@@ -699,12 +794,25 @@
                     "minLength": 0,
                     "maxLength": 2000
                   },
-                  "status": {
-                    "type": "string",
-                    "minLength": 1,
-                    "maxLength": 64,
-                    "description": "Status of a todo item. Any short label; defaults are pending, in_progress and done.",
-                    "example": "pending"
+                  "body": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "maxLength": 20000
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "tags": {
+                    "maxItems": 20,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 64
+                    }
                   },
                   "dueDate": {
                     "anyOf": [
@@ -719,7 +827,9 @@
                     ]
                   }
                 },
-                "required": ["title"]
+                "required": [
+                  "title"
+                ]
               }
             }
           }
@@ -729,7 +839,9 @@
     "/todo/{id}": {
       "get": {
         "operationId": "getTodoById",
-        "tags": ["Todo"],
+        "tags": [
+          "Todo"
+        ],
         "summary": "Get todo",
         "responses": {
           "200": {
@@ -742,7 +854,10 @@
                   "id": "tod_XXXXXXXXXXXXXXXXXXXXXXXXX",
                   "userID": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX",
                   "title": "Write the quarterly report",
-                  "status": "pending",
+                  "body": null,
+                  "state": "open",
+                  "stateReason": null,
+                  "tags": [],
                   "dueDate": null
                 }
               }
@@ -808,7 +923,9 @@
       },
       "patch": {
         "operationId": "patchTodoById",
-        "tags": ["Todo"],
+        "tags": [
+          "Todo"
+        ],
         "summary": "Update todo",
         "responses": {
           "200": {
@@ -904,12 +1021,25 @@
                     "minLength": 0,
                     "maxLength": 2000
                   },
-                  "status": {
-                    "type": "string",
-                    "minLength": 1,
-                    "maxLength": 64,
-                    "description": "Status of a todo item. Any short label; defaults are pending, in_progress and done.",
-                    "example": "pending"
+                  "body": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "maxLength": 20000
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "tags": {
+                    "maxItems": 20,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 64
+                    }
                   },
                   "dueDate": {
                     "anyOf": [
@@ -917,6 +1047,27 @@
                         "type": "string",
                         "format": "date-time",
                         "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "state": {
+                    "type": "string",
+                    "enum": [
+                      "open",
+                      "closed"
+                    ]
+                  },
+                  "stateReason": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "completed",
+                          "not_planned"
+                        ]
                       },
                       {
                         "type": "null"
@@ -931,7 +1082,9 @@
       },
       "delete": {
         "operationId": "deleteTodoById",
-        "tags": ["Todo"],
+        "tags": [
+          "Todo"
+        ],
         "summary": "Delete todo",
         "responses": {
           "200": {

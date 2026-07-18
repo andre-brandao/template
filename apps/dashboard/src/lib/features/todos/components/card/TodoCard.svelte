@@ -2,28 +2,28 @@
 	import { Button, Card } from '@template/ui';
 	import { removeTodo } from '../../api/todos.remote';
 	import type { Todo } from '@template/core/todo';
-	import StatusPill from '../StatusPill.svelte';
-	import StatusSelect from '../StatusSelect.svelte';
-	import StageRail from '../StageRail.svelte';
+	import StatePill from '../StatePill.svelte';
+	import StateToggle from '../StateToggle.svelte';
+	import TagList from '../TagList.svelte';
 
 	let { todo }: { todo: Todo.Info } = $props();
 	const remove = $derived(removeTodo.for(todo.id));
 </script>
 
 <Card>
-	{#each remove.fields.allIssues() ?? [] as issue}
+	{#each remove.fields.allIssues() ?? [] as issue, i (i)}
 		<p class="error">{issue.message}</p>
 	{/each}
 
 	<div class="head">
 		<a class="title" href="/todos/{todo.id}">{todo.title}</a>
-		<StatusPill status={todo.status} />
+		<StatePill state={todo.state} />
 	</div>
 
-	<StageRail status={todo.status} />
+	<TagList tags={todo.tags} />
 
 	<div class="actions">
-		<StatusSelect {todo} />
+		<StateToggle {todo} />
 		<form {...remove}>
 			<input {...remove.fields.id.as('hidden', todo.id)} />
 			<Button variant="danger" type="submit" pending={!!remove.pending}>Delete</Button>

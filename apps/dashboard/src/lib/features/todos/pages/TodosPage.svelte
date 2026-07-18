@@ -10,14 +10,14 @@
   const params = query(
     z.object({
       q: z.string().default(''),
-      status: z.string().array().default([]),
+      state: z.enum(['all', 'open', 'closed']).default('all'),
       view: z.enum(['list', 'board', 'table']).default('list'),
     }),
   )
 
   const todos = $derived(
     await getTodos({
-      status: params.status.length ? params.status : undefined,
+      state: params.state === 'all' ? undefined : params.state,
       q: params.q || undefined,
     }),
   )
@@ -27,9 +27,9 @@
 
 <div class="toolbar">
   <TodoFilters
-    filters={{ statuses: params.status, search: params.q }}
+    filters={{ state: params.state, search: params.q }}
     onchange={(next) =>
-      params.update({ status: next.statuses, q: next.search })}
+      params.update({ state: next.state, q: next.search })}
   />
   <span class="sep"></span>
   <ViewSelector

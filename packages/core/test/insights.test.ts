@@ -12,13 +12,14 @@ function range(days = 30) {
 }
 
 describe("insights", () => {
-  withTestUser("stats aggregates totals, rate and progress", async () => {
+  withTestUser("stats aggregates totals, rate and open count", async () => {
     const id = await Todo.create({ title: "One" });
     await Todo.create({ title: "Two" });
-    await Todo.update({ id, status: "done" });
+    await Todo.update({ id, state: "closed" });
     const stats = await Insights.stats(range());
     expect(stats.total).toBe(2);
     expect(stats.done).toBe(1);
+    expect(stats.open).toBe(1);
     expect(stats.rate).toBe(50);
     expect(stats.overdue).toBe(0);
   });
@@ -27,8 +28,8 @@ describe("insights", () => {
     await Todo.create({ title: "One" });
     const status = await Insights.status(range());
     expect(status.total).toBe(1);
-    expect(status.rows.find((row) => row.status === "pending")?.pct).toBe(100);
-    expect(status.rows.find((row) => row.status === "done")?.total).toBe(0);
+    expect(status.rows.find((row) => row.state === "open")?.pct).toBe(100);
+    expect(status.rows.find((row) => row.state === "closed")?.total).toBe(0);
   });
 
   withTestUser("activity flags active ranges and buckets creations", async () => {

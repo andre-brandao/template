@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { Todo } from '@template/core/todo';
 	import { getDue } from '../../api/insights.remote';
-	import StatusPill from '../StatusPill.svelte';
+	import StatePill from '../StatePill.svelte';
 	import Section from './Section.svelte';
 
 	const todos = $derived(await getDue());
@@ -20,7 +20,7 @@
 				<li>
 					<a href="/todos/{todo.id}">{todo.title}</a>
 					<span>{date(todo)}</span>
-					<StatusPill status={todo.status} />
+					<StatePill state={todo.state} />
 				</li>
 			{/each}
 		</ul>

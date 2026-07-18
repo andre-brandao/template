@@ -9,10 +9,10 @@ export function todo(server: McpServer) {
     {
       title: "List todos",
       description:
-        "List the current user's todos, optionally filtered by status or search. Paginated.",
+        "List the current user's todos, optionally filtered by state or search. Paginated.",
       inputSchema: {
         q: z.string().optional(),
-        status: Todo.Status.array().optional(),
+        state: Todo.State.optional(),
         page: z.number().min(1).optional(),
         pageSize: z.number().min(1).max(100).optional(),
       },
@@ -47,7 +47,7 @@ export function todo(server: McpServer) {
     "todo_update",
     {
       title: "Update todo",
-      description: "Update a todo's title, status or due date.",
+      description: "Update a todo's title, body, tags, due date or state.",
       inputSchema: Todo.update.schema.shape,
     },
     async (input) => {

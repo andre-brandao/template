@@ -1,10 +1,11 @@
 <script lang="ts">
-	import { color, label } from '../status';
+	import type { Todo } from '@template/core/todo';
+	import { color, label } from '../state';
 
-	let { status }: { status: string } = $props();
+	let { state }: { state: Todo.State } = $props();
 </script>
 
-<span class="pill" style:--c={color(status)}>{label(status)}</span>
+<span class="pill" style:--c={color(state)}>{label(state)}</span>
 
 <style>
 	.pill {

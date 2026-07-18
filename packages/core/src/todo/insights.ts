@@ -1,9 +1,9 @@
 import { z } from "zod";
-import { and, asc, count, eq, gte, isNotNull, isNull, lt, ne, sql } from "drizzle-orm";
+import { and, asc, count, eq, gte, isNotNull, isNull, lt, sql } from "drizzle-orm";
 import { fn } from "../util/fn";
 import { Database } from "../drizzle";
 import { Actor } from "../actor";
-import { TodoStatuses, TodoTable } from "./todo.sql";
+import { TodoTable } from "./todo.sql";
 
 export namespace Insights {
   const DAY = 86_400_000;
@@ -36,11 +36,11 @@ export namespace Insights {
   function grouped(input: Range) {
     return Database.use((tx) =>
       tx
-        .select({ status: TodoTable.status, total: count() })
+        .select({ state: TodoTable.state, total: count() })
         .from(TodoTable)
         .where(and(mine(), within(TodoTable.timeCreated, input)))
-        .groupBy(TodoTable.status)
-        .orderBy(asc(TodoTable.status)),
+        .groupBy(TodoTable.state)
+        .orderBy(asc(TodoTable.state)),
     );
   }
 
@@ -52,27 +52,27 @@ export namespace Insights {
         tx
           .select({ total: count() })
           .from(TodoTable)
-          .where(and(mine(), ne(TodoTable.status, "done"), lt(TodoTable.dueDate, new Date())))
+          .where(and(mine(), eq(TodoTable.state, "open"), lt(TodoTable.dueDate, new Date())))
           .then((rows) => rows[0]?.total ?? 0),
       ),
     ] as const);
     const total = rows.reduce((sum, row) => sum + row.total, 0);
-    const done = rows.find((row) => row.status === "done")?.total ?? 0;
+    const done = rows.find((row) => row.state === "closed")?.total ?? 0;
     return {
       total,
       done,
-      progress: rows.find((row) => row.status === "in_progress")?.total ?? 0,
+      open: total - done,
       rate: total === 0 ? 0 : Math.round((done / total) * 100),
       overdue,
     };
   });
 
-  /** Per-status totals with bar widths (pct of the largest bucket) precomputed. */
+  /** Per-state totals with bar widths (pct of the largest bucket) precomputed. */
   export const status = fn(Range, async (input) => {
-    const found = new Map((await grouped(input)).map((row) => [row.status, row.total]));
-    const merged = [...new Set([...TodoStatuses, ...found.keys()])].map((status) => ({
-      status,
-      total: found.get(status) ?? 0,
+    const found = new Map((await grouped(input)).map((row) => [row.state, row.total]));
+    const merged = (["open", "closed"] as const).map((state) => ({
+      state,
+      total: found.get(state) ?? 0,
     }));
     const max = Math.max(1, ...merged.map((row) => row.total));
     return {
@@ -89,7 +89,7 @@ export namespace Insights {
         .where(
           and(
             mine(),
-            ne(TodoTable.status, "done"),
+            eq(TodoTable.state, "open"),
             isNotNull(TodoTable.dueDate),
             gte(TodoTable.dueDate, new Date()),
           ),
@@ -101,7 +101,7 @@ export namespace Insights {
             id: row.id,
             userID: row.userID,
             title: row.title,
-            status: row.status,
+            state: row.state,
             dueDate: row.dueDate?.toISOString() ?? null,
           })),
         ),
@@ -170,7 +170,7 @@ export namespace Insights {
         tx
           .select({ day: ended, total: count() })
           .from(TodoTable)
-          .where(and(mine(), eq(TodoTable.status, "done"), within(TodoTable.timeUpdated, input)))
+          .where(and(mine(), eq(TodoTable.state, "closed"), within(TodoTable.timeUpdated, input)))
           .groupBy(ended)
           .then((rows) => new Map(rows.map((row) => [row.day, row.total]))),
       ] as const);

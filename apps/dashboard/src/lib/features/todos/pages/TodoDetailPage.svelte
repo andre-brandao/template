@@ -1,36 +1,48 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { Button, Card } from '@template/ui';
-	import { getTodo, removeTodo } from '../api/todos.remote';
-	import StatusPill from '../components/StatusPill.svelte';
-	import StatusSelect from '../components/StatusSelect.svelte';
-	import StageRail from '../components/StageRail.svelte';
+	import { Carta, Markdown } from 'carta-md';
+	import 'carta-md/default.css';
+	import DOMPurify from 'isomorphic-dompurify';
+	import { getTodo, getEvents, removeTodo } from '../api/todos.remote';
+	import StatePill from '../components/StatePill.svelte';
+	import StateToggle from '../components/StateToggle.svelte';
+	import TagList from '../components/TagList.svelte';
+	import ActivityFeed from '../components/ActivityFeed.svelte';
 
 	let { id }: { id: string } = $props();
 	const todo = $derived(await getTodo(id));
+	const events = $derived(await getEvents(todo.id));
 	const remove = $derived(removeTodo.for(todo.id));
+	const carta = new Carta({ sanitizer: DOMPurify.sanitize });
 </script>
 
 <a class="back" href="/todos">&larr; Back to todos</a>
 
 <Card>
-	{#each remove.fields.allIssues() ?? [] as issue}
+	{#each remove.fields.allIssues() ?? [] as issue, i (i)}
 		<p class="error">{issue.message}</p>
 	{/each}
 
 	<div class="head">
 		<h1>{todo.title}</h1>
-		<StatusPill status={todo.status} />
+		<StatePill state={todo.state} />
 	</div>
 
-	<StageRail status={todo.status} />
+	<TagList tags={todo.tags} />
 
 	{#if todo.dueDate}
 		<p class="due">Due {new Date(todo.dueDate).toLocaleDateString()}</p>
 	{/if}
 
+	{#if todo.body}
+		<div class="body">
+			<Markdown {carta} value={todo.body} />
+		</div>
+	{/if}
+
 	<div class="actions">
-		<StatusSelect {todo} />
+		<StateToggle {todo} />
 		<form {...remove.enhance(async (f) => {
 			await f.submit();
 			goto('/todos');
@@ -40,6 +52,8 @@
 		</form>
 	</div>
 </Card>
+
+<ActivityFeed {events} />
 
 <style>
 	.back {
@@ -73,6 +87,10 @@
 		color: var(--muted);
 		font-size: 0.9em;
 		margin: 0.75em 0 0;
+	}
+
+	.body {
+		margin-top: 1em;
 	}
 
 	.actions {

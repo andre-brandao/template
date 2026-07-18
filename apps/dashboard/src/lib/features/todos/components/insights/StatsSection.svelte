@@ -11,7 +11,7 @@
 <div class="tiles">
 	<StatTile label="Created" value={String(stats.total)} hint="in range" />
 	<StatTile label="Completion" value="{stats.rate}%" hint="{stats.done} done" />
-	<StatTile label="In progress" value={String(stats.progress)} />
+	<StatTile label="Open" value={String(stats.open)} />
 	<StatTile
 		label="Overdue"
 		value={String(stats.overdue)}

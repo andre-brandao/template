@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { and, asc, count, desc, eq, ilike, inArray, isNull } from "drizzle-orm";
+import { and, count, desc, eq, ilike, isNull } from "drizzle-orm";
 import { fn } from "../util/fn";
 import { found } from "../error";
 import { Database } from "../drizzle";
@@ -7,24 +7,29 @@ import { Actor } from "../actor";
 import { Common } from "../common";
 import { Examples } from "../examples";
 import { Identifier } from "../identifier";
-import { TodoStatuses, TodoTable } from "./todo.sql";
+import { Event } from "../event";
+import { TodoTable } from "./todo.sql";
 
 export { Insights } from "./insights";
 
 export namespace Todo {
-  export const Status = z.string().trim().min(1).max(64).meta({
-    description:
-      "Status of a todo item. Any short label; defaults are pending, in_progress and done.",
-    example: "pending",
-  });
-  export type Status = z.infer<typeof Status>;
+  export const State = z.enum(["open", "closed"]);
+  export type State = z.infer<typeof State>;
+
+  export const StateReason = z.enum(["completed", "not_planned"]).nullable();
+  export type StateReason = z.infer<typeof StateReason>;
+
+  const Tag = z.string().trim().min(1).max(64);
 
   export const Info = z
     .object({
       id: z.string().meta({ description: Common.IdDescription, example: Examples.Todo.id }),
       userID: z.string(),
       title: z.string().min(0).max(2000),
-      status: Status,
+      body: z.string().max(20000).nullable(),
+      state: State,
+      stateReason: StateReason,
+      tags: Tag.array().max(20),
       dueDate: z.iso.datetime().nullable(),
     })
     .meta({
@@ -34,47 +39,50 @@ export namespace Todo {
     });
   export type Info = z.infer<typeof Info>;
 
+  function clean(tags?: string[]) {
+    return [...new Set((tags ?? []).map((tag) => tag.trim()).filter(Boolean))];
+  }
+
   export const create = fn(
     z.object({
       title: Info.shape.title,
-      status: Status.optional(),
+      body: Info.shape.body.optional(),
+      tags: Info.shape.tags.optional(),
       dueDate: Info.shape.dueDate.optional(),
     }),
     async (input) => {
       const id = Identifier.create("todo");
-      await Database.use((tx) =>
-        tx.insert(TodoTable).values({
+      const tags = clean(input.tags);
+      return Database.transaction(async (tx) => {
+        await tx.insert(TodoTable).values({
           id,
           userID: Actor.userID(),
           title: input.title,
-          status: input.status,
+          body: input.body ?? null,
+          tags,
           dueDate: input.dueDate ? new Date(input.dueDate) : null,
-        }),
-      );
-      return id;
+        });
+        await Event.create({
+          type: "todo.created",
+          source: "todo",
+          sourceID: id,
+          tags,
+          data: { title: input.title, body: input.body ?? null, tags, dueDate: input.dueDate ?? null },
+        });
+        return id;
+      });
     },
-  );
-
-  export const statuses = fn(z.void(), () =>
-    Database.use((tx) =>
-      tx
-        .selectDistinct({ status: TodoTable.status })
-        .from(TodoTable)
-        .where(and(eq(TodoTable.userID, Actor.userID()), isNull(TodoTable.timeDeleted)))
-        .orderBy(asc(TodoTable.status))
-        .then((rows) => [...new Set([...TodoStatuses, ...rows.map((row) => row.status)])]),
-    ),
   );
 
   export const list = fn(
     Common.PaginatedInput.extend({
-      status: Status.array().optional(),
+      state: State.optional(),
       search: z.string().optional(),
     }),
     (input) => {
       const { page, pageSize, limit, offset } = Common.page(input);
       const conditions = [eq(TodoTable.userID, Actor.userID()), isNull(TodoTable.timeDeleted)];
-      if (input.status?.length) conditions.push(inArray(TodoTable.status, input.status));
+      if (input.state) conditions.push(eq(TodoTable.state, input.state));
       if (input.search) conditions.push(ilike(TodoTable.title, `%${input.search}%`));
       const where = and(...conditions);
       return Database.use(async (tx) => {
@@ -113,35 +121,75 @@ export namespace Todo {
     z.object({
       id: Info.shape.id,
       title: Info.shape.title.optional(),
-      status: Status.optional(),
+      body: Info.shape.body.optional(),
+      tags: Info.shape.tags.optional(),
       dueDate: Info.shape.dueDate.optional(),
+      state: State.optional(),
+      stateReason: StateReason.optional(),
     }),
     async ({ id, ...patch }) => {
-      found("Todo", await fromID.force(id));
+      const before = found("Todo", await fromID.force(id));
+      const tags = patch.tags !== undefined ? clean(patch.tags) : undefined;
+      const reason =
+        patch.state === undefined ? undefined : patch.state === "closed" ? (patch.stateReason ?? "completed") : null;
 
-      return Database.use((tx) =>
-        tx
+      return Database.transaction(async (tx) => {
+        await tx
           .update(TodoTable)
           .set({
             ...(patch.title !== undefined ? { title: patch.title } : {}),
-            ...(patch.status !== undefined ? { status: patch.status } : {}),
+            ...(patch.body !== undefined ? { body: patch.body } : {}),
+            ...(tags !== undefined ? { tags } : {}),
             ...(patch.dueDate ? { dueDate: new Date(patch.dueDate) } : {}),
+            ...(patch.state !== undefined ? { state: patch.state, stateReason: reason } : {}),
             timeUpdated: new Date(),
           })
-          .where(and(eq(TodoTable.id, id), eq(TodoTable.userID, Actor.userID()))),
-      );
+          .where(and(eq(TodoTable.id, id), eq(TodoTable.userID, Actor.userID())));
+
+        const next = tags ?? before.tags;
+
+        if (patch.state !== undefined && patch.state !== before.state) {
+          await Event.create({
+            type: patch.state === "closed" ? "todo.closed" : "todo.reopened",
+            source: "todo",
+            sourceID: id,
+            tags: next,
+            data: patch.state === "closed" ? { reason } : {},
+          });
+        }
+
+        const changed: Record<string, { before: unknown; after: unknown }> = {};
+        if (patch.title !== undefined && patch.title !== before.title)
+          changed.title = { before: before.title, after: patch.title };
+        if (patch.body !== undefined && patch.body !== before.body)
+          changed.body = { before: before.body, after: patch.body };
+        if (tags !== undefined && tags.join(" ") !== before.tags.join(" "))
+          changed.tags = { before: before.tags, after: tags };
+        if (patch.dueDate && patch.dueDate !== before.dueDate)
+          changed.dueDate = { before: before.dueDate, after: patch.dueDate };
+
+        if (Object.keys(changed).length)
+          await Event.create({ type: "todo.updated", source: "todo", sourceID: id, tags: next, data: changed });
+      });
     },
   );
 
   export const remove = fn(Info.shape.id, async (id) => {
-    found("Todo", await fromID.force(id));
+    const before = found("Todo", await fromID.force(id));
 
-    return Database.use((tx) =>
-      tx
+    return Database.transaction(async (tx) => {
+      await tx
         .update(TodoTable)
         .set({ timeDeleted: new Date() })
-        .where(and(eq(TodoTable.id, id), eq(TodoTable.userID, Actor.userID()))),
-    );
+        .where(and(eq(TodoTable.id, id), eq(TodoTable.userID, Actor.userID())));
+      await Event.create({
+        type: "todo.removed",
+        source: "todo",
+        sourceID: id,
+        tags: before.tags,
+        data: { title: before.title, state: before.state, tags: before.tags },
+      });
+    });
   });
 
   function serialize(row: typeof TodoTable.$inferSelect): Info {
@@ -149,7 +197,10 @@ export namespace Todo {
       id: row.id,
       userID: row.userID,
       title: row.title,
-      status: row.status,
+      body: row.body,
+      state: row.state as State,
+      stateReason: row.stateReason as StateReason,
+      tags: row.tags,
       dueDate: row.dueDate?.toISOString() ?? null,
     };
   }

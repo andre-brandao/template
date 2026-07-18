@@ -16,7 +16,10 @@ export namespace Examples {
     id: Id("todo"),
     userID: Id("user"),
     title: "Write the quarterly report",
-    status: "pending",
+    body: null,
+    state: "open",
+    stateReason: null,
+    tags: [] as string[],
     dueDate: null,
   } as const;
 
@@ -28,5 +31,16 @@ export namespace Examples {
     timeUsed: null,
     expiresAt: null,
     current: false,
+  } as const;
+
+  export const Event = {
+    id: Id("event"),
+    userID: Id("user"),
+    type: "todo.created",
+    source: "todo",
+    sourceID: Id("todo"),
+    tags: ["actor:user"],
+    data: { title: "Write the quarterly report" },
+    timeCreated: "2026-06-07T00:00:00.000Z",
   } as const;
 }

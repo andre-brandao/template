@@ -1,20 +1,19 @@
 <script lang="ts">
 	import type { Todo } from '@template/core/todo';
-	import { getStatuses } from '../../api/todos.remote';
 	import TodoCard from '../card/TodoCard.svelte';
-	import { color, label } from '../../status';
+	import { color, label } from '../../state';
 
 	let { todos }: { todos: Todo.Info[] } = $props();
-	const statuses = $derived(await getStatuses());
+	const states = ['open', 'closed'] as const;
 </script>
 
 <div class="board">
-	{#each statuses as status (status)}
-		{@const items = todos.filter((t) => t.status === status)}
+	{#each states as state (state)}
+		{@const items = todos.filter((t) => t.state === state)}
 		<div class="column">
 			<div class="column-head">
-				<span class="dot" style:background={color(status)}></span>
-				<span class="title">{label(status)}</span>
+				<span class="dot" style:background={color(state)}></span>
+				<span class="title">{label(state)}</span>
 				<span class="count">{items.length}</span>
 			</div>
 			<div class="column-body">

@@ -1,14 +1,11 @@
 <script module lang="ts">
-	export type Filters = { statuses: string[]; search: string };
+	export type Filters = { state: 'all' | 'open' | 'closed'; search: string };
 </script>
 
 <script lang="ts">
 	import { debounce } from '$lib/utils/debounce';
-	import { getStatuses } from '../api/todos.remote';
-	import { label } from '../status';
 
 	let { filters, onchange }: { filters: Filters; onchange: (next: Filters) => void } = $props();
-	const options = $derived(await getStatuses());
 
 	// Writable derived: typing overrides it, external changes (back/forward, reload) resnap it.
 	let input = $derived(filters.search);
@@ -17,15 +14,6 @@
 	function onInput(value: string) {
 		input = value;
 		commit(value);
-	}
-
-	function toggle(status: string) {
-		onchange({
-			...filters,
-			statuses: filters.statuses.includes(status)
-				? filters.statuses.filter((s) => s !== status)
-				: [...filters.statuses, status]
-		});
 	}
 </script>
 
@@ -38,18 +26,19 @@
 		oninput={(e) => onInput(e.currentTarget.value)}
 	/>
 	<div class="filters">
-		<button
-			class="tab"
-			class:active={filters.statuses.length === 0}
-			onclick={() => onchange({ ...filters, statuses: [] })}
-		>
+		<button class="tab" class:active={filters.state === 'all'} onclick={() => onchange({ ...filters, state: 'all' })}>
 			All
 		</button>
-		{#each options as status (status)}
-			<button class="tab" class:active={filters.statuses.includes(status)} onclick={() => toggle(status)}>
-				{label(status)}
-			</button>
-		{/each}
+		<button class="tab" class:active={filters.state === 'open'} onclick={() => onchange({ ...filters, state: 'open' })}>
+			Open
+		</button>
+		<button
+			class="tab"
+			class:active={filters.state === 'closed'}
+			onclick={() => onchange({ ...filters, state: 'closed' })}
+		>
+			Closed
+		</button>
 	</div>
 </div>
 

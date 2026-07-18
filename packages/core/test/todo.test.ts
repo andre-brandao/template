@@ -7,7 +7,8 @@ describe("todo", () => {
     const id = await Todo.create({ title: "Write the report" });
     const todo = await Todo.fromID(id);
     expect(todo?.title).toBe("Write the report");
-    expect(todo?.status).toBe("pending");
+    expect(todo?.state).toBe("open");
+    expect(todo?.stateReason).toBeNull();
     expect(todo?.userID).toBe(userID);
   });
 
@@ -19,21 +20,30 @@ describe("todo", () => {
     expect(page.total).toBe(2);
   });
 
-  withTestUser("list can filter by multiple statuses", async () => {
+  withTestUser("list can filter by state", async () => {
     const id = await Todo.create({ title: "Done later" });
-    await Todo.update({ id, status: "done" });
-    const done = await Todo.list({ status: ["done", "blocked"] });
-    const pending = await Todo.list({ status: ["pending"] });
-    expect(done.data.map((t) => t.id)).toContain(id);
-    expect(pending.data.map((t) => t.id)).not.toContain(id);
+    await Todo.update({ id, state: "closed" });
+    const closed = await Todo.list({ state: "closed" });
+    const open = await Todo.list({ state: "open" });
+    expect(closed.data.map((t) => t.id)).toContain(id);
+    expect(open.data.map((t) => t.id)).not.toContain(id);
   });
 
-  withTestUser("statuses returns defaults plus distinct custom statuses", async () => {
-    const id = await Todo.create({ title: "Waiting on review", status: "blocked" });
-    await Todo.create({ title: "Fresh" });
-    expect(await Todo.statuses()).toEqual(["pending", "in_progress", "done", "blocked"]);
-    const blocked = await Todo.list({ status: ["blocked"] });
-    expect(blocked.data.map((t) => t.id)).toContain(id);
+  withTestUser("closing defaults the reason and reopening clears it", async () => {
+    const id = await Todo.create({ title: "Waiting on review" });
+    await Todo.update({ id, state: "closed" });
+    expect((await Todo.fromID(id))?.stateReason).toBe("completed");
+
+    await Todo.update({ id, state: "closed", stateReason: "not_planned" });
+    expect((await Todo.fromID(id))?.stateReason).toBe("not_planned");
+
+    await Todo.update({ id, state: "open" });
+    expect((await Todo.fromID(id))?.stateReason).toBeNull();
+  });
+
+  withTestUser("tags are trimmed and deduped", async () => {
+    const id = await Todo.create({ title: "Tagged", tags: [" work ", "urgent", "urgent"] });
+    expect((await Todo.fromID(id))?.tags).toEqual(["work", "urgent"]);
   });
 
   withTestUser("list paginates results", async () => {

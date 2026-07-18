@@ -1,28 +1,51 @@
 <script lang="ts">
 	import { Button } from '@template/ui';
-	import { createTodo, getStatuses } from '../../api/todos.remote';
+	import { Carta, MarkdownEditor } from 'carta-md';
+	import 'carta-md/default.css';
+	import DOMPurify from 'isomorphic-dompurify';
+	import { createTodo } from '../../api/todos.remote';
+
+	const carta = new Carta({ sanitizer: DOMPurify.sanitize });
+	let body = $state('');
 </script>
 
-{#each createTodo.fields.allIssues() ?? [] as issue}
+{#each createTodo.fields.allIssues() ?? [] as issue, i (i)}
 	<p class="error">{issue.message}</p>
 {/each}
 
-<form class="add" {...createTodo}>
-	<input placeholder="What needs doing?" {...createTodo.fields.title.as('text')} />
-	<input class="status" placeholder="Status" list="statuses" {...createTodo.fields.status.as('text')} />
-	<datalist id="statuses">
-		{#each await getStatuses() as status (status)}
-			<option value={status}></option>
-		{/each}
-	</datalist>
-	<Button type="submit" pending={!!createTodo.pending}>Add</Button>
+<form
+	class="add"
+	{...createTodo.enhance(async (f) => {
+		await f.submit();
+		body = '';
+	})}
+>
+	<div class="row">
+		<input placeholder="What needs doing?" {...createTodo.fields.title.as('text')} />
+		<input class="tags" placeholder="tags, comma, separated" {...createTodo.fields.tags.as('text')} />
+		<Button type="submit" pending={!!createTodo.pending}>Add</Button>
+	</div>
+	<div class="body">
+		<MarkdownEditor {carta} bind:value={body} />
+		<input type="hidden" {...createTodo.fields.body.as('hidden', body)} />
+	</div>
 </form>
 
 <style>
 	.add {
 		display: flex;
+		flex-direction: column;
 		gap: 0.6em;
 		margin-bottom: 1.25em;
+	}
+
+	.row {
+		display: flex;
+		gap: 0.6em;
+	}
+
+	.body {
+		margin: 0.6em 0;
 	}
 
 	input {
@@ -35,12 +58,17 @@
 		color: var(--ink);
 	}
 
-	.status {
+	.tags {
 		flex: 0 1 11em;
 	}
 
 	input:focus-visible {
 		border-color: var(--accent);
 		outline: none;
+	}
+
+	:global(.carta-font-code) {
+		font-family: var(--font-mono, monospace);
+		font-size: 0.9em;
 	}
 </style>

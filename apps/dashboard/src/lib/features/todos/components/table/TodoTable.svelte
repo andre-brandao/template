@@ -10,7 +10,8 @@
 		<thead>
 			<tr>
 				<th>Title</th>
-				<th>Status</th>
+				<th>Tags</th>
+				<th>State</th>
 				<th></th>
 			</tr>
 		</thead>
@@ -19,7 +20,7 @@
 				<TableRow {todo} />
 			{/each}
 			{#if todos.length === 0}
-				<tr><td colspan="3" class="empty">No tasks yet</td></tr>
+				<tr><td colspan="4" class="empty">No tasks yet</td></tr>
 			{/if}
 		</tbody>
 	</table>

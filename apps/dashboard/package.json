@@ -19,6 +19,8 @@
     "@template/functions": "workspace:*",
     "@template/sdk": "workspace:*",
     "@template/ui": "workspace:*",
+    "carta-md": "^4.11.2",
+    "isomorphic-dompurify": "^3.19.0",
     "layerchart": "^2.0.1",
     "sst": "catalog:",
     "zod": "catalog:"

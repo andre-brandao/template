@@ -2,7 +2,8 @@
 	import { Button } from '@template/ui';
 	import { removeTodo } from '../../api/todos.remote';
 	import type { Todo } from '@template/core/todo';
-	import StatusSelect from '../StatusSelect.svelte';
+	import StateToggle from '../StateToggle.svelte';
+	import TagList from '../TagList.svelte';
 
 	let { todo }: { todo: Todo.Info } = $props();
 	const remove = $derived(removeTodo.for(todo.id));
@@ -10,7 +11,8 @@
 
 <tr>
 	<td><a class="title" href="/todos/{todo.id}">{todo.title}</a></td>
-	<td><StatusSelect {todo} /></td>
+	<td><TagList tags={todo.tags} /></td>
+	<td><StateToggle {todo} /></td>
 	<td class="actions">
 		<form {...remove}>
 			<input {...remove.fields.id.as('hidden', todo.id)} />

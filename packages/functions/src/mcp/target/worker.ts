@@ -1,10 +1,7 @@
 import type { ExecutionContext } from "@cloudflare/workers-types";
 import { Database } from "@template/core/drizzle";
+import type { Env } from "../../cf";
 import { app } from "../index";
-
-interface Env {
-  Hyperdrive: { connectionString: string };
-}
 
 export default {
   fetch(request: Request, env: Env, ctx: ExecutionContext) {

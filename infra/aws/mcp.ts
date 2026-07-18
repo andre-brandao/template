@@ -1,18 +1,19 @@
 import { database, url } from "./database"
 import { environment } from "./secrets"
-import { domain } from "./stage"
+import { vpc } from "./vpc"
 
-const dashboard = new sst.aws.SvelteKit("Dashboard", {
-  path: "apps/dashboard",
-  domain,
+const mcp = new sst.aws.Function("Mcp", {
+  vpc,
+  handler: "packages/functions/src/mcp/target/lambda.handler",
+  url: true,
+  streaming: true,
   link: [database],
   environment: {
     ...environment,
-    SVELTE_ADAPTER: "sst-aws",
     DATABASE_URL: url,
   },
 })
 
 export const outputs = {
-  dashboard: dashboard.url,
+  mcp: mcp.url,
 }

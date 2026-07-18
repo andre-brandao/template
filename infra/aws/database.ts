@@ -7,6 +7,8 @@ export const database = new sst.aws.Postgres("Database", {
   vpc,
 })
 
+export const url = $interpolate`postgresql://${database.username}:${database.password}@${database.host}:${database.port}/${database.database}?sslmode=require`
+
 // export const migrator = new sst.aws.Function("DatabaseMigrator", {
 //   vpc,
 //   link: [database],
@@ -33,7 +35,7 @@ export const database = new sst.aws.Postgres("Database", {
 new sst.x.DevCommand("Studio", {
   link: [database],
   environment: {
-    DATABASE_URL: $interpolate`postgresql://${database.username}:${database.password}@${database.host}:${database.port}/${database.database}?sslmode=require`,
+    DATABASE_URL: url,
   },
   dev: {
     command: "bunx drizzle-kit studio",

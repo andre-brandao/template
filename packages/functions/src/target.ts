@@ -44,11 +44,7 @@ export function bun(app: App, port: number, ...extra: Context.Provider<Res>[]) {
     port,
     fetch: async (req: Request) => {
       try {
-        return await Context.withProviders(
-          () => app.fetch(req),
-          Database.provider(url),
-          ...extra,
-        );
+        return await Context.withProviders(() => app.fetch(req), Database.provider(url), ...extra);
       } finally {
         await Database.release(url);
       }

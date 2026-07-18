@@ -10,6 +10,7 @@ import { app } from "../routes";
 // is only available per-request, same reason `auth/target/worker.ts` does this
 // for its `SEND_EMAIL` binding.
 export default {
+  // fallow-ignore-next-line code-duplication
   fetch(request: Request, env: Env, ctx: ExecutionContext) {
     return Context.withProviders(
       () => app.fetch(request, env, ctx),

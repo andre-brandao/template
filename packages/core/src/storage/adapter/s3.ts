@@ -28,7 +28,7 @@ export function createS3Storage(opts: S3Config): Storage.Port {
     async put(key, bytes, contentType) {
       const res = await client.fetch(url(key), {
         method: "PUT",
-        body: bytes,
+        body: new Blob([new Uint8Array(bytes)]),
         headers: { "content-type": contentType },
       });
       if (!res.ok) throw new Error(`S3 put failed: ${res.status} ${await res.text()}`);

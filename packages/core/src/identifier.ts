@@ -8,7 +8,7 @@ export namespace Identifier {
     todo: "tod",
     key: "key",
     event: "evt",
-    file: "file",
+    file: "fil",
   } as const;
 
   export function create(prefix: keyof typeof prefixes, given?: string): string {

@@ -1,3 +1,5 @@
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { Context } from "../context";
 import { createFsStorage } from "./adapter/fs";
 import { createS3Storage } from "./adapter/s3";
@@ -22,12 +24,17 @@ export namespace Storage {
     return <R>(fn: () => R) => provide(port, fn);
   }
 
+  /**
+   * Same env fallback as `Database.use()`: routes that hit the raw Hono app
+   * directly (bypassing `target.ts`'s per-request wrapper — chiefly tests)
+   * still get a working backend instead of an error.
+   */
   export function use(): Port {
     try {
       return ctx.use();
     } catch (err) {
       if (!(err instanceof Context.NotFound)) throw err;
-      throw new Error("No storage backend provided. Use Storage.provide() to set one.");
+      return fromEnv(process.env);
     }
   }
 
@@ -49,7 +56,10 @@ export namespace Storage {
         secretAccessKey: required(env, "S3_SECRET_ACCESS_KEY"),
       });
 
-    return createFsStorage({ dir: env.STORAGE_DIR ?? "./.data/files" });
+    const dir =
+      env.STORAGE_DIR ??
+      (env.NODE_ENV === "test" ? join(tmpdir(), "template-files-test") : "./.data/files");
+    return createFsStorage({ dir });
   }
 
   function required(env: Record<string, string | undefined>, key: string): string {

@@ -4,6 +4,7 @@ import { File } from "@template/core/file";
 import { VisibleError } from "@template/core/error";
 import type { RequestHandler } from "./$types";
 
+// fallow-ignore-next-line complexity
 export const POST: RequestHandler = async ({ request }) => {
   if (Actor.use().type !== "user") error(401, "Authentication required");
 

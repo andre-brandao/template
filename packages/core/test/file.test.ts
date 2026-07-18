@@ -21,8 +21,17 @@ function memoryStorage(): Storage.Port {
   };
 }
 
+// `@cloudflare/workers-types` (pulled in by email/adapter/cloudflare.ts, part of this
+// same program) redeclares ambient `File` without a construct signature. The runtime
+// constructor is unaffected — only its declared type is broken by that global merge.
+const FileCtor = globalThis.File as unknown as new (
+  parts: Uint8Array[],
+  name: string,
+  options: { type: string },
+) => globalThis.File;
+
 function pngFile(name = "pixel.png") {
-  return new File([new Uint8Array([1, 2, 3, 4])], name, { type: "image/png" });
+  return new FileCtor([new Uint8Array([1, 2, 3, 4])], name, { type: "image/png" });
 }
 
 describe("file", () => {
@@ -37,7 +46,7 @@ describe("file", () => {
 
   withTestUser("upload rejects an unsupported mime type", async () => {
     await Storage.provide(memoryStorage(), async () => {
-      const file = new File([new Uint8Array([1])], "note.txt", { type: "text/plain" });
+      const file = new FileCtor([new Uint8Array([1])], "note.txt", { type: "text/plain" });
       await expect(File.upload({ file })).rejects.toThrow();
     });
   });
@@ -45,7 +54,7 @@ describe("file", () => {
   withTestUser("upload rejects a file that's too large", async () => {
     await Storage.provide(memoryStorage(), async () => {
       const big = new Uint8Array(6 * 1024 * 1024);
-      const file = new File([big], "big.png", { type: "image/png" });
+      const file = new FileCtor([big], "big.png", { type: "image/png" });
       await expect(File.upload({ file })).rejects.toThrow();
     });
   });

@@ -3,6 +3,7 @@ import { setupApiTest } from "./util";
 import { app } from "../../src/api/routes";
 import { User } from "@template/core/user";
 import { Key } from "@template/core/key";
+import type { File as FileInfo } from "@template/core/file";
 
 // 1x1 transparent PNG.
 const PNG_BASE64 =
@@ -12,6 +13,8 @@ function pngFile(name = "pixel.png") {
   return new File([Buffer.from(PNG_BASE64, "base64")], name, { type: "image/png" });
 }
 
+const json = (res: Response) => res.json() as Promise<FileInfo.Info>;
+
 const { test, postForm, get, del, expectError } = setupApiTest();
 
 describe("file", () => {
@@ -20,7 +23,7 @@ describe("file", () => {
     form.append("file", pngFile());
     const response = await postForm("/file", form);
     expect(response.status).toBe(200);
-    const body = await response.json();
+    const body = await json(response);
     expect(body.filename).toBe("pixel.png");
     expect(body.contentType).toBe("image/png");
   });
@@ -35,9 +38,9 @@ describe("file", () => {
   test("GET /file/:id and /file/:id/content round-trip", async () => {
     const form = new FormData();
     form.append("file", pngFile());
-    const uploaded = await (await postForm("/file", form)).json();
+    const uploaded = await json(await postForm("/file", form));
 
-    const meta = await (await get(`/file/${uploaded.id}`)).json();
+    const meta = await json(await get(`/file/${uploaded.id}`));
     expect(meta.id).toBe(uploaded.id);
 
     const content = await get(`/file/${uploaded.id}/content`);
@@ -51,7 +54,7 @@ describe("file", () => {
   test("DELETE /file/:id removes it", async () => {
     const form = new FormData();
     form.append("file", pngFile());
-    const uploaded = await (await postForm("/file", form)).json();
+    const uploaded = await json(await postForm("/file", form));
 
     await del(`/file/${uploaded.id}`);
     await expectError(await get(`/file/${uploaded.id}`), 404);
@@ -60,7 +63,7 @@ describe("file", () => {
   test("a file is not visible to another user", async () => {
     const form = new FormData();
     form.append("file", pngFile());
-    const uploaded = await (await postForm("/file", form)).json();
+    const uploaded = await json(await postForm("/file", form));
 
     const otherEmail = `test-${crypto.randomUUID()}@example.com`;
     const otherUserID = await User.create({ name: "Other User", email: otherEmail });

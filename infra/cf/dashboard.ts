@@ -46,9 +46,9 @@ const dashboard = new sst.cloudflare.Worker("Dashboard", {
     database,
     hyperdrive
   ],
-  placement: {
-    region: "aws:sa-east-1"
-  },
+  // placement: {
+  //   region: "aws:sa-east-1"
+  // },
   transform: {
     worker: (args) => {
       args.compatibilityDate = "2026-03-19";

@@ -14,16 +14,21 @@ export namespace Password {
   }
 
   export async function verify(pw: string, stored: string) {
-    const parts = stored.split("$");
-    if (parts.length !== 5 || parts[0] !== "pbkdf2" || parts[1] !== "sha256") return false;
-
-    const iter = Number(parts[2]);
-    if (!Number.isInteger(iter) || iter < 1) return false;
-
-    const want = decode(parts[4]!);
-    const got = await derive(pw, decode(parts[3]!), iter);
-    return equal(got, want);
+    const p = parse(stored);
+    if (!p) return false;
+    const got = await derive(pw, p.salt, p.iter);
+    return equal(got, p.hash);
   }
+}
+
+function parse(stored: string) {
+  const parts = stored.split("$");
+  if (parts.length !== 5 || parts[0] !== "pbkdf2" || parts[1] !== "sha256") return;
+
+  const iter = Number(parts[2]);
+  if (!Number.isInteger(iter) || iter < 1) return;
+
+  return { iter, salt: decode(parts[3]!), hash: decode(parts[4]!) };
 }
 
 async function derive(pw: string, salt: Uint8Array<ArrayBuffer>, iter: number) {

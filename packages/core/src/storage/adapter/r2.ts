@@ -14,7 +14,10 @@ export interface R2BucketLike {
   ): Promise<unknown>;
   get(
     key: string,
-  ): Promise<{ arrayBuffer(): Promise<ArrayBuffer>; httpMetadata?: { contentType?: string } } | null>;
+  ): Promise<{
+    arrayBuffer(): Promise<ArrayBuffer>;
+    httpMetadata?: { contentType?: string };
+  } | null>;
   delete(key: string): Promise<void>;
 }
 

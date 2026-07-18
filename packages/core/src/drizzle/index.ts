@@ -102,16 +102,17 @@ export namespace Database {
     return result;
   }
 
-  /** Reuses one client per url — dev backends like pglite only accept a single active connection. */
+  /**
+   * Creates a fresh client per call. Workers forbid reusing a socket across requests
+   * (I/O objects are bound to the request that created them), so the client can't be
+   * cached at module scope. `clientsByUrl` still tracks it so `release()` can close the
+   * pglite hand-off connection in local dev.
+   */
   export function provide<T>(url: string, fn: () => T): T {
-    let db = providedByUrl.get(url);
-    if (!db) {
-      const made = createDb(url);
-      db = made.db;
-      providedByUrl.set(url, db);
-      clientsByUrl.set(url, made.sql);
-    }
-    return DatabaseContext.provide({ db }, fn);
+    const made = createDb(url);
+    providedByUrl.set(url, made.db);
+    clientsByUrl.set(url, made.sql);
+    return DatabaseContext.provide({ db: made.db }, fn);
   }
 
   /** Curried form of `provide` for composition via `Context.withProviders`. */

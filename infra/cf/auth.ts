@@ -13,9 +13,9 @@ const auth = new sst.cloudflare.Worker("Auth", {
   build: {
     loader: { ".css": "text" },
   },
-  // placement: {
-  //   region: "aws:sa-east-1"
-  // },
+  placement: {
+    region: "aws:sa-east-1",
+  },
   transform: {
     worker: (args) => {
       args.compatibilityDate = "2026-03-19";

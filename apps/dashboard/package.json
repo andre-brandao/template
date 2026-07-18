@@ -14,12 +14,12 @@
     "test:e2e:ui": "playwright test -c e2e/playwright.config.ts --ui"
   },
   "dependencies": {
+    "@cartamd/plugin-attachment": "^4.2.0",
     "@openauthjs/openauth": "catalog:",
     "@template/core": "workspace:*",
     "@template/functions": "workspace:*",
     "@template/sdk": "workspace:*",
     "@template/ui": "workspace:*",
-    "@cartamd/plugin-attachment": "^4.2.0",
     "carta-md": "^4.11.2",
     "isomorphic-dompurify": "^3.19.0",
     "layerchart": "^2.0.1",

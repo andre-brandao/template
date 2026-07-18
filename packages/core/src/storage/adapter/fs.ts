@@ -17,9 +17,7 @@ export function createFsStorage(opts: { dir: string }): Storage.Port {
       const file = Bun.file(path(key));
       if (!(await file.exists())) return null;
       const meta = Bun.file(`${path(key)}.meta`);
-      const contentType = (await meta.exists())
-        ? await meta.text()
-        : "application/octet-stream";
+      const contentType = (await meta.exists()) ? await meta.text() : "application/octet-stream";
       return { bytes: new Uint8Array(await file.arrayBuffer()), contentType };
     },
     async del(key) {

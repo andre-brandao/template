@@ -79,9 +79,7 @@ export namespace File {
     return found("File", await fromID.force(id));
   });
 
-  export const fromID = fn(Info.shape.id, (id) =>
-    row(id).then((r) => (r ? serialize(r) : null)),
-  );
+  export const fromID = fn(Info.shape.id, (id) => row(id).then((r) => (r ? serialize(r) : null)));
 
   export const content = fn(Info.shape.id, async (id) => {
     const r = await row(id);

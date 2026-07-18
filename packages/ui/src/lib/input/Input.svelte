@@ -9,6 +9,7 @@
 <style>
 	input {
 		flex: 1;
+		min-width: 0;
 		font: inherit;
 		padding: 0.5em 0.7em;
 		border: 1px solid var(--border);

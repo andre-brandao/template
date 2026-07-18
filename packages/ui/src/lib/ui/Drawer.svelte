@@ -23,6 +23,9 @@
 	onclose={() => (open = false)}
 	onclick={(e) => e.target === e.currentTarget && e.currentTarget.close()}
 >
+	<div class="chrome">
+		<button class="close" type="button" aria-label="Close" onclick={() => (open = false)}>✕</button>
+	</div>
 	{#if open}
 		{@render children()}
 	{/if}
@@ -45,6 +48,7 @@
 		background: var(--surface, #fff);
 		color: var(--ink, #111);
 		box-shadow: -8px 0 24px rgb(0 0 0 / 0.15);
+		overflow-x: hidden;
 		overflow-y: auto;
 		translate: 100% 0;
 		transition:
@@ -89,5 +93,27 @@
 		dialog[open]::backdrop {
 			opacity: 0;
 		}
+	}
+
+	.chrome {
+		display: flex;
+		justify-content: flex-end;
+		margin: -0.5em -0.5em 0.5em auto;
+	}
+
+	.close {
+		border: none;
+		background: none;
+		padding: 0.4em 0.6em;
+		font-size: 1em;
+		line-height: 1;
+		color: var(--muted, #666);
+		cursor: pointer;
+		border-radius: var(--radius, 6px);
+	}
+
+	.close:hover {
+		color: var(--ink, #111);
+		background: var(--surface-2, #eee);
 	}
 </style>

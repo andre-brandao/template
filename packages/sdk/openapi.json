@@ -44,12 +44,7 @@
             ]
           }
         },
-        "required": [
-          "id",
-          "name",
-          "email",
-          "image"
-        ],
+        "required": ["id", "name", "email", "image"],
         "description": "A user account.",
         "example": {
           "id": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX",
@@ -73,45 +68,28 @@
               "internal"
             ],
             "description": "The error type category",
-            "examples": [
-              "validation",
-              "authentication"
-            ]
+            "examples": ["validation", "authentication"]
           },
           "code": {
             "type": "string",
             "description": "Machine-readable error code identifier",
-            "examples": [
-              "invalid_parameter",
-              "missing_required_field",
-              "unauthorized"
-            ]
+            "examples": ["invalid_parameter", "missing_required_field", "unauthorized"]
           },
           "message": {
             "type": "string",
             "description": "Human-readable error message",
-            "examples": [
-              "The request was invalid",
-              "Authentication required"
-            ]
+            "examples": ["The request was invalid", "Authentication required"]
           },
           "param": {
             "description": "The parameter that caused the error (if applicable)",
-            "examples": [
-              "email",
-              "user_id"
-            ],
+            "examples": ["email", "user_id"],
             "type": "string"
           },
           "details": {
             "description": "Additional error context information"
           }
         },
-        "required": [
-          "type",
-          "code",
-          "message"
-        ],
+        "required": ["type", "code", "message"],
         "description": "Not found error"
       },
       "Key": {
@@ -166,15 +144,7 @@
             "description": "Whether this is the key authenticating the current request."
           }
         },
-        "required": [
-          "id",
-          "name",
-          "key",
-          "display",
-          "timeUsed",
-          "expiresAt",
-          "current"
-        ],
+        "required": ["id", "name", "key", "display", "timeUsed", "expiresAt", "current"],
         "description": "An API key belonging to a user.",
         "example": {
           "id": "key_XXXXXXXXXXXXXXXXXXXXXXXXX",
@@ -215,19 +185,13 @@
           },
           "state": {
             "type": "string",
-            "enum": [
-              "open",
-              "closed"
-            ]
+            "enum": ["open", "closed"]
           },
           "stateReason": {
             "anyOf": [
               {
                 "type": "string",
-                "enum": [
-                  "completed",
-                  "not_planned"
-                ]
+                "enum": ["completed", "not_planned"]
               },
               {
                 "type": "null"
@@ -256,16 +220,7 @@
             ]
           }
         },
-        "required": [
-          "id",
-          "userID",
-          "title",
-          "body",
-          "state",
-          "stateReason",
-          "tags",
-          "dueDate"
-        ],
+        "required": ["id", "userID", "title", "body", "state", "stateReason", "tags", "dueDate"],
         "description": "A todo item that belongs to a user.",
         "example": {
           "id": "tod_XXXXXXXXXXXXXXXXXXXXXXXXX",
@@ -295,9 +250,7 @@
     "/me": {
       "get": {
         "operationId": "getMe",
-        "tags": [
-          "User"
-        ],
+        "tags": ["User"],
         "summary": "Get current user",
         "description": "Get the profile of the currently authenticated user.",
         "responses": {
@@ -354,9 +307,7 @@
     "/key": {
       "get": {
         "operationId": "getKey",
-        "tags": [
-          "Key"
-        ],
+        "tags": ["Key"],
         "summary": "List keys",
         "description": "List the current user's API keys. The key authenticating this request is flagged `current`.",
         "responses": {
@@ -418,9 +369,7 @@
       },
       "post": {
         "operationId": "postKey",
-        "tags": [
-          "Key"
-        ],
+        "tags": ["Key"],
         "summary": "Create key",
         "description": "Mint a named API key for the current user. Pass `expiresInDays` to set an expiry; omit it for a key that never expires.",
         "responses": {
@@ -507,9 +456,7 @@
                     "maximum": 9007199254740991
                   }
                 },
-                "required": [
-                  "name"
-                ]
+                "required": ["name"]
               }
             }
           }
@@ -519,9 +466,7 @@
     "/key/{id}": {
       "delete": {
         "operationId": "deleteKeyById",
-        "tags": [
-          "Key"
-        ],
+        "tags": ["Key"],
         "summary": "Revoke key",
         "description": "Revoke an API key. The secret stops authenticating immediately.",
         "responses": {
@@ -597,9 +542,7 @@
     "/todo": {
       "get": {
         "operationId": "getTodo",
-        "tags": [
-          "Todo"
-        ],
+        "tags": ["Todo"],
         "summary": "List todos",
         "description": "List the current user's todos, optionally filtered by state. Paginated.",
         "responses": {
@@ -628,12 +571,7 @@
                       "description": "Total number of matching entities across all pages."
                     }
                   },
-                  "required": [
-                    "data",
-                    "page",
-                    "pageSize",
-                    "total"
-                  ],
+                  "required": ["data", "page", "pageSize", "total"],
                   "description": "A page of results."
                 },
                 "example": {
@@ -711,19 +649,14 @@
             "name": "state",
             "schema": {
               "type": "string",
-              "enum": [
-                "open",
-                "closed"
-              ]
+              "enum": ["open", "closed"]
             }
           }
         ]
       },
       "post": {
         "operationId": "postTodo",
-        "tags": [
-          "Todo"
-        ],
+        "tags": ["Todo"],
         "summary": "Create todo",
         "responses": {
           "200": {
@@ -827,9 +760,7 @@
                     ]
                   }
                 },
-                "required": [
-                  "title"
-                ]
+                "required": ["title"]
               }
             }
           }
@@ -839,9 +770,7 @@
     "/todo/{id}": {
       "get": {
         "operationId": "getTodoById",
-        "tags": [
-          "Todo"
-        ],
+        "tags": ["Todo"],
         "summary": "Get todo",
         "responses": {
           "200": {
@@ -923,9 +852,7 @@
       },
       "patch": {
         "operationId": "patchTodoById",
-        "tags": [
-          "Todo"
-        ],
+        "tags": ["Todo"],
         "summary": "Update todo",
         "responses": {
           "200": {
@@ -1055,19 +982,13 @@
                   },
                   "state": {
                     "type": "string",
-                    "enum": [
-                      "open",
-                      "closed"
-                    ]
+                    "enum": ["open", "closed"]
                   },
                   "stateReason": {
                     "anyOf": [
                       {
                         "type": "string",
-                        "enum": [
-                          "completed",
-                          "not_planned"
-                        ]
+                        "enum": ["completed", "not_planned"]
                       },
                       {
                         "type": "null"
@@ -1082,9 +1003,7 @@
       },
       "delete": {
         "operationId": "deleteTodoById",
-        "tags": [
-          "Todo"
-        ],
+        "tags": ["Todo"],
         "summary": "Delete todo",
         "responses": {
           "200": {

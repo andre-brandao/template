@@ -41,7 +41,14 @@ export const createTodo = form(
     tags: z
       .string()
       .optional()
-      .transform((s) => (s ? s.split(",").map((tag) => tag.trim()).filter(Boolean) : undefined)),
+      .transform((s) =>
+        s
+          ? s
+              .split(",")
+              .map((tag) => tag.trim())
+              .filter(Boolean)
+          : undefined,
+      ),
     body: z
       .string()
       .optional()
@@ -60,7 +67,9 @@ export const closeTodo = form(
   z.object({ id: Todo.Info.shape.id, reason: z.enum(["completed", "not_planned"]).optional() }),
   async (input) => {
     auth();
-    await guard(() => Todo.update({ id: input.id, state: "closed", stateReason: input.reason ?? "completed" }));
+    await guard(() =>
+      Todo.update({ id: input.id, state: "closed", stateReason: input.reason ?? "completed" }),
+    );
   },
 );
 

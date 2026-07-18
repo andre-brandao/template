@@ -67,7 +67,12 @@ export namespace Todo {
           source: "todo",
           sourceID: id,
           tags,
-          data: { title: input.title, body: input.body ?? null, tags, dueDate: input.dueDate ?? null },
+          data: {
+            title: input.title,
+            body: input.body ?? null,
+            tags,
+            dueDate: input.dueDate ?? null,
+          },
         });
         return id;
       });
@@ -131,7 +136,11 @@ export namespace Todo {
       const before = found("Todo", await fromID.force(id));
       const tags = patch.tags !== undefined ? clean(patch.tags) : undefined;
       const reason =
-        patch.state === undefined ? undefined : patch.state === "closed" ? (patch.stateReason ?? "completed") : null;
+        patch.state === undefined
+          ? undefined
+          : patch.state === "closed"
+            ? (patch.stateReason ?? "completed")
+            : null;
 
       return Database.transaction(async (tx) => {
         await tx
@@ -169,7 +178,13 @@ export namespace Todo {
           changed.dueDate = { before: before.dueDate, after: patch.dueDate };
 
         if (Object.keys(changed).length)
-          await Event.create({ type: "todo.updated", source: "todo", sourceID: id, tags: next, data: changed });
+          await Event.create({
+            type: "todo.updated",
+            source: "todo",
+            sourceID: id,
+            tags: next,
+            data: changed,
+          });
       });
     },
   );

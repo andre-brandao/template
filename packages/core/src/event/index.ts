@@ -29,7 +29,10 @@ export namespace Event {
 
   function actor() {
     const info = Actor.use();
-    return { userID: info.type === "user" ? info.properties.userID : null, tag: `actor:${info.type}` };
+    return {
+      userID: info.type === "user" ? info.properties.userID : null,
+      tag: `actor:${info.type}`,
+    };
   }
 
   export const create = fn(

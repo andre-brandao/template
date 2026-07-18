@@ -2,7 +2,7 @@ import { createHash } from "crypto"
 import { readdirSync, statSync } from "fs"
 import { database, hyperdrive } from "./database";
 import { environment } from "./secrets";
-import { domain } from './stage'
+import { subdomain } from './stage'
 
 // export const r2 = new sst.cloudflare.Bucket("Artifacts");
 
@@ -34,7 +34,7 @@ const build = new command.local.Command("DashboardBuild", {
 const dashboard = new sst.cloudflare.Worker("Dashboard", {
   handler: build.stdout.apply(() => "./apps/dashboard/.svelte-kit/cloudflare/_worker.js"),
   url: true,
-  domain,
+  domain: subdomain("dashboard"),
   assets: {
     directory: "./apps/dashboard/.svelte-kit/cloudflare",
   },

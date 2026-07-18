@@ -63,7 +63,7 @@ export const hyperdrive = new sst.cloudflare.Hyperdrive("Hyperdrive", {
     password: role.password,
     scheme: "postgres",
     user: role.username,
-    port: 5432,
+    port: 6432, // PgBouncer — Hyperdrive needs pooled connections, not direct (5432 is for migrations only)
   },
 })
 

@@ -213,7 +213,7 @@ jobs:
       actions: read
     steps:
       - name: Summarize results
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             // The needs context has no timing, so read per-job durations from the run's jobs API.

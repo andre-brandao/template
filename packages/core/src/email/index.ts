@@ -4,7 +4,7 @@ import { Log } from "../util/log";
 export namespace Email {
   const log = Log.create({ namespace: "email" });
 
-  const EMAIL_FROM = process.env.SMTP_FROM ?? "Developing <no.reply@developing.company>";
+  const EMAIL_FROM = process.env.SMTP_FROM ?? "no.reply@developing.company";
 
   export type Attachment = {
     filename: string;

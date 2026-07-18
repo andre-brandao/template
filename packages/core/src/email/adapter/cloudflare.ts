@@ -1,23 +1,7 @@
+import type { SendEmail } from "@cloudflare/workers-types";
 import type { Email } from "../index";
 
-/** Minimal shape of the CF Workers `SendEmail` binding. */
-interface SendEmailBinding {
-  send(message: {
-    from: string;
-    to: string | string[];
-    subject: string;
-    text?: string;
-    html?: string;
-    attachments?: {
-      content: string;
-      filename: string;
-      type: string;
-      disposition: "attachment" | "inline";
-    }[];
-  }): Promise<unknown>;
-}
-
-export function createCloudflareSender(binding: SendEmailBinding): Email.SenderPort {
+export function createCloudflareSender(binding: SendEmail): Email.SenderPort {
   return {
     async send({ from, to, subject, body, html, attachments }) {
       await binding.send({

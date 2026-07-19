@@ -22,7 +22,6 @@ const handleDb: Handle = ({ event, resolve }) => {
 
 const handleStorage: Handle = ({ event, resolve }) => {
   if (event.platform?.env?.Files) {
-    log.info("using r2 storage");
     return Storage.provide(createR2Storage(event.platform.env.Files), () => resolve(event));
   }
 

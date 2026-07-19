@@ -3,8 +3,10 @@ import { join } from "node:path";
 import { Context } from "../context";
 import { createFsStorage } from "./adapter/fs";
 import { createS3Storage } from "./adapter/s3";
+import { Log } from "../util/log";
 
 export namespace Storage {
+  const log = Log.create({ namespace: "core.storage" })
   export type Object = { bytes: Uint8Array; contentType: string };
 
   export interface Port {
@@ -47,7 +49,8 @@ export namespace Storage {
   export function fromEnv(env: Record<string, string | undefined>): Port {
     const driver = env.STORAGE_DRIVER ?? "fs";
 
-    if (driver === "s3")
+    if (driver === "s3") {
+      log.info("using s3 storage");
       return createS3Storage({
         endpoint: required(env, "S3_ENDPOINT"),
         region: env.S3_REGION ?? "auto",
@@ -55,6 +58,8 @@ export namespace Storage {
         accessKeyId: required(env, "S3_ACCESS_KEY_ID"),
         secretAccessKey: required(env, "S3_SECRET_ACCESS_KEY"),
       });
+    }
+    log.info("using fs storage");
 
     const dir =
       env.STORAGE_DIR ??

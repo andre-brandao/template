@@ -21,12 +21,13 @@ const handleDb: Handle = ({ event, resolve }) => {
 };
 
 const handleStorage: Handle = ({ event, resolve }) => {
-  // On Cloudflare the Files R2 binding is available; fall back to env-driven
-  // fs/s3 for local dev and the Docker self-host target.
-  const port = event.platform?.env?.Files
-    ? createR2Storage(event.platform.env.Files)
-    : Storage.fromEnv(env);
-  return Storage.provide(port, () => resolve(event));
+  if (event.platform?.env?.Files) {
+    log.info("using r2 storage");
+    return Storage.provide(createR2Storage(event.platform.env.Files), () => resolve(event));
+  }
+
+
+  return Storage.provide(Storage.fromEnv(env), () => resolve(event));
 };
 
 const handleAuth: Handle = async ({ event, resolve }) => {

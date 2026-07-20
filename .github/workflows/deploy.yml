@@ -14,6 +14,9 @@ on:
 concurrency:
   group: sst-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || github.ref_name }}
 
+env:
+  BUN_VERSION: "1.13"
+
 jobs:
   deploy:
     if: github.event.action != 'closed'
@@ -39,7 +42,7 @@ jobs:
 
       - uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
+          bun-version: ${{ env.BUN_VERSION }}
 
       - uses: actions/setup-node@v1
         with:
@@ -99,7 +102,7 @@ jobs:
 
       - uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
+          bun-version: ${{ env.BUN_VERSION }}
 
       - uses: actions/setup-node@v1
         with:

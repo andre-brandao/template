@@ -9,6 +9,9 @@ concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  BUN_VERSION: "1.13"
+
 jobs:
   typecheck:
     runs-on: ubuntu-latest
@@ -16,7 +19,7 @@ jobs:
       - uses: actions/checkout@v7
       - uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
+          bun-version: ${{ env.BUN_VERSION }}
       - run: bun install --frozen-lockfile
       - run: bun run typecheck
 
@@ -30,7 +33,7 @@ jobs:
       - uses: actions/checkout@v7
       - uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
+          bun-version: ${{ env.BUN_VERSION }}
       - run: bun install --frozen-lockfile
       - run: bun run test:ci
       - name: Publish test report
@@ -59,7 +62,7 @@ jobs:
       - uses: actions/checkout@v7
       - uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
+          bun-version: ${{ env.BUN_VERSION }}
       - run: bun install --frozen-lockfile
       - uses: fallow-rs/fallow@v3
         with:
@@ -83,7 +86,7 @@ jobs:
       - uses: actions/checkout@v7
       - uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
+          bun-version: ${{ env.BUN_VERSION }}
       - run: bun install --frozen-lockfile
       - run: bun run lint:ci
 
@@ -93,7 +96,7 @@ jobs:
       - uses: actions/checkout@v7
       - uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
+          bun-version: ${{ env.BUN_VERSION }}
       - run: bun install --frozen-lockfile
       - run: bun run fmt:check
 
@@ -149,7 +152,7 @@ jobs:
       - uses: actions/checkout@v7
       - uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
+          bun-version: ${{ env.BUN_VERSION }}
       - run: bun install --frozen-lockfile
       - name: Build ${{ matrix.app }}
         working-directory: apps/${{ matrix.app }}
@@ -176,7 +179,7 @@ jobs:
       - uses: actions/checkout@v7
       - uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
+          bun-version: ${{ env.BUN_VERSION }}
       - run: bun install --frozen-lockfile
       # Cache the browser binaries (keyed on the lockfile, which pins the Playwright
       # version). On a hit we skip the ~hundreds-of-MB download and only install the

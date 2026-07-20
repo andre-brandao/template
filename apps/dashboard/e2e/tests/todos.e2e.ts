@@ -8,8 +8,9 @@ test("creating a todo through the form shows it in the list", async ({ page, as 
   await as("user");
   await page.goto("/todos");
 
+  await page.getByRole("button", { name: "New todo" }).click();
   await page.getByPlaceholder("What needs doing?").fill("Write the quarterly report");
-  await page.getByRole("button", { name: "Add" }).click();
+  await page.getByRole("button", { name: "Add todo" }).click();
 
   await expect(page.getByRole("link", { name: "Write the quarterly report" })).toBeVisible();
 });

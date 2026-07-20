@@ -101,7 +101,7 @@ export namespace Insights {
             id: row.id,
             userID: row.userID,
             title: row.title,
-            state: row.state,
+            state: "open" as const,
             dueDate: row.dueDate?.toISOString() ?? null,
           })),
         ),

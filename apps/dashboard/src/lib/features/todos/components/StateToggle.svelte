@@ -20,7 +20,7 @@
 
 <span class="toggle">
 	{#if todo.state === 'open'}
-		<div class="split" {@attach (el) => (wrap = el)}>
+		<div class="split" {@attach (el) => { wrap = el; }}>
 			<form {...close}>
 				<input {...close.fields.id.as('hidden', todo.id)} />
 				<input {...close.fields.reason.as('hidden', 'completed')} />

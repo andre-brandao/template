@@ -2,7 +2,7 @@
 	import type { Snippet } from 'svelte';
 	import type { Event } from '@template/core/event';
 	import { getEvents } from '../api/events.remote';
-	import { ago } from '../time';
+	import { ago } from '$lib/utils/time';
 
 	let {
 		source,

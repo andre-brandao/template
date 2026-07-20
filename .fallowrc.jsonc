@@ -109,7 +109,11 @@
       },
       {
         "from": "features",
-        "allow": ["server", "shared", "core", "ui"],
+        // `events` has no pages of its own — it's a self-contained activity-log
+        // widget (Timeline + its own remote fetch) embedded by other slices
+        // (todos today, keys/links later), not a private feature. Every slice
+        // may depend on it, same as server/shared/core/ui.
+        "allow": ["server", "shared", "core", "ui", "features/events"],
       },
       {
         "from": "server",

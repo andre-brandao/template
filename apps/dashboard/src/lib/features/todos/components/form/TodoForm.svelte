@@ -37,13 +37,13 @@
 		<div class="field">
 			<span>Tags</span>
 			<TagEditor bind:tags />
-			<input type="hidden" {...createTodo.fields.tags.as('hidden', tags.join(','))} />
+			<input {...createTodo.fields.tags.as('hidden', tags.join(','))} />
 		</div>
 
 		<div class="field">
 			<span>Description</span>
 			<MarkdownEditor {carta} bind:value={body} />
-			<input type="hidden" {...createTodo.fields.body.as('hidden', body)} />
+			<input {...createTodo.fields.body.as('hidden', body)} />
 		</div>
 
 		<div class="footer">

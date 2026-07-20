@@ -39,7 +39,7 @@
     "svelte-check": "catalog:frontend",
     "svelte-kit-sst": "^2.43.5",
     "tailwindcss": "catalog:frontend",
-    "typescript": "catalog:",
+    "typescript": "^5.9.3",
     "vite": "catalog:frontend"
   }
 }

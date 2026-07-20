@@ -19,7 +19,7 @@
 	// query is refreshed in place — `gen` is read (and bumped after a save) purely to
 	// force this derived to re-evaluate and pick up the refreshed value.
 	let gen = $state(0);
-	const todo = $derived((gen, await getTodo(id)));
+	const todo = $derived((void gen, await getTodo(id)));
 	const remove = $derived(removeTodo.for(todo.id));
 	const update = $derived(updateTodo.for(todo.id));
 	const carta = createCarta();
@@ -81,7 +81,7 @@
 		>
 			<input {...update.fields.id.as('hidden', todo.id)} />
 			<MarkdownEditor {carta} bind:value={body} />
-			<input type="hidden" {...update.fields.body.as('hidden', body)} />
+			<input {...update.fields.body.as('hidden', body)} />
 			<div class="edit-actions">
 				<Button type="submit" pending={!!update.pending}>Save</Button>
 				<Button variant="ghost" type="button" onclick={() => (editing = false)}>Cancel</Button>

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Button } from '@template/ui';
+	import { Button, FormBoundary } from '@template/ui';
 	import { removeKey } from '../api/keys.remote';
 
 	let { id, label = 'Revoke' }: { id: string; label?: string } = $props();
@@ -9,14 +9,16 @@
 	const pending = $derived(!!revoke.pending);
 </script>
 
-{#each issues as issue}
-	<p class="error">{issue.message}</p>
-{/each}
+<FormBoundary>
+	{#each issues as issue (issue)}
+		<p class="error">{issue.message}</p>
+	{/each}
 
-<form {...revoke}>
-	<input {...revoke.fields.id.as('hidden', id)} />
-	<Button variant="danger" type="submit" {pending}>{label}</Button>
-</form>
+	<form {...revoke}>
+		<input {...revoke.fields.id.as('hidden', id)} />
+		<Button variant="danger" type="submit" {pending}>{label}</Button>
+	</form>
+</FormBoundary>
 
 <style>
 	.error {

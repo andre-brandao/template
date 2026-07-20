@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { User } from '@template/core/user';
-	import { Button, Input } from '@template/ui';
+	import { Button, FormBoundary, Input } from '@template/ui';
 	import Avatar from '$lib/components/Avatar.svelte';
 	import { rename } from '../api/profile.remote';
 
@@ -19,17 +19,19 @@
 	</div>
 </div>
 
-{#each issues as issue (issue)}
-	<p class="error">{issue.message}</p>
-{/each}
+<FormBoundary>
+	{#each issues as issue (issue)}
+		<p class="error">{issue.message}</p>
+	{/each}
 
-<form {...rename}>
-	<label for="name">Display name</label>
-	<div class="row">
-		<Input id="name" {...rename.fields.name.as('text', user.name)} />
-		<Button type="submit" {pending}>Save</Button>
-	</div>
-</form>
+	<form {...rename}>
+		<label for="name">Display name</label>
+		<div class="row">
+			<Input id="name" {...rename.fields.name.as('text', user.name)} />
+			<Button type="submit" {pending}>Save</Button>
+		</div>
+	</form>
+</FormBoundary>
 
 <style>
 	.head {

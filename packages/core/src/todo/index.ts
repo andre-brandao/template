@@ -43,6 +43,40 @@ export namespace Todo {
     return [...new Set((tags ?? []).map((tag) => tag.trim()).filter(Boolean))];
   }
 
+  const Patch = Info.pick({
+    title: true,
+    body: true,
+    tags: true,
+    dueDate: true,
+    state: true,
+    stateReason: true,
+  }).partial();
+  type Patch = z.infer<typeof Patch>;
+
+  function fields(patch: Patch) {
+    return {
+      ...(patch.title !== undefined ? { title: patch.title } : {}),
+      ...(patch.body !== undefined ? { body: patch.body } : {}),
+      ...(patch.tags !== undefined ? { tags: patch.tags } : {}),
+      ...(patch.dueDate ? { dueDate: new Date(patch.dueDate) } : {}),
+      ...(patch.state !== undefined ? { state: patch.state, stateReason: patch.stateReason } : {}),
+      timeUpdated: new Date(),
+    };
+  }
+
+  function diff(before: Info, patch: Patch) {
+    const changed: Record<string, { before: unknown; after: unknown }> = {};
+    if (patch.title !== undefined && patch.title !== before.title)
+      changed.title = { before: before.title, after: patch.title };
+    if (patch.body !== undefined && patch.body !== before.body)
+      changed.body = { before: before.body, after: patch.body };
+    if (patch.tags !== undefined && patch.tags.join(" ") !== before.tags.join(" "))
+      changed.tags = { before: before.tags, after: patch.tags };
+    if (patch.dueDate && patch.dueDate !== before.dueDate)
+      changed.dueDate = { before: before.dueDate, after: patch.dueDate };
+    return changed;
+  }
+
   export const create = fn(
     z.object({
       title: Info.shape.title,
@@ -122,72 +156,45 @@ export namespace Todo {
     ),
   );
 
-  export const update = fn(
-    z.object({
-      id: Info.shape.id,
-      title: Info.shape.title.optional(),
-      body: Info.shape.body.optional(),
-      tags: Info.shape.tags.optional(),
-      dueDate: Info.shape.dueDate.optional(),
-      state: State.optional(),
-      stateReason: StateReason.optional(),
-    }),
-    async ({ id, ...patch }) => {
-      const before = found("Todo", await fromID.force(id));
-      const tags = patch.tags !== undefined ? clean(patch.tags) : undefined;
-      const reason =
-        patch.state === undefined
-          ? undefined
-          : patch.state === "closed"
-            ? (patch.stateReason ?? "completed")
-            : null;
+  export const update = fn(Patch.extend({ id: Info.shape.id }), async ({ id, ...patch }) => {
+    const before = found("Todo", await fromID.force(id));
+    const tags = patch.tags !== undefined ? clean(patch.tags) : undefined;
+    const reason =
+      patch.state === undefined
+        ? undefined
+        : patch.state === "closed"
+          ? (patch.stateReason ?? "completed")
+          : null;
+    const next = { ...patch, tags, stateReason: reason };
 
-      return Database.transaction(async (tx) => {
-        await tx
-          .update(TodoTable)
-          .set({
-            ...(patch.title !== undefined ? { title: patch.title } : {}),
-            ...(patch.body !== undefined ? { body: patch.body } : {}),
-            ...(tags !== undefined ? { tags } : {}),
-            ...(patch.dueDate ? { dueDate: new Date(patch.dueDate) } : {}),
-            ...(patch.state !== undefined ? { state: patch.state, stateReason: reason } : {}),
-            timeUpdated: new Date(),
-          })
-          .where(and(eq(TodoTable.id, id), eq(TodoTable.userID, Actor.userID())));
+    return Database.transaction(async (tx) => {
+      await tx
+        .update(TodoTable)
+        .set(fields(next))
+        .where(and(eq(TodoTable.id, id), eq(TodoTable.userID, Actor.userID())));
 
-        const next = tags ?? before.tags;
+      const list = tags ?? before.tags;
 
-        if (patch.state !== undefined && patch.state !== before.state) {
-          await Event.create({
-            type: patch.state === "closed" ? "todo.closed" : "todo.reopened",
-            source: "todo",
-            sourceID: id,
-            tags: next,
-            data: patch.state === "closed" ? { reason } : {},
-          });
-        }
+      if (patch.state !== undefined && patch.state !== before.state)
+        await Event.create({
+          type: patch.state === "closed" ? "todo.closed" : "todo.reopened",
+          source: "todo",
+          sourceID: id,
+          tags: list,
+          data: patch.state === "closed" ? { reason } : {},
+        });
 
-        const changed: Record<string, { before: unknown; after: unknown }> = {};
-        if (patch.title !== undefined && patch.title !== before.title)
-          changed.title = { before: before.title, after: patch.title };
-        if (patch.body !== undefined && patch.body !== before.body)
-          changed.body = { before: before.body, after: patch.body };
-        if (tags !== undefined && tags.join(" ") !== before.tags.join(" "))
-          changed.tags = { before: before.tags, after: tags };
-        if (patch.dueDate && patch.dueDate !== before.dueDate)
-          changed.dueDate = { before: before.dueDate, after: patch.dueDate };
-
-        if (Object.keys(changed).length)
-          await Event.create({
-            type: "todo.updated",
-            source: "todo",
-            sourceID: id,
-            tags: next,
-            data: changed,
-          });
-      });
-    },
-  );
+      const changed = diff(before, next);
+      if (Object.keys(changed).length)
+        await Event.create({
+          type: "todo.updated",
+          source: "todo",
+          sourceID: id,
+          tags: list,
+          data: changed,
+        });
+    });
+  });
 
   export const remove = fn(Info.shape.id, async (id) => {
     const before = found("Todo", await fromID.force(id));

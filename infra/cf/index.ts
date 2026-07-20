@@ -4,5 +4,6 @@ export * as storage from "./storage";
 export * as auth from "./auth";
 export * as api from "./api";
 export * as mcp from "./mcp";
+export * as cron from "./cron";
 export * as secrets from "./secrets";
 export * as stage from "./stage";

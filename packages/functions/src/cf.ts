@@ -11,3 +11,9 @@ export interface AuthEnv extends Env {
   AuthKv: KVNamespace;
   SEND_EMAIL: SendEmail;
 }
+
+/** Cron worker: db plus the email service binding. */
+export interface CronEnv {
+  Hyperdrive: Hyperdrive;
+  SEND_EMAIL: SendEmail;
+}

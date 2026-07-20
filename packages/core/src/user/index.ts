@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { eq } from "drizzle-orm";
+import { eq, isNull } from "drizzle-orm";
 import { fn } from "../util/fn";
 import { Database } from "../drizzle";
 import { Actor } from "../actor";
@@ -85,6 +85,16 @@ export namespace User {
       );
       return id;
     },
+  );
+
+  /** All non-deleted users — deliberately actor-less, for background jobs only. Never expose over HTTP/MCP. */
+  export const list = fn(z.void(), () =>
+    Database.use((tx) =>
+      tx
+        .select({ id: UserTable.id, name: UserTable.name, email: UserTable.email })
+        .from(UserTable)
+        .where(isNull(UserTable.timeDeleted)),
+    ),
   );
 
   export const fromID = fn(Info.shape.id, (id) =>

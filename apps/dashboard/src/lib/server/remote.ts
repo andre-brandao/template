@@ -45,7 +45,12 @@ export function remote<S extends z.ZodType, R>(
     query: () => query(schema, call),
     form: () => form(schema, guarded),
     command: () => command(schema, guarded),
-    public: () => remote(core, gates.filter((gate) => gate !== auth), schema),
+    public: () =>
+      remote(
+        core,
+        gates.filter((gate) => gate !== auth),
+        schema,
+      ),
     use: (gate: Gate) => remote(core, [...gates, gate], schema),
     with: (next: z.ZodType<z.infer<S>>) => remote(core, gates, next),
   };

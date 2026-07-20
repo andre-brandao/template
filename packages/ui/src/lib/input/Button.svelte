@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	import Spinner from '../ui/Spinner.svelte';
 
 	let {
 		variant = 'primary',
@@ -18,7 +19,7 @@
 
 <button {type} class={variant} disabled={pending} aria-busy={pending} {onclick}>
 	{#if pending}
-		<span class="spinner" aria-hidden="true"></span>
+		<Spinner />
 	{/if}
 	{@render children()}
 </button>
@@ -86,25 +87,4 @@
 		color: var(--ink, #111);
 	}
 
-	.spinner {
-		width: 0.8em;
-		height: 0.8em;
-		border: 2px solid currentColor;
-		border-right-color: transparent;
-		border-radius: 50%;
-		animation: spin 0.6s linear infinite;
-		opacity: 0.8;
-	}
-
-	@keyframes spin {
-		to {
-			transform: rotate(360deg);
-		}
-	}
-
-	@media (prefers-reduced-motion: reduce) {
-		.spinner {
-			animation-duration: 1.4s;
-		}
-	}
 </style>

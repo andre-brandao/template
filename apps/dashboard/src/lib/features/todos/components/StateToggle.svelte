@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Todo } from '@template/core/todo';
-	import { Button } from '@template/ui';
+	import { Button, Spinner } from '@template/ui';
 	import { closeTodo, reopenTodo } from '../api/todos.remote';
 
 	let { todo }: { todo: Todo.Info } = $props();
@@ -25,7 +25,7 @@
 				<input {...close.fields.id.as('hidden', todo.id)} />
 				<input {...close.fields.reason.as('hidden', 'completed')} />
 				<button class="main" type="submit" disabled={!!close.pending}>
-					{#if close.pending}<span class="spinner" aria-hidden="true"></span>{/if}
+					{#if close.pending}<Spinner />{/if}
 					Close as completed
 				</button>
 			</form>
@@ -120,22 +120,6 @@
 	.main:hover:not(:disabled),
 	.caret:hover:not(:disabled) {
 		filter: brightness(0.95);
-	}
-
-	.spinner {
-		width: 0.8em;
-		height: 0.8em;
-		border: 2px solid currentColor;
-		border-right-color: transparent;
-		border-radius: 50%;
-		animation: spin 0.6s linear infinite;
-		opacity: 0.8;
-	}
-
-	@keyframes spin {
-		to {
-			transform: rotate(360deg);
-		}
 	}
 
 	.menu {

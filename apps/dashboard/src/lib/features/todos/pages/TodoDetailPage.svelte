@@ -6,11 +6,13 @@
 	import '@cartamd/plugin-attachment/default.css';
 	import '$lib/markdown.css';
 	import { createCarta } from '$lib/markdown';
-	import { getTodo, getEvents, removeTodo, updateTodo } from '../api/todos.remote';
+	import type { Event } from '@template/core/event';
+	import { getTodo, removeTodo, updateTodo } from '../api/todos.remote';
+	import Timeline from '$lib/features/events/components/Timeline.svelte';
 	import StatePill from '../components/StatePill.svelte';
 	import StateToggle from '../components/StateToggle.svelte';
 	import TagList from '../components/TagList.svelte';
-	import ActivityFeed from '../components/ActivityFeed.svelte';
+	import { color } from '../state';
 
 	let { id }: { id: string } = $props();
 	// `$derived(await query())` only re-subscribes when its args change, not when the
@@ -18,7 +20,6 @@
 	// force this derived to re-evaluate and pick up the refreshed value.
 	let gen = $state(0);
 	const todo = $derived((gen, await getTodo(id)));
-	const events = $derived(await getEvents(todo.id));
 	const remove = $derived(removeTodo.for(todo.id));
 	const update = $derived(updateTodo.for(todo.id));
 	const carta = createCarta();
@@ -30,12 +31,29 @@
 		body = todo.body ?? '';
 		editing = true;
 	}
+
+	const eventLabels: Record<string, string> = {
+		'todo.created': 'Created',
+		'todo.updated': 'Updated',
+		'todo.closed': 'Closed',
+		'todo.reopened': 'Reopened',
+		'todo.removed': 'Removed'
+	};
+
+	function eventLabel(event: Event.Info) {
+		const base = eventLabels[event.type] ?? event.type;
+		if (event.type !== 'todo.closed') return base;
+		const reason = event.data.reason;
+		if (reason === 'completed') return `${base} as completed`;
+		if (reason === 'not_planned') return `${base} as not planned`;
+		return base;
+	}
 </script>
 
 <a class="back" href="/todos">&larr; Back to todos</a>
 
 <!-- fallow-ignore-next-line code-duplication -->
-<Card>
+<Card accent={color(todo.state)}>
 	{#each remove.fields.allIssues() ?? [] as issue, i (i)}
 		<p class="error">{issue.message}</p>
 	{/each}
@@ -93,7 +111,11 @@
 	</div>
 </Card>
 
-<ActivityFeed {events} />
+<Timeline source="todo" sourceID={todo.id} title="Activity">
+	{#snippet label(event)}
+		{eventLabel(event)}
+	{/snippet}
+</Timeline>
 
 <style>
 	.back {

@@ -25,11 +25,13 @@
 	{/each}
 
 	<form {...rename}>
-		<label for="name">Display name</label>
-		<div class="row">
-			<Input id="name" {...rename.fields.name.as('text', user.name)} />
-			<Button type="submit" {pending}>Save</Button>
-		</div>
+		<label class="field name">
+			<span>Display name</span>
+			<div class="row">
+				<Input {...rename.fields.name.as('text', user.name)} />
+				<Button type="submit" {pending}>Save</Button>
+			</div>
+		</label>
 	</form>
 </FormBoundary>
 
@@ -59,20 +61,12 @@
 		color: var(--dim);
 	}
 
-	label {
-		display: block;
-		margin-bottom: 0.4em;
-		font-size: 0.82em;
-		color: var(--muted);
+	.name {
+		max-width: 24em;
 	}
 
 	.row {
 		display: flex;
 		gap: 0.6em;
-	}
-
-	.error {
-		margin: 0 0 0.6em;
-		color: var(--danger, crimson);
 	}
 </style>

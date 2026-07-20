@@ -2,7 +2,6 @@ import { form, query } from "$app/server";
 import { error, redirect } from "@sveltejs/kit";
 import { z } from "zod";
 import { Todo } from "@template/core/todo";
-import { Event } from "@template/core/event";
 import { Actor } from "@template/core/actor";
 import { guard } from "$lib/server/guard";
 // import { api } from '$lib/server/api';
@@ -29,11 +28,6 @@ export const getTodo = query(Todo.Info.shape.id, async (id) => {
   const todo = await Todo.fromID(id);
   if (!todo) error(404, "Todo not found");
   return todo;
-});
-
-export const getEvents = query(Todo.Info.shape.id, async (id) => {
-  auth();
-  return Event.list({ source: "todo", sourceID: id });
 });
 
 export const createTodo = form(

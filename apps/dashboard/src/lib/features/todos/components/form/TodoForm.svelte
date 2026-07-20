@@ -27,11 +27,18 @@
 		})}
 	>
 		<div class="row">
-			<Input placeholder="What needs doing?" {...createTodo.fields.title.as('text')} />
-			<Input class="tags" placeholder="tags, comma, separated" {...createTodo.fields.tags.as('text')} />
+			<label class="field title">
+				<span>Title</span>
+				<Input placeholder="What needs doing?" {...createTodo.fields.title.as('text')} />
+			</label>
+			<label class="field tags">
+				<span>Tags</span>
+				<Input placeholder="comma, separated" {...createTodo.fields.tags.as('text')} />
+			</label>
 			<Button type="submit" pending={!!createTodo.pending}>Add</Button>
 		</div>
-		<div class="body">
+		<div class="field body">
+			<span>Description</span>
 			<MarkdownEditor {carta} bind:value={body} />
 			<input type="hidden" {...createTodo.fields.body.as('hidden', body)} />
 		</div>
@@ -48,15 +55,20 @@
 
 	.row {
 		display: flex;
+		align-items: end;
 		flex-wrap: wrap;
 		gap: 0.6em;
+	}
+
+	.title {
+		flex: 1 1 16em;
 	}
 
 	.body {
 		margin: 0.6em 0;
 	}
 
-	:global(.tags) {
+	.tags {
 		flex: 0 1 11em;
 	}
 

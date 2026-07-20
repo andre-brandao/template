@@ -19,10 +19,3 @@
 		<Button variant="danger" type="submit" {pending}>{label}</Button>
 	</form>
 </FormBoundary>
-
-<style>
-	.error {
-		margin: 0 0 0.4em;
-		color: var(--danger, crimson);
-	}
-</style>

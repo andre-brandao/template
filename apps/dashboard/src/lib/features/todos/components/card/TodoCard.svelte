@@ -5,6 +5,7 @@
 	import StatePill from '../StatePill.svelte';
 	import StateToggle from '../StateToggle.svelte';
 	import TagList from '../TagList.svelte';
+	import { color } from '../../state';
 
 	let { todo }: { todo: Todo.Info } = $props();
 	const remove = $derived(removeTodo.for(todo.id));
@@ -20,7 +21,7 @@
 </script>
 
 <!-- fallow-ignore-next-line code-duplication -->
-<Card>
+<Card accent={color(todo.state)} interactive>
 	{#each remove.fields.allIssues() ?? [] as issue, i (i)}
 		<p class="error">{issue.message}</p>
 	{/each}

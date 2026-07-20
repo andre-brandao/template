@@ -1,5 +1,5 @@
 import { lambda } from "../../target";
-import { Storage } from "@template/core/storage";
+import { File } from "@template/core/file";
 import { app } from "../routes";
 
-export const handler = lambda(app, Storage.provider(Storage.fromEnv(process.env)));
+export const handler = lambda(app, File.provider(File.fromEnv(process.env)));

@@ -39,6 +39,7 @@ export namespace Examples {
     filename: "screenshot.png",
     contentType: "image/png",
     size: 102400,
+    tags: [] as string[],
     timeCreated: "2026-06-07T00:00:00.000Z",
   } as const;
 

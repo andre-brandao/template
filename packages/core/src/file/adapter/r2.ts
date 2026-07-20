@@ -1,4 +1,4 @@
-import type { Storage } from "../index";
+import type { Port } from "../port";
 
 /**
  * Structural subset of Cloudflare's `R2Bucket` binding — deliberately not imported
@@ -20,7 +20,7 @@ export interface R2BucketLike {
 }
 
 /** Native Cloudflare R2 binding — no credentials, no network hop. Cloudflare Worker deploy only. */
-export function createR2Storage(bucket: R2BucketLike): Storage.Port {
+export function createR2Storage(bucket: R2BucketLike): Port {
   return {
     async put(key, bytes, contentType) {
       await bucket.put(key, bytes, { httpMetadata: { contentType } });

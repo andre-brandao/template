@@ -1,9 +1,9 @@
 import { mkdir, unlink } from "node:fs/promises";
 import { dirname, join } from "node:path";
-import type { Storage } from "../index";
+import type { Port } from "../port";
 
 /** Local filesystem backend. Bun-only (dev, Docker self-host) — no filesystem on Workers/Lambda. */
-export function createFsStorage(opts: { dir: string }): Storage.Port {
+export function createFsStorage(opts: { dir: string }): Port {
   const path = (key: string) => join(opts.dir, key);
 
   return {

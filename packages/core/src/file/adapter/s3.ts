@@ -1,5 +1,5 @@
 import { AwsClient } from "aws4fetch";
-import type { Storage } from "../index";
+import type { Port } from "../port";
 
 export type S3Config = {
   endpoint: string;
@@ -10,7 +10,7 @@ export type S3Config = {
 };
 
 /** S3-compatible backend (AWS S3 or R2 via access keys) via `aws4fetch`, path-style requests. */
-export function createS3Storage(opts: S3Config): Storage.Port {
+export function createS3Storage(opts: S3Config): Port {
   const client = new AwsClient({
     accessKeyId: opts.accessKeyId,
     secretAccessKey: opts.secretAccessKey,
@@ -46,6 +46,15 @@ export function createS3Storage(opts: S3Config): Storage.Port {
       const res = await client.fetch(url(key), { method: "DELETE" });
       if (!res.ok && res.status !== 404)
         throw new Error(`S3 delete failed: ${res.status} ${await res.text()}`);
+    },
+    async presign(opts) {
+      const target = new URL(url(opts.key));
+      target.searchParams.set("X-Amz-Expires", String(opts.expires ?? 3600));
+      const signed = await client.sign(
+        new Request(target.toString(), { method: opts.method.toUpperCase() }),
+        { aws: { signQuery: true } },
+      );
+      return signed.url;
     },
   };
 }

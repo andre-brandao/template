@@ -10,6 +10,7 @@ export const FileTable = table(
     filename: text("filename").notNull(),
     contentType: text("content_type").notNull(),
     size: integer("size").notNull(),
+    tags: text().array().notNull().default([]),
     key: text("key").notNull(),
   },
   (table) => [index("file_user").on(table.userID)],

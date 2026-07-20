@@ -1,8 +1,8 @@
 import type { ExecutionContext } from "@cloudflare/workers-types";
 import { Context } from "@template/core/context";
 import { Database } from "@template/core/drizzle";
-import { Storage } from "@template/core/storage";
-import { createR2Storage } from "@template/core/storage/adapter/r2";
+import { File } from "@template/core/file";
+import { createR2Storage } from "@template/core/file/adapter/r2";
 import type { Env } from "../../cf";
 import { app } from "../routes";
 
@@ -15,7 +15,7 @@ export default {
     return Context.withProviders(
       () => app.fetch(request, env, ctx),
       Database.provider(env.Hyperdrive.connectionString),
-      Storage.provider(createR2Storage(env.Files)),
+      File.provider(createR2Storage(env.Files)),
     );
   },
 };

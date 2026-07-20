@@ -15,24 +15,53 @@ function pngFile(name = "pixel.png") {
 
 const json = (res: Response) => res.json() as Promise<FileInfo.Info>;
 
-const { test, postForm, get, del, expectError } = setupApiTest();
+const { test, postForm, get, del, patch, expectError } = setupApiTest();
 
 describe("file", () => {
-  test("POST /file uploads an image", async () => {
+  test("POST /file uploads a file with tags", async () => {
     const form = new FormData();
     form.append("file", pngFile());
+    form.append("tags", "a,b");
     const response = await postForm("/file", form);
     expect(response.status).toBe(200);
     const body = await json(response);
     expect(body.filename).toBe("pixel.png");
     expect(body.contentType).toBe("image/png");
+    expect(body.tags).toEqual(["a", "b"]);
   });
 
-  test("POST /file rejects an unsupported type", async () => {
+  test("POST /file accepts any content type", async () => {
     const form = new FormData();
     form.append("file", new File(["hello"], "note.txt", { type: "text/plain" }));
     const response = await postForm("/file", form);
-    await expectError(response, 400);
+    expect(response.status).toBe(200);
+    expect((await json(response)).contentType).toStartWith("text/plain");
+  });
+
+  test("GET /file lists with tag filter", async () => {
+    const tag = `t-${crypto.randomUUID()}`;
+    const form = new FormData();
+    form.append("file", pngFile("tagged.png"));
+    form.append("tags", tag);
+    const uploaded = await json(await postForm("/file", form));
+
+    const page = (await (await get(`/file?tags=${tag}`)).json()) as { data: FileInfo.Info[] };
+    expect(page.data.map((f) => f.id)).toEqual([uploaded.id]);
+  });
+
+  test("PATCH /file/:id renames and re-tags", async () => {
+    const form = new FormData();
+    form.append("file", pngFile());
+    const uploaded = await json(await postForm("/file", form));
+
+    const response = await patch(`/file/${uploaded.id}`, {
+      filename: "renamed.png",
+      tags: ["done"],
+    });
+    expect(response.status).toBe(200);
+    const body = await json(response);
+    expect(body.filename).toBe("renamed.png");
+    expect(body.tags).toEqual(["done"]);
   });
 
   test("GET /file/:id and /file/:id/content round-trip", async () => {

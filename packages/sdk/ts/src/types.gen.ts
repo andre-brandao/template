@@ -95,6 +95,23 @@ export type Todo = {
   dueDate: string | null;
 };
 
+/**
+ * An uploaded file that belongs to a user.
+ */
+export type File = {
+  /**
+   * Unique object identifier.
+   * The format and length of IDs may change over time.
+   */
+  id: string;
+  userID: string;
+  filename: string;
+  contentType: string;
+  size: number;
+  tags: Array<string>;
+  timeCreated: string;
+};
+
 export type GetMeData = {
   body?: never;
   path?: never;
@@ -424,3 +441,236 @@ export type PatchTodoByIdResponses = {
 };
 
 export type PatchTodoByIdResponse = PatchTodoByIdResponses[keyof PatchTodoByIdResponses];
+
+export type GetFileData = {
+  body?: never;
+  path?: never;
+  query?: {
+    page?: number;
+    pageSize?: number;
+    tags?: string;
+    search?: string;
+  };
+  url: "/file";
+};
+
+export type GetFileErrors = {
+  /**
+   * Bad Request
+   */
+  400: ErrorResponse;
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Internal Server Error
+   */
+  500: ErrorResponse;
+};
+
+export type GetFileError = GetFileErrors[keyof GetFileErrors];
+
+export type GetFileResponses = {
+  /**
+   * A page of results.
+   */
+  200: {
+    data: Array<File>;
+    /**
+     * Page number returned.
+     */
+    page: number;
+    /**
+     * Number of entities per page.
+     */
+    pageSize: number;
+    /**
+     * Total number of matching entities across all pages.
+     */
+    total: number;
+  };
+};
+
+export type GetFileResponse = GetFileResponses[keyof GetFileResponses];
+
+export type PostFileData = {
+  body?: {
+    file: Blob | File;
+    tags?: string;
+  };
+  path?: never;
+  query?: never;
+  url: "/file";
+};
+
+export type PostFileErrors = {
+  /**
+   * Bad Request
+   */
+  400: ErrorResponse;
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Internal Server Error
+   */
+  500: ErrorResponse;
+};
+
+export type PostFileError = PostFileErrors[keyof PostFileErrors];
+
+export type PostFileResponses = {
+  /**
+   * The uploaded file.
+   */
+  200: File;
+};
+
+export type PostFileResponse = PostFileResponses[keyof PostFileResponses];
+
+export type DeleteFileByIdData = {
+  body?: never;
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/file/{id}";
+};
+
+export type DeleteFileByIdErrors = {
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Not Found
+   */
+  404: ErrorResponse;
+  /**
+   * Internal Server Error
+   */
+  500: ErrorResponse;
+};
+
+export type DeleteFileByIdError = DeleteFileByIdErrors[keyof DeleteFileByIdErrors];
+
+export type DeleteFileByIdResponses = {
+  /**
+   * Deleted.
+   */
+  200: "ok";
+};
+
+export type DeleteFileByIdResponse = DeleteFileByIdResponses[keyof DeleteFileByIdResponses];
+
+export type GetFileByIdData = {
+  body?: never;
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/file/{id}";
+};
+
+export type GetFileByIdErrors = {
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Not Found
+   */
+  404: ErrorResponse;
+  /**
+   * Internal Server Error
+   */
+  500: ErrorResponse;
+};
+
+export type GetFileByIdError = GetFileByIdErrors[keyof GetFileByIdErrors];
+
+export type GetFileByIdResponses = {
+  /**
+   * The file's metadata.
+   */
+  200: File;
+};
+
+export type GetFileByIdResponse = GetFileByIdResponses[keyof GetFileByIdResponses];
+
+export type PatchFileByIdData = {
+  body: {
+    filename?: string;
+    tags?: Array<string>;
+  };
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/file/{id}";
+};
+
+export type PatchFileByIdErrors = {
+  /**
+   * Bad Request
+   */
+  400: ErrorResponse;
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Not Found
+   */
+  404: ErrorResponse;
+  /**
+   * Internal Server Error
+   */
+  500: ErrorResponse;
+};
+
+export type PatchFileByIdError = PatchFileByIdErrors[keyof PatchFileByIdErrors];
+
+export type PatchFileByIdResponses = {
+  /**
+   * The updated file.
+   */
+  200: File;
+};
+
+export type PatchFileByIdResponse = PatchFileByIdResponses[keyof PatchFileByIdResponses];
+
+export type GetFileByIdContentData = {
+  body?: never;
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/file/{id}/content";
+};
+
+export type GetFileByIdContentErrors = {
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Not Found
+   */
+  404: ErrorResponse;
+  /**
+   * Internal Server Error
+   */
+  500: ErrorResponse;
+};
+
+export type GetFileByIdContentError = GetFileByIdContentErrors[keyof GetFileByIdContentErrors];
+
+export type GetFileByIdContentResponses = {
+  /**
+   * The raw file bytes.
+   */
+  200: unknown;
+};

@@ -4,16 +4,25 @@ import {
   buildClientParams,
   type Client,
   type ClientMeta,
+  formDataBodySerializer,
   type Options as Options2,
   type RequestResult,
   type TDataShape,
 } from "./client";
 import { client } from "./client.gen";
 import type {
+  DeleteFileByIdErrors,
+  DeleteFileByIdResponses,
   DeleteKeyByIdErrors,
   DeleteKeyByIdResponses,
   DeleteTodoByIdErrors,
   DeleteTodoByIdResponses,
+  GetFileByIdContentErrors,
+  GetFileByIdContentResponses,
+  GetFileByIdErrors,
+  GetFileByIdResponses,
+  GetFileErrors,
+  GetFileResponses,
   GetKeyErrors,
   GetKeyResponses,
   GetMeErrors,
@@ -22,8 +31,12 @@ import type {
   GetTodoByIdResponses,
   GetTodoErrors,
   GetTodoResponses,
+  PatchFileByIdErrors,
+  PatchFileByIdResponses,
   PatchTodoByIdErrors,
   PatchTodoByIdResponses,
+  PostFileErrors,
+  PostFileResponses,
   PostKeyErrors,
   PostKeyResponses,
   PostTodoErrors,
@@ -335,6 +348,188 @@ export class TemplateSdk extends HeyApiClient {
         ...options?.headers,
         ...params.headers,
       },
+    });
+  }
+
+  /**
+   * List files
+   *
+   * The user's files, newest first. Filter by tags (comma-separated) or search.
+   */
+  public getFile<ThrowOnError extends boolean = false>(
+    parameters?: {
+      page?: number;
+      pageSize?: number;
+      tags?: string;
+      search?: string;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<GetFileResponses, GetFileErrors, ThrowOnError> {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "query", key: "page" },
+            { in: "query", key: "pageSize" },
+            { in: "query", key: "tags" },
+            { in: "query", key: "search" },
+          ],
+        },
+      ],
+    );
+    return (options?.client ?? this.client).get<GetFileResponses, GetFileErrors, ThrowOnError>({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/file",
+      ...options,
+      ...params,
+    });
+  }
+
+  /**
+   * Upload file
+   *
+   * Multipart form with a `file` field, plus optional `tags` (comma-separated).
+   */
+  public postFile<ThrowOnError extends boolean = false>(
+    parameters: {
+      file: Blob | File;
+      tags?: string;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<PostFileResponses, PostFileErrors, ThrowOnError> {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "body", key: "file" },
+            { in: "body", key: "tags" },
+          ],
+        },
+      ],
+    );
+    return (options?.client ?? this.client).post<PostFileResponses, PostFileErrors, ThrowOnError>({
+      ...formDataBodySerializer,
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/file",
+      ...options,
+      ...params,
+      headers: {
+        "Content-Type": null,
+        ...options?.headers,
+        ...params.headers,
+      },
+    });
+  }
+
+  /**
+   * Delete file
+   */
+  public deleteFileById<ThrowOnError extends boolean = false>(
+    parameters: {
+      id: string;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<DeleteFileByIdResponses, DeleteFileByIdErrors, ThrowOnError> {
+    const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
+    return (options?.client ?? this.client).delete<
+      DeleteFileByIdResponses,
+      DeleteFileByIdErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/file/{id}",
+      ...options,
+      ...params,
+    });
+  }
+
+  /**
+   * Get file metadata
+   */
+  public getFileById<ThrowOnError extends boolean = false>(
+    parameters: {
+      id: string;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<GetFileByIdResponses, GetFileByIdErrors, ThrowOnError> {
+    const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
+    return (options?.client ?? this.client).get<
+      GetFileByIdResponses,
+      GetFileByIdErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/file/{id}",
+      ...options,
+      ...params,
+    });
+  }
+
+  /**
+   * Update file
+   *
+   * Rename or re-tag a file.
+   */
+  public patchFileById<ThrowOnError extends boolean = false>(
+    parameters: {
+      id: string;
+      filename?: string;
+      tags?: Array<string>;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<PatchFileByIdResponses, PatchFileByIdErrors, ThrowOnError> {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "path", key: "id" },
+            { in: "body", key: "filename" },
+            { in: "body", key: "tags" },
+          ],
+        },
+      ],
+    );
+    return (options?.client ?? this.client).patch<
+      PatchFileByIdResponses,
+      PatchFileByIdErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/file/{id}",
+      ...options,
+      ...params,
+      headers: {
+        "Content-Type": "application/json",
+        ...options?.headers,
+        ...params.headers,
+      },
+    });
+  }
+
+  /**
+   * Get file content
+   *
+   * Redirects to a presigned storage URL when the backend supports it; streams the bytes otherwise.
+   */
+  public getFileByIdContent<ThrowOnError extends boolean = false>(
+    parameters: {
+      id: string;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<GetFileByIdContentResponses, GetFileByIdContentErrors, ThrowOnError> {
+    const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
+    return (options?.client ?? this.client).get<
+      GetFileByIdContentResponses,
+      GetFileByIdContentErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/file/{id}/content",
+      ...options,
+      ...params,
     });
   }
 }

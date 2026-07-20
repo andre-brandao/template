@@ -14,7 +14,7 @@
     "./identifier": "./src/identifier.ts",
     "./drizzle/*": "./src/drizzle/*.ts",
     "./email/*": "./src/email/*.ts",
-    "./storage/*": "./src/storage/*.ts",
+    "./file/*": "./src/file/*.ts",
     "./user/*": "./src/user/*.ts",
     "./util/*": "./src/util/*.ts"
   },

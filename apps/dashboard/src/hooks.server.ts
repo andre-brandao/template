@@ -2,8 +2,8 @@ import { sequence } from "@sveltejs/kit/hooks";
 import type { Handle, HandleServerError } from "@sveltejs/kit";
 import { env } from "$env/dynamic/private";
 import { Database } from "@template/core/drizzle";
-import { Storage } from "@template/core/storage";
-import { createR2Storage } from "@template/core/storage/adapter/r2";
+import { File } from "@template/core/file";
+import { createR2Storage } from "@template/core/file/adapter/r2";
 import { Actor } from "@template/core/actor";
 import { VisibleError } from "@template/core/error";
 import { Log } from "@template/core/util/log";
@@ -22,10 +22,10 @@ const handleDb: Handle = ({ event, resolve }) => {
 
 const handleStorage: Handle = ({ event, resolve }) => {
   if (event.platform?.env?.Files) {
-    return Storage.provide(createR2Storage(event.platform.env.Files), () => resolve(event));
+    return File.provide(createR2Storage(event.platform.env.Files), () => resolve(event));
   }
 
-  return Storage.provide(Storage.fromEnv(env), () => resolve(event));
+  return File.provide(File.fromEnv(env), () => resolve(event));
 };
 
 const handleAuth: Handle = async ({ event, resolve }) => {

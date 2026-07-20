@@ -6,7 +6,7 @@ import { createS3Storage } from "./adapter/s3";
 import { Log } from "../util/log";
 
 export namespace Storage {
-  const log = Log.create({ namespace: "core.storage" })
+  const log = Log.create({ namespace: "core.storage" });
   export type Object = { bytes: Uint8Array; contentType: string };
 
   export interface Port {

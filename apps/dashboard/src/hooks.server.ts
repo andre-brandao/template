@@ -25,7 +25,6 @@ const handleStorage: Handle = ({ event, resolve }) => {
     return Storage.provide(createR2Storage(event.platform.env.Files), () => resolve(event));
   }
 
-
   return Storage.provide(Storage.fromEnv(env), () => resolve(event));
 };
 

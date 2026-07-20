@@ -1,3 +1,4 @@
+/// <reference path="../../.sst/platform/config.d.ts" />
 import { subdomain } from "./stage";
 
 export const EXAMPLE_SECRET = new sst.Secret("EXAMPLE_SECRET", "");

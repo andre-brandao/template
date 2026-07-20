@@ -1,3 +1,4 @@
+/// <reference path="../../.sst/platform/config.d.ts" />
 import { createHash } from "crypto"
 import { readdirSync, statSync } from "fs"
 import { database, hyperdrive } from "./database";

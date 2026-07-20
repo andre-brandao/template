@@ -1,3 +1,4 @@
+/// <reference path="../../.sst/platform/config.d.ts" />
 import { database, hyperdrive } from "./database";
 import { files } from "./storage";
 import { environment } from "./secrets";

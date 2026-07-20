@@ -1,3 +1,4 @@
+/// <reference path="../../.sst/platform/config.d.ts" />
 import { database, hyperdrive } from "./database";
 import { environment } from "./secrets";
 import { subdomain } from "./stage";

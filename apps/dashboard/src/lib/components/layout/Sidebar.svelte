@@ -3,6 +3,7 @@
 
 	const links = [
 		{ href: '/todos', label: 'Todos' },
+		{ href: '/files', label: 'Files' },
 		{ href: '/insights', label: 'Insights' },
 		{ href: '/keys', label: 'API keys' }
 	];

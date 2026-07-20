@@ -11,10 +11,14 @@ export const POST: RequestHandler = async ({ request }) => {
   const form = await request.formData();
   const file = form.get("file");
   if (!(file instanceof globalThis.File)) error(400, "Missing file");
+  const tags = form.get("tags");
 
   try {
-    const info = await File.upload({ file });
-    return json({ url: `/files/${info.id}` });
+    const info = await File.upload({
+      file,
+      tags: typeof tags === "string" && tags ? tags.split(",") : undefined,
+    });
+    return json({ url: `/files/${info.id}`, id: info.id });
   } catch (err) {
     if (err instanceof VisibleError) error(400, err.message);
     throw err;

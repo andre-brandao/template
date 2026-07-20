@@ -15,8 +15,6 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version-file: .bun-version
       - run: bun install --frozen-lockfile
       - run: bun run typecheck
 
@@ -29,8 +27,6 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version-file: .bun-version
       - run: bun install --frozen-lockfile
       - run: bun run test:ci
       - name: Publish test report
@@ -58,8 +54,6 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version-file: .bun-version
       - run: bun install --frozen-lockfile
       - uses: fallow-rs/fallow@v3
         with:
@@ -82,8 +76,6 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version-file: .bun-version
       - run: bun install --frozen-lockfile
       - run: bun run lint:ci
 
@@ -92,8 +84,6 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version-file: .bun-version
       - run: bun install --frozen-lockfile
       - run: bun run fmt:check
 
@@ -148,8 +138,6 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version-file: .bun-version
       - run: bun install --frozen-lockfile
       - name: Build ${{ matrix.app }}
         working-directory: apps/${{ matrix.app }}
@@ -175,8 +163,6 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version-file: .bun-version
       - run: bun install --frozen-lockfile
       # Cache the browser binaries (keyed on the lockfile, which pins the Playwright
       # version). On a hit we skip the ~hundreds-of-MB download and only install the

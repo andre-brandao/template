@@ -38,8 +38,6 @@ jobs:
           key: ${{ runner.os }}-sst
 
       - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version-file: .bun-version
 
       - uses: actions/setup-node@v1
         with:
@@ -98,8 +96,6 @@ jobs:
           fetch-depth: 0
 
       - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version-file: .bun-version
 
       - uses: actions/setup-node@v1
         with:

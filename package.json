@@ -2,6 +2,7 @@
   "$schema": "https://json.schemastore.org/package.json",
   "name": "@dev-template",
   "private": true,
+  "packageManager": "bun@1.3.13",
   "workspaces": {
     "catalog": {
       "@openauthjs/openauth": "0.4.3",

@@ -1,13 +1,9 @@
 import { form, query } from "$app/server";
-import { error, redirect } from "@sveltejs/kit";
+import { error } from "@sveltejs/kit";
 import { z } from "zod";
 import { User } from "@template/core/user";
 import { Actor } from "@template/core/actor";
-import { guard } from "$lib/server/guard";
-
-function auth() {
-  if (Actor.use().type !== "user") redirect(303, "/login");
-}
+import { auth, guard, remote } from "$lib/server/remote";
 
 export const getMe = query(async () => {
   auth();
@@ -16,10 +12,7 @@ export const getMe = query(async () => {
   return user;
 });
 
-export const getProviders = query(async () => {
-  auth();
-  return User.providers();
-});
+export const getProviders = remote(User.providers).query();
 
 // `User.update.schema` has `name` optional; a rename form must require it.
 export const rename = form(z.object({ name: User.Info.shape.name }), async (input) => {

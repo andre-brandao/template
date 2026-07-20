@@ -1,33 +1,8 @@
-import { query } from "$app/server";
-import { redirect } from "@sveltejs/kit";
 import { Insights } from "@template/core/todo";
-import { Actor } from "@template/core/actor";
+import { remote } from "$lib/server/remote";
 
-function auth() {
-  if (Actor.use().type !== "user") redirect(303, "/login");
-}
-
-export const getStats = query(Insights.Range, async (input) => {
-  auth();
-  return Insights.stats(input);
-});
-
-export const getStatus = query(Insights.Range, async (input) => {
-  auth();
-  return Insights.status(input);
-});
-
-export const getDue = query(async () => {
-  auth();
-  return Insights.due();
-});
-
-export const getActivity = query(Insights.Range, async (input) => {
-  auth();
-  return Insights.activity(input);
-});
-
-export const getCalendar = query(Insights.Range, async (input) => {
-  auth();
-  return Insights.calendar(input);
-});
+export const getStats = remote(Insights.stats).query();
+export const getStatus = remote(Insights.status).query();
+export const getDue = remote(Insights.due).query();
+export const getActivity = remote(Insights.activity).query();
+export const getCalendar = remote(Insights.calendar).query();

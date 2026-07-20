@@ -1,14 +1,9 @@
-import { form, query } from "$app/server";
-import { error, redirect } from "@sveltejs/kit";
+import { query } from "$app/server";
+import { error } from "@sveltejs/kit";
 import { z } from "zod";
 import { Todo } from "@template/core/todo";
-import { Actor } from "@template/core/actor";
-import { guard } from "$lib/server/guard";
+import { auth, remote } from "$lib/server/remote";
 // import { api } from '$lib/server/api';
-
-function auth() {
-  if (Actor.use().type !== "user") redirect(303, "/login");
-}
 
 export const getTodos = query(
   z.object({ state: Todo.State.optional(), q: z.string().optional() }),
@@ -30,66 +25,61 @@ export const getTodo = query(Todo.Info.shape.id, async (id) => {
   return todo;
 });
 
-export const createTodo = form(
-  Todo.create.schema.extend({
-    tags: z
-      .string()
-      .optional()
-      .transform((s) =>
-        s
-          ? s
-              .split(",")
-              .map((tag) => tag.trim())
-              .filter(Boolean)
-          : undefined,
-      ),
-    body: z
-      .string()
-      .optional()
-      .transform((s) => s || undefined),
-  }),
-  async (input) => {
-    auth();
-    await guard(() => Todo.create(input));
+export const createTodo = remote(Todo.create)
+  .with(
+    Todo.create.schema.extend({
+      tags: z
+        .string()
+        .optional()
+        .transform((s) =>
+          s
+            ? s
+                .split(",")
+                .map((tag) => tag.trim())
+                .filter(Boolean)
+            : undefined,
+        ),
+      body: z
+        .string()
+        .optional()
+        .transform((s) => s || undefined),
+    }),
+  )
+  .form();
 
-    // const { error } = await api().postTodo(input);
-    // if (error) return { message: error.message };
-  },
-);
+export const closeTodo = remote(Todo.update)
+  .with(
+    z
+      .object({ id: Todo.Info.shape.id, reason: z.enum(["completed", "not_planned"]).optional() })
+      .transform((input) => ({
+        id: input.id,
+        state: "closed" as const,
+        stateReason: input.reason ?? "completed",
+      })),
+  )
+  .form();
 
-export const closeTodo = form(
-  z.object({ id: Todo.Info.shape.id, reason: z.enum(["completed", "not_planned"]).optional() }),
-  async (input) => {
-    auth();
-    await guard(() =>
-      Todo.update({ id: input.id, state: "closed", stateReason: input.reason ?? "completed" }),
-    );
-  },
-);
+export const reopenTodo = remote(Todo.update)
+  .with(
+    z.object({ id: Todo.Info.shape.id }).transform((input) => ({
+      id: input.id,
+      state: "open" as const,
+    })),
+  )
+  .form();
 
-export const reopenTodo = form(z.object({ id: Todo.Info.shape.id }), async (input) => {
-  auth();
-  await guard(() => Todo.update({ id: input.id, state: "open" }));
-});
+export const updateTodo = remote(Todo.update)
+  .with(
+    z.object({
+      id: Todo.Info.shape.id,
+      body: z
+        .string()
+        .optional()
+        .transform((s) => s || null),
+    }),
+  )
+  .form();
 
-export const updateTodo = form(
-  z.object({
-    id: Todo.Info.shape.id,
-    body: z
-      .string()
-      .optional()
-      .transform((s) => s || null),
-  }),
-  async (input) => {
-    auth();
-    await guard(() => Todo.update(input));
-  },
-);
-
-export const removeTodo = form(z.object({ id: Todo.Info.shape.id }), async (input) => {
-  auth();
-  await guard(() => Todo.remove(input.id));
-
-  // const { error } = await api(...).deleteTodoById(input);
-  // if (error) return { message: error.message };
-});
+export const removeTodo = remote(Todo.remove)
+  .with(z.object({ id: Todo.Info.shape.id }).transform((input) => input.id))
+  .form();

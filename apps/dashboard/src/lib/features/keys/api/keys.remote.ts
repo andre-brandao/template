@@ -1,18 +1,12 @@
-import { form, query } from "$app/server";
-import { redirect } from "@sveltejs/kit";
+import { form } from "$app/server";
 import { z } from "zod";
 import { Key } from "@template/core/key";
 import { Actor } from "@template/core/actor";
-import { guard } from "$lib/server/guard";
+import { auth, guard, remote } from "$lib/server/remote";
 
-function auth() {
-  if (Actor.use().type !== "user") redirect(303, "/login");
-}
-
-export const getKeys = query(async () => {
-  auth();
-  return Key.list("");
-});
+export const getKeys = remote(Key.list)
+  .with(z.void().transform(() => ""))
+  .query();
 
 export const createKey = form(
   z.object({ name: Key.Info.shape.name, ttl: z.enum(["", "30", "90", "365"]).optional() }),

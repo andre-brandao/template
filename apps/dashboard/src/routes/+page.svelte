@@ -1,7 +1,9 @@
 <script lang="ts">
 	import { user } from '$lib/features/auth/context';
+	import { org } from '$lib/features/org/context';
 
 	const me = user();
+	const ctx = org();
 	const current = $derived(me.current);
 </script>
 
@@ -10,8 +12,8 @@
 	<p>A small dashboard for tracking work — capture todos, move them through stages, and see how things trend over time.</p>
 	{#if current}
 		<div class="actions">
-			<a href="/todos">Todos</a>
-			<a href="/insights">Insights</a>
+			<a href={ctx.path('/todos')}>Todos</a>
+			<a href={ctx.path('/insights')}>Insights</a>
 		</div>
 	{:else}
 		<div class="actions">

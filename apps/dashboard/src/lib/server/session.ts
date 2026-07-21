@@ -1,4 +1,5 @@
 import type { RequestEvent } from "@sveltejs/kit";
+import { User } from "@template/core/user";
 
 // Signed-cookie session holding just the resolved identity. The issuer's access
 // token is verified once at /callback and discarded, so every later request is a
@@ -13,6 +14,7 @@ export interface Session {
 }
 
 const COOKIE = "auth";
+const ORG = "org";
 const OPTS = {
   httpOnly: true,
   sameSite: "lax" as const,
@@ -73,8 +75,16 @@ export async function read(event: RequestEvent): Promise<Session | null> {
   const raw = event.cookies.get(COOKIE);
   if (!raw) return null;
   const session = await open(raw).catch(() => null);
-  if (!session) event.cookies.delete(COOKIE, { path: "/" });
-  return session;
+  if (!session) {
+    event.cookies.delete(COOKIE, { path: "/" });
+    return null;
+  }
+
+  const user = await User.fromID(session.userID);
+  if (user) return session;
+
+  event.cookies.delete(COOKIE, { path: "/" });
+  return null;
 }
 
 export async function write(event: RequestEvent, session: Session) {
@@ -83,4 +93,19 @@ export async function write(event: RequestEvent, session: Session) {
 
 export function clear(event: RequestEvent) {
   event.cookies.delete(COOKIE, { path: "/" });
+  event.cookies.delete(ORG, { path: "/" });
+}
+
+/**
+ * Active-org preference. A plain cookie, deliberately unsigned — hooks verify
+ * membership on every request, so a forged value just falls back to the user's
+ * first org. Keeping it out of the signed session means switching orgs never
+ * rewrites the identity cookie.
+ */
+export function org(event: RequestEvent) {
+  return event.cookies.get(ORG);
+}
+
+export function remember(event: RequestEvent, id: string) {
+  event.cookies.set(ORG, id, OPTS);
 }

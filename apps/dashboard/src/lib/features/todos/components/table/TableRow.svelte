@@ -2,15 +2,17 @@
 	import { Button } from '@template/ui';
 	import { removeTodo } from '../../api/todos.remote';
 	import type { Todo } from '@template/core/todo';
+	import { org } from '$lib/features/org/context';
 	import StateToggle from '../StateToggle.svelte';
 	import TagList from '../TagList.svelte';
 
 	let { todo }: { todo: Todo.Info } = $props();
+	const ctx = org();
 	const remove = $derived(removeTodo.for(todo.id));
 </script>
 
 <tr>
-	<td><a class="title" href="/todos/{todo.id}">{todo.title}</a></td>
+	<td><a class="title" href={ctx.path(`/todos/${todo.id}`)}>{todo.title}</a></td>
 	<td><TagList tags={todo.tags} /></td>
 	<td><StateToggle {todo} /></td>
 	<td class="actions">

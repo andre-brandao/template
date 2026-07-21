@@ -28,7 +28,7 @@
 
 <li style:--rail={rail}>
 	<div class="meta">
-		<span class="name">{key.name}</span>
+		<span class="name">{key.name} <span class="role">{key.role.name}</span></span>
 		<span class="used">{used} · {expires}</span>
 	</div>
 
@@ -81,6 +81,16 @@
 
 	.name {
 		font-weight: 600;
+	}
+
+	.role {
+		font-family: var(--font-mono);
+		font-weight: 400;
+		font-size: 0.72em;
+		color: var(--dim);
+		padding: 0.1em 0.45em;
+		border: 1px solid var(--border);
+		border-radius: var(--radius);
 	}
 
 	.used {

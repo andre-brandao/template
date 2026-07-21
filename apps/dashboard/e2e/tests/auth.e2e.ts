@@ -12,8 +12,8 @@ test("an authenticated user sees the app nav", async ({ page, as }) => {
 });
 
 test("an authenticated user can open the todos page", async ({ page, as }) => {
-  await as("user");
-  await page.goto("/todos");
+  const session = await as("user");
+  await page.goto(`/${session.orgID}/todos`);
   await expect(page).toHaveURL(/\/todos$/);
   await expect(page.getByRole("heading", { name: "Todos" })).toBeVisible();
 });

@@ -6,12 +6,32 @@
 	import Topbar from '$lib/components/layout/Topbar.svelte';
 	import Sidebar from '$lib/components/layout/Sidebar.svelte';
 	import { provide } from '$lib/features/auth/context';
+	import { provide as provideOrg } from '$lib/features/org/context';
 
 	let { data, children } = $props();
 
 	const me = provide({
 		get current() {
 			return data.user;
+		}
+	});
+
+	provideOrg({
+		get current() {
+			return data.org;
+		},
+		get orgs() {
+			return data.orgs;
+		},
+		get permissions() {
+			return data.permissions;
+		},
+		can(perm) {
+			const perms: string[] = data.permissions;
+			return perms.includes('*') || perms.includes(perm);
+		},
+		path(to) {
+			return data.org ? `/${data.org.id}${to}` : to;
 		}
 	});
 </script>

@@ -20,7 +20,7 @@ export type User = {
 };
 
 /**
- * Not found error
+ * Permission error
  */
 export type ErrorResponse = {
   /**
@@ -46,7 +46,7 @@ export type ErrorResponse = {
 };
 
 /**
- * An API key belonging to a user.
+ * An API key belonging to a user, scoped to a role in an organization.
  */
 export type Key = {
   /**
@@ -63,6 +63,13 @@ export type Key = {
    * Masked secret, safe to show in a list.
    */
   display: string;
+  /**
+   * The role the key acts with — it caps the key's permissions.
+   */
+  role: {
+    id: string;
+    name: string;
+  };
   /**
    * When the key last authenticated a request.
    */
@@ -110,6 +117,71 @@ export type File = {
   size: number;
   tags: Array<string>;
   timeCreated: string;
+};
+
+/**
+ * An organization users belong to through members.
+ */
+export type Organization = {
+  /**
+   * Unique object identifier.
+   * The format and length of IDs may change over time.
+   */
+  id: string;
+  name: string;
+};
+
+/**
+ * A user's membership in an organization, carrying their role.
+ */
+export type Member = {
+  /**
+   * Unique object identifier.
+   * The format and length of IDs may change over time.
+   */
+  id: string;
+  userID: string;
+  name: string;
+  email: string;
+  image: string | null;
+  roleID: string;
+  role: {
+    name: string;
+    owner: boolean;
+  };
+};
+
+/**
+ * A role grouping permissions, assignable to members of an organization.
+ */
+export type Role = {
+  /**
+   * Unique object identifier.
+   * The format and length of IDs may change over time.
+   */
+  id: string;
+  name: string;
+  permissions: Array<string>;
+  /**
+   * The seeded owner role — cannot be edited or removed.
+   */
+  owner: boolean;
+};
+
+/**
+ * A pending invite to join an organization with a given role.
+ */
+export type Invitation = {
+  /**
+   * Unique object identifier.
+   * The format and length of IDs may change over time.
+   */
+  id: string;
+  email: string;
+  roleID: string;
+  status: "pending" | "accepted" | "revoked";
+  token: string;
+  timeExpires: string;
 };
 
 export type GetMeData = {
@@ -174,6 +246,7 @@ export type PostKeyData = {
   body: {
     name: string;
     expiresInDays?: number;
+    roleID?: string;
   };
   path?: never;
   query?: never;
@@ -243,6 +316,12 @@ export type DeleteKeyByIdResponse = DeleteKeyByIdResponses[keyof DeleteKeyByIdRe
 
 export type GetTodoData = {
   body?: never;
+  headers: {
+    /**
+     * The organization to act in — one of the caller's memberships. API keys are org-bound and may omit it.
+     */
+    "X-Org-ID": string;
+  };
   path?: never;
   query?: {
     page?: number;
@@ -295,6 +374,12 @@ export type PostTodoData = {
     tags?: Array<string>;
     dueDate?: string | null;
   };
+  headers: {
+    /**
+     * The organization to act in — one of the caller's memberships. API keys are org-bound and may omit it.
+     */
+    "X-Org-ID": string;
+  };
   path?: never;
   query?: never;
   url: "/todo";
@@ -328,6 +413,12 @@ export type PostTodoResponse = PostTodoResponses[keyof PostTodoResponses];
 
 export type DeleteTodoByIdData = {
   body?: never;
+  headers: {
+    /**
+     * The organization to act in — one of the caller's memberships. API keys are org-bound and may omit it.
+     */
+    "X-Org-ID": string;
+  };
   path: {
     id: string;
   };
@@ -363,6 +454,12 @@ export type DeleteTodoByIdResponse = DeleteTodoByIdResponses[keyof DeleteTodoByI
 
 export type GetTodoByIdData = {
   body?: never;
+  headers: {
+    /**
+     * The organization to act in — one of the caller's memberships. API keys are org-bound and may omit it.
+     */
+    "X-Org-ID": string;
+  };
   path: {
     id: string;
   };
@@ -405,6 +502,12 @@ export type PatchTodoByIdData = {
     state?: "open" | "closed";
     stateReason?: "completed" | "not_planned" | null;
   };
+  headers: {
+    /**
+     * The organization to act in — one of the caller's memberships. API keys are org-bound and may omit it.
+     */
+    "X-Org-ID": string;
+  };
   path: {
     id: string;
   };
@@ -444,6 +547,12 @@ export type PatchTodoByIdResponse = PatchTodoByIdResponses[keyof PatchTodoByIdRe
 
 export type GetFileData = {
   body?: never;
+  headers: {
+    /**
+     * The organization to act in — one of the caller's memberships. API keys are org-bound and may omit it.
+     */
+    "X-Org-ID": string;
+  };
   path?: never;
   query?: {
     page?: number;
@@ -499,6 +608,12 @@ export type PostFileData = {
     file: Blob | File;
     tags?: string;
   };
+  headers: {
+    /**
+     * The organization to act in — one of the caller's memberships. API keys are org-bound and may omit it.
+     */
+    "X-Org-ID": string;
+  };
   path?: never;
   query?: never;
   url: "/file";
@@ -532,6 +647,12 @@ export type PostFileResponse = PostFileResponses[keyof PostFileResponses];
 
 export type DeleteFileByIdData = {
   body?: never;
+  headers: {
+    /**
+     * The organization to act in — one of the caller's memberships. API keys are org-bound and may omit it.
+     */
+    "X-Org-ID": string;
+  };
   path: {
     id: string;
   };
@@ -567,6 +688,12 @@ export type DeleteFileByIdResponse = DeleteFileByIdResponses[keyof DeleteFileByI
 
 export type GetFileByIdData = {
   body?: never;
+  headers: {
+    /**
+     * The organization to act in — one of the caller's memberships. API keys are org-bound and may omit it.
+     */
+    "X-Org-ID": string;
+  };
   path: {
     id: string;
   };
@@ -604,6 +731,12 @@ export type PatchFileByIdData = {
   body: {
     filename?: string;
     tags?: Array<string>;
+  };
+  headers: {
+    /**
+     * The organization to act in — one of the caller's memberships. API keys are org-bound and may omit it.
+     */
+    "X-Org-ID": string;
   };
   path: {
     id: string;
@@ -644,6 +777,12 @@ export type PatchFileByIdResponse = PatchFileByIdResponses[keyof PatchFileByIdRe
 
 export type GetFileByIdContentData = {
   body?: never;
+  headers: {
+    /**
+     * The organization to act in — one of the caller's memberships. API keys are org-bound and may omit it.
+     */
+    "X-Org-ID": string;
+  };
   path: {
     id: string;
   };
@@ -674,3 +813,603 @@ export type GetFileByIdContentResponses = {
    */
   200: unknown;
 };
+
+export type GetOrganizationData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/organization";
+};
+
+export type GetOrganizationErrors = {
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Internal Server Error
+   */
+  500: ErrorResponse;
+};
+
+export type GetOrganizationError = GetOrganizationErrors[keyof GetOrganizationErrors];
+
+export type GetOrganizationResponses = {
+  /**
+   * The user's organizations.
+   */
+  200: Array<Organization>;
+};
+
+export type GetOrganizationResponse = GetOrganizationResponses[keyof GetOrganizationResponses];
+
+export type PatchOrganizationData = {
+  body: {
+    name: string;
+  };
+  headers: {
+    /**
+     * The organization to act in — one of the caller's memberships. API keys are org-bound and may omit it.
+     */
+    "X-Org-ID": string;
+  };
+  path?: never;
+  query?: never;
+  url: "/organization";
+};
+
+export type PatchOrganizationErrors = {
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
+   * Internal Server Error
+   */
+  500: ErrorResponse;
+};
+
+export type PatchOrganizationError = PatchOrganizationErrors[keyof PatchOrganizationErrors];
+
+export type PatchOrganizationResponses = {
+  /**
+   * Updated.
+   */
+  200: "ok";
+};
+
+export type PatchOrganizationResponse =
+  PatchOrganizationResponses[keyof PatchOrganizationResponses];
+
+export type PostOrganizationData = {
+  body: {
+    name: string;
+  };
+  path?: never;
+  query?: never;
+  url: "/organization";
+};
+
+export type PostOrganizationErrors = {
+  /**
+   * Bad Request
+   */
+  400: ErrorResponse;
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Internal Server Error
+   */
+  500: ErrorResponse;
+};
+
+export type PostOrganizationError = PostOrganizationErrors[keyof PostOrganizationErrors];
+
+export type PostOrganizationResponses = {
+  /**
+   * The new organization id.
+   */
+  200: string;
+};
+
+export type PostOrganizationResponse = PostOrganizationResponses[keyof PostOrganizationResponses];
+
+export type GetOrganizationMemberData = {
+  body?: never;
+  headers: {
+    /**
+     * The organization to act in — one of the caller's memberships. API keys are org-bound and may omit it.
+     */
+    "X-Org-ID": string;
+  };
+  path?: never;
+  query?: never;
+  url: "/organization/member";
+};
+
+export type GetOrganizationMemberErrors = {
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
+   * Internal Server Error
+   */
+  500: ErrorResponse;
+};
+
+export type GetOrganizationMemberError =
+  GetOrganizationMemberErrors[keyof GetOrganizationMemberErrors];
+
+export type GetOrganizationMemberResponses = {
+  /**
+   * The organization's members.
+   */
+  200: Array<Member>;
+};
+
+export type GetOrganizationMemberResponse =
+  GetOrganizationMemberResponses[keyof GetOrganizationMemberResponses];
+
+export type DeleteOrganizationMemberByIdData = {
+  body?: never;
+  headers: {
+    /**
+     * The organization to act in — one of the caller's memberships. API keys are org-bound and may omit it.
+     */
+    "X-Org-ID": string;
+  };
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/organization/member/{id}";
+};
+
+export type DeleteOrganizationMemberByIdErrors = {
+  /**
+   * Bad Request
+   */
+  400: ErrorResponse;
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
+   * Not Found
+   */
+  404: ErrorResponse;
+  /**
+   * Internal Server Error
+   */
+  500: ErrorResponse;
+};
+
+export type DeleteOrganizationMemberByIdError =
+  DeleteOrganizationMemberByIdErrors[keyof DeleteOrganizationMemberByIdErrors];
+
+export type DeleteOrganizationMemberByIdResponses = {
+  /**
+   * Removed.
+   */
+  200: "ok";
+};
+
+export type DeleteOrganizationMemberByIdResponse =
+  DeleteOrganizationMemberByIdResponses[keyof DeleteOrganizationMemberByIdResponses];
+
+export type PatchOrganizationMemberByIdData = {
+  body: {
+    roleID: string;
+  };
+  headers: {
+    /**
+     * The organization to act in — one of the caller's memberships. API keys are org-bound and may omit it.
+     */
+    "X-Org-ID": string;
+  };
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/organization/member/{id}";
+};
+
+export type PatchOrganizationMemberByIdErrors = {
+  /**
+   * Bad Request
+   */
+  400: ErrorResponse;
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
+   * Not Found
+   */
+  404: ErrorResponse;
+  /**
+   * Internal Server Error
+   */
+  500: ErrorResponse;
+};
+
+export type PatchOrganizationMemberByIdError =
+  PatchOrganizationMemberByIdErrors[keyof PatchOrganizationMemberByIdErrors];
+
+export type PatchOrganizationMemberByIdResponses = {
+  /**
+   * Assigned.
+   */
+  200: "ok";
+};
+
+export type PatchOrganizationMemberByIdResponse =
+  PatchOrganizationMemberByIdResponses[keyof PatchOrganizationMemberByIdResponses];
+
+export type GetOrganizationRoleData = {
+  body?: never;
+  headers: {
+    /**
+     * The organization to act in — one of the caller's memberships. API keys are org-bound and may omit it.
+     */
+    "X-Org-ID": string;
+  };
+  path?: never;
+  query?: never;
+  url: "/organization/role";
+};
+
+export type GetOrganizationRoleErrors = {
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
+   * Internal Server Error
+   */
+  500: ErrorResponse;
+};
+
+export type GetOrganizationRoleError = GetOrganizationRoleErrors[keyof GetOrganizationRoleErrors];
+
+export type GetOrganizationRoleResponses = {
+  /**
+   * The organization's roles.
+   */
+  200: Array<Role>;
+};
+
+export type GetOrganizationRoleResponse =
+  GetOrganizationRoleResponses[keyof GetOrganizationRoleResponses];
+
+export type PostOrganizationRoleData = {
+  body: {
+    name: string;
+    permissions: Array<
+      | "todo:read"
+      | "todo:write"
+      | "file:read"
+      | "file:write"
+      | "member:read"
+      | "member:manage"
+      | "role:manage"
+      | "invite:manage"
+      | "org:manage"
+    >;
+  };
+  headers: {
+    /**
+     * The organization to act in — one of the caller's memberships. API keys are org-bound and may omit it.
+     */
+    "X-Org-ID": string;
+  };
+  path?: never;
+  query?: never;
+  url: "/organization/role";
+};
+
+export type PostOrganizationRoleErrors = {
+  /**
+   * Bad Request
+   */
+  400: ErrorResponse;
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
+   * Internal Server Error
+   */
+  500: ErrorResponse;
+};
+
+export type PostOrganizationRoleError =
+  PostOrganizationRoleErrors[keyof PostOrganizationRoleErrors];
+
+export type PostOrganizationRoleResponses = {
+  /**
+   * The new role id.
+   */
+  200: string;
+};
+
+export type PostOrganizationRoleResponse =
+  PostOrganizationRoleResponses[keyof PostOrganizationRoleResponses];
+
+export type DeleteOrganizationRoleByIdData = {
+  body?: never;
+  headers: {
+    /**
+     * The organization to act in — one of the caller's memberships. API keys are org-bound and may omit it.
+     */
+    "X-Org-ID": string;
+  };
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/organization/role/{id}";
+};
+
+export type DeleteOrganizationRoleByIdErrors = {
+  /**
+   * Bad Request
+   */
+  400: ErrorResponse;
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
+   * Not Found
+   */
+  404: ErrorResponse;
+  /**
+   * Internal Server Error
+   */
+  500: ErrorResponse;
+};
+
+export type DeleteOrganizationRoleByIdError =
+  DeleteOrganizationRoleByIdErrors[keyof DeleteOrganizationRoleByIdErrors];
+
+export type DeleteOrganizationRoleByIdResponses = {
+  /**
+   * Removed.
+   */
+  200: "ok";
+};
+
+export type DeleteOrganizationRoleByIdResponse =
+  DeleteOrganizationRoleByIdResponses[keyof DeleteOrganizationRoleByIdResponses];
+
+export type PatchOrganizationRoleByIdData = {
+  body: {
+    name?: string;
+    permissions?: Array<
+      | "todo:read"
+      | "todo:write"
+      | "file:read"
+      | "file:write"
+      | "member:read"
+      | "member:manage"
+      | "role:manage"
+      | "invite:manage"
+      | "org:manage"
+    >;
+  };
+  headers: {
+    /**
+     * The organization to act in — one of the caller's memberships. API keys are org-bound and may omit it.
+     */
+    "X-Org-ID": string;
+  };
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/organization/role/{id}";
+};
+
+export type PatchOrganizationRoleByIdErrors = {
+  /**
+   * Bad Request
+   */
+  400: ErrorResponse;
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
+   * Not Found
+   */
+  404: ErrorResponse;
+  /**
+   * Internal Server Error
+   */
+  500: ErrorResponse;
+};
+
+export type PatchOrganizationRoleByIdError =
+  PatchOrganizationRoleByIdErrors[keyof PatchOrganizationRoleByIdErrors];
+
+export type PatchOrganizationRoleByIdResponses = {
+  /**
+   * Updated.
+   */
+  200: "ok";
+};
+
+export type PatchOrganizationRoleByIdResponse =
+  PatchOrganizationRoleByIdResponses[keyof PatchOrganizationRoleByIdResponses];
+
+export type GetOrganizationInvitationData = {
+  body?: never;
+  headers: {
+    /**
+     * The organization to act in — one of the caller's memberships. API keys are org-bound and may omit it.
+     */
+    "X-Org-ID": string;
+  };
+  path?: never;
+  query?: never;
+  url: "/organization/invitation";
+};
+
+export type GetOrganizationInvitationErrors = {
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
+   * Internal Server Error
+   */
+  500: ErrorResponse;
+};
+
+export type GetOrganizationInvitationError =
+  GetOrganizationInvitationErrors[keyof GetOrganizationInvitationErrors];
+
+export type GetOrganizationInvitationResponses = {
+  /**
+   * Pending invitations.
+   */
+  200: Array<Invitation>;
+};
+
+export type GetOrganizationInvitationResponse =
+  GetOrganizationInvitationResponses[keyof GetOrganizationInvitationResponses];
+
+export type PostOrganizationInvitationData = {
+  body: {
+    email: string;
+    roleID: string;
+  };
+  headers: {
+    /**
+     * The organization to act in — one of the caller's memberships. API keys are org-bound and may omit it.
+     */
+    "X-Org-ID": string;
+  };
+  path?: never;
+  query?: never;
+  url: "/organization/invitation";
+};
+
+export type PostOrganizationInvitationErrors = {
+  /**
+   * Bad Request
+   */
+  400: ErrorResponse;
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
+   * Internal Server Error
+   */
+  500: ErrorResponse;
+};
+
+export type PostOrganizationInvitationError =
+  PostOrganizationInvitationErrors[keyof PostOrganizationInvitationErrors];
+
+export type PostOrganizationInvitationResponses = {
+  /**
+   * The new invitation id.
+   */
+  200: string;
+};
+
+export type PostOrganizationInvitationResponse =
+  PostOrganizationInvitationResponses[keyof PostOrganizationInvitationResponses];
+
+export type DeleteOrganizationInvitationByIdData = {
+  body?: never;
+  headers: {
+    /**
+     * The organization to act in — one of the caller's memberships. API keys are org-bound and may omit it.
+     */
+    "X-Org-ID": string;
+  };
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/organization/invitation/{id}";
+};
+
+export type DeleteOrganizationInvitationByIdErrors = {
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
+   * Not Found
+   */
+  404: ErrorResponse;
+  /**
+   * Internal Server Error
+   */
+  500: ErrorResponse;
+};
+
+export type DeleteOrganizationInvitationByIdError =
+  DeleteOrganizationInvitationByIdErrors[keyof DeleteOrganizationInvitationByIdErrors];
+
+export type DeleteOrganizationInvitationByIdResponses = {
+  /**
+   * Revoked.
+   */
+  200: "ok";
+};
+
+export type DeleteOrganizationInvitationByIdResponse =
+  DeleteOrganizationInvitationByIdResponses[keyof DeleteOrganizationInvitationByIdResponses];

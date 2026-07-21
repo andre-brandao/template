@@ -43,7 +43,17 @@ export default defineConfig({
     env: { SVELTE_ADAPTER: "node", DATABASE_URL: url, SESSION_SECRET: secret },
   },
   projects: [
-    { name: "chromium", use: { ...devices["Desktop Chrome"] } },
+    // E2E_BROWSER points at a system chromium for hosts where the downloaded
+    // build can't run (NixOS: missing shared libs). CI leaves it unset.
+    {
+      name: "chromium",
+      use: {
+        ...devices["Desktop Chrome"],
+        launchOptions: process.env.E2E_BROWSER
+          ? { executablePath: process.env.E2E_BROWSER }
+          : undefined,
+      },
+    },
     { name: "firefox", use: { ...devices["Desktop Firefox"] } },
     { name: "webkit", use: { ...devices["Desktop Safari"] } },
   ],

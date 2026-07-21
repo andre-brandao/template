@@ -1,12 +1,18 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import { org } from '$lib/features/org/context';
 
-	const links = [
-		{ href: '/todos', label: 'Todos' },
-		{ href: '/files', label: 'Files' },
-		{ href: '/insights', label: 'Insights' },
-		{ href: '/keys', label: 'API keys' }
-	];
+	const ctx = org();
+
+	const links = $derived(
+		[
+			{ href: ctx.path('/todos'), label: 'Todos', perm: 'todo:read' },
+			{ href: ctx.path('/files'), label: 'Files', perm: 'file:read' },
+			{ href: ctx.path('/insights'), label: 'Insights', perm: 'todo:read' },
+			{ href: ctx.path('/keys'), label: 'API keys' },
+			{ href: ctx.path('/settings'), label: 'Settings' }
+		].filter((link) => !link.perm || ctx.can(link.perm))
+	);
 </script>
 
 <aside>

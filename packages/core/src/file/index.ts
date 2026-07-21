@@ -9,8 +9,10 @@ import { Actor } from "../actor";
 import { Common } from "../common";
 import { Context } from "../context";
 import { Examples } from "../examples";
+import { Event } from "../event";
 import { Identifier } from "../identifier";
 import { Log } from "../util/log";
+import { Permission } from "../organization/permission";
 import { FileTable } from "./file.sql";
 import type * as port from "./port";
 import { createFsStorage } from "./adapter/fs";
@@ -111,7 +113,7 @@ export namespace File {
       tx
         .select()
         .from(FileTable)
-        .where(and(eq(FileTable.id, id), eq(FileTable.userID, Actor.userID())))
+        .where(and(eq(FileTable.id, id), eq(FileTable.orgID, Actor.orgID())))
         .then((rows) => rows[0] ?? null),
     );
   }
@@ -122,6 +124,7 @@ export namespace File {
       tags: Tag.array().max(20).optional(),
     }),
     async (input) => {
+      Permission.assert("file:write");
       const { file } = input;
       if (file.size > MAX)
         throw new VisibleError(
@@ -137,23 +140,34 @@ export namespace File {
       const bytes = new Uint8Array(await file.arrayBuffer());
 
       await use().put(key, bytes, contentType);
-      await Database.use((tx) =>
-        tx.insert(FileTable).values({
+      await Database.transaction(async (tx) => {
+        await tx.insert(FileTable).values({
           id,
+          orgID: Actor.orgID(),
           userID,
           filename: file.name,
           contentType,
           size: file.size,
           tags: labels(input.tags),
           key,
-        }),
-      );
+        });
+        await Event.create({
+          type: "file.uploaded",
+          source: "file",
+          sourceID: id,
+          tags: [`org:${Actor.orgID()}`],
+          data: { filename: file.name, contentType, size: file.size },
+        });
+      });
 
-      return found("File", await fromID.force(id));
+      return found("File", await row(id).then((r) => (r ? serialize(r) : null)));
     },
   );
 
-  export const fromID = fn(Info.shape.id, (id) => row(id).then((r) => (r ? serialize(r) : null)));
+  export const fromID = fn(Info.shape.id, async (id) => {
+    Permission.assert("file:read");
+    return row(id).then((r) => (r ? serialize(r) : null));
+  });
 
   export const list = fn(
     Common.PaginatedInput.extend({
@@ -161,8 +175,9 @@ export namespace File {
       search: z.string().optional(),
     }),
     (input) => {
+      Permission.assert("file:read");
       const { page, pageSize, limit, offset } = Common.page(input);
-      const conditions = [eq(FileTable.userID, Actor.userID())];
+      const conditions = [eq(FileTable.orgID, Actor.orgID())];
       if (input.tags?.length) conditions.push(arrayOverlaps(FileTable.tags, input.tags));
       if (input.search) conditions.push(ilike(FileTable.filename, `%${input.search}%`));
       const where = and(...conditions);
@@ -183,6 +198,7 @@ export namespace File {
   );
 
   export const content = fn(Info.shape.id, async (id) => {
+    Permission.assert("file:read");
     const r = await row(id);
     if (!r) return null;
     const object = await use().get(r.key);
@@ -194,6 +210,7 @@ export namespace File {
   export const url = fn(
     z.object({ id: Info.shape.id, expires: z.number().min(1).optional() }),
     async (input) => {
+      Permission.assert("file:read");
       const r = await row(input.id);
       if (!r) return null;
       const port = use();
@@ -209,26 +226,44 @@ export namespace File {
       tags: Tag.array().max(20).optional(),
     }),
     async ({ id, ...patch }) => {
-      found("File", await fromID.force(id));
-      await Database.use((tx) =>
-        tx
+      Permission.assert("file:write");
+      found("File", await row(id));
+      await Database.transaction(async (tx) => {
+        await tx
           .update(FileTable)
           .set({
             ...(patch.filename !== undefined ? { filename: patch.filename } : {}),
             ...(patch.tags !== undefined ? { tags: labels(patch.tags) } : {}),
           })
-          .where(and(eq(FileTable.id, id), eq(FileTable.userID, Actor.userID()))),
-      );
-      return found("File", await fromID.force(id));
+          .where(and(eq(FileTable.id, id), eq(FileTable.orgID, Actor.orgID())));
+        await Event.create({
+          type: "file.updated",
+          source: "file",
+          sourceID: id,
+          tags: [`org:${Actor.orgID()}`],
+          data: { filename: patch.filename ?? null, tags: patch.tags ?? null },
+        });
+      });
+      return found("File", await row(id).then((r) => (r ? serialize(r) : null)));
     },
   );
 
   export const remove = fn(Info.shape.id, async (id) => {
+    Permission.assert("file:write");
     const r = found("File", await row(id));
     await use().del(r.key);
-    await Database.use((tx) =>
-      tx.delete(FileTable).where(and(eq(FileTable.id, id), eq(FileTable.userID, Actor.userID()))),
-    );
+    await Database.transaction(async (tx) => {
+      await tx
+        .delete(FileTable)
+        .where(and(eq(FileTable.id, id), eq(FileTable.orgID, Actor.orgID())));
+      await Event.create({
+        type: "file.removed",
+        source: "file",
+        sourceID: id,
+        tags: [`org:${Actor.orgID()}`],
+        data: { filename: r.filename },
+      });
+    });
   });
 
   function serialize(row: typeof FileTable.$inferSelect): Info {

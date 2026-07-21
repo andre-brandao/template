@@ -3,17 +3,22 @@ import { app } from "../../src/api/routes";
 import { User } from "@template/core/user";
 import { Key } from "@template/core/key";
 import { Actor } from "@template/core/actor";
+import { Organization } from "@template/core/organization";
+import { Member } from "@template/core/organization/member";
 import { z } from "zod";
 
 /**
- * Setup API test environment with an authenticated user and utility functions.
+ * Setup API test environment with an authenticated user (owner of a personal
+ * org, like provisioning seeds) and utility functions.
  */
 export function setupApiTest() {
   let userID: string;
+  let orgID: string;
+  let permissions: string[] | undefined;
   let token: string;
 
   const withContext = async <T>(fn: () => T | Promise<T>): Promise<T> => {
-    return Actor.provide("user", { userID }, fn);
+    return Actor.provide("user", { userID, orgID, permissions }, fn);
   };
 
   beforeAll(async () => {
@@ -24,7 +29,9 @@ export function setupApiTest() {
 
     const email = `test-${crypto.randomUUID()}@example.com`;
     userID = await User.create({ name: "Test User", email });
-    token = (await Key.create({ userID, name: "test" })).key;
+    orgID = await Organization.init({ userID, name: "Test Org" });
+    permissions = (await Member.resolve({ userID, orgID }))?.permissions;
+    token = (await withContext(() => Key.create({ userID, name: "test" }))).key;
   });
 
   const get = async (path: string, headers?: Record<string, string>) => {

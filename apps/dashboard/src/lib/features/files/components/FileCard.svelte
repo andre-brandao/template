@@ -4,6 +4,9 @@
 	import { ago } from '$lib/utils/time';
 	import { size } from '$lib/utils/size';
 	import { removeFile } from '../api/files.remote';
+	import { org } from '$lib/features/org/context';
+
+	const ctx = org();
 
 	let {
 		file,
@@ -27,7 +30,7 @@
 
 	<div class="row">
 		{#if image}
-			<img src="/files/{file.id}" alt={file.filename} loading="lazy" />
+			<img src={ctx.path(`/files/${file.id}`)} alt={file.filename} loading="lazy" />
 		{:else}
 			<span class="kind">{kind}</span>
 		{/if}
@@ -47,17 +50,19 @@
 		</div>
 
 		<div class="actions">
-			<a class="download" href="/files/{file.id}" download={file.filename}>Download</a>
-			<Button variant="ghost" onclick={onedit}>Edit</Button>
-			<form
-				{...remove.enhance(async (f) => {
-					if (!confirm(`Delete ${file.filename}?`)) return;
-					await f.submit();
-				})}
-			>
-				<input {...remove.fields.id.as('hidden', file.id)} />
-				<Button variant="danger" type="submit" pending={!!remove.pending}>Delete</Button>
-			</form>
+			<a class="download" href={ctx.path(`/files/${file.id}`)} download={file.filename}>Download</a>
+			{#if ctx.can('file:write')}
+				<Button variant="ghost" onclick={onedit}>Edit</Button>
+				<form
+					{...remove.enhance(async (f) => {
+						if (!confirm(`Delete ${file.filename}?`)) return;
+						await f.submit();
+					})}
+				>
+					<input {...remove.fields.id.as('hidden', file.id)} />
+					<Button variant="danger" type="submit" pending={!!remove.pending}>Delete</Button>
+				</form>
+			{/if}
 		</div>
 	</div>
 </Card>

@@ -2,11 +2,14 @@
   import { z } from 'zod'
   import { query } from '$lib/utils/params'
   import { Button, Drawer } from '@template/ui'
+  import { org } from '$lib/features/org/context'
   import { getTodos } from '../api/todos.remote'
   import TodoForm from '../components/form/TodoForm.svelte'
   import TodoFilters from '../components/TodoFilters.svelte'
   import ViewSelector from '../components/ViewSelector.svelte'
   import TodosView from '../components/TodosView.svelte'
+
+  const ctx = org()
 
   const params = query(
     z.object({
@@ -39,13 +42,17 @@
     view={params.view}
     onchange={(view) => params.update({ view })}
   />
-  <Button onclick={() => (adding = true)}>New todo</Button>
+  {#if ctx.can('todo:write')}
+    <Button onclick={() => (adding = true)}>New todo</Button>
+  {/if}
 </div>
 
-<Drawer bind:open={adding}>
-  <h2>New todo</h2>
-  <TodoForm onsuccess={() => (adding = false)} />
-</Drawer>
+{#if ctx.can('todo:write')}
+  <Drawer bind:open={adding}>
+    <h2>New todo</h2>
+    <TodoForm onsuccess={() => (adding = false)} />
+  </Drawer>
+{/if}
 
 <TodosView {todos} view={params.view} />
 

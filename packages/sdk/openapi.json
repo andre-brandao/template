@@ -90,7 +90,7 @@
           }
         },
         "required": ["type", "code", "message"],
-        "description": "Not found error"
+        "description": "Permission error"
       },
       "Key": {
         "type": "object",
@@ -112,6 +112,19 @@
           "display": {
             "type": "string",
             "description": "Masked secret, safe to show in a list."
+          },
+          "role": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              }
+            },
+            "required": ["id", "name"],
+            "description": "The role the key acts with — it caps the key's permissions."
           },
           "timeUsed": {
             "anyOf": [
@@ -144,13 +157,17 @@
             "description": "Whether this is the key authenticating the current request."
           }
         },
-        "required": ["id", "name", "key", "display", "timeUsed", "expiresAt", "current"],
-        "description": "An API key belonging to a user.",
+        "required": ["id", "name", "key", "display", "role", "timeUsed", "expiresAt", "current"],
+        "description": "An API key belonging to a user, scoped to a role in an organization.",
         "example": {
           "id": "key_XXXXXXXXXXXXXXXXXXXXXXXXX",
           "name": "laptop",
           "key": "sk-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
           "display": "sk-XXXX...XXXX",
+          "role": {
+            "id": "rol_XXXXXXXXXXXXXXXXXXXXXXXXX",
+            "name": "Member"
+          },
           "timeUsed": null,
           "expiresAt": null,
           "current": false
@@ -279,6 +296,157 @@
           "tags": [],
           "timeCreated": "2026-06-07T00:00:00.000Z"
         }
+      },
+      "Organization": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique object identifier.\nThe format and length of IDs may change over time.",
+            "example": "org_XXXXXXXXXXXXXXXXXXXXXXXXX"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": ["id", "name"],
+        "description": "An organization users belong to through members.",
+        "example": {
+          "id": "org_XXXXXXXXXXXXXXXXXXXXXXXXX",
+          "name": "Acme"
+        }
+      },
+      "Member": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique object identifier.\nThe format and length of IDs may change over time.",
+            "example": "mbr_XXXXXXXXXXXXXXXXXXXXXXXXX"
+          },
+          "userID": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "image": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "roleID": {
+            "type": "string"
+          },
+          "role": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "owner": {
+                "type": "boolean"
+              }
+            },
+            "required": ["name", "owner"]
+          }
+        },
+        "required": ["id", "userID", "name", "email", "image", "roleID", "role"],
+        "description": "A user's membership in an organization, carrying their role.",
+        "example": {
+          "id": "mbr_XXXXXXXXXXXXXXXXXXXXXXXXX",
+          "userID": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX",
+          "name": "John Doe",
+          "email": "john@example.com",
+          "image": null,
+          "roleID": "rol_XXXXXXXXXXXXXXXXXXXXXXXXX",
+          "role": {
+            "name": "Editor",
+            "owner": false
+          }
+        }
+      },
+      "Role": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique object identifier.\nThe format and length of IDs may change over time.",
+            "example": "rol_XXXXXXXXXXXXXXXXXXXXXXXXX"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "permissions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "owner": {
+            "type": "boolean",
+            "description": "The seeded owner role — cannot be edited or removed."
+          }
+        },
+        "required": ["id", "name", "permissions", "owner"],
+        "description": "A role grouping permissions, assignable to members of an organization.",
+        "example": {
+          "id": "rol_XXXXXXXXXXXXXXXXXXXXXXXXX",
+          "name": "Editor",
+          "permissions": ["todo:read", "todo:write"],
+          "owner": false
+        }
+      },
+      "Invitation": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique object identifier.\nThe format and length of IDs may change over time.",
+            "example": "inv_XXXXXXXXXXXXXXXXXXXXXXXXX"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+          },
+          "roleID": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["pending", "accepted", "revoked"]
+          },
+          "token": {
+            "type": "string"
+          },
+          "timeExpires": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+          }
+        },
+        "required": ["id", "email", "roleID", "status", "token", "timeExpires"],
+        "description": "A pending invite to join an organization with a given role.",
+        "example": {
+          "id": "inv_XXXXXXXXXXXXXXXXXXXXXXXXX",
+          "email": "jane@example.com",
+          "roleID": "rol_XXXXXXXXXXXXXXXXXXXXXXXXX",
+          "status": "pending",
+          "token": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+          "timeExpires": "2026-06-14T00:00:00.000Z"
+        }
       }
     }
   },
@@ -373,6 +541,10 @@
                     "name": "laptop",
                     "key": "sk-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
                     "display": "sk-XXXX...XXXX",
+                    "role": {
+                      "id": "rol_XXXXXXXXXXXXXXXXXXXXXXXXX",
+                      "name": "Member"
+                    },
                     "timeUsed": null,
                     "expiresAt": null,
                     "current": false
@@ -418,7 +590,7 @@
         "operationId": "postKey",
         "tags": ["Key"],
         "summary": "Create key",
-        "description": "Mint a named API key for the current user. Pass `expiresInDays` to set an expiry; omit it for a key that never expires.",
+        "description": "Mint a named API key for the current user. Pass `expiresInDays` to set an expiry; omit it for a key that never expires. `roleID` scopes the key to a role in one of your orgs; without it the key takes your own role in the org named by `X-Org-ID`. The role's permissions must not exceed yours.",
         "responses": {
           "200": {
             "content": {
@@ -431,6 +603,10 @@
                   "name": "laptop",
                   "key": "sk-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
                   "display": "sk-XXXX...XXXX",
+                  "role": {
+                    "id": "rol_XXXXXXXXXXXXXXXXXXXXXXXXX",
+                    "name": "Member"
+                  },
                   "timeUsed": null,
                   "expiresAt": null,
                   "current": false
@@ -501,6 +677,9 @@
                     "type": "integer",
                     "exclusiveMinimum": 0,
                     "maximum": 9007199254740991
+                  },
+                  "roleID": {
+                    "type": "string"
                   }
                 },
                 "required": ["name"]
@@ -590,6 +769,42 @@
       "get": {
         "operationId": "getTodo",
         "tags": ["Todo"],
+        "parameters": [
+          {
+            "name": "X-Org-ID",
+            "in": "header",
+            "required": true,
+            "description": "The organization to act in — one of the caller's memberships. API keys are org-bound and may omit it.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "number",
+              "minimum": 1
+            }
+          },
+          {
+            "in": "query",
+            "name": "pageSize",
+            "schema": {
+              "type": "number",
+              "minimum": 1,
+              "maximum": 100
+            }
+          },
+          {
+            "in": "query",
+            "name": "state",
+            "schema": {
+              "type": "string",
+              "enum": ["open", "closed"]
+            }
+          }
+        ],
         "summary": "List todos",
         "description": "List the current user's todos, optionally filtered by state. Paginated.",
         "responses": {
@@ -672,38 +887,22 @@
             },
             "description": "Internal Server Error"
           }
-        },
-        "parameters": [
-          {
-            "in": "query",
-            "name": "page",
-            "schema": {
-              "type": "number",
-              "minimum": 1
-            }
-          },
-          {
-            "in": "query",
-            "name": "pageSize",
-            "schema": {
-              "type": "number",
-              "minimum": 1,
-              "maximum": 100
-            }
-          },
-          {
-            "in": "query",
-            "name": "state",
-            "schema": {
-              "type": "string",
-              "enum": ["open", "closed"]
-            }
-          }
-        ]
+        }
       },
       "post": {
         "operationId": "postTodo",
         "tags": ["Todo"],
+        "parameters": [
+          {
+            "name": "X-Org-ID",
+            "in": "header",
+            "required": true,
+            "description": "The organization to act in — one of the caller's memberships. API keys are org-bound and may omit it.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "summary": "Create todo",
         "responses": {
           "200": {
@@ -818,6 +1017,25 @@
       "get": {
         "operationId": "getTodoById",
         "tags": ["Todo"],
+        "parameters": [
+          {
+            "name": "X-Org-ID",
+            "in": "header",
+            "required": true,
+            "description": "The organization to act in — one of the caller's memberships. API keys are org-bound and may omit it.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
         "summary": "Get todo",
         "responses": {
           "200": {
@@ -885,8 +1103,21 @@
             },
             "description": "Internal Server Error"
           }
-        },
+        }
+      },
+      "patch": {
+        "operationId": "patchTodoById",
+        "tags": ["Todo"],
         "parameters": [
+          {
+            "name": "X-Org-ID",
+            "in": "header",
+            "required": true,
+            "description": "The organization to act in — one of the caller's memberships. API keys are org-bound and may omit it.",
+            "schema": {
+              "type": "string"
+            }
+          },
           {
             "in": "path",
             "name": "id",
@@ -895,11 +1126,7 @@
             },
             "required": true
           }
-        ]
-      },
-      "patch": {
-        "operationId": "patchTodoById",
-        "tags": ["Todo"],
+        ],
         "summary": "Update todo",
         "responses": {
           "200": {
@@ -973,16 +1200,6 @@
             "description": "Internal Server Error"
           }
         },
-        "parameters": [
-          {
-            "in": "path",
-            "name": "id",
-            "schema": {
-              "type": "string"
-            },
-            "required": true
-          }
-        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -1051,6 +1268,25 @@
       "delete": {
         "operationId": "deleteTodoById",
         "tags": ["Todo"],
+        "parameters": [
+          {
+            "name": "X-Org-ID",
+            "in": "header",
+            "required": true,
+            "description": "The organization to act in — one of the caller's memberships. API keys are org-bound and may omit it.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
         "summary": "Delete todo",
         "responses": {
           "200": {
@@ -1109,23 +1345,24 @@
             },
             "description": "Internal Server Error"
           }
-        },
-        "parameters": [
-          {
-            "in": "path",
-            "name": "id",
-            "schema": {
-              "type": "string"
-            },
-            "required": true
-          }
-        ]
+        }
       }
     },
     "/file": {
       "post": {
         "operationId": "postFile",
         "tags": ["File"],
+        "parameters": [
+          {
+            "name": "X-Org-ID",
+            "in": "header",
+            "required": true,
+            "description": "The organization to act in — one of the caller's memberships. API keys are org-bound and may omit it.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "summary": "Upload file",
         "description": "Multipart form with a `file` field, plus optional `tags` (comma-separated).",
         "requestBody": {
@@ -1217,6 +1454,48 @@
       "get": {
         "operationId": "getFile",
         "tags": ["File"],
+        "parameters": [
+          {
+            "name": "X-Org-ID",
+            "in": "header",
+            "required": true,
+            "description": "The organization to act in — one of the caller's memberships. API keys are org-bound and may omit it.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "number",
+              "minimum": 1
+            }
+          },
+          {
+            "in": "query",
+            "name": "pageSize",
+            "schema": {
+              "type": "number",
+              "minimum": 1,
+              "maximum": 100
+            }
+          },
+          {
+            "in": "query",
+            "name": "tags",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "search",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "summary": "List files",
         "description": "The user's files, newest first. Filter by tags (comma-separated) or search.",
         "responses": {
@@ -1313,46 +1592,32 @@
             },
             "description": "Internal Server Error"
           }
-        },
-        "parameters": [
-          {
-            "in": "query",
-            "name": "page",
-            "schema": {
-              "type": "number",
-              "minimum": 1
-            }
-          },
-          {
-            "in": "query",
-            "name": "pageSize",
-            "schema": {
-              "type": "number",
-              "minimum": 1,
-              "maximum": 100
-            }
-          },
-          {
-            "in": "query",
-            "name": "tags",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "query",
-            "name": "search",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ]
+        }
       }
     },
     "/file/{id}": {
       "get": {
         "operationId": "getFileById",
         "tags": ["File"],
+        "parameters": [
+          {
+            "name": "X-Org-ID",
+            "in": "header",
+            "required": true,
+            "description": "The organization to act in — one of the caller's memberships. API keys are org-bound and may omit it.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
         "summary": "Get file metadata",
         "responses": {
           "200": {
@@ -1410,8 +1675,21 @@
             },
             "description": "Internal Server Error"
           }
-        },
+        }
+      },
+      "patch": {
+        "operationId": "patchFileById",
+        "tags": ["File"],
         "parameters": [
+          {
+            "name": "X-Org-ID",
+            "in": "header",
+            "required": true,
+            "description": "The organization to act in — one of the caller's memberships. API keys are org-bound and may omit it.",
+            "schema": {
+              "type": "string"
+            }
+          },
           {
             "in": "path",
             "name": "id",
@@ -1420,11 +1698,7 @@
             },
             "required": true
           }
-        ]
-      },
-      "patch": {
-        "operationId": "patchFileById",
-        "tags": ["File"],
+        ],
         "summary": "Update file",
         "description": "Rename or re-tag a file.",
         "responses": {
@@ -1499,16 +1773,6 @@
             "description": "Internal Server Error"
           }
         },
-        "parameters": [
-          {
-            "in": "path",
-            "name": "id",
-            "schema": {
-              "type": "string"
-            },
-            "required": true
-          }
-        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -1534,6 +1798,25 @@
       "delete": {
         "operationId": "deleteFileById",
         "tags": ["File"],
+        "parameters": [
+          {
+            "name": "X-Org-ID",
+            "in": "header",
+            "required": true,
+            "description": "The organization to act in — one of the caller's memberships. API keys are org-bound and may omit it.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
         "summary": "Delete file",
         "responses": {
           "200": {
@@ -1592,8 +1875,23 @@
             },
             "description": "Internal Server Error"
           }
-        },
+        }
+      }
+    },
+    "/file/{id}/content": {
+      "get": {
+        "operationId": "getFileByIdContent",
+        "tags": ["File"],
         "parameters": [
+          {
+            "name": "X-Org-ID",
+            "in": "header",
+            "required": true,
+            "description": "The organization to act in — one of the caller's memberships. API keys are org-bound and may omit it.",
+            "schema": {
+              "type": "string"
+            }
+          },
           {
             "in": "path",
             "name": "id",
@@ -1602,13 +1900,7 @@
             },
             "required": true
           }
-        ]
-      }
-    },
-    "/file/{id}/content": {
-      "get": {
-        "operationId": "getFileByIdContent",
-        "tags": ["File"],
+        ],
         "summary": "Get file content",
         "description": "Redirects to a presigned storage URL when the backend supports it; streams the bytes otherwise.",
         "responses": {
@@ -1663,8 +1955,347 @@
             },
             "description": "Internal Server Error"
           }
+        }
+      }
+    },
+    "/organization": {
+      "get": {
+        "operationId": "getOrganization",
+        "tags": ["Organization"],
+        "summary": "List organizations",
+        "description": "List the organizations the current user belongs to. Org-scoped routes name one of them with the `X-Org-ID` header.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Organization"
+                  }
+                },
+                "example": [
+                  {
+                    "id": "org_XXXXXXXXXXXXXXXXXXXXXXXXX",
+                    "name": "Acme"
+                  }
+                ]
+              }
+            },
+            "description": "The user's organizations."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "authentication",
+                  "code": "unauthorized",
+                  "message": "Authentication required"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "internal",
+                  "code": "internal_error",
+                  "message": "Internal server error"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        }
+      },
+      "post": {
+        "operationId": "postOrganization",
+        "tags": ["Organization"],
+        "summary": "Create organization",
+        "description": "Create an organization owned by the current user, with default roles seeded.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "The new organization id."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "validation",
+                  "code": "invalid_parameter",
+                  "message": "The request was invalid"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "authentication",
+                  "code": "unauthorized",
+                  "message": "Authentication required"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "internal",
+                  "code": "internal_error",
+                  "message": "Internal server error"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
         },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": ["name"]
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "operationId": "patchOrganization",
+        "tags": ["Organization"],
         "parameters": [
+          {
+            "name": "X-Org-ID",
+            "in": "header",
+            "required": true,
+            "description": "The organization to act in — one of the caller's memberships. API keys are org-bound and may omit it.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "summary": "Update organization",
+        "description": "Rename the active organization. Requires the `org:manage` permission.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "const": "ok"
+                }
+              }
+            },
+            "description": "Updated."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "authentication",
+                  "code": "unauthorized",
+                  "message": "Authentication required"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "forbidden",
+                  "code": "permission_denied",
+                  "message": "You do not have permission"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "internal",
+                  "code": "internal_error",
+                  "message": "Internal server error"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": ["name"]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/organization/member": {
+      "get": {
+        "operationId": "getOrganizationMember",
+        "tags": ["Organization"],
+        "parameters": [
+          {
+            "name": "X-Org-ID",
+            "in": "header",
+            "required": true,
+            "description": "The organization to act in — one of the caller's memberships. API keys are org-bound and may omit it.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "summary": "List members",
+        "description": "List members of the active organization. Requires `member:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Member"
+                  }
+                },
+                "example": [
+                  {
+                    "id": "mbr_XXXXXXXXXXXXXXXXXXXXXXXXX",
+                    "userID": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX",
+                    "name": "John Doe",
+                    "email": "john@example.com",
+                    "image": null,
+                    "roleID": "rol_XXXXXXXXXXXXXXXXXXXXXXXXX",
+                    "role": {
+                      "name": "Editor",
+                      "owner": false
+                    }
+                  }
+                ]
+              }
+            },
+            "description": "The organization's members."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "authentication",
+                  "code": "unauthorized",
+                  "message": "Authentication required"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "forbidden",
+                  "code": "permission_denied",
+                  "message": "You do not have permission"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "internal",
+                  "code": "internal_error",
+                  "message": "Internal server error"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/organization/member/{id}": {
+      "patch": {
+        "operationId": "patchOrganizationMemberById",
+        "tags": ["Organization"],
+        "parameters": [
+          {
+            "name": "X-Org-ID",
+            "in": "header",
+            "required": true,
+            "description": "The organization to act in — one of the caller's memberships. API keys are org-bound and may omit it.",
+            "schema": {
+              "type": "string"
+            }
+          },
           {
             "in": "path",
             "name": "id",
@@ -1673,7 +2304,998 @@
             },
             "required": true
           }
-        ]
+        ],
+        "summary": "Assign role",
+        "description": "Assign a role to a member. Requires `member:manage`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "const": "ok"
+                }
+              }
+            },
+            "description": "Assigned."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "validation",
+                  "code": "invalid_parameter",
+                  "message": "The request was invalid"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "authentication",
+                  "code": "unauthorized",
+                  "message": "Authentication required"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "forbidden",
+                  "code": "permission_denied",
+                  "message": "You do not have permission"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "not_found",
+                  "code": "resource_not_found",
+                  "message": "The requested resource could not be found"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "internal",
+                  "code": "internal_error",
+                  "message": "Internal server error"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "roleID": {
+                    "type": "string"
+                  }
+                },
+                "required": ["roleID"]
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteOrganizationMemberById",
+        "tags": ["Organization"],
+        "parameters": [
+          {
+            "name": "X-Org-ID",
+            "in": "header",
+            "required": true,
+            "description": "The organization to act in — one of the caller's memberships. API keys are org-bound and may omit it.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "summary": "Remove member",
+        "description": "Remove a member from the active organization. Requires `member:manage`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "const": "ok"
+                }
+              }
+            },
+            "description": "Removed."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "validation",
+                  "code": "invalid_parameter",
+                  "message": "The request was invalid"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "authentication",
+                  "code": "unauthorized",
+                  "message": "Authentication required"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "forbidden",
+                  "code": "permission_denied",
+                  "message": "You do not have permission"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "not_found",
+                  "code": "resource_not_found",
+                  "message": "The requested resource could not be found"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "internal",
+                  "code": "internal_error",
+                  "message": "Internal server error"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/organization/role": {
+      "get": {
+        "operationId": "getOrganizationRole",
+        "tags": ["Organization"],
+        "parameters": [
+          {
+            "name": "X-Org-ID",
+            "in": "header",
+            "required": true,
+            "description": "The organization to act in — one of the caller's memberships. API keys are org-bound and may omit it.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "summary": "List roles",
+        "description": "List the active organization's roles. Requires `member:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Role"
+                  }
+                },
+                "example": [
+                  {
+                    "id": "rol_XXXXXXXXXXXXXXXXXXXXXXXXX",
+                    "name": "Editor",
+                    "permissions": ["todo:read", "todo:write"],
+                    "owner": false
+                  }
+                ]
+              }
+            },
+            "description": "The organization's roles."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "authentication",
+                  "code": "unauthorized",
+                  "message": "Authentication required"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "forbidden",
+                  "code": "permission_denied",
+                  "message": "You do not have permission"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "internal",
+                  "code": "internal_error",
+                  "message": "Internal server error"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        }
+      },
+      "post": {
+        "operationId": "postOrganizationRole",
+        "tags": ["Organization"],
+        "parameters": [
+          {
+            "name": "X-Org-ID",
+            "in": "header",
+            "required": true,
+            "description": "The organization to act in — one of the caller's memberships. API keys are org-bound and may omit it.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "summary": "Create role",
+        "description": "Create a custom role. Requires `role:manage`. Permissions: todo:read, todo:write, file:read, file:write, member:read, member:manage, role:manage, invite:manage, org:manage.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "The new role id."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "validation",
+                  "code": "invalid_parameter",
+                  "message": "The request was invalid"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "authentication",
+                  "code": "unauthorized",
+                  "message": "Authentication required"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "forbidden",
+                  "code": "permission_denied",
+                  "message": "You do not have permission"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "internal",
+                  "code": "internal_error",
+                  "message": "Internal server error"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 255
+                  },
+                  "permissions": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "todo:read",
+                        "todo:write",
+                        "file:read",
+                        "file:write",
+                        "member:read",
+                        "member:manage",
+                        "role:manage",
+                        "invite:manage",
+                        "org:manage"
+                      ]
+                    }
+                  }
+                },
+                "required": ["name", "permissions"]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/organization/role/{id}": {
+      "patch": {
+        "operationId": "patchOrganizationRoleById",
+        "tags": ["Organization"],
+        "parameters": [
+          {
+            "name": "X-Org-ID",
+            "in": "header",
+            "required": true,
+            "description": "The organization to act in — one of the caller's memberships. API keys are org-bound and may omit it.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "summary": "Update role",
+        "description": "Rename a role or change its permissions. Requires `role:manage`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "const": "ok"
+                }
+              }
+            },
+            "description": "Updated."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "validation",
+                  "code": "invalid_parameter",
+                  "message": "The request was invalid"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "authentication",
+                  "code": "unauthorized",
+                  "message": "Authentication required"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "forbidden",
+                  "code": "permission_denied",
+                  "message": "You do not have permission"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "not_found",
+                  "code": "resource_not_found",
+                  "message": "The requested resource could not be found"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "internal",
+                  "code": "internal_error",
+                  "message": "Internal server error"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 255
+                  },
+                  "permissions": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "todo:read",
+                        "todo:write",
+                        "file:read",
+                        "file:write",
+                        "member:read",
+                        "member:manage",
+                        "role:manage",
+                        "invite:manage",
+                        "org:manage"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteOrganizationRoleById",
+        "tags": ["Organization"],
+        "parameters": [
+          {
+            "name": "X-Org-ID",
+            "in": "header",
+            "required": true,
+            "description": "The organization to act in — one of the caller's memberships. API keys are org-bound and may omit it.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "summary": "Remove role",
+        "description": "Delete an unused role. Requires `role:manage`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "const": "ok"
+                }
+              }
+            },
+            "description": "Removed."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "validation",
+                  "code": "invalid_parameter",
+                  "message": "The request was invalid"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "authentication",
+                  "code": "unauthorized",
+                  "message": "Authentication required"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "forbidden",
+                  "code": "permission_denied",
+                  "message": "You do not have permission"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "not_found",
+                  "code": "resource_not_found",
+                  "message": "The requested resource could not be found"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "internal",
+                  "code": "internal_error",
+                  "message": "Internal server error"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/organization/invitation": {
+      "get": {
+        "operationId": "getOrganizationInvitation",
+        "tags": ["Organization"],
+        "parameters": [
+          {
+            "name": "X-Org-ID",
+            "in": "header",
+            "required": true,
+            "description": "The organization to act in — one of the caller's memberships. API keys are org-bound and may omit it.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "summary": "List invitations",
+        "description": "List pending invitations. Requires `invite:manage`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Invitation"
+                  }
+                },
+                "example": [
+                  {
+                    "id": "inv_XXXXXXXXXXXXXXXXXXXXXXXXX",
+                    "email": "jane@example.com",
+                    "roleID": "rol_XXXXXXXXXXXXXXXXXXXXXXXXX",
+                    "status": "pending",
+                    "token": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+                    "timeExpires": "2026-06-14T00:00:00.000Z"
+                  }
+                ]
+              }
+            },
+            "description": "Pending invitations."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "authentication",
+                  "code": "unauthorized",
+                  "message": "Authentication required"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "forbidden",
+                  "code": "permission_denied",
+                  "message": "You do not have permission"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "internal",
+                  "code": "internal_error",
+                  "message": "Internal server error"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        }
+      },
+      "post": {
+        "operationId": "postOrganizationInvitation",
+        "tags": ["Organization"],
+        "parameters": [
+          {
+            "name": "X-Org-ID",
+            "in": "header",
+            "required": true,
+            "description": "The organization to act in — one of the caller's memberships. API keys are org-bound and may omit it.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "summary": "Invite member",
+        "description": "Invite an email to join the active organization with a role. Requires `invite:manage`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "The new invitation id."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "validation",
+                  "code": "invalid_parameter",
+                  "message": "The request was invalid"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "authentication",
+                  "code": "unauthorized",
+                  "message": "Authentication required"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "forbidden",
+                  "code": "permission_denied",
+                  "message": "You do not have permission"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "internal",
+                  "code": "internal_error",
+                  "message": "Internal server error"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                  },
+                  "roleID": {
+                    "type": "string"
+                  }
+                },
+                "required": ["email", "roleID"]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/organization/invitation/{id}": {
+      "delete": {
+        "operationId": "deleteOrganizationInvitationById",
+        "tags": ["Organization"],
+        "parameters": [
+          {
+            "name": "X-Org-ID",
+            "in": "header",
+            "required": true,
+            "description": "The organization to act in — one of the caller's memberships. API keys are org-bound and may omit it.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "summary": "Revoke invitation",
+        "description": "Revoke a pending invitation. Requires `invite:manage`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "const": "ok"
+                }
+              }
+            },
+            "description": "Revoked."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "authentication",
+                  "code": "unauthorized",
+                  "message": "Authentication required"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "forbidden",
+                  "code": "permission_denied",
+                  "message": "You do not have permission"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "not_found",
+                  "code": "resource_not_found",
+                  "message": "The requested resource could not be found"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "internal",
+                  "code": "internal_error",
+                  "message": "Internal server error"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        }
       }
     }
   }

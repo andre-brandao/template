@@ -15,6 +15,12 @@ import type {
   DeleteFileByIdResponses,
   DeleteKeyByIdErrors,
   DeleteKeyByIdResponses,
+  DeleteOrganizationInvitationByIdErrors,
+  DeleteOrganizationInvitationByIdResponses,
+  DeleteOrganizationMemberByIdErrors,
+  DeleteOrganizationMemberByIdResponses,
+  DeleteOrganizationRoleByIdErrors,
+  DeleteOrganizationRoleByIdResponses,
   DeleteTodoByIdErrors,
   DeleteTodoByIdResponses,
   GetFileByIdContentErrors,
@@ -27,18 +33,38 @@ import type {
   GetKeyResponses,
   GetMeErrors,
   GetMeResponses,
+  GetOrganizationErrors,
+  GetOrganizationInvitationErrors,
+  GetOrganizationInvitationResponses,
+  GetOrganizationMemberErrors,
+  GetOrganizationMemberResponses,
+  GetOrganizationResponses,
+  GetOrganizationRoleErrors,
+  GetOrganizationRoleResponses,
   GetTodoByIdErrors,
   GetTodoByIdResponses,
   GetTodoErrors,
   GetTodoResponses,
   PatchFileByIdErrors,
   PatchFileByIdResponses,
+  PatchOrganizationErrors,
+  PatchOrganizationMemberByIdErrors,
+  PatchOrganizationMemberByIdResponses,
+  PatchOrganizationResponses,
+  PatchOrganizationRoleByIdErrors,
+  PatchOrganizationRoleByIdResponses,
   PatchTodoByIdErrors,
   PatchTodoByIdResponses,
   PostFileErrors,
   PostFileResponses,
   PostKeyErrors,
   PostKeyResponses,
+  PostOrganizationErrors,
+  PostOrganizationInvitationErrors,
+  PostOrganizationInvitationResponses,
+  PostOrganizationResponses,
+  PostOrganizationRoleErrors,
+  PostOrganizationRoleResponses,
   PostTodoErrors,
   PostTodoResponses,
 } from "./types.gen";
@@ -131,12 +157,13 @@ export class TemplateSdk extends HeyApiClient {
   /**
    * Create key
    *
-   * Mint a named API key for the current user. Pass `expiresInDays` to set an expiry; omit it for a key that never expires.
+   * Mint a named API key for the current user. Pass `expiresInDays` to set an expiry; omit it for a key that never expires. `roleID` scopes the key to a role in one of your orgs; without it the key takes your own role in the org named by `X-Org-ID`. The role's permissions must not exceed yours.
    */
   public postKey<ThrowOnError extends boolean = false>(
     parameters: {
       name: string;
       expiresInDays?: number;
+      roleID?: string;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<PostKeyResponses, PostKeyErrors, ThrowOnError> {
@@ -147,6 +174,7 @@ export class TemplateSdk extends HeyApiClient {
           args: [
             { in: "body", key: "name" },
             { in: "body", key: "expiresInDays" },
+            { in: "body", key: "roleID" },
           ],
         },
       ],
@@ -194,7 +222,8 @@ export class TemplateSdk extends HeyApiClient {
    * List the current user's todos, optionally filtered by state. Paginated.
    */
   public getTodo<ThrowOnError extends boolean = false>(
-    parameters?: {
+    parameters: {
+      "X-Org-ID": string;
       page?: number;
       pageSize?: number;
       state?: "open" | "closed";
@@ -206,6 +235,7 @@ export class TemplateSdk extends HeyApiClient {
       [
         {
           args: [
+            { in: "headers", key: "X-Org-ID" },
             { in: "query", key: "page" },
             { in: "query", key: "pageSize" },
             { in: "query", key: "state" },
@@ -226,6 +256,7 @@ export class TemplateSdk extends HeyApiClient {
    */
   public postTodo<ThrowOnError extends boolean = false>(
     parameters: {
+      "X-Org-ID": string;
       title: string;
       body?: string | null;
       tags?: Array<string>;
@@ -238,6 +269,7 @@ export class TemplateSdk extends HeyApiClient {
       [
         {
           args: [
+            { in: "headers", key: "X-Org-ID" },
             { in: "body", key: "title" },
             { in: "body", key: "body" },
             { in: "body", key: "tags" },
@@ -264,11 +296,22 @@ export class TemplateSdk extends HeyApiClient {
    */
   public deleteTodoById<ThrowOnError extends boolean = false>(
     parameters: {
+      "X-Org-ID": string;
       id: string;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<DeleteTodoByIdResponses, DeleteTodoByIdErrors, ThrowOnError> {
-    const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "headers", key: "X-Org-ID" },
+            { in: "path", key: "id" },
+          ],
+        },
+      ],
+    );
     return (options?.client ?? this.client).delete<
       DeleteTodoByIdResponses,
       DeleteTodoByIdErrors,
@@ -286,11 +329,22 @@ export class TemplateSdk extends HeyApiClient {
    */
   public getTodoById<ThrowOnError extends boolean = false>(
     parameters: {
+      "X-Org-ID": string;
       id: string;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<GetTodoByIdResponses, GetTodoByIdErrors, ThrowOnError> {
-    const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "headers", key: "X-Org-ID" },
+            { in: "path", key: "id" },
+          ],
+        },
+      ],
+    );
     return (options?.client ?? this.client).get<
       GetTodoByIdResponses,
       GetTodoByIdErrors,
@@ -308,6 +362,7 @@ export class TemplateSdk extends HeyApiClient {
    */
   public patchTodoById<ThrowOnError extends boolean = false>(
     parameters: {
+      "X-Org-ID": string;
       id: string;
       title?: string;
       body?: string | null;
@@ -323,6 +378,7 @@ export class TemplateSdk extends HeyApiClient {
       [
         {
           args: [
+            { in: "headers", key: "X-Org-ID" },
             { in: "path", key: "id" },
             { in: "body", key: "title" },
             { in: "body", key: "body" },
@@ -357,7 +413,8 @@ export class TemplateSdk extends HeyApiClient {
    * The user's files, newest first. Filter by tags (comma-separated) or search.
    */
   public getFile<ThrowOnError extends boolean = false>(
-    parameters?: {
+    parameters: {
+      "X-Org-ID": string;
       page?: number;
       pageSize?: number;
       tags?: string;
@@ -370,6 +427,7 @@ export class TemplateSdk extends HeyApiClient {
       [
         {
           args: [
+            { in: "headers", key: "X-Org-ID" },
             { in: "query", key: "page" },
             { in: "query", key: "pageSize" },
             { in: "query", key: "tags" },
@@ -393,6 +451,7 @@ export class TemplateSdk extends HeyApiClient {
    */
   public postFile<ThrowOnError extends boolean = false>(
     parameters: {
+      "X-Org-ID": string;
       file: Blob | File;
       tags?: string;
     },
@@ -403,6 +462,7 @@ export class TemplateSdk extends HeyApiClient {
       [
         {
           args: [
+            { in: "headers", key: "X-Org-ID" },
             { in: "body", key: "file" },
             { in: "body", key: "tags" },
           ],
@@ -428,11 +488,22 @@ export class TemplateSdk extends HeyApiClient {
    */
   public deleteFileById<ThrowOnError extends boolean = false>(
     parameters: {
+      "X-Org-ID": string;
       id: string;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<DeleteFileByIdResponses, DeleteFileByIdErrors, ThrowOnError> {
-    const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "headers", key: "X-Org-ID" },
+            { in: "path", key: "id" },
+          ],
+        },
+      ],
+    );
     return (options?.client ?? this.client).delete<
       DeleteFileByIdResponses,
       DeleteFileByIdErrors,
@@ -450,11 +521,22 @@ export class TemplateSdk extends HeyApiClient {
    */
   public getFileById<ThrowOnError extends boolean = false>(
     parameters: {
+      "X-Org-ID": string;
       id: string;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<GetFileByIdResponses, GetFileByIdErrors, ThrowOnError> {
-    const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "headers", key: "X-Org-ID" },
+            { in: "path", key: "id" },
+          ],
+        },
+      ],
+    );
     return (options?.client ?? this.client).get<
       GetFileByIdResponses,
       GetFileByIdErrors,
@@ -474,6 +556,7 @@ export class TemplateSdk extends HeyApiClient {
    */
   public patchFileById<ThrowOnError extends boolean = false>(
     parameters: {
+      "X-Org-ID": string;
       id: string;
       filename?: string;
       tags?: Array<string>;
@@ -485,6 +568,7 @@ export class TemplateSdk extends HeyApiClient {
       [
         {
           args: [
+            { in: "headers", key: "X-Org-ID" },
             { in: "path", key: "id" },
             { in: "body", key: "filename" },
             { in: "body", key: "tags" },
@@ -516,11 +600,22 @@ export class TemplateSdk extends HeyApiClient {
    */
   public getFileByIdContent<ThrowOnError extends boolean = false>(
     parameters: {
+      "X-Org-ID": string;
       id: string;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<GetFileByIdContentResponses, GetFileByIdContentErrors, ThrowOnError> {
-    const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "headers", key: "X-Org-ID" },
+            { in: "path", key: "id" },
+          ],
+        },
+      ],
+    );
     return (options?.client ?? this.client).get<
       GetFileByIdContentResponses,
       GetFileByIdContentErrors,
@@ -528,6 +623,498 @@ export class TemplateSdk extends HeyApiClient {
     >({
       security: [{ scheme: "bearer", type: "http" }],
       url: "/file/{id}/content",
+      ...options,
+      ...params,
+    });
+  }
+
+  /**
+   * List organizations
+   *
+   * List the organizations the current user belongs to. Org-scoped routes name one of them with the `X-Org-ID` header.
+   */
+  public getOrganization<ThrowOnError extends boolean = false>(
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<GetOrganizationResponses, GetOrganizationErrors, ThrowOnError> {
+    return (options?.client ?? this.client).get<
+      GetOrganizationResponses,
+      GetOrganizationErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/organization",
+      ...options,
+    });
+  }
+
+  /**
+   * Update organization
+   *
+   * Rename the active organization. Requires the `org:manage` permission.
+   */
+  public patchOrganization<ThrowOnError extends boolean = false>(
+    parameters: {
+      "X-Org-ID": string;
+      name: string;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<PatchOrganizationResponses, PatchOrganizationErrors, ThrowOnError> {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "headers", key: "X-Org-ID" },
+            { in: "body", key: "name" },
+          ],
+        },
+      ],
+    );
+    return (options?.client ?? this.client).patch<
+      PatchOrganizationResponses,
+      PatchOrganizationErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/organization",
+      ...options,
+      ...params,
+      headers: {
+        "Content-Type": "application/json",
+        ...options?.headers,
+        ...params.headers,
+      },
+    });
+  }
+
+  /**
+   * Create organization
+   *
+   * Create an organization owned by the current user, with default roles seeded.
+   */
+  public postOrganization<ThrowOnError extends boolean = false>(
+    parameters: {
+      name: string;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<PostOrganizationResponses, PostOrganizationErrors, ThrowOnError> {
+    const params = buildClientParams([parameters], [{ args: [{ in: "body", key: "name" }] }]);
+    return (options?.client ?? this.client).post<
+      PostOrganizationResponses,
+      PostOrganizationErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/organization",
+      ...options,
+      ...params,
+      headers: {
+        "Content-Type": "application/json",
+        ...options?.headers,
+        ...params.headers,
+      },
+    });
+  }
+
+  /**
+   * List members
+   *
+   * List members of the active organization. Requires `member:read`.
+   */
+  public getOrganizationMember<ThrowOnError extends boolean = false>(
+    parameters: {
+      "X-Org-ID": string;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<GetOrganizationMemberResponses, GetOrganizationMemberErrors, ThrowOnError> {
+    const params = buildClientParams(
+      [parameters],
+      [{ args: [{ in: "headers", key: "X-Org-ID" }] }],
+    );
+    return (options?.client ?? this.client).get<
+      GetOrganizationMemberResponses,
+      GetOrganizationMemberErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/organization/member",
+      ...options,
+      ...params,
+    });
+  }
+
+  /**
+   * Remove member
+   *
+   * Remove a member from the active organization. Requires `member:manage`.
+   */
+  public deleteOrganizationMemberById<ThrowOnError extends boolean = false>(
+    parameters: {
+      "X-Org-ID": string;
+      id: string;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<
+    DeleteOrganizationMemberByIdResponses,
+    DeleteOrganizationMemberByIdErrors,
+    ThrowOnError
+  > {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "headers", key: "X-Org-ID" },
+            { in: "path", key: "id" },
+          ],
+        },
+      ],
+    );
+    return (options?.client ?? this.client).delete<
+      DeleteOrganizationMemberByIdResponses,
+      DeleteOrganizationMemberByIdErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/organization/member/{id}",
+      ...options,
+      ...params,
+    });
+  }
+
+  /**
+   * Assign role
+   *
+   * Assign a role to a member. Requires `member:manage`.
+   */
+  public patchOrganizationMemberById<ThrowOnError extends boolean = false>(
+    parameters: {
+      "X-Org-ID": string;
+      id: string;
+      roleID: string;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<
+    PatchOrganizationMemberByIdResponses,
+    PatchOrganizationMemberByIdErrors,
+    ThrowOnError
+  > {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "headers", key: "X-Org-ID" },
+            { in: "path", key: "id" },
+            { in: "body", key: "roleID" },
+          ],
+        },
+      ],
+    );
+    return (options?.client ?? this.client).patch<
+      PatchOrganizationMemberByIdResponses,
+      PatchOrganizationMemberByIdErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/organization/member/{id}",
+      ...options,
+      ...params,
+      headers: {
+        "Content-Type": "application/json",
+        ...options?.headers,
+        ...params.headers,
+      },
+    });
+  }
+
+  /**
+   * List roles
+   *
+   * List the active organization's roles. Requires `member:read`.
+   */
+  public getOrganizationRole<ThrowOnError extends boolean = false>(
+    parameters: {
+      "X-Org-ID": string;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<GetOrganizationRoleResponses, GetOrganizationRoleErrors, ThrowOnError> {
+    const params = buildClientParams(
+      [parameters],
+      [{ args: [{ in: "headers", key: "X-Org-ID" }] }],
+    );
+    return (options?.client ?? this.client).get<
+      GetOrganizationRoleResponses,
+      GetOrganizationRoleErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/organization/role",
+      ...options,
+      ...params,
+    });
+  }
+
+  /**
+   * Create role
+   *
+   * Create a custom role. Requires `role:manage`. Permissions: todo:read, todo:write, file:read, file:write, member:read, member:manage, role:manage, invite:manage, org:manage.
+   */
+  public postOrganizationRole<ThrowOnError extends boolean = false>(
+    parameters: {
+      "X-Org-ID": string;
+      name: string;
+      permissions: Array<
+        | "todo:read"
+        | "todo:write"
+        | "file:read"
+        | "file:write"
+        | "member:read"
+        | "member:manage"
+        | "role:manage"
+        | "invite:manage"
+        | "org:manage"
+      >;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<PostOrganizationRoleResponses, PostOrganizationRoleErrors, ThrowOnError> {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "headers", key: "X-Org-ID" },
+            { in: "body", key: "name" },
+            { in: "body", key: "permissions" },
+          ],
+        },
+      ],
+    );
+    return (options?.client ?? this.client).post<
+      PostOrganizationRoleResponses,
+      PostOrganizationRoleErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/organization/role",
+      ...options,
+      ...params,
+      headers: {
+        "Content-Type": "application/json",
+        ...options?.headers,
+        ...params.headers,
+      },
+    });
+  }
+
+  /**
+   * Remove role
+   *
+   * Delete an unused role. Requires `role:manage`.
+   */
+  public deleteOrganizationRoleById<ThrowOnError extends boolean = false>(
+    parameters: {
+      "X-Org-ID": string;
+      id: string;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<
+    DeleteOrganizationRoleByIdResponses,
+    DeleteOrganizationRoleByIdErrors,
+    ThrowOnError
+  > {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "headers", key: "X-Org-ID" },
+            { in: "path", key: "id" },
+          ],
+        },
+      ],
+    );
+    return (options?.client ?? this.client).delete<
+      DeleteOrganizationRoleByIdResponses,
+      DeleteOrganizationRoleByIdErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/organization/role/{id}",
+      ...options,
+      ...params,
+    });
+  }
+
+  /**
+   * Update role
+   *
+   * Rename a role or change its permissions. Requires `role:manage`.
+   */
+  public patchOrganizationRoleById<ThrowOnError extends boolean = false>(
+    parameters: {
+      "X-Org-ID": string;
+      id: string;
+      name?: string;
+      permissions?: Array<
+        | "todo:read"
+        | "todo:write"
+        | "file:read"
+        | "file:write"
+        | "member:read"
+        | "member:manage"
+        | "role:manage"
+        | "invite:manage"
+        | "org:manage"
+      >;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<
+    PatchOrganizationRoleByIdResponses,
+    PatchOrganizationRoleByIdErrors,
+    ThrowOnError
+  > {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "headers", key: "X-Org-ID" },
+            { in: "path", key: "id" },
+            { in: "body", key: "name" },
+            { in: "body", key: "permissions" },
+          ],
+        },
+      ],
+    );
+    return (options?.client ?? this.client).patch<
+      PatchOrganizationRoleByIdResponses,
+      PatchOrganizationRoleByIdErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/organization/role/{id}",
+      ...options,
+      ...params,
+      headers: {
+        "Content-Type": "application/json",
+        ...options?.headers,
+        ...params.headers,
+      },
+    });
+  }
+
+  /**
+   * List invitations
+   *
+   * List pending invitations. Requires `invite:manage`.
+   */
+  public getOrganizationInvitation<ThrowOnError extends boolean = false>(
+    parameters: {
+      "X-Org-ID": string;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<
+    GetOrganizationInvitationResponses,
+    GetOrganizationInvitationErrors,
+    ThrowOnError
+  > {
+    const params = buildClientParams(
+      [parameters],
+      [{ args: [{ in: "headers", key: "X-Org-ID" }] }],
+    );
+    return (options?.client ?? this.client).get<
+      GetOrganizationInvitationResponses,
+      GetOrganizationInvitationErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/organization/invitation",
+      ...options,
+      ...params,
+    });
+  }
+
+  /**
+   * Invite member
+   *
+   * Invite an email to join the active organization with a role. Requires `invite:manage`.
+   */
+  public postOrganizationInvitation<ThrowOnError extends boolean = false>(
+    parameters: {
+      "X-Org-ID": string;
+      email: string;
+      roleID: string;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<
+    PostOrganizationInvitationResponses,
+    PostOrganizationInvitationErrors,
+    ThrowOnError
+  > {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "headers", key: "X-Org-ID" },
+            { in: "body", key: "email" },
+            { in: "body", key: "roleID" },
+          ],
+        },
+      ],
+    );
+    return (options?.client ?? this.client).post<
+      PostOrganizationInvitationResponses,
+      PostOrganizationInvitationErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/organization/invitation",
+      ...options,
+      ...params,
+      headers: {
+        "Content-Type": "application/json",
+        ...options?.headers,
+        ...params.headers,
+      },
+    });
+  }
+
+  /**
+   * Revoke invitation
+   *
+   * Revoke a pending invitation. Requires `invite:manage`.
+   */
+  public deleteOrganizationInvitationById<ThrowOnError extends boolean = false>(
+    parameters: {
+      "X-Org-ID": string;
+      id: string;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<
+    DeleteOrganizationInvitationByIdResponses,
+    DeleteOrganizationInvitationByIdErrors,
+    ThrowOnError
+  > {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "headers", key: "X-Org-ID" },
+            { in: "path", key: "id" },
+          ],
+        },
+      ],
+    );
+    return (options?.client ?? this.client).delete<
+      DeleteOrganizationInvitationByIdResponses,
+      DeleteOrganizationInvitationByIdErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/organization/invitation/{id}",
       ...options,
       ...params,
     });

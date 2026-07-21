@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { Database, sql } from "@template/core/drizzle";
 
@@ -35,7 +35,7 @@ const run = (q: ReturnType<typeof sql.raw>) => Database.use((tx) => tx.execute(q
 
 function statements() {
   return readdirSync(dir, { withFileTypes: true })
-    .filter((d) => d.isDirectory())
+    .filter((d) => d.isDirectory() && existsSync(`${dir}/${d.name}/migration.sql`))
     .sort((a, b) => (a.name < b.name ? -1 : 1))
     .flatMap((d) =>
       readFileSync(`${dir}/${d.name}/migration.sql`, "utf8").split("--> statement-breakpoint"),

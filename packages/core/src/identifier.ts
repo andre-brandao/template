@@ -9,6 +9,10 @@ export namespace Identifier {
     key: "key",
     event: "evt",
     file: "fil",
+    organization: "org",
+    member: "mbr",
+    role: "rol",
+    invitation: "inv",
   } as const;
 
   export function create(prefix: keyof typeof prefixes, given?: string): string {

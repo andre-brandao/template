@@ -3,6 +3,8 @@ import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 import { User } from "@template/core/user";
 import { Key } from "@template/core/key";
+import { Actor } from "@template/core/actor";
+import { Organization } from "@template/core/organization";
 import { app } from "../src/mcp";
 
 let token: string;
@@ -24,7 +26,10 @@ describe("mcp", () => {
       name: "Test User",
       email: `test-${crypto.randomUUID()}@example.com`,
     });
-    token = (await Key.create({ userID, name: "test" })).key;
+    const orgID = await Organization.init({ userID, name: "Test Org" });
+    token = (
+      await Actor.provide("user", { userID, orgID }, () => Key.create({ userID, name: "test" }))
+    ).key;
   });
 
   it("lists todo tools", async () => {

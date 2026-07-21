@@ -18,7 +18,7 @@ export const POST: RequestHandler = async ({ request }) => {
       file,
       tags: typeof tags === "string" && tags ? tags.split(",") : undefined,
     });
-    return json({ url: `/files/${info.id}`, id: info.id });
+    return json({ url: `/${Actor.orgID()}/files/${info.id}`, id: info.id });
   } catch (err) {
     if (err instanceof VisibleError) error(400, err.message);
     throw err;

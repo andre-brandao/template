@@ -1,4 +1,5 @@
 import { Context } from "./context";
+import { ErrorCodes, VisibleError } from "./error";
 import { Log } from "./util/log";
 
 export namespace Actor {
@@ -11,6 +12,8 @@ export namespace Actor {
     type: "user";
     properties: {
       userID: string;
+      orgID?: string;
+      permissions?: string[];
     };
   }
 
@@ -50,5 +53,20 @@ export namespace Actor {
 
   export function userID() {
     return Actor.assert("user").properties.userID;
+  }
+
+  export function orgID() {
+    const id = Actor.assert("user").properties.orgID;
+    if (!id)
+      throw new VisibleError(
+        "forbidden",
+        ErrorCodes.Permission.FORBIDDEN,
+        "No organization in scope",
+      );
+    return id;
+  }
+
+  export function permissions() {
+    return Actor.assert("user").properties.permissions ?? [];
   }
 }

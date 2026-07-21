@@ -45,6 +45,28 @@ export const authRequired: MiddlewareHandler = async (_c, next) => {
   return next();
 };
 
+/** Guards org-scoped routes: a user actor must carry an org (named by `X-Org-ID`). */
+export const orgRequired: MiddlewareHandler = async (_c, next) => {
+  const actor = Actor.use();
+  if (actor.type === "user" && !actor.properties.orgID)
+    throw new VisibleError(
+      "validation",
+      ErrorCodes.Validation.MISSING_REQUIRED_FIELD,
+      "X-Org-ID header required",
+    );
+  return next();
+};
+
+/** OpenAPI declaration of the org-scoping header, spread into org-scoped routes. */
+export const OrgHeader = {
+  name: "X-Org-ID",
+  in: "header",
+  required: true,
+  description:
+    "The organization to act in — one of the caller's memberships. API keys are org-bound and may omit it.",
+  schema: { type: "string" },
+} as const;
+
 /**
  * Custom validator wrapper around hono-openapi/zod validator that formats errors
  * according to our standard API error format

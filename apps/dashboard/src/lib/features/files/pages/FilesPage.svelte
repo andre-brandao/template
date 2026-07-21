@@ -3,10 +3,13 @@
 	import { Button, Drawer } from '@template/ui';
 	import type { File } from '@template/core/file';
 	import { query } from '$lib/utils/params';
+	import { org } from '$lib/features/org/context';
 	import { getFiles } from '../api/files.remote';
 	import FileFilters from '../components/FileFilters.svelte';
 	import FileCard from '../components/FileCard.svelte';
 	import FileForm from '../components/FileForm.svelte';
+
+	const ctx = org();
 
 	const params = query(
 		z.object({
@@ -32,13 +35,14 @@
 	let drag = $state(0);
 
 	async function upload(picked: FileList) {
+		if (!ctx.can('file:write')) return;
 		uploading = true;
 		failed = [];
 		const results = await Promise.all(
 			[...picked].map(async (file) => {
 				const body = new FormData();
 				body.append('file', file);
-				const res = await fetch('/files', { method: 'POST', body });
+				const res = await fetch(ctx.path('/files'), { method: 'POST', body });
 				return res.ok ? null : file.name;
 			})
 		);
@@ -54,6 +58,7 @@
 	role="region"
 	aria-label="Files"
 	ondragenter={(e) => {
+		if (!ctx.can('file:write')) return;
 		if (!e.dataTransfer?.types.includes('Files')) return;
 		e.preventDefault();
 		drag += 1;
@@ -74,18 +79,20 @@
 			onchange={(next) => params.update({ q: next.search, tag: next.tag, page: undefined })}
 		/>
 		<span class="sep"></span>
-		<input
-			type="file"
-			multiple
-			hidden
-			bind:this={picker}
-			onchange={(e) => {
-				const list = e.currentTarget.files;
-				if (list?.length) upload(list);
-				e.currentTarget.value = '';
-			}}
-		/>
-		<Button pending={uploading} onclick={() => picker?.click()}>Upload</Button>
+		{#if ctx.can('file:write')}
+			<input
+				type="file"
+				multiple
+				hidden
+				bind:this={picker}
+				onchange={(e) => {
+					const list = e.currentTarget.files;
+					if (list?.length) upload(list);
+					e.currentTarget.value = '';
+				}}
+			/>
+			<Button pending={uploading} onclick={() => picker?.click()}>Upload</Button>
+		{/if}
 	</div>
 
 	{#each failed as name (name)}

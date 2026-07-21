@@ -9,4 +9,5 @@ export { default as RangePicker, last, valid, type Range } from "./input/RangePi
 export { default as Card } from "./ui/Card.svelte";
 export { default as Drawer, type Side } from "./ui/Drawer.svelte";
 export { default as FormBoundary } from "./ui/FormBoundary.svelte";
+export { default as Issues } from "./ui/Issues.svelte";
 export { default as Spinner } from "./ui/Spinner.svelte";

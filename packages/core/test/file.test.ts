@@ -2,6 +2,8 @@ import { describe, expect } from "bun:test";
 import { File } from "../src/file";
 import { User } from "../src/user";
 import { Actor } from "../src/actor";
+import { Organization } from "../src/organization";
+import { Member } from "../src/organization/member";
 import { withTestUser } from "./util";
 
 /** In-memory `File.Port` for tests — no filesystem/network involved. */
@@ -141,8 +143,13 @@ describe("file", () => {
         name: "Other",
         email: `test-${crypto.randomUUID()}@example.com`,
       });
+      const otherOrg = await Organization.init({ userID: otherID, name: "Other Org" });
+      const membership = await Member.resolve({ userID: otherID, orgID: otherOrg });
 
-      await Actor.provide("user", { userID: otherID }, async () => {
+      await Actor.provide(
+        "user",
+        { userID: otherID, orgID: otherOrg, permissions: membership?.permissions },
+        async () => {
         expect(await File.fromID(info.id)).toBeNull();
         expect(await File.content(info.id)).toBeNull();
         await expect(File.remove(info.id)).rejects.toThrow("not found");

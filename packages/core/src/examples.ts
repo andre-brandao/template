@@ -28,6 +28,7 @@ export namespace Examples {
     name: "laptop",
     key: "sk-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
     display: "sk-XXXX...XXXX",
+    role: { id: Id("role"), name: "Member" },
     timeUsed: null,
     expiresAt: null,
     current: false,
@@ -41,6 +42,37 @@ export namespace Examples {
     size: 102400,
     tags: [] as string[],
     timeCreated: "2026-06-07T00:00:00.000Z",
+  } as const;
+
+  export const Organization = {
+    id: Id("organization"),
+    name: "Acme",
+  } as const;
+
+  export const Role = {
+    id: Id("role"),
+    name: "Editor",
+    permissions: ["todo:read", "todo:write"],
+    owner: false,
+  } as const;
+
+  export const Member = {
+    id: Id("member"),
+    userID: Id("user"),
+    name: "John Doe",
+    email: "john@example.com",
+    image: null,
+    roleID: Id("role"),
+    role: { name: "Editor", owner: false },
+  } as const;
+
+  export const Invitation = {
+    id: Id("invitation"),
+    email: "jane@example.com",
+    roleID: Id("role"),
+    status: "pending",
+    token: "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+    timeExpires: "2026-06-14T00:00:00.000Z",
   } as const;
 
   export const Event = {

@@ -95,15 +95,23 @@ process.on("SIGTERM", async () => {
 });
 
 console.log(`Starting database on ${pgport}...`);
-const db = spawn(["bun", "pglite.ts"], import.meta.dir, "pipe", "ignore");
+const db = spawn(["bun", "pglite.ts"], import.meta.dir, "pipe", "pipe");
 const stdout = db.stdout;
 if (!(stdout instanceof ReadableStream)) throw new Error("Database stdout unavailable");
+// Keep stderr visible — a dying db otherwise fails silently and only shows up
+// later as ECONNREFUSED in the app servers.
+if (db.stderr instanceof ReadableStream) void pipe(db.stderr, "\x1b[32mdb \x1b[0m │ ");
 
 await new Promise<void>((resolve, reject) => {
   void pipe(stdout, "\x1b[32mdb \x1b[0m │ ", resolve);
   db.exited.then((code) => {
     if (code !== 0) reject(new Error(`Database exited with code ${code}`));
   });
+});
+
+// The reject above is a no-op once startup resolved — report a later death too.
+void db.exited.then((code) => {
+  if (code !== 0) process.stdout.write(`\x1b[32mdb \x1b[0m │ died with code ${code}\n`);
 });
 
 console.log("Seeding database...");

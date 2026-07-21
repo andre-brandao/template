@@ -5,12 +5,13 @@
 	import '@cartamd/plugin-attachment/default.css';
 	import '$lib/markdown.css';
 	import { createCarta } from '$lib/markdown';
+	import { org } from '$lib/features/org/context';
 	import { createTodo } from '../../api/todos.remote';
 	import TagEditor from '../TagEditor.svelte';
 
 	let { onsuccess }: { onsuccess?: () => void } = $props();
 
-	const carta = createCarta();
+	const carta = createCarta(org().path('/files'));
 	let body = $state('');
 	let tags = $state<string[]>([]);
 </script>

@@ -39,7 +39,7 @@ export namespace KeyApi {
         tags: ["Key"],
         summary: "Create key",
         description:
-          "Mint a named API key for the current user. Pass `expiresInDays` to set an expiry; omit it for a key that never expires.",
+          "Mint a named API key for the current user. Pass `expiresInDays` to set an expiry; omit it for a key that never expires. `roleID` scopes the key to a role in one of your orgs; without it the key takes your own role in the org named by `X-Org-ID`. The role's permissions must not exceed yours.",
         responses: {
           200: {
             content: { "application/json": { schema: Result(Key.Info), example: Examples.Key } },
@@ -56,6 +56,7 @@ export namespace KeyApi {
         z.object({
           name: Key.Info.shape.name,
           expiresInDays: z.number().int().positive().optional(),
+          roleID: z.string().optional(),
         }),
       ),
       async (c) => {
@@ -66,6 +67,7 @@ export namespace KeyApi {
           expiresAt: body.expiresInDays
             ? new Date(Date.now() + body.expiresInDays * 86_400_000)
             : null,
+          roleID: body.roleID,
         });
         return c.json(key, 200);
       },

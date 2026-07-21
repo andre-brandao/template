@@ -3,6 +3,8 @@ import { setupApiTest } from "./util";
 import { app } from "../../src/api/routes";
 import { User } from "@template/core/user";
 import { Key } from "@template/core/key";
+import { Actor } from "@template/core/actor";
+import { Organization } from "@template/core/organization";
 import type { File as FileInfo } from "@template/core/file";
 
 // 1x1 transparent PNG.
@@ -96,7 +98,12 @@ describe("file", () => {
 
     const otherEmail = `test-${crypto.randomUUID()}@example.com`;
     const otherUserID = await User.create({ name: "Other User", email: otherEmail });
-    const otherToken = (await Key.create({ userID: otherUserID, name: "other" })).key;
+    const otherOrgID = await Organization.init({ userID: otherUserID, name: "Other Org" });
+    const otherToken = (
+      await Actor.provide("user", { userID: otherUserID, orgID: otherOrgID }, () =>
+        Key.create({ userID: otherUserID, name: "other" }),
+      )
+    ).key;
 
     const response = await app.request(`/file/${uploaded.id}`, {
       headers: { authorization: `Bearer ${otherToken}` },

@@ -5,6 +5,7 @@ import { Database, sql } from "@template/core/drizzle";
 import { Todo } from "@template/core/todo";
 import { Auth } from "@template/core/user/auth";
 import { Key } from "@template/core/key";
+import { Member } from "@template/core/organization/member";
 
 const url = process.env.DATABASE_URL ?? Database.DEFAULT_URL;
 const email = process.env.SEED_EMAIL ?? "dev@example.com";
@@ -79,29 +80,35 @@ const result = await Database.provide(url, async () => {
   const userID = await Auth.provision({ provider: "email", accountId: email, email, name });
   const key = await Key.create({ userID, name: "seed" });
 
-  await Actor.provide("user", { userID }, async () => {
-    const list = await Todo.list({ page: 1, pageSize: 100 });
-    if (list.total > 0) return;
+  // Provision seeds the personal org; the actor needs it in scope for permission checks.
+  const member = await Member.resolve({ userID });
+  await Actor.provide(
+    "user",
+    { userID, orgID: member?.orgID, permissions: member?.permissions },
+    async () => {
+      const list = await Todo.list({ page: 1, pageSize: 100 });
+      if (list.total > 0) return;
 
-    await Promise.all(
-      Array.from({ length: count }, async () => {
-        const at = when();
-        const s = status();
-        const due = new Date(at.getTime() + rand(1, 30) * DAY);
-        const done = s === "done" ? new Date(rand(at.getTime(), now)) : at;
-        const id = await Todo.create({ title: title(), status: s, dueDate: due.toISOString() });
-        // Todo.create stamps time_created to now; backdate it (and completion) here.
-        await Database.use((tx) =>
-          tx.execute(sql`
+      await Promise.all(
+        Array.from({ length: count }, async () => {
+          const at = when();
+          const s = status();
+          const due = new Date(at.getTime() + rand(1, 30) * DAY);
+          const done = s === "done" ? new Date(rand(at.getTime(), now)) : at;
+          const id = await Todo.create({ title: title(), status: s, dueDate: due.toISOString() });
+          // Todo.create stamps time_created to now; backdate it (and completion) here.
+          await Database.use((tx) =>
+            tx.execute(sql`
             update todo
             set time_created = ${at.toISOString()}::timestamptz,
                 time_updated = ${done.toISOString()}::timestamptz
             where id = ${id}
           `),
-        );
-      }),
-    );
-  });
+          );
+        }),
+      );
+    },
+  );
 
   return key;
 });

@@ -7,6 +7,8 @@ import {
   validator,
   ErrorResponses,
   authRequired,
+  orgRequired,
+  OrgHeader,
   PaginatedQuery,
   PaginatedResponse,
 } from "../common";
@@ -16,10 +18,12 @@ import { found } from "@template/core/error";
 
 export namespace FileApi {
   export const route = new Hono()
+    .use(orgRequired)
     .post(
       "/",
       describeRoute({
         tags: ["File"],
+        parameters: [OrgHeader],
         summary: "Upload file",
         description: "Multipart form with a `file` field, plus optional `tags` (comma-separated).",
         requestBody: {
@@ -67,6 +71,7 @@ export namespace FileApi {
       "/",
       describeRoute({
         tags: ["File"],
+        parameters: [OrgHeader],
         summary: "List files",
         description: "The user's files, newest first. Filter by tags (comma-separated) or search.",
         responses: {
@@ -97,6 +102,7 @@ export namespace FileApi {
       "/:id",
       describeRoute({
         tags: ["File"],
+        parameters: [OrgHeader],
         summary: "Get file metadata",
         responses: {
           200: {
@@ -119,6 +125,7 @@ export namespace FileApi {
       "/:id/content",
       describeRoute({
         tags: ["File"],
+        parameters: [OrgHeader],
         summary: "Get file content",
         description:
           "Redirects to a presigned storage URL when the backend supports it; streams the bytes otherwise.",
@@ -147,6 +154,7 @@ export namespace FileApi {
       "/:id",
       describeRoute({
         tags: ["File"],
+        parameters: [OrgHeader],
         summary: "Update file",
         description: "Rename or re-tag a file.",
         responses: {
@@ -176,6 +184,7 @@ export namespace FileApi {
       "/:id",
       describeRoute({
         tags: ["File"],
+        parameters: [OrgHeader],
         summary: "Delete file",
         responses: {
           200: {

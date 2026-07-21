@@ -8,6 +8,7 @@ import { Common } from "../common";
 import { Examples } from "../examples";
 import { Identifier } from "../identifier";
 import { Event } from "../event";
+import { Permission } from "../organization/permission";
 import { TodoTable } from "./todo.sql";
 
 export { Insights } from "./insights";
@@ -85,11 +86,13 @@ export namespace Todo {
       dueDate: Info.shape.dueDate.optional(),
     }),
     async (input) => {
+      Permission.assert("todo:write");
       const id = Identifier.create("todo");
       const tags = clean(input.tags);
       return Database.transaction(async (tx) => {
         await tx.insert(TodoTable).values({
           id,
+          orgID: Actor.orgID(),
           userID: Actor.userID(),
           title: input.title,
           body: input.body ?? null,
@@ -119,8 +122,9 @@ export namespace Todo {
       search: z.string().optional(),
     }),
     (input) => {
+      Permission.assert("todo:read");
       const { page, pageSize, limit, offset } = Common.page(input);
-      const conditions = [eq(TodoTable.userID, Actor.userID()), isNull(TodoTable.timeDeleted)];
+      const conditions = [eq(TodoTable.orgID, Actor.orgID()), isNull(TodoTable.timeDeleted)];
       if (input.state) conditions.push(eq(TodoTable.state, input.state));
       if (input.search) conditions.push(ilike(TodoTable.title, `%${input.search}%`));
       const where = and(...conditions);
@@ -140,24 +144,27 @@ export namespace Todo {
     },
   );
 
-  export const fromID = fn(Info.shape.id, (id) =>
-    Database.use((tx) =>
+  export const fromID = fn(Info.shape.id, async (id) => {
+    Permission.assert("todo:read");
+    return row(id);
+  });
+
+  /** Org-scoped lookup without a permission gate — write actions read their target through this. */
+  function row(id: string) {
+    return Database.use((tx) =>
       tx
         .select()
         .from(TodoTable)
         .where(
-          and(
-            eq(TodoTable.id, id),
-            eq(TodoTable.userID, Actor.userID()),
-            isNull(TodoTable.timeDeleted),
-          ),
+          and(eq(TodoTable.id, id), eq(TodoTable.orgID, Actor.orgID()), isNull(TodoTable.timeDeleted)),
         )
         .then((rows) => (rows[0] ? serialize(rows[0]) : null)),
-    ),
-  );
+    );
+  }
 
   export const update = fn(Patch.extend({ id: Info.shape.id }), async ({ id, ...patch }) => {
-    const before = found("Todo", await fromID.force(id));
+    Permission.assert("todo:write");
+    const before = found("Todo", await row(id));
     const tags = patch.tags !== undefined ? clean(patch.tags) : undefined;
     const reason =
       patch.state === undefined
@@ -171,7 +178,7 @@ export namespace Todo {
       await tx
         .update(TodoTable)
         .set(fields(next))
-        .where(and(eq(TodoTable.id, id), eq(TodoTable.userID, Actor.userID())));
+        .where(and(eq(TodoTable.id, id), eq(TodoTable.orgID, Actor.orgID())));
 
       const list = tags ?? before.tags;
 
@@ -197,13 +204,14 @@ export namespace Todo {
   });
 
   export const remove = fn(Info.shape.id, async (id) => {
-    const before = found("Todo", await fromID.force(id));
+    Permission.assert("todo:write");
+    const before = found("Todo", await row(id));
 
     return Database.transaction(async (tx) => {
       await tx
         .update(TodoTable)
         .set({ timeDeleted: new Date() })
-        .where(and(eq(TodoTable.id, id), eq(TodoTable.userID, Actor.userID())));
+        .where(and(eq(TodoTable.id, id), eq(TodoTable.orgID, Actor.orgID())));
       await Event.create({
         type: "todo.removed",
         source: "todo",

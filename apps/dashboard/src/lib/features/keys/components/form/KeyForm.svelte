@@ -1,8 +1,13 @@
 <script lang="ts">
 	import { Button, FormBoundary, Input } from '@template/ui';
+	import { getRoles } from '$lib/features/org/api/roles.remote';
+	import { org } from '$lib/features/org/context';
 	import { createKey } from '../../api/keys.remote';
 
 	let { onsuccess }: { onsuccess?: () => void } = $props();
+
+	const ctx = org();
+	const roles = $derived(ctx.can('member:read') ? await getRoles() : []);
 </script>
 
 <FormBoundary>
@@ -21,6 +26,17 @@
 			<span>Name</span>
 			<Input placeholder="e.g. laptop" {...createKey.fields.name.as('text')} />
 		</label>
+		{#if ctx.can('member:read')}
+			<label class="field role">
+				<span>Role</span>
+				<select name="roleID">
+					<option value="">Your role</option>
+					{#each roles as role (role.id)}
+						<option value={role.id}>{role.name}</option>
+					{/each}
+				</select>
+			</label>
+		{/if}
 		<label class="field ttl">
 			<span>Expires</span>
 			<select name="ttl">
@@ -47,6 +63,7 @@
 		flex: 1 1 14em;
 	}
 
+	.role,
 	.ttl {
 		flex: 0 1 auto;
 	}

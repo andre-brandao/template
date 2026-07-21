@@ -4,6 +4,7 @@ import { fn } from "../util/fn";
 import { Actor } from "../actor";
 import { Database } from "../drizzle";
 import { Identifier } from "../identifier";
+import { Organization } from "../organization";
 import { User } from "./index";
 import { UserTable } from "./user.sql";
 import { ProviderIds, ProviderTable } from "./provider.sql";
@@ -71,8 +72,9 @@ export namespace Auth {
           .where(eq(UserTable.email, input.email))
           .then((rows) => rows.at(0)?.id);
 
-        const userID =
-          byEmail ?? (await User.create({ name: input.name ?? input.email, email: input.email }));
+        const name = input.name ?? input.email;
+        const userID = byEmail ?? (await User.create({ name, email: input.email }));
+        if (!byEmail) await Organization.init({ userID, name: `${name}'s Org` });
 
         await tx.insert(ProviderTable).values({
           id: Identifier.create("provider"),

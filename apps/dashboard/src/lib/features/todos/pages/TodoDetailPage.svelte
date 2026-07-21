@@ -6,6 +6,7 @@
 	import '@cartamd/plugin-attachment/default.css';
 	import '$lib/markdown.css';
 	import { createCarta } from '$lib/markdown';
+	import { org } from '$lib/features/org/context';
 	import type { Event } from '@template/core/event';
 	import { getTodo, removeTodo, updateTodo } from '../api/todos.remote';
 	import Timeline from '$lib/features/events/components/Timeline.svelte';
@@ -15,6 +16,7 @@
 	import { color } from '../state';
 
 	let { id }: { id: string } = $props();
+	const ctx = org();
 	// `$derived(await query())` only re-subscribes when its args change, not when the
 	// query is refreshed in place — `gen` is read (and bumped after a save) purely to
 	// force this derived to re-evaluate and pick up the refreshed value.
@@ -22,7 +24,7 @@
 	const todo = $derived((void gen, await getTodo(id)));
 	const remove = $derived(removeTodo.for(todo.id));
 	const update = $derived(updateTodo.for(todo.id));
-	const carta = createCarta();
+	const carta = createCarta(ctx.path('/files'));
 
 	let editing = $state(false);
 	let body = $state('');
@@ -50,7 +52,7 @@
 	}
 </script>
 
-<a class="back" href="/todos">&larr; Back to todos</a>
+<a class="back" href={ctx.path('/todos')}>&larr; Back to todos</a>
 
 <!-- fallow-ignore-next-line code-duplication -->
 <Card accent={color(todo.state)}>
@@ -103,7 +105,7 @@
 		<!-- fallow-ignore-next-line code-duplication -->
 		<form {...remove.enhance(async (f) => {
 			await f.submit();
-			goto('/todos');
+			goto(ctx.path('/todos'));
 		})}>
 			<input {...remove.fields.id.as('hidden', todo.id)} />
 			<Button variant="danger" type="submit" pending={!!remove.pending}>Delete</Button>

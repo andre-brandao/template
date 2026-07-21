@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import Avatar from '../Avatar.svelte';
+	import OrgSwitcher from '$lib/features/org/components/OrgSwitcher.svelte';
 
 	let { user }: { user: { name: string; email: string; image: string | null } | null } = $props();
 
@@ -9,7 +10,12 @@
 </script>
 
 <header>
-	<a href="/" class="brand"><span class="dot"></span>Todos</a>
+	<div class="left">
+		<a href="/" class="brand"><span class="dot"></span>Todos</a>
+		{#if user}
+			<OrgSwitcher />
+		{/if}
+	</div>
 
 	{#if user}
 		<div class="side">
@@ -36,6 +42,12 @@
 		padding: 0.9em 1.25em;
 		border-bottom: 1px solid var(--border);
 		background: var(--surface);
+	}
+
+	.left {
+		display: flex;
+		align-items: center;
+		gap: 1em;
 	}
 
 	.brand {

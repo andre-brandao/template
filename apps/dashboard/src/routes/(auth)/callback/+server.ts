@@ -10,5 +10,9 @@ export const GET: RequestHandler = async (event) => {
   if (!code) error(400, "Missing code");
 
   await write(event, await exchange(event.url.origin, code));
-  redirect(303, "/");
+
+  // Set by /login?next=… — the invite round-trip lands back on the accept page.
+  const next = event.cookies.get("next");
+  event.cookies.delete("next", { path: "/" });
+  redirect(303, next && next.startsWith("/") && !next.startsWith("//") ? next : "/");
 };

@@ -9,6 +9,8 @@ import {
   PaginatedQuery,
   PaginatedResponse,
   authRequired,
+  orgRequired,
+  OrgHeader,
 } from "../common";
 import { Todo } from "@template/core/todo";
 import { Examples } from "@template/core/examples";
@@ -16,10 +18,12 @@ import { found } from "@template/core/error";
 
 export namespace TodoApi {
   export const route = new Hono()
+    .use(orgRequired)
     .get(
       "/",
       describeRoute({
         tags: ["Todo"],
+        parameters: [OrgHeader],
         summary: "List todos",
         description: "List the current user's todos, optionally filtered by state. Paginated.",
         responses: {
@@ -39,6 +43,7 @@ export namespace TodoApi {
       "/:id",
       describeRoute({
         tags: ["Todo"],
+        parameters: [OrgHeader],
         summary: "Get todo",
         responses: {
           200: {
@@ -61,6 +66,7 @@ export namespace TodoApi {
       "/",
       describeRoute({
         tags: ["Todo"],
+        parameters: [OrgHeader],
         summary: "Create todo",
         responses: {
           200: {
@@ -84,6 +90,7 @@ export namespace TodoApi {
       "/:id",
       describeRoute({
         tags: ["Todo"],
+        parameters: [OrgHeader],
         summary: "Update todo",
         responses: {
           200: {
@@ -110,6 +117,7 @@ export namespace TodoApi {
       "/:id",
       describeRoute({
         tags: ["Todo"],
+        parameters: [OrgHeader],
         summary: "Delete todo",
         responses: {
           200: {

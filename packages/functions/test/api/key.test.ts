@@ -38,7 +38,7 @@ describe("key", () => {
     const response = await validateOpenAPIRoute("post", "/key", undefined, { name: "laptop" });
     expect(response.name).toBe("laptop");
     expect(response.key).toStartWith("sk-");
-    expect(await Key.verify(response.key)).toBe(userID());
+    expect((await Key.verify(response.key))?.userID).toBe(userID());
   });
 
   test("DELETE /key/:id", async () => {

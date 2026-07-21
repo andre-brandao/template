@@ -2,12 +2,14 @@
 	import { Button, Card } from '@template/ui';
 	import { removeTodo } from '../../api/todos.remote';
 	import type { Todo } from '@template/core/todo';
+	import { org } from '$lib/features/org/context';
 	import StatePill from '../StatePill.svelte';
 	import StateToggle from '../StateToggle.svelte';
 	import TagList from '../TagList.svelte';
 	import { color } from '../../state';
 
 	let { todo }: { todo: Todo.Info } = $props();
+	const ctx = org();
 	const remove = $derived(removeTodo.for(todo.id));
 
 	const preview = $derived(
@@ -27,7 +29,7 @@
 	{/each}
 
 	<div class="head">
-		<a class="title" href="/todos/{todo.id}">{todo.title}</a>
+		<a class="title" href={ctx.path(`/todos/${todo.id}`)}>{todo.title}</a>
 		<StatePill state={todo.state} />
 	</div>
 

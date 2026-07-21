@@ -6,6 +6,7 @@ export const FileTable = table(
   {
     id: id(),
     timeCreated: timestamp("time_created").notNull().defaultNow(),
+    orgID: ulid("org_id").notNull(),
     userID: ulid("user_id").notNull(),
     filename: text("filename").notNull(),
     contentType: text("content_type").notNull(),
@@ -13,5 +14,5 @@ export const FileTable = table(
     tags: text().array().notNull().default([]),
     key: text("key").notNull(),
   },
-  (table) => [index("file_user").on(table.userID)],
+  (table) => [index("file_org").on(table.orgID)],
 );

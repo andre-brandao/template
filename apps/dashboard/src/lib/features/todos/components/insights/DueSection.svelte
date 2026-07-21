@@ -1,8 +1,10 @@
 <script lang="ts">
 	import { getDue } from '../../api/insights.remote';
+	import { org } from '$lib/features/org/context';
 	import StatePill from '../StatePill.svelte';
 	import Section from './Section.svelte';
 
+	const ctx = org();
 	const todos = $derived(await getDue());
 
 	function date(todo: Awaited<ReturnType<typeof getDue>>[number]) {
@@ -17,7 +19,7 @@
 		<ul>
 			{#each todos as todo (todo.id)}
 				<li>
-					<a href="/todos/{todo.id}">{todo.title}</a>
+					<a href={ctx.path(`/todos/${todo.id}`)}>{todo.title}</a>
 					<span>{date(todo)}</span>
 					<StatePill state={todo.state} />
 				</li>

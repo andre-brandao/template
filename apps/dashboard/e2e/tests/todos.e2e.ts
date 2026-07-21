@@ -5,8 +5,8 @@ import { seed } from "../util/seed";
 // created titles never collide across tests sharing the e2e database.
 
 test("creating a todo through the form shows it in the list", async ({ page, as }) => {
-  await as("user");
-  await page.goto("/todos");
+  const session = await as("user");
+  await page.goto(`/${session.orgID}/todos`);
 
   await page.getByRole("button", { name: "New todo" }).click();
   await page.getByPlaceholder("What needs doing?").fill("Write the quarterly report");
@@ -19,7 +19,7 @@ test("existing todos are listed", async ({ page, as }) => {
   const session = await as("user");
   await seed(session.userID, ["Buy milk", "Renew passport"]);
 
-  await page.goto("/todos");
+  await page.goto(`/${session.orgID}/todos`);
 
   await expect(page.getByRole("link", { name: "Buy milk" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Renew passport" })).toBeVisible();

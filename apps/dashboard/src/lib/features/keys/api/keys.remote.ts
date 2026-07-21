@@ -9,7 +9,11 @@ export const getKeys = remote(Key.list)
   .query();
 
 export const createKey = form(
-  z.object({ name: Key.Info.shape.name, ttl: z.enum(["", "30", "90", "365"]).optional() }),
+  z.object({
+    name: Key.Info.shape.name,
+    ttl: z.enum(["", "30", "90", "365"]).optional(),
+    roleID: z.string().optional(),
+  }),
   async (input) => {
     auth();
     const days = input.ttl ? Number(input.ttl) : 0;
@@ -18,6 +22,8 @@ export const createKey = form(
         userID: Actor.userID(),
         name: input.name,
         expiresAt: days ? new Date(Date.now() + days * 86_400_000) : null,
+        // "" is the "your role" default option.
+        roleID: input.roleID || undefined,
       }),
     );
     await getKeys().refresh();

@@ -44,12 +44,7 @@
             ]
           }
         },
-        "required": [
-          "id",
-          "name",
-          "email",
-          "image"
-        ],
+        "required": ["id", "name", "email", "image"],
         "description": "A user account.",
         "example": {
           "id": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX",
@@ -73,45 +68,28 @@
               "internal"
             ],
             "description": "The error type category",
-            "examples": [
-              "validation",
-              "authentication"
-            ]
+            "examples": ["validation", "authentication"]
           },
           "code": {
             "type": "string",
             "description": "Machine-readable error code identifier",
-            "examples": [
-              "invalid_parameter",
-              "missing_required_field",
-              "unauthorized"
-            ]
+            "examples": ["invalid_parameter", "missing_required_field", "unauthorized"]
           },
           "message": {
             "type": "string",
             "description": "Human-readable error message",
-            "examples": [
-              "The request was invalid",
-              "Authentication required"
-            ]
+            "examples": ["The request was invalid", "Authentication required"]
           },
           "param": {
             "description": "The parameter that caused the error (if applicable)",
-            "examples": [
-              "email",
-              "user_id"
-            ],
+            "examples": ["email", "user_id"],
             "type": "string"
           },
           "details": {
             "description": "Additional error context information"
           }
         },
-        "required": [
-          "type",
-          "code",
-          "message"
-        ],
+        "required": ["type", "code", "message"],
         "description": "Permission error"
       },
       "Key": {
@@ -145,10 +123,7 @@
                 "type": "string"
               }
             },
-            "required": [
-              "id",
-              "name"
-            ],
+            "required": ["id", "name"],
             "description": "The role the key acts with — it caps the key's permissions."
           },
           "timeUsed": {
@@ -182,16 +157,7 @@
             "description": "Whether this is the key authenticating the current request."
           }
         },
-        "required": [
-          "id",
-          "name",
-          "key",
-          "display",
-          "role",
-          "timeUsed",
-          "expiresAt",
-          "current"
-        ],
+        "required": ["id", "name", "key", "display", "role", "timeUsed", "expiresAt", "current"],
         "description": "An API key belonging to a user, scoped to a role in an organization.",
         "example": {
           "id": "key_XXXXXXXXXXXXXXXXXXXXXXXXX",
@@ -236,19 +202,13 @@
           },
           "state": {
             "type": "string",
-            "enum": [
-              "open",
-              "closed"
-            ]
+            "enum": ["open", "closed"]
           },
           "stateReason": {
             "anyOf": [
               {
                 "type": "string",
-                "enum": [
-                  "completed",
-                  "not_planned"
-                ]
+                "enum": ["completed", "not_planned"]
               },
               {
                 "type": "null"
@@ -277,16 +237,7 @@
             ]
           }
         },
-        "required": [
-          "id",
-          "userID",
-          "title",
-          "body",
-          "state",
-          "stateReason",
-          "tags",
-          "dueDate"
-        ],
+        "required": ["id", "userID", "title", "body", "state", "stateReason", "tags", "dueDate"],
         "description": "A todo item that belongs to a user.",
         "example": {
           "id": "tod_XXXXXXXXXXXXXXXXXXXXXXXXX",
@@ -334,15 +285,7 @@
             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
           }
         },
-        "required": [
-          "id",
-          "userID",
-          "filename",
-          "contentType",
-          "size",
-          "tags",
-          "timeCreated"
-        ],
+        "required": ["id", "userID", "filename", "contentType", "size", "tags", "timeCreated"],
         "description": "An uploaded file that belongs to a user.",
         "example": {
           "id": "fil_XXXXXXXXXXXXXXXXXXXXXXXXX",
@@ -367,10 +310,7 @@
             "minLength": 1
           }
         },
-        "required": [
-          "id",
-          "name"
-        ],
+        "required": ["id", "name"],
         "description": "An organization users belong to through members.",
         "example": {
           "id": "org_XXXXXXXXXXXXXXXXXXXXXXXXX",
@@ -417,21 +357,10 @@
                 "type": "boolean"
               }
             },
-            "required": [
-              "name",
-              "owner"
-            ]
+            "required": ["name", "owner"]
           }
         },
-        "required": [
-          "id",
-          "userID",
-          "name",
-          "email",
-          "image",
-          "roleID",
-          "role"
-        ],
+        "required": ["id", "userID", "name", "email", "image", "roleID", "role"],
         "description": "A user's membership in an organization, carrying their role.",
         "example": {
           "id": "mbr_XXXXXXXXXXXXXXXXXXXXXXXXX",
@@ -470,20 +399,12 @@
             "description": "The seeded owner role — cannot be edited or removed."
           }
         },
-        "required": [
-          "id",
-          "name",
-          "permissions",
-          "owner"
-        ],
+        "required": ["id", "name", "permissions", "owner"],
         "description": "A role grouping permissions, assignable to members of an organization.",
         "example": {
           "id": "rol_XXXXXXXXXXXXXXXXXXXXXXXXX",
           "name": "Editor",
-          "permissions": [
-            "todo:read",
-            "todo:write"
-          ],
+          "permissions": ["todo:read", "todo:write"],
           "owner": false
         }
       },
@@ -505,11 +426,7 @@
           },
           "status": {
             "type": "string",
-            "enum": [
-              "pending",
-              "accepted",
-              "revoked"
-            ]
+            "enum": ["pending", "accepted", "revoked"]
           },
           "token": {
             "type": "string"
@@ -520,14 +437,7 @@
             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
           }
         },
-        "required": [
-          "id",
-          "email",
-          "roleID",
-          "status",
-          "token",
-          "timeExpires"
-        ],
+        "required": ["id", "email", "roleID", "status", "token", "timeExpires"],
         "description": "A pending invite to join an organization with a given role.",
         "example": {
           "id": "inv_XXXXXXXXXXXXXXXXXXXXXXXXX",
@@ -555,9 +465,7 @@
     "/me": {
       "get": {
         "operationId": "getMe",
-        "tags": [
-          "User"
-        ],
+        "tags": ["User"],
         "summary": "Get current user",
         "description": "Get the profile of the currently authenticated user.",
         "responses": {
@@ -614,9 +522,7 @@
     "/key": {
       "get": {
         "operationId": "getKey",
-        "tags": [
-          "Key"
-        ],
+        "tags": ["Key"],
         "summary": "List keys",
         "description": "List the current user's API keys. The key authenticating this request is flagged `current`.",
         "responses": {
@@ -682,9 +588,7 @@
       },
       "post": {
         "operationId": "postKey",
-        "tags": [
-          "Key"
-        ],
+        "tags": ["Key"],
         "summary": "Create key",
         "description": "Mint a named API key for the current user. Pass `expiresInDays` to set an expiry; omit it for a key that never expires. `roleID` scopes the key to a role in one of your orgs; without it the key takes your own role in the org named by `X-Org-ID`. The role's permissions must not exceed yours.",
         "responses": {
@@ -778,9 +682,7 @@
                     "type": "string"
                   }
                 },
-                "required": [
-                  "name"
-                ]
+                "required": ["name"]
               }
             }
           }
@@ -790,9 +692,7 @@
     "/key/{id}": {
       "delete": {
         "operationId": "deleteKeyById",
-        "tags": [
-          "Key"
-        ],
+        "tags": ["Key"],
         "summary": "Revoke key",
         "description": "Revoke an API key. The secret stops authenticating immediately.",
         "responses": {
@@ -868,9 +768,7 @@
     "/todo": {
       "get": {
         "operationId": "getTodo",
-        "tags": [
-          "Todo"
-        ],
+        "tags": ["Todo"],
         "parameters": [
           {
             "name": "X-Org-ID",
@@ -903,10 +801,7 @@
             "name": "state",
             "schema": {
               "type": "string",
-              "enum": [
-                "open",
-                "closed"
-              ]
+              "enum": ["open", "closed"]
             }
           }
         ],
@@ -938,12 +833,7 @@
                       "description": "Total number of matching entities across all pages."
                     }
                   },
-                  "required": [
-                    "data",
-                    "page",
-                    "pageSize",
-                    "total"
-                  ],
+                  "required": ["data", "page", "pageSize", "total"],
                   "description": "A page of results."
                 },
                 "example": {
@@ -1001,9 +891,7 @@
       },
       "post": {
         "operationId": "postTodo",
-        "tags": [
-          "Todo"
-        ],
+        "tags": ["Todo"],
         "parameters": [
           {
             "name": "X-Org-ID",
@@ -1118,9 +1006,7 @@
                     ]
                   }
                 },
-                "required": [
-                  "title"
-                ]
+                "required": ["title"]
               }
             }
           }
@@ -1130,9 +1016,7 @@
     "/todo/{id}": {
       "get": {
         "operationId": "getTodoById",
-        "tags": [
-          "Todo"
-        ],
+        "tags": ["Todo"],
         "parameters": [
           {
             "name": "X-Org-ID",
@@ -1223,9 +1107,7 @@
       },
       "patch": {
         "operationId": "patchTodoById",
-        "tags": [
-          "Todo"
-        ],
+        "tags": ["Todo"],
         "parameters": [
           {
             "name": "X-Org-ID",
@@ -1364,19 +1246,13 @@
                   },
                   "state": {
                     "type": "string",
-                    "enum": [
-                      "open",
-                      "closed"
-                    ]
+                    "enum": ["open", "closed"]
                   },
                   "stateReason": {
                     "anyOf": [
                       {
                         "type": "string",
-                        "enum": [
-                          "completed",
-                          "not_planned"
-                        ]
+                        "enum": ["completed", "not_planned"]
                       },
                       {
                         "type": "null"
@@ -1391,9 +1267,7 @@
       },
       "delete": {
         "operationId": "deleteTodoById",
-        "tags": [
-          "Todo"
-        ],
+        "tags": ["Todo"],
         "parameters": [
           {
             "name": "X-Org-ID",
@@ -1477,9 +1351,7 @@
     "/file": {
       "post": {
         "operationId": "postFile",
-        "tags": [
-          "File"
-        ],
+        "tags": ["File"],
         "parameters": [
           {
             "name": "X-Org-ID",
@@ -1507,9 +1379,7 @@
                     "type": "string"
                   }
                 },
-                "required": [
-                  "file"
-                ]
+                "required": ["file"]
               }
             }
           }
@@ -1583,9 +1453,7 @@
       },
       "get": {
         "operationId": "getFile",
-        "tags": [
-          "File"
-        ],
+        "tags": ["File"],
         "parameters": [
           {
             "name": "X-Org-ID",
@@ -1656,12 +1524,7 @@
                       "description": "Total number of matching entities across all pages."
                     }
                   },
-                  "required": [
-                    "data",
-                    "page",
-                    "pageSize",
-                    "total"
-                  ],
+                  "required": ["data", "page", "pageSize", "total"],
                   "description": "A page of results."
                 },
                 "example": {
@@ -1735,9 +1598,7 @@
     "/file/{id}": {
       "get": {
         "operationId": "getFileById",
-        "tags": [
-          "File"
-        ],
+        "tags": ["File"],
         "parameters": [
           {
             "name": "X-Org-ID",
@@ -1818,9 +1679,7 @@
       },
       "patch": {
         "operationId": "patchFileById",
-        "tags": [
-          "File"
-        ],
+        "tags": ["File"],
         "parameters": [
           {
             "name": "X-Org-ID",
@@ -1938,9 +1797,7 @@
       },
       "delete": {
         "operationId": "deleteFileById",
-        "tags": [
-          "File"
-        ],
+        "tags": ["File"],
         "parameters": [
           {
             "name": "X-Org-ID",
@@ -2024,9 +1881,7 @@
     "/file/{id}/content": {
       "get": {
         "operationId": "getFileByIdContent",
-        "tags": [
-          "File"
-        ],
+        "tags": ["File"],
         "parameters": [
           {
             "name": "X-Org-ID",
@@ -2106,9 +1961,7 @@
     "/organization": {
       "get": {
         "operationId": "getOrganization",
-        "tags": [
-          "Organization"
-        ],
+        "tags": ["Organization"],
         "summary": "List organizations",
         "description": "List the organizations the current user belongs to. Org-scoped routes name one of them with the `X-Org-ID` header.",
         "responses": {
@@ -2165,9 +2018,7 @@
       },
       "post": {
         "operationId": "postOrganization",
-        "tags": [
-          "Organization"
-        ],
+        "tags": ["Organization"],
         "summary": "Create organization",
         "description": "Create an organization owned by the current user, with default roles seeded.",
         "responses": {
@@ -2239,9 +2090,7 @@
                     "minLength": 1
                   }
                 },
-                "required": [
-                  "name"
-                ]
+                "required": ["name"]
               }
             }
           }
@@ -2249,9 +2098,7 @@
       },
       "patch": {
         "operationId": "patchOrganization",
-        "tags": [
-          "Organization"
-        ],
+        "tags": ["Organization"],
         "parameters": [
           {
             "name": "X-Org-ID",
@@ -2335,9 +2182,7 @@
                     "minLength": 1
                   }
                 },
-                "required": [
-                  "name"
-                ]
+                "required": ["name"]
               }
             }
           }
@@ -2347,9 +2192,7 @@
     "/organization/member": {
       "get": {
         "operationId": "getOrganizationMember",
-        "tags": [
-          "Organization"
-        ],
+        "tags": ["Organization"],
         "parameters": [
           {
             "name": "X-Org-ID",
@@ -2442,9 +2285,7 @@
     "/organization/member/{id}": {
       "patch": {
         "operationId": "patchOrganizationMemberById",
-        "tags": [
-          "Organization"
-        ],
+        "tags": ["Organization"],
         "parameters": [
           {
             "name": "X-Org-ID",
@@ -2565,9 +2406,7 @@
                     "type": "string"
                   }
                 },
-                "required": [
-                  "roleID"
-                ]
+                "required": ["roleID"]
               }
             }
           }
@@ -2575,9 +2414,7 @@
       },
       "delete": {
         "operationId": "deleteOrganizationMemberById",
-        "tags": [
-          "Organization"
-        ],
+        "tags": ["Organization"],
         "parameters": [
           {
             "name": "X-Org-ID",
@@ -2692,9 +2529,7 @@
     "/organization/role": {
       "get": {
         "operationId": "getOrganizationRole",
-        "tags": [
-          "Organization"
-        ],
+        "tags": ["Organization"],
         "parameters": [
           {
             "name": "X-Org-ID",
@@ -2722,10 +2557,7 @@
                   {
                     "id": "rol_XXXXXXXXXXXXXXXXXXXXXXXXX",
                     "name": "Editor",
-                    "permissions": [
-                      "todo:read",
-                      "todo:write"
-                    ],
+                    "permissions": ["todo:read", "todo:write"],
                     "owner": false
                   }
                 ]
@@ -2782,9 +2614,7 @@
       },
       "post": {
         "operationId": "postOrganizationRole",
-        "tags": [
-          "Organization"
-        ],
+        "tags": ["Organization"],
         "parameters": [
           {
             "name": "X-Org-ID",
@@ -2900,10 +2730,7 @@
                     }
                   }
                 },
-                "required": [
-                  "name",
-                  "permissions"
-                ]
+                "required": ["name", "permissions"]
               }
             }
           }
@@ -2913,9 +2740,7 @@
     "/organization/role/{id}": {
       "patch": {
         "operationId": "patchOrganizationRoleById",
-        "tags": [
-          "Organization"
-        ],
+        "tags": ["Organization"],
         "parameters": [
           {
             "name": "X-Org-ID",
@@ -3062,9 +2887,7 @@
       },
       "delete": {
         "operationId": "deleteOrganizationRoleById",
-        "tags": [
-          "Organization"
-        ],
+        "tags": ["Organization"],
         "parameters": [
           {
             "name": "X-Org-ID",
@@ -3179,9 +3002,7 @@
     "/organization/invitation": {
       "get": {
         "operationId": "getOrganizationInvitation",
-        "tags": [
-          "Organization"
-        ],
+        "tags": ["Organization"],
         "parameters": [
           {
             "name": "X-Org-ID",
@@ -3268,9 +3089,7 @@
       },
       "post": {
         "operationId": "postOrganizationInvitation",
-        "tags": [
-          "Organization"
-        ],
+        "tags": ["Organization"],
         "parameters": [
           {
             "name": "X-Org-ID",
@@ -3372,10 +3191,7 @@
                     "type": "string"
                   }
                 },
-                "required": [
-                  "email",
-                  "roleID"
-                ]
+                "required": ["email", "roleID"]
               }
             }
           }
@@ -3385,9 +3201,7 @@
     "/organization/invitation/{id}": {
       "delete": {
         "operationId": "deleteOrganizationInvitationById",
-        "tags": [
-          "Organization"
-        ],
+        "tags": ["Organization"],
         "parameters": [
           {
             "name": "X-Org-ID",

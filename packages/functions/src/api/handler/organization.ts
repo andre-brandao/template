@@ -91,7 +91,10 @@ export namespace OrganizationApi {
         responses: {
           200: {
             content: {
-              "application/json": { schema: Result(Member.Info.array()), example: [Examples.Member] },
+              "application/json": {
+                schema: Result(Member.Info.array()),
+                example: [Examples.Member],
+              },
             },
             description: "The organization's members.",
           },
@@ -316,10 +319,7 @@ export namespace OrganizationApi {
       }),
       authRequired,
       orgRequired,
-      validator(
-        "json",
-        z.object({ email: Invitation.Info.shape.email, roleID: z.string() }),
-      ),
+      validator("json", z.object({ email: Invitation.Info.shape.email, roleID: z.string() })),
       async (c) => c.json(await Invitation.create(c.req.valid("json")), 200),
     )
     .delete(

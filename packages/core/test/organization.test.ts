@@ -160,18 +160,12 @@ describe("organization", () => {
 
         const member = (await Role.list()).find((r) => r.name === "Member")!;
         await Member.assign({ id: other.id, roleID: member.id });
-        expect(
-          (await Member.list()).find((m) => m.id === other.id)?.roleID,
-        ).toBe(member.id);
+        expect((await Member.list()).find((m) => m.id === other.id)?.roleID).toBe(member.id);
       },
       orgID,
     );
     await as(guest.userID, () => Member.leave(), orgID);
-    await as(
-      owner.userID,
-      async () => expect(await Member.list()).toHaveLength(1),
-      orgID,
-    );
+    await as(owner.userID, async () => expect(await Member.list()).toHaveLength(1), orgID);
   });
 
   it("invitations reject duplicates, mismatched emails, and reuse", async () => {
@@ -196,8 +190,10 @@ describe("organization", () => {
     const info = await Invitation.fromToken(token);
     expect(info).toMatchObject({ org: "Acme", email: guest.email, status: "pending" });
 
-    await as(stranger.userID, async () =>
-      await expect(Invitation.accept(token)).rejects.toMatchObject({ code: "forbidden" }),
+    await as(
+      stranger.userID,
+      async () =>
+        await expect(Invitation.accept(token)).rejects.toMatchObject({ code: "forbidden" }),
     );
 
     expect(await as(guest.userID, () => Invitation.accept(token))).toBe(orgID);
@@ -228,8 +224,12 @@ describe("organization", () => {
         await Invitation.create({ email: guest.email, roleID });
         const invite = (await Invitation.list()).find((i) => i.email === guest.email)!;
         await Invitation.revoke(invite.id);
-        await as(guest.userID, async () =>
-          await expect(Invitation.accept(invite.token)).rejects.toMatchObject({ code: "invalid_state" }),
+        await as(
+          guest.userID,
+          async () =>
+            await expect(Invitation.accept(invite.token)).rejects.toMatchObject({
+              code: "invalid_state",
+            }),
         );
 
         await Invitation.create({ email: guest.email, roleID });
@@ -240,8 +240,12 @@ describe("organization", () => {
             .set({ timeExpires: new Date(Date.now() - 1000) })
             .where(eq(InvitationTable.id, again.id)),
         );
-        await as(guest.userID, async () =>
-          await expect(Invitation.accept(again.token)).rejects.toMatchObject({ code: "invalid_state" }),
+        await as(
+          guest.userID,
+          async () =>
+            await expect(Invitation.accept(again.token)).rejects.toMatchObject({
+              code: "invalid_state",
+            }),
         );
       },
       orgID,

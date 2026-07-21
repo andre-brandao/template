@@ -21,7 +21,9 @@ export namespace Role {
       name: z.string().min(1).max(255),
       // Output allows "*" (the seeded owner role); input never does — see create/update.
       permissions: z.string().array(),
-      owner: z.boolean().meta({ description: "The seeded owner role — cannot be edited or removed." }),
+      owner: z
+        .boolean()
+        .meta({ description: "The seeded owner role — cannot be edited or removed." }),
     })
     .meta({
       ref: "Role",

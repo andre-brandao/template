@@ -84,41 +84,38 @@ export namespace Member {
     );
   });
 
-  export const assign = fn(
-    z.object({ id: Info.shape.id, roleID: z.string() }),
-    async (input) => {
-      Permission.assert("member:manage");
-      return Database.transaction(async (tx) => {
-        const member = found("Member", await fromID(tx, input.id));
-        if (member.userID === Actor.userID())
-          throw new VisibleError(
-            "validation",
-            ErrorCodes.Validation.INVALID_STATE,
-            "You cannot change your own role",
-          );
-        const role = found(
-          "Role",
-          await tx
-            .select({ owner: RoleTable.owner })
-            .from(RoleTable)
-            .where(and(eq(RoleTable.id, input.roleID), eq(RoleTable.orgID, Actor.orgID())))
-            .then((rows) => rows.at(0)),
+  export const assign = fn(z.object({ id: Info.shape.id, roleID: z.string() }), async (input) => {
+    Permission.assert("member:manage");
+    return Database.transaction(async (tx) => {
+      const member = found("Member", await fromID(tx, input.id));
+      if (member.userID === Actor.userID())
+        throw new VisibleError(
+          "validation",
+          ErrorCodes.Validation.INVALID_STATE,
+          "You cannot change your own role",
         );
-        if (member.owner && !role.owner) await guard(tx);
+      const role = found(
+        "Role",
         await tx
-          .update(MemberTable)
-          .set({ roleID: input.roleID, timeUpdated: new Date() })
-          .where(eq(MemberTable.id, input.id));
-        await Event.create({
-          type: "member.assigned",
-          source: "member",
-          sourceID: input.id,
-          tags: [`org:${Actor.orgID()}`],
-          data: { userID: member.userID, roleID: input.roleID },
-        });
+          .select({ owner: RoleTable.owner })
+          .from(RoleTable)
+          .where(and(eq(RoleTable.id, input.roleID), eq(RoleTable.orgID, Actor.orgID())))
+          .then((rows) => rows.at(0)),
+      );
+      if (member.owner && !role.owner) await guard(tx);
+      await tx
+        .update(MemberTable)
+        .set({ roleID: input.roleID, timeUpdated: new Date() })
+        .where(eq(MemberTable.id, input.id));
+      await Event.create({
+        type: "member.assigned",
+        source: "member",
+        sourceID: input.id,
+        tags: [`org:${Actor.orgID()}`],
+        data: { userID: member.userID, roleID: input.roleID },
       });
-    },
-  );
+    });
+  });
 
   export const remove = fn(Info.shape.id, async (id) => {
     Permission.assert("member:manage");

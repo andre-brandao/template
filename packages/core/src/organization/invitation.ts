@@ -141,9 +141,7 @@ export namespace Invitation {
           timeExpires: InvitationTable.timeExpires,
         })
         .from(InvitationTable)
-        .where(
-          and(eq(InvitationTable.orgID, Actor.orgID()), eq(InvitationTable.status, "pending")),
-        )
+        .where(and(eq(InvitationTable.orgID, Actor.orgID()), eq(InvitationTable.status, "pending")))
         .orderBy(InvitationTable.timeCreated)
         .then((rows) => rows.map(serialize)),
     );

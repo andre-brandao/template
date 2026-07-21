@@ -150,10 +150,11 @@ describe("file", () => {
         "user",
         { userID: otherID, orgID: otherOrg, permissions: membership?.permissions },
         async () => {
-        expect(await File.fromID(info.id)).toBeNull();
-        expect(await File.content(info.id)).toBeNull();
-        await expect(File.remove(info.id)).rejects.toThrow("not found");
-      });
+          expect(await File.fromID(info.id)).toBeNull();
+          expect(await File.content(info.id)).toBeNull();
+          await expect(File.remove(info.id)).rejects.toThrow("not found");
+        },
+      );
     });
   });
 });

@@ -156,7 +156,11 @@ export namespace Todo {
         .select()
         .from(TodoTable)
         .where(
-          and(eq(TodoTable.id, id), eq(TodoTable.orgID, Actor.orgID()), isNull(TodoTable.timeDeleted)),
+          and(
+            eq(TodoTable.id, id),
+            eq(TodoTable.orgID, Actor.orgID()),
+            isNull(TodoTable.timeDeleted),
+          ),
         )
         .then((rows) => (rows[0] ? serialize(rows[0]) : null)),
     );

@@ -6,10 +6,10 @@ on:
     branches:
       - prod
       - dev
-  pull_request:
-    types: [opened, synchronize, reopened, closed]
-    branches:
-      - dev
+  # pull_request:
+  #   types: [opened, synchronize, reopened, closed]
+  #   branches:
+  #     - dev
 
 concurrency:
   group: sst-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || github.ref_name }}

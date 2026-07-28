@@ -11,13 +11,7 @@ export function paged<R, O>(
 ) {
   return Database.use(async (tx) => {
     const [rows, totalRows] = await Promise.all([
-      tx
-        .select()
-        .from(table)
-        .where(where)
-        .orderBy(order)
-        .limit(meta.limit)
-        .offset(meta.offset),
+      tx.select().from(table).where(where).orderBy(order).limit(meta.limit).offset(meta.offset),
       tx.select({ total: count() }).from(table).where(where),
     ] as const);
     return {

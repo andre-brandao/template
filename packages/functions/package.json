@@ -21,12 +21,12 @@
   },
   "dependencies": {
     "@hono/mcp": "^0.3.1",
-    "@hono/standard-validator": "^0.2.2",
-    "@modelcontextprotocol/sdk": "^1.29.0",
+    "@hono/standard-validator": "^0.3.0",
+    "@modelcontextprotocol/sdk": "^1.30.0",
     "@openauthjs/openauth": "catalog:",
     "@template/core": "workspace:*",
     "hono": "catalog:",
-    "hono-openapi": "^1.1.2",
+    "hono-openapi": "catalog:",
     "sst": "catalog:",
     "zod": "catalog:"
   },

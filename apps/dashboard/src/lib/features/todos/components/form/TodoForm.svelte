@@ -5,9 +5,9 @@
 	import '@cartamd/plugin-attachment/default.css';
 	import '$lib/markdown.css';
 	import { createCarta } from '$lib/markdown';
-	import { org } from '$lib/features/org/context';
+	import { org } from '$lib/context/org';
 	import { createTodo } from '../../api/todos.remote';
-	import TagEditor from '../TagEditor.svelte';
+	import TagEditor from '$lib/components/TagEditor.svelte';
 
 	let { onsuccess }: { onsuccess?: () => void } = $props();
 

@@ -1,11 +1,15 @@
 <script lang="ts">
-	let { tags }: { tags: string[] } = $props();
+	let { tags, onclick }: { tags: string[]; onclick?: (tag: string) => void } = $props();
 </script>
 
 {#if tags.length > 0}
 	<span class="tags">
 		{#each tags as tag (tag)}
-			<span class="tag">{tag}</span>
+			{#if onclick}
+				<button class="tag" type="button" onclick={() => onclick(tag)}>{tag}</button>
+			{:else}
+				<span class="tag">{tag}</span>
+			{/if}
 		{/each}
 	</span>
 {/if}
@@ -25,5 +29,14 @@
 		font-family: var(--font-mono);
 		font-size: 0.72em;
 		padding: 0.2em 0.55em;
+	}
+
+	button.tag {
+		cursor: pointer;
+	}
+
+	button.tag:hover {
+		border-color: var(--accent);
+		color: var(--ink);
 	}
 </style>

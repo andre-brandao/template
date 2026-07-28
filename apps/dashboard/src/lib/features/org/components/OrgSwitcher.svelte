@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { Button, Drawer, FormBoundary, Input, Issues } from '@template/ui';
-	import { org } from '../context';
+	import { org } from '$lib/context/org';
 	import { createOrg } from '../api/org.remote';
 
 	const ctx = org();

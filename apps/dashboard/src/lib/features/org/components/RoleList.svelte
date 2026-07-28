@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Button, Drawer, FormBoundary, Issues } from '@template/ui';
-	import { org } from '../context';
+	import { org } from '$lib/context/org';
 	import { getMembers } from '../api/members.remote';
 	import { getRoles, removeRole } from '../api/roles.remote';
 	import RoleForm from './RoleForm.svelte';
@@ -26,7 +26,7 @@
 		</div>
 	{/if}
 
-	<ul>
+	<ul class="rows">
 		{#each roles as role (role.id)}
 			{@const held = members.filter((m) => m.roleID === role.id).length}
 			<li>
@@ -89,23 +89,6 @@
 		margin-bottom: 0.6em;
 	}
 
-	ul {
-		list-style: none;
-		margin: 0;
-		padding: 0;
-		display: flex;
-		flex-direction: column;
-	}
-
-	li {
-		display: flex;
-		align-items: center;
-		gap: 1em;
-		flex-wrap: wrap;
-		padding: 0.6em 0.2em;
-		border-top: 1px solid var(--border);
-	}
-
 	.meta {
 		display: flex;
 		flex-direction: column;
@@ -119,16 +102,6 @@
 		align-items: center;
 		gap: 0.5em;
 		font-weight: 600;
-	}
-
-	.badge {
-		font-family: var(--font-mono);
-		font-size: 0.7em;
-		font-weight: 500;
-		color: var(--muted);
-		border: 1px solid var(--border);
-		border-radius: var(--radius);
-		padding: 0.1em 0.45em;
 	}
 
 	.count {

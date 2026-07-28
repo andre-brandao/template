@@ -21,7 +21,7 @@
 	{#if invites.length === 0}
 		<p class="empty">No pending invitations.</p>
 	{:else}
-		<ul>
+		<ul class="rows">
 			{#each invites as invite (invite.id)}
 				<li>
 					<div class="meta">
@@ -52,23 +52,6 @@
 </FormBoundary>
 
 <style>
-	ul {
-		list-style: none;
-		margin: 0;
-		padding: 0;
-		display: flex;
-		flex-direction: column;
-	}
-
-	li {
-		display: flex;
-		align-items: center;
-		gap: 1em;
-		flex-wrap: wrap;
-		padding: 0.6em 0.2em;
-		border-top: 1px solid var(--border);
-	}
-
 	.meta {
 		display: flex;
 		flex-direction: column;

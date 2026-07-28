@@ -2,7 +2,7 @@
   import { z } from 'zod'
   import { query } from '$lib/utils/params'
   import { Button, Drawer } from '@template/ui'
-  import { org } from '$lib/features/org/context'
+  import { org } from '$lib/context/org'
   import { getTodos } from '../api/todos.remote'
   import TodoForm from '../components/form/TodoForm.svelte'
   import TodoFilters from '../components/TodoFilters.svelte'

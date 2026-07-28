@@ -5,12 +5,13 @@
 	import PreLoadingIndicator from './PreLoadingIndicator.svelte';
 	import Topbar from '$lib/components/layout/Topbar.svelte';
 	import Sidebar from '$lib/components/layout/Sidebar.svelte';
-	import { provide } from '$lib/features/auth/context';
-	import { provide as provideOrg } from '$lib/features/org/context';
+	import { provideUser } from '$lib/context/user';
+	import { provideOrg } from '$lib/context/org';
+	import OrgSwitcher from '$lib/features/org/components/OrgSwitcher.svelte';
 
 	let { data, children } = $props();
 
-	const me = provide({
+	const me = provideUser({
 		get current() {
 			return data.user;
 		}
@@ -43,7 +44,11 @@
 {/if}
 
 <div class="shell">
-	<Topbar user={me.current} />
+	<Topbar user={me.current}>
+		{#if me.current}
+			<OrgSwitcher />
+		{/if}
+	</Topbar>
 	<div class="body">
 		{#if me.current}
 			<Sidebar />

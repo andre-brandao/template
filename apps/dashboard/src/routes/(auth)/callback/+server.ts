@@ -3,6 +3,12 @@ import { exchange } from "$lib/server/auth";
 import { write } from "$lib/server/session";
 import type { RequestHandler } from "./$types";
 
+/** Only same-site paths — an absolute or protocol-relative `next` falls back home. */
+function target(next: string | undefined) {
+  if (!next) return "/";
+  return next.startsWith("/") && !next.startsWith("//") ? next : "/";
+}
+
 export const GET: RequestHandler = async (event) => {
   const code = event.url.searchParams.get("code");
   const err = event.url.searchParams.get("error");
@@ -14,5 +20,5 @@ export const GET: RequestHandler = async (event) => {
   // Set by /login?next=… — the invite round-trip lands back on the accept page.
   const next = event.cookies.get("next");
   event.cookies.delete("next", { path: "/" });
-  redirect(303, next && next.startsWith("/") && !next.startsWith("//") ? next : "/");
+  redirect(303, target(next));
 };

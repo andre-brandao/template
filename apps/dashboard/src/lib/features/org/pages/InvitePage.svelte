@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Button, Card, FormBoundary, Issues } from '@template/ui';
-	import { user } from '$lib/features/auth/context';
+	import { user } from '$lib/context/user';
 	import { acceptInvite, getInvite } from '../api/invite.remote';
 
 	let { token }: { token: string } = $props();
@@ -37,7 +37,7 @@
 					</form>
 				</FormBoundary>
 			{:else}
-				<a class="login" href="/login?next={encodeURIComponent(`/invite/${token}`)}">
+				<a class="btn login" href="/login?next={encodeURIComponent(`/invite/${token}`)}">
 					Log in to accept
 				</a>
 			{/if}
@@ -71,19 +71,6 @@
 	}
 
 	.login {
-		display: inline-block;
 		margin-top: 0.5em;
-		font-family: var(--font-mono);
-		font-size: 0.85em;
-		text-decoration: none;
-		color: var(--ink);
-		background: var(--surface-2);
-		border: 1px solid var(--border);
-		border-radius: var(--radius);
-		padding: 0.55em 1.1em;
-	}
-
-	.login:hover {
-		border-color: var(--border-bright);
 	}
 </style>

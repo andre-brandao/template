@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { getDue } from '../../api/insights.remote';
-	import { org } from '$lib/features/org/context';
+	import { org } from '$lib/context/org';
 	import StatePill from '../StatePill.svelte';
 	import Section from './Section.svelte';
 

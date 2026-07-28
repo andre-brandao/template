@@ -1,6 +1,7 @@
 import { z } from "zod";
-import { and, count, desc, eq, ilike, isNull } from "drizzle-orm";
+import { and, desc, eq, ilike, isNull } from "drizzle-orm";
 import { fn } from "../util/fn";
+import { paged } from "../util/paged";
 import { found } from "../error";
 import { Database } from "../drizzle";
 import { Actor } from "../actor";
@@ -20,8 +21,6 @@ export namespace Todo {
   export const StateReason = z.enum(["completed", "not_planned"]).nullable();
   export type StateReason = z.infer<typeof StateReason>;
 
-  const Tag = z.string().trim().min(1).max(64);
-
   export const Info = z
     .object({
       id: z.string().meta({ description: Common.IdDescription, example: Examples.Todo.id }),
@@ -30,7 +29,7 @@ export namespace Todo {
       body: z.string().max(20000).nullable(),
       state: State,
       stateReason: StateReason,
-      tags: Tag.array().max(20),
+      tags: Common.Tag.array().max(20),
       dueDate: z.iso.datetime().nullable(),
     })
     .meta({
@@ -123,24 +122,16 @@ export namespace Todo {
     }),
     (input) => {
       Permission.assert("todo:read");
-      const { page, pageSize, limit, offset } = Common.page(input);
       const conditions = [eq(TodoTable.orgID, Actor.orgID()), isNull(TodoTable.timeDeleted)];
       if (input.state) conditions.push(eq(TodoTable.state, input.state));
       if (input.search) conditions.push(ilike(TodoTable.title, `%${input.search}%`));
-      const where = and(...conditions);
-      return Database.use(async (tx) => {
-        const [rows, totalRows] = await Promise.all([
-          tx
-            .select()
-            .from(TodoTable)
-            .where(where)
-            .orderBy(desc(TodoTable.timeCreated))
-            .limit(limit)
-            .offset(offset),
-          tx.select({ total: count() }).from(TodoTable).where(where),
-        ] as const);
-        return { data: rows.map(serialize), page, pageSize, total: totalRows[0]?.total ?? 0 };
-      });
+      return paged(
+        Common.page(input),
+        TodoTable,
+        and(...conditions),
+        desc(TodoTable.timeCreated),
+        serialize,
+      );
     },
   );
 

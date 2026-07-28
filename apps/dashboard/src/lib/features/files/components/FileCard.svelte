@@ -3,8 +3,9 @@
 	import type { File } from '@template/core/file';
 	import { ago } from '$lib/utils/time';
 	import { size } from '$lib/utils/size';
+	import Tags from '$lib/components/Tags.svelte';
 	import { removeFile } from '../api/files.remote';
-	import { org } from '$lib/features/org/context';
+	import { org } from '$lib/context/org';
 
 	const ctx = org();
 
@@ -40,13 +41,7 @@
 			<span class="meta">
 				{size(file.size)} · {file.contentType} · {ago(file.timeCreated)}
 			</span>
-			{#if file.tags.length > 0}
-				<span class="tags">
-					{#each file.tags as tag (tag)}
-						<button class="tag" type="button" onclick={() => ontag(tag)}>{tag}</button>
-					{/each}
-				</span>
-			{/if}
+			<Tags tags={file.tags} onclick={ontag} />
 		</div>
 
 		<div class="actions">
@@ -124,28 +119,6 @@
 		color: var(--dim);
 		font-size: 0.78em;
 		font-family: var(--font-mono);
-	}
-
-	.tags {
-		display: inline-flex;
-		flex-wrap: wrap;
-		gap: 0.35em;
-	}
-
-	.tag {
-		border: 1px solid var(--border);
-		background: var(--surface-2);
-		color: var(--muted);
-		border-radius: 999px;
-		font-family: var(--font-mono);
-		font-size: 0.72em;
-		padding: 0.2em 0.55em;
-		cursor: pointer;
-	}
-
-	.tag:hover {
-		border-color: var(--accent);
-		color: var(--ink);
 	}
 
 	.actions {

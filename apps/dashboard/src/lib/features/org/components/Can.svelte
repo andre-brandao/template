@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
-	import { org } from '../context';
+	import { org } from '$lib/context/org';
 	import type { permissions } from '../permissions';
 
 	let {

@@ -8,7 +8,7 @@ type Info = { id: string; name: string };
  * only — core enforces for real. `path` prefixes an app path with the active
  * org, e.g. `path('/todos')` → `/org_123/todos`.
  */
-export const [org, provide] = createContext<{
+export const [org, provideOrg] = createContext<{
   readonly current: Info | null;
   readonly orgs: Info[];
   readonly permissions: string[];

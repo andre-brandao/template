@@ -78,16 +78,16 @@ function status() {
 
 const result = await Database.provide(url, async () => {
   const userID = await Auth.provision({ provider: "email", accountId: email, email, name });
-  const key = await Key.create({ userID, name: "seed" });
 
   // Provision seeds the personal org; the actor needs it in scope for permission checks.
   const member = await Member.resolve({ userID });
-  await Actor.provide(
+  return Actor.provide(
     "user",
     { userID, orgID: member?.orgID, permissions: member?.permissions },
     async () => {
+      const key = await Key.create({ userID, name: "seed" });
       const list = await Todo.list({ page: 1, pageSize: 100 });
-      if (list.total > 0) return;
+      if (list.total > 0) return key;
 
       await Promise.all(
         Array.from({ length: count }, async () => {
@@ -107,10 +107,9 @@ const result = await Database.provide(url, async () => {
           );
         }),
       );
+      return key;
     },
   );
-
-  return key;
 });
 
 console.log("Seed completed");

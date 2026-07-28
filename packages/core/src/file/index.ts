@@ -1,8 +1,9 @@
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { z } from "zod";
-import { and, arrayOverlaps, count, desc, eq, ilike } from "drizzle-orm";
+import { and, arrayOverlaps, desc, eq, ilike } from "drizzle-orm";
 import { fn } from "../util/fn";
+import { paged } from "../util/paged";
 import { found, VisibleError, ErrorCodes } from "../error";
 import { Database } from "../drizzle";
 import { Actor } from "../actor";
@@ -84,8 +85,6 @@ export namespace File {
     return value;
   }
 
-  const Tag = z.string().trim().min(1).max(64);
-
   export const Info = z
     .object({
       id: z.string().meta({ description: Common.IdDescription, example: Examples.File.id }),
@@ -93,7 +92,7 @@ export namespace File {
       filename: z.string(),
       contentType: z.string(),
       size: z.number(),
-      tags: Tag.array().max(20),
+      tags: Common.Tag.array().max(20),
       timeCreated: z.iso.datetime(),
     })
     .meta({
@@ -121,7 +120,7 @@ export namespace File {
   export const upload = fn(
     z.object({
       file: z.instanceof(globalThis.File),
-      tags: Tag.array().max(20).optional(),
+      tags: Common.Tag.array().max(20).optional(),
     }),
     async (input) => {
       Permission.assert("file:write");
@@ -171,29 +170,21 @@ export namespace File {
 
   export const list = fn(
     Common.PaginatedInput.extend({
-      tags: Tag.array().optional(),
+      tags: Common.Tag.array().optional(),
       search: z.string().optional(),
     }),
     (input) => {
       Permission.assert("file:read");
-      const { page, pageSize, limit, offset } = Common.page(input);
       const conditions = [eq(FileTable.orgID, Actor.orgID())];
       if (input.tags?.length) conditions.push(arrayOverlaps(FileTable.tags, input.tags));
       if (input.search) conditions.push(ilike(FileTable.filename, `%${input.search}%`));
-      const where = and(...conditions);
-      return Database.use(async (tx) => {
-        const [rows, totalRows] = await Promise.all([
-          tx
-            .select()
-            .from(FileTable)
-            .where(where)
-            .orderBy(desc(FileTable.timeCreated))
-            .limit(limit)
-            .offset(offset),
-          tx.select({ total: count() }).from(FileTable).where(where),
-        ] as const);
-        return { data: rows.map(serialize), page, pageSize, total: totalRows[0]?.total ?? 0 };
-      });
+      return paged(
+        Common.page(input),
+        FileTable,
+        and(...conditions),
+        desc(FileTable.timeCreated),
+        serialize,
+      );
     },
   );
 
@@ -223,7 +214,7 @@ export namespace File {
     z.object({
       id: Info.shape.id,
       filename: z.string().trim().min(1).max(255).optional(),
-      tags: Tag.array().max(20).optional(),
+      tags: Common.Tag.array().max(20).optional(),
     }),
     async ({ id, ...patch }) => {
       Permission.assert("file:write");

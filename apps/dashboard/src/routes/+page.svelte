@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { user } from '$lib/features/auth/context';
-	import { org } from '$lib/features/org/context';
+	import { user } from '$lib/context/user';
+	import { org } from '$lib/context/org';
 
 	const me = user();
 	const ctx = org();
@@ -12,12 +12,12 @@
 	<p>A small dashboard for tracking work — capture todos, move them through stages, and see how things trend over time.</p>
 	{#if current}
 		<div class="actions">
-			<a href={ctx.path('/todos')}>Todos</a>
-			<a href={ctx.path('/insights')}>Insights</a>
+			<a class="btn" href={ctx.path('/todos')}>Todos</a>
+			<a class="btn" href={ctx.path('/insights')}>Insights</a>
 		</div>
 	{:else}
 		<div class="actions">
-			<a href="/login">Log in</a>
+			<a class="btn" href="/login">Log in</a>
 		</div>
 	{/if}
 </section>
@@ -45,20 +45,5 @@
 		display: inline-flex;
 		gap: 0.75em;
 		margin-top: 1.5em;
-	}
-
-	.actions a {
-		font-family: var(--font-mono);
-		font-size: 0.85em;
-		text-decoration: none;
-		color: var(--ink);
-		background: var(--surface-2);
-		border: 1px solid var(--border);
-		border-radius: var(--radius);
-		padding: 0.55em 1.1em;
-	}
-
-	.actions a:hover {
-		border-color: var(--border-bright);
 	}
 </style>

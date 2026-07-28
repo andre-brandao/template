@@ -1,9 +1,13 @@
 <script lang="ts">
+	import type { Snippet } from 'svelte';
 	import { page } from '$app/state';
 	import Avatar from '../Avatar.svelte';
-	import OrgSwitcher from '$lib/features/org/components/OrgSwitcher.svelte';
 
-	let { user }: { user: { name: string; email: string; image: string | null } | null } = $props();
+	let {
+		user,
+		children
+	}: { user: { name: string; email: string; image: string | null } | null; children?: Snippet } =
+		$props();
 
 	// The user chip is the only way into the profile — there is no sidebar link.
 	const active = $derived(page.url.pathname.startsWith('/profile'));
@@ -12,9 +16,7 @@
 <header>
 	<div class="left">
 		<a href="/" class="brand"><span class="dot"></span>Todos</a>
-		{#if user}
-			<OrgSwitcher />
-		{/if}
+		{@render children?.()}
 	</div>
 
 	{#if user}

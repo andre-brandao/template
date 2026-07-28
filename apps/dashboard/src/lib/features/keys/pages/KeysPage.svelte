@@ -1,8 +1,11 @@
 <script lang="ts">
 	import { Button, Drawer } from '@template/ui';
+	import type { Role } from '@template/core/organization/role';
 	import { getKeys } from '../api/keys.remote';
 	import KeyForm from '../components/form/KeyForm.svelte';
 	import KeyList from '../components/list/KeyList.svelte';
+
+	let { roles }: { roles: Role.Info[] } = $props();
 
 	const keys = $derived(await getKeys());
 
@@ -21,7 +24,7 @@
 
 <Drawer bind:open={creating}>
 	<h2>New key</h2>
-	<KeyForm onsuccess={() => (creating = false)} />
+	<KeyForm {roles} onsuccess={() => (creating = false)} />
 </Drawer>
 
 <KeyList {keys} />

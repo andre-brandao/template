@@ -1,6 +1,6 @@
 import { sequence } from "@sveltejs/kit/hooks";
 import { redirect } from "@sveltejs/kit";
-import type { Handle, HandleServerError } from "@sveltejs/kit";
+import type { Handle, HandleServerError, RequestEvent } from "@sveltejs/kit";
 import { env } from "$env/dynamic/private";
 import { Database } from "@template/core/drizzle";
 import { File } from "@template/core/file";
@@ -33,6 +33,31 @@ const handleStorage: Handle = ({ event, resolve }) => {
   return File.provide(File.fromEnv(env), () => resolve(event));
 };
 
+// The org named by the request's Referer — the calling page's URL names the
+// org that tab is looking at, beating the shared cookie in multi-tab sessions.
+function referer(event: RequestEvent) {
+  const raw = event.request.headers.get("referer");
+  if (!raw || !URL.canParse(raw)) return undefined;
+  const [seg] = new URL(raw).pathname.split("/").filter(Boolean);
+  return seg?.startsWith("org_") ? seg : undefined;
+}
+
+// The `[orgId]` URL segment names the active org for page requests. Remote
+// function calls carry no param — the Referer names the org instead. Membership
+// is verified either way, so a forged value is harmless.
+async function membership(event: RequestEvent, userID: string) {
+  const param = event.params.orgId;
+  const member = await Member.resolve({
+    userID,
+    orgID: param ?? referer(event) ?? org(event),
+  });
+  if (param && member?.orgID !== param) redirect(303, "/");
+  // The cookie follows page navigations only — background-tab remote calls
+  // must not steal the preference.
+  if (param && member && org(event) !== member.orgID) remember(event, member.orgID);
+  return member;
+}
+
 const handleAuth: Handle = async ({ event, resolve }) => {
   // Health probes don't need an actor; skip it so they don't spam logs.
   if (event.url.pathname === "/healthz") return resolve(event);
@@ -41,29 +66,10 @@ const handleAuth: Handle = async ({ event, resolve }) => {
   event.locals.session = session;
   if (!session) return Actor.provide("public", {}, () => resolve(event));
 
-  // The `[orgId]` URL segment names the active org for page requests. Remote
-  // function calls carry no param — the calling page's URL in the Referer names
-  // the org that tab is looking at, beating the shared cookie in multi-tab
-  // sessions. Membership is verified either way, so a forged value is harmless.
-  const param = event.params.orgId;
-  const referer = (() => {
-    const raw = event.request.headers.get("referer");
-    if (!raw || !URL.canParse(raw)) return undefined;
-    const [seg] = new URL(raw).pathname.split("/").filter(Boolean);
-    return seg?.startsWith("org_") ? seg : undefined;
-  })();
-  const membership = await Member.resolve({
-    userID: session.userID,
-    orgID: param ?? referer ?? org(event),
-  });
-  if (param && membership?.orgID !== param) redirect(303, "/");
-  // The cookie follows page navigations only — background-tab remote calls
-  // must not steal the preference.
-  if (param && membership && org(event) !== membership.orgID) remember(event, membership.orgID);
-
+  const member = await membership(event, session.userID);
   return Actor.provide(
     "user",
-    { userID: session.userID, orgID: membership?.orgID, permissions: membership?.permissions },
+    { userID: session.userID, orgID: member?.orgID, permissions: member?.permissions },
     () => resolve(event),
   );
 };

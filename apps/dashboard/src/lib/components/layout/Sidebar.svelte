@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { org } from '$lib/features/org/context';
+	import { org } from '$lib/context/org';
 
 	const ctx = org();
 

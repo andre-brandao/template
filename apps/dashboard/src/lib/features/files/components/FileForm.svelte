@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Button, FormBoundary, Input } from '@template/ui';
 	import type { File } from '@template/core/file';
-	import TagEditor from '$lib/features/todos/components/TagEditor.svelte';
+	import TagEditor from '$lib/components/TagEditor.svelte';
 	import { updateFile } from '../api/files.remote';
 
 	let { file, onsuccess }: { file: File.Info; onsuccess?: () => void } = $props();

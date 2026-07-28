@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Button, Card, Drawer, FormBoundary, Input, Issues } from '@template/ui';
-	import { org } from '../context';
+	import { org } from '$lib/context/org';
 	import { renameOrg } from '../api/org.remote';
 	import { leaveOrg } from '../api/members.remote';
 	import Can from '../components/Can.svelte';

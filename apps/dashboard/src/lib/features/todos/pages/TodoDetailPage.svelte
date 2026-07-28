@@ -6,13 +6,13 @@
 	import '@cartamd/plugin-attachment/default.css';
 	import '$lib/markdown.css';
 	import { createCarta } from '$lib/markdown';
-	import { org } from '$lib/features/org/context';
+	import { org } from '$lib/context/org';
 	import type { Event } from '@template/core/event';
 	import { getTodo, removeTodo, updateTodo } from '../api/todos.remote';
 	import Timeline from '$lib/features/events/components/Timeline.svelte';
 	import StatePill from '../components/StatePill.svelte';
 	import StateToggle from '../components/StateToggle.svelte';
-	import TagList from '../components/TagList.svelte';
+	import Tags from '$lib/components/Tags.svelte';
 	import { color } from '../state';
 
 	let { id }: { id: string } = $props();
@@ -65,7 +65,7 @@
 		<StatePill state={todo.state} />
 	</div>
 
-	<TagList tags={todo.tags} />
+	<Tags tags={todo.tags} />
 
 	{#if todo.dueDate}
 		<p class="due">Due {new Date(todo.dueDate).toLocaleDateString()}</p>

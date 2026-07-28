@@ -2,9 +2,9 @@
 	import { Button } from '@template/ui';
 	import { removeTodo } from '../../api/todos.remote';
 	import type { Todo } from '@template/core/todo';
-	import { org } from '$lib/features/org/context';
+	import { org } from '$lib/context/org';
 	import StateToggle from '../StateToggle.svelte';
-	import TagList from '../TagList.svelte';
+	import Tags from '$lib/components/Tags.svelte';
 
 	let { todo }: { todo: Todo.Info } = $props();
 	const ctx = org();
@@ -13,7 +13,7 @@
 
 <tr>
 	<td><a class="title" href={ctx.path(`/todos/${todo.id}`)}>{todo.title}</a></td>
-	<td><TagList tags={todo.tags} /></td>
+	<td><Tags tags={todo.tags} /></td>
 	<td><StateToggle {todo} /></td>
 	<td class="actions">
 		<form {...remove}>

@@ -1,13 +1,16 @@
 <script lang="ts">
 	import { z } from 'zod';
-	import { Button, Drawer } from '@template/ui';
+	import { Drawer } from '@template/ui';
 	import type { File } from '@template/core/file';
 	import { query } from '$lib/utils/params';
-	import { org } from '$lib/features/org/context';
+	import { org } from '$lib/context/org';
 	import { getFiles } from '../api/files.remote';
 	import FileFilters from '../components/FileFilters.svelte';
 	import FileCard from '../components/FileCard.svelte';
 	import FileForm from '../components/FileForm.svelte';
+	import Dropzone from '../components/Dropzone.svelte';
+	import Pager from '../components/Pager.svelte';
+	import Upload from '../components/Upload.svelte';
 
 	const ctx = org();
 
@@ -29,10 +32,8 @@
 
 	let editing = $state<File.Info | null>(null);
 	let open = $state(false);
-	let picker: HTMLInputElement | undefined = $state();
 	let uploading = $state(false);
 	let failed = $state<string[]>([]);
-	let drag = $state(0);
 
 	async function upload(picked: FileList) {
 		if (!ctx.can('file:write')) return;
@@ -52,25 +53,7 @@
 	}
 </script>
 
-<div
-	class="page"
-	class:drop={drag > 0}
-	role="region"
-	aria-label="Files"
-	ondragenter={(e) => {
-		if (!ctx.can('file:write')) return;
-		if (!e.dataTransfer?.types.includes('Files')) return;
-		e.preventDefault();
-		drag += 1;
-	}}
-	ondragover={(e) => e.preventDefault()}
-	ondragleave={() => (drag = Math.max(0, drag - 1))}
-	ondrop={(e) => {
-		e.preventDefault();
-		drag = 0;
-		if (e.dataTransfer?.files.length) upload(e.dataTransfer.files);
-	}}
->
+<Dropzone enabled={ctx.can('file:write')} onfiles={upload}>
 	<h1>Files</h1>
 
 	<div class="toolbar">
@@ -80,18 +63,7 @@
 		/>
 		<span class="sep"></span>
 		{#if ctx.can('file:write')}
-			<input
-				type="file"
-				multiple
-				hidden
-				bind:this={picker}
-				onchange={(e) => {
-					const list = e.currentTarget.files;
-					if (list?.length) upload(list);
-					e.currentTarget.value = '';
-				}}
-			/>
-			<Button pending={uploading} onclick={() => picker?.click()}>Upload</Button>
+			<Upload pending={uploading} onfiles={upload} />
 		{/if}
 	</div>
 
@@ -117,22 +89,8 @@
 		{/if}
 	</div>
 
-	{#if pages > 1}
-		<div class="pager">
-			{#if files.page > 1}
-				<Button variant="ghost" onclick={() => params.update({ page: files.page - 1 })}>Prev</Button>
-			{/if}
-			<span>Page {files.page} of {pages}</span>
-			{#if files.page < pages}
-				<Button variant="ghost" onclick={() => params.update({ page: files.page + 1 })}>Next</Button>
-			{/if}
-		</div>
-	{/if}
-
-	{#if drag > 0}
-		<div class="overlay">Drop files to upload</div>
-	{/if}
-</div>
+	<Pager page={files.page} {pages} onpage={(page) => params.update({ page })} />
+</Dropzone>
 
 <Drawer bind:open>
 	{#if editing}
@@ -142,11 +100,6 @@
 </Drawer>
 
 <style>
-	.page {
-		position: relative;
-		min-height: 60vh;
-	}
-
 	h1 {
 		margin: 0 0 0.75em;
 		font-size: 1.4em;
@@ -188,29 +141,5 @@
 		color: var(--dim);
 		font-size: 0.85em;
 		margin: 0.5em 0.2em;
-	}
-
-	.pager {
-		display: flex;
-		align-items: center;
-		gap: 0.75em;
-		margin-top: 1em;
-		color: var(--muted);
-		font-family: var(--font-mono);
-		font-size: 0.82em;
-	}
-
-	.overlay {
-		position: absolute;
-		inset: 0;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		border: 2px dashed var(--accent);
-		border-radius: var(--radius, 8px);
-		background: color-mix(in srgb, var(--surface) 80%, transparent);
-		color: var(--ink);
-		font-family: var(--font-mono);
-		pointer-events: none;
 	}
 </style>

@@ -2,10 +2,10 @@
 	import { Button, Card } from '@template/ui';
 	import { removeTodo } from '../../api/todos.remote';
 	import type { Todo } from '@template/core/todo';
-	import { org } from '$lib/features/org/context';
+	import { org } from '$lib/context/org';
 	import StatePill from '../StatePill.svelte';
 	import StateToggle from '../StateToggle.svelte';
-	import TagList from '../TagList.svelte';
+	import Tags from '$lib/components/Tags.svelte';
 	import { color } from '../../state';
 
 	let { todo }: { todo: Todo.Info } = $props();
@@ -38,7 +38,7 @@
 	{/if}
 
 	<div class="meta">
-		<TagList tags={todo.tags} />
+		<Tags tags={todo.tags} />
 		{#if todo.dueDate}
 			<span class="due">Due {new Date(todo.dueDate).toLocaleDateString()}</span>
 		{/if}

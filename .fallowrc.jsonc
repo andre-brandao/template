@@ -76,6 +76,7 @@
         "name": "shared",
         "patterns": [
           "apps/*/src/lib/components/**",
+          "apps/*/src/lib/context/**",
           "apps/*/src/lib/utils/**",
           "apps/*/src/lib/assets/**",
           "apps/*/src/lib/index.ts",

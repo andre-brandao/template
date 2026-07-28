@@ -4,6 +4,8 @@ export namespace Common {
   export const IdDescription = `Unique object identifier.
 The format and length of IDs may change over time.`;
 
+  export const Tag = z.string().trim().min(1).max(64);
+
   export const Paginated = z.object({
     page: z.number().min(1).default(1).meta({
       description: "Page number for pagination.",

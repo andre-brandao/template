@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Button, FormBoundary, Input, Issues } from '@template/ui';
+	import { Button, FormBoundary, Input, Issues, Select } from '@template/ui';
 	import { createInvitation } from '../api/invitations.remote';
 	import { getRoles } from '../api/roles.remote';
 
@@ -27,11 +27,11 @@
 		</label>
 		<label class="field">
 			<span>Role</span>
-			<select name="roleID">
+			<Select name="roleID">
 				{#each roles as role (role.id)}
 					<option value={role.id} selected={role.id === fallback}>{role.name}</option>
 				{/each}
-			</select>
+			</Select>
 		</label>
 		<Button type="submit" pending={!!createInvitation.pending}>Send invitation</Button>
 	</form>
@@ -56,20 +56,5 @@
 		font-family: var(--font-mono);
 		font-size: 0.78em;
 		color: var(--muted);
-	}
-
-	select {
-		min-width: 0;
-		padding: 0.5em 0.7em;
-		border: 1px solid var(--border);
-		border-radius: var(--radius);
-		background: var(--surface);
-		color: var(--ink);
-		font: inherit;
-	}
-
-	select:focus-visible {
-		border-color: var(--accent);
-		outline: none;
 	}
 </style>

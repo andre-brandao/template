@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { and, eq, isNull, type SQL } from "drizzle-orm";
+import { and, eq, ilike, isNull } from "drizzle-orm";
 import { fn } from "../util/fn";
 import { Actor } from "../actor";
 import { Common } from "../common";
@@ -74,25 +74,40 @@ export namespace Organization {
     });
   }
 
-  /** Orgs the current user is a member of, oldest membership first, optionally narrowed. */
-  function rows(extra?: SQL) {
-    return Database.use((tx) =>
+  /** Organizations the current user is a member of, oldest membership first. */
+  export const list = fn(z.object({ search: z.string().optional() }).optional(), (filter) =>
+    Database.use((tx) =>
       tx
         .select({ id: OrganizationTable.id, name: OrganizationTable.name })
         .from(MemberTable)
         .innerJoin(OrganizationTable, eq(OrganizationTable.id, MemberTable.orgID))
         .where(
-          and(eq(MemberTable.userID, Actor.userID()), isNull(OrganizationTable.timeDeleted), extra),
+          and(
+            eq(MemberTable.userID, Actor.userID()),
+            isNull(OrganizationTable.timeDeleted),
+            filter?.search ? ilike(OrganizationTable.name, `%${filter.search}%`) : undefined,
+          ),
         )
         .orderBy(MemberTable.timeCreated),
-    );
-  }
-
-  /** Every organization the current user is a member of. */
-  export const list = fn(z.void(), () => rows());
+    ),
+  );
 
   export const fromID = fn(Info.shape.id, (id) =>
-    rows(eq(OrganizationTable.id, id)).then((found) => found.at(0) ?? null),
+    Database.use((tx) =>
+      tx
+        .select({ id: OrganizationTable.id, name: OrganizationTable.name })
+        .from(MemberTable)
+        .innerJoin(OrganizationTable, eq(OrganizationTable.id, MemberTable.orgID))
+        .where(
+          and(
+            eq(MemberTable.userID, Actor.userID()),
+            eq(OrganizationTable.id, id),
+            isNull(OrganizationTable.timeDeleted),
+          ),
+        )
+        .limit(1)
+        .then((hit) => hit.at(0) ?? null),
+    ),
   );
 
   // Org deletion is deliberately out of scope: it needs cascading tenancy

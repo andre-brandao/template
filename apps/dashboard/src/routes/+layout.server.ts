@@ -14,7 +14,7 @@ export const load: LayoutServerLoad = async () => {
   const user = await User.fromID(actor.properties.userID);
   if (!user) return anon;
 
-  const orgs = await Organization.list();
+  const orgs = await Organization.list({});
   return {
     user: { name: user.name, email: user.email, image: user.image },
     org: orgs.find((o) => o.id === actor.properties.orgID) ?? null,

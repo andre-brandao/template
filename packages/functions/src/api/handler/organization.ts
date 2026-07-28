@@ -34,7 +34,8 @@ export namespace OrganizationApi {
         },
       }),
       authRequired,
-      async (c) => c.json(await Organization.list(), 200),
+      validator("query", z.object({ search: z.string().optional() })),
+      async (c) => c.json(await Organization.list(c.req.valid("query")), 200),
     )
     .post(
       "/",

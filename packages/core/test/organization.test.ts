@@ -67,7 +67,7 @@ describe("organization", () => {
         expect(members).toHaveLength(1);
         expect(members[0]?.role.owner).toBe(true);
         expect(Permission.has("org:manage")).toBe(true);
-        expect((await Organization.list()).map((o) => o.id)).toContain(orgID);
+        expect((await Organization.list({})).map((o) => o.id)).toContain(orgID);
       },
       orgID,
     );

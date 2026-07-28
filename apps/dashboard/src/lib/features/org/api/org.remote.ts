@@ -6,7 +6,7 @@ import { auth, guard } from "$lib/server/remote";
 
 export const getOrgs = query(async () => {
   auth();
-  return Organization.list();
+  return Organization.list({});
 });
 
 export const createOrg = form(z.object({ name: Organization.Info.shape.name }), async (input) => {

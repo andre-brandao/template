@@ -2,9 +2,11 @@
 	import type { Key } from '@template/core/key';
 	import { Button } from '@template/ui';
 	import RevokeForm from '../RevokeForm.svelte';
+	import { fmt } from '$lib/utils/fmt';
 
 	let { key }: { key: Key.Info } = $props();
 
+	const f = fmt();
 	let shown = $state(false);
 
 	// Non-null for `api` keys, which is all this card is ever given.
@@ -12,10 +14,10 @@
 	const text = $derived(shown && secret ? secret : key.display);
 	const toggle = $derived(shown ? 'Hide' : 'Reveal');
 	const used = $derived(
-		key.timeUsed ? `last used ${new Date(key.timeUsed).toLocaleDateString()}` : 'never used'
+		key.timeUsed ? `last used ${f.date(key.timeUsed)}` : 'never used'
 	);
 	const expires = $derived(
-		key.expiresAt ? `expires ${new Date(key.expiresAt).toLocaleDateString()}` : 'never expires'
+		key.expiresAt ? `expires ${f.date(key.expiresAt)}` : 'never expires'
 	);
 
 	const soon = $derived(

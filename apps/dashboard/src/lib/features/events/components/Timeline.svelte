@@ -2,7 +2,7 @@
 	import type { Snippet } from 'svelte';
 	import type { Event } from '@template/core/event';
 	import { getEvents } from '../api/events.remote';
-	import { ago } from '$lib/utils/time';
+	import { fmt } from '$lib/utils/fmt';
 
 	let {
 		source,
@@ -18,6 +18,7 @@
 		empty?: string;
 	} = $props();
 
+	const f = fmt();
 	const events = $derived(await getEvents({ source, sourceID }));
 </script>
 
@@ -35,7 +36,7 @@
 					<span class="dot"></span>
 					<div class="row">
 						<span class="label">{@render label(event)}</span>
-						<time class="time" datetime={event.timeCreated}>{ago(event.timeCreated)}</time>
+						<time class="time" datetime={event.timeCreated}>{f.ago(event.timeCreated)}</time>
 					</div>
 				</li>
 			{/each}

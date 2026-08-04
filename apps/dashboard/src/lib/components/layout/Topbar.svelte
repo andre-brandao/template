@@ -1,11 +1,12 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import type { User } from '@template/core/user';
 	import Avatar from '../Avatar.svelte';
 
-	let { user }: { user: { name: string; email: string; image: string | null } | null } = $props();
+	let { user }: { user: User.Info | null } = $props();
 
-	// The user chip is the only way into the profile — there is no sidebar link.
-	const active = $derived(page.url.pathname.startsWith('/profile'));
+	// A shortcut into settings; the sidebar's "Settings" link lands on the same page.
+	const active = $derived(page.url.pathname.startsWith('/settings'));
 </script>
 
 <header>
@@ -13,7 +14,7 @@
 
 	{#if user}
 		<div class="side">
-			<a class="me" href="/profile" aria-current={active ? 'page' : undefined}>
+			<a class="me" href="/settings/profile" aria-current={active ? 'page' : undefined}>
 				<Avatar name={user.name} image={user.image} />
 				<span class="meta">
 					<span class="name">{user.name}</span>

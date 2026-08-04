@@ -5,6 +5,10 @@ const decoder = new TextDecoder();
 const children = new Set<ReturnType<typeof Bun.spawn>>();
 type IO = "pipe" | "inherit" | "ignore";
 
+// DB=docker runs postgres from infra/docker/compose.yml instead of in-process pglite
+const driver = process.env.DB ?? "docker";
+if (driver !== "pglite" && driver !== "docker") throw new Error(`Unknown DB: ${driver}`);
+
 const pgport = Number(process.env.PGPORT ?? 5432);
 const url =
   process.env.DATABASE_URL ?? `postgresql://postgres:password@127.0.0.1:${pgport}/postgres`;
@@ -94,17 +98,34 @@ process.on("SIGTERM", async () => {
   process.exit(0);
 });
 
-console.log(`Starting database on ${pgport}...`);
-const db = spawn(["bun", "pglite.ts"], import.meta.dir, "pipe", "ignore");
-const stdout = db.stdout;
-if (!(stdout instanceof ReadableStream)) throw new Error("Database stdout unavailable");
-
-await new Promise<void>((resolve, reject) => {
-  void pipe(stdout, "\x1b[32mdb \x1b[0m │ ", resolve);
-  db.exited.then((code) => {
-    if (code !== 0) reject(new Error(`Database exited with code ${code}`));
+// In-process postgres; dies with this script, so migrations run on every start.
+async function pglite() {
+  const db = spawn(["bun", "pglite.ts"], import.meta.dir, "pipe", "ignore");
+  const out = db.stdout;
+  if (!(out instanceof ReadableStream)) throw new Error("Database stdout unavailable");
+  await new Promise<void>((resolve, reject) => {
+    void pipe(out, "\x1b[32mdb \x1b[0m │ ", resolve);
+    db.exited.then((code) => {
+      if (code !== 0) reject(new Error(`Database exited with code ${code}`));
+    });
   });
-});
+}
+
+// Reuses the postgres service (and its pgdata volume) from the deploy stack. Left
+// running on exit so the next start is instant — `bun docker:down` stops it.
+async function docker() {
+  const up = spawn(
+    ["docker", "compose", "-f", `${root}/infra/docker/compose.yml`, "up", "-d", "--wait", "postgres"],
+    root,
+  );
+  if ((await up.exited) !== 0) throw new Error("Failed to start the postgres container");
+  // --force: the volume persists across runs, so drift would otherwise stop on a TTY prompt
+  const push = spawn(["bun", "run", "db:push", "--force"], `${root}/packages/core`);
+  if ((await push.exited) !== 0) throw new Error("Failed to push the schema");
+}
+
+console.log(`Starting database (${driver}) on ${pgport}...`);
+await(driver === "docker" ? docker() : pglite());
 
 console.log("Seeding database...");
 const seed = spawn(["bun", "seed.ts"], import.meta.dir);

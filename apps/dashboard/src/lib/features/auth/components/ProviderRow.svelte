@@ -1,7 +1,10 @@
 <script lang="ts">
 	import type { User } from '@template/core/user';
+	import { fmt } from '$lib/utils/fmt';
 
 	let { provider }: { provider: User.Provider } = $props();
+
+	const f = fmt();
 
 	const labels: Record<User.Provider['id'], string> = {
 		email: 'Email & password',
@@ -12,7 +15,7 @@
 	const label = $derived(labels[provider.id]);
 	const since = $derived(
 		provider.timeCreated
-			? `connected ${new Date(provider.timeCreated).toLocaleDateString()}`
+			? `connected ${f.date(provider.timeCreated)}`
 			: 'not connected'
 	);
 </script>

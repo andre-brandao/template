@@ -2,11 +2,13 @@
 	import { getDue } from '../../api/insights.remote';
 	import StatePill from '../StatePill.svelte';
 	import Section from './Section.svelte';
+	import { fmt } from '$lib/utils/fmt';
 
+	const f = fmt();
 	const todos = $derived(await getDue());
 
 	function date(todo: Awaited<ReturnType<typeof getDue>>[number]) {
-		return todo.dueDate ? new Date(todo.dueDate).toLocaleDateString() : 'No due date';
+		return todo.dueDate ? f.date(todo.dueDate) : 'No due date';
 	}
 </script>
 

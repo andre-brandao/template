@@ -119,9 +119,13 @@
         "from": "server",
         "allow": ["shared", "core", "functions"],
       },
+      // Shared stays a runtime leaf, but may name core's contracts (`User.Info`,
+      // `Prefs`) in its types — an erased import ships nothing and keeps the
+      // context/prop shapes from drifting away from what the server hands over.
       {
         "from": "shared",
         "allow": [],
+        "allowTypeOnly": ["core"],
       },
       // Backend / design-system layering. Dependencies flow one way toward core;
       // core and ui are leaves — nothing internal below them.

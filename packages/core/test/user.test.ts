@@ -3,6 +3,7 @@ import { User } from "../src/user";
 import { Auth } from "../src/user/auth";
 import { Actor } from "../src/actor";
 import { ProviderIds } from "../src/user/provider.sql";
+import { DEFAULTS } from "../src/user/prefs";
 import { testEmail, withTestUser } from "./util";
 
 describe("user", () => {
@@ -52,5 +53,38 @@ describe("user", () => {
     await User.update({ name: "New Name" });
     const user = await User.fromID(userID);
     expect(user?.name).toBe("New Name");
+  });
+
+  withTestUser("a new user starts with every preference defaulted", async ({ userID }) => {
+    const user = await User.fromID(userID);
+    expect(user?.prefs).toEqual(DEFAULTS);
+  });
+
+  withTestUser("prefs writes only the keys it is given", async ({ userID }) => {
+    await User.prefs({ theme: "dark" });
+    expect((await User.fromID(userID))?.prefs).toEqual({ ...DEFAULTS, theme: "dark" });
+
+    // The regression test that matters: a second partial write must not reset `theme`
+    // back to its default. See the `.partial()` note in src/user/prefs.ts.
+    await User.prefs({ locale: "pt-BR" });
+    expect((await User.fromID(userID))?.prefs).toEqual({
+      ...DEFAULTS,
+      theme: "dark",
+      locale: "pt-BR",
+    });
+  });
+
+  withTestUser("prefs stores a timezone and clears it back to system", async ({ userID }) => {
+    await User.prefs({ zone: "America/Sao_Paulo" });
+    expect((await User.fromID(userID))?.prefs.zone).toBe("America/Sao_Paulo");
+
+    await User.prefs({ zone: null });
+    expect((await User.fromID(userID))?.prefs.zone).toBeNull();
+  });
+
+  withTestUser("prefs rejects a value outside the enum", async ({ userID }) => {
+    const bad: any = { theme: "neon" };
+    expect(() => User.prefs(bad)).toThrow();
+    expect((await User.fromID(userID))?.prefs.theme).toBe("system");
   });
 });

@@ -4,6 +4,7 @@
 export { default as Button } from "./input/Button.svelte";
 export { default as Input } from "./input/Input.svelte";
 export { default as RangePicker, last, valid, type Range } from "./input/RangePicker.svelte";
+export { default as Select } from "./input/Select.svelte";
 
 // ui
 export { default as Card } from "./ui/Card.svelte";

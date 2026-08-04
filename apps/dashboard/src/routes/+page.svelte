@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { user } from '$lib/features/auth/context';
+	import { user } from '$lib/utils/context';
 
 	const me = user();
 	const current = $derived(me.current);

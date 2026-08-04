@@ -5,7 +5,7 @@
 		{ href: '/todos', label: 'Todos' },
 		{ href: '/files', label: 'Files' },
 		{ href: '/insights', label: 'Insights' },
-		{ href: '/keys', label: 'API keys' }
+		{ href: '/settings', label: 'Settings' }
 	];
 </script>
 
@@ -13,6 +13,7 @@
 	<nav>
 		{#each links as link (link.href)}
 			<a
+				class="navlink"
 				href={link.href}
 				aria-current={page.url.pathname.startsWith(link.href) ? 'page' : undefined}
 			>
@@ -40,19 +41,5 @@
 	a {
 		font-family: var(--font-mono);
 		font-size: 0.82em;
-		color: var(--muted);
-		text-decoration: none;
-		padding: 0.5em 0.7em;
-		border-radius: var(--radius);
-	}
-
-	a:hover {
-		color: var(--ink);
-		background: var(--surface-2);
-	}
-
-	a[aria-current='page'] {
-		color: var(--ink);
-		background: var(--surface-2);
 	}
 </style>

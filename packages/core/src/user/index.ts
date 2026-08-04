@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { fn } from "../util/fn";
 import { Database } from "../drizzle";
 import { Actor } from "../actor";
@@ -7,6 +7,7 @@ import { Common } from "../common";
 import { Examples } from "../examples";
 import { Identifier } from "../identifier";
 import { UserTable } from "./user.sql";
+import { Patch } from "./prefs";
 import { ProviderIds, ProviderTable } from "./provider.sql";
 
 export namespace User {
@@ -116,5 +117,22 @@ export namespace User {
           .set({ ...input, timeUpdated: new Date() })
           .where(eq(UserTable.id, Actor.userID())),
       ),
+  );
+
+  /**
+   * Patch-merges display preferences. `||` is a shallow jsonb merge done in the one
+   * statement, so a single-field autosave can't clobber the rest and there's no
+   * read-modify-write race.
+   */
+  export const prefs = fn(Patch, (input) =>
+    Database.use((tx) =>
+      tx
+        .update(UserTable)
+        .set({
+          prefs: sql`${UserTable.prefs} || ${JSON.stringify(input)}::jsonb`,
+          timeUpdated: new Date(),
+        })
+        .where(eq(UserTable.id, Actor.userID())),
+    ),
   );
 }

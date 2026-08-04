@@ -8,24 +8,30 @@
   --color-done: var(--done);
 }
 
+/* One token list for both themes. `light-dark()` picks a side from `color-scheme`, so
+   the only thing `data-theme` has to do is pin that — see the two rules below. */
 :root {
-  --bg: #17181a;
-  --surface: #1f2022;
-  --surface-2: #26282b;
-  --border: #2e3033;
-  --border-bright: #3c3e42;
-  --ink: #e4e3df;
-  --muted: #8b8a84;
-  --dim: #5c5b56;
-  --accent: #4fa98f;
-  --accent-ink: #0d1110;
-  --pending: #8b8a84;
-  --progress: #c98a3f;
-  --done: #4fa98f;
-  --danger: #d3684f;
-  --series-1: #cd8030;
-  --series-2: #27a87e;
-  /* GitHub-style contribution ramp: 0 = empty, 4 = busiest */
+  color-scheme: light dark;
+  --bg: light-dark(#f7f6f3, #17181a);
+  --surface: light-dark(#ffffff, #1f2022);
+  --surface-2: light-dark(#eeece7, #26282b);
+  --border: light-dark(#dedbd4, #2e3033);
+  --border-bright: light-dark(#c6c2b8, #3c3e42);
+  --ink: light-dark(#22231f, #e4e3df);
+  --muted: light-dark(#6b6a64, #8b8a84);
+  --dim: light-dark(#94928a, #5c5b56);
+  /* The dark-mode teal fails AA on white, so light mode gets a deeper one — and the
+     text that sits *on* the accent flips from near-black to white. */
+  --accent: light-dark(#2f7f68, #4fa98f);
+  --accent-ink: light-dark(#ffffff, #0d1110);
+  --pending: light-dark(#6b6a64, #8b8a84);
+  --progress: light-dark(#a3672a, #c98a3f);
+  --done: light-dark(#2f7f68, #4fa98f);
+  --danger: light-dark(#b8452c, #d3684f);
+  --series-1: light-dark(#b06a1f, #cd8030);
+  --series-2: light-dark(#1f8862, #27a87e);
+  /* GitHub-style contribution ramp: 0 = empty, 4 = busiest. Needs no light variant —
+     mixing the accent into a light `--surface-2` produces the pale ramp by itself. */
   --cal-0: var(--surface-2);
   --cal-1: color-mix(in oklab, var(--accent) 28%, var(--surface-2));
   --cal-2: color-mix(in oklab, var(--accent) 52%, var(--surface-2));
@@ -34,8 +40,18 @@
   --radius: 8px;
   --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-mono: ui-monospace, "JetBrains Mono", "SF Mono", "Cascadia Code", monospace;
-  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.3);
-  --shadow-2: 0 12px 28px -14px rgba(0, 0, 0, 0.6);
+  --shadow-1: 0 1px 2px light-dark(rgb(0 0 0 / 0.08), rgb(0 0 0 / 0.3));
+  --shadow-2: 0 12px 28px -14px light-dark(rgb(0 0 0 / 0.18), rgb(0 0 0 / 0.6));
+}
+
+/* `system` matches neither rule, so it falls through to `light dark` and follows the OS.
+   An explicit choice always wins: `:root[data-theme]` outranks `:root`. */
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
 }
 
 /* LayerChart theme (https://next.layerchart.com/docs/getting-started) */
@@ -63,7 +79,6 @@ body {
   background: var(--bg);
   color: var(--ink);
   font-family: var(--font-sans);
-  color-scheme: dark;
 }
 
 a {
@@ -99,6 +114,20 @@ a {
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--dim);
+}
+
+/* Shared by the app sidebar and the settings nav; each sets its own type scale. */
+.navlink {
+  color: var(--muted);
+  text-decoration: none;
+  padding: 0.5em 0.7em;
+  border-radius: var(--radius);
+}
+
+.navlink:hover,
+.navlink[aria-current="page"] {
+  color: var(--ink);
+  background: var(--surface-2);
 }
 
 .tabs {

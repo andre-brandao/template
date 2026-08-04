@@ -13,8 +13,11 @@
 	import StateToggle from '../components/StateToggle.svelte';
 	import TagList from '../components/TagList.svelte';
 	import { color } from '../state';
+	import { fmt } from '$lib/utils/fmt';
 
 	let { id }: { id: string } = $props();
+
+	const f = fmt();
 	// `$derived(await query())` only re-subscribes when its args change, not when the
 	// query is refreshed in place — `gen` is read (and bumped after a save) purely to
 	// force this derived to re-evaluate and pick up the refreshed value.
@@ -66,7 +69,7 @@
 	<TagList tags={todo.tags} />
 
 	{#if todo.dueDate}
-		<p class="due">Due {new Date(todo.dueDate).toLocaleDateString()}</p>
+		<p class="due">Due {f.date(todo.dueDate)}</p>
 	{/if}
 
 	{#if editing}

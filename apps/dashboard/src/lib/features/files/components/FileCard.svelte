@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Button, Card } from '@template/ui';
 	import type { File } from '@template/core/file';
-	import { ago } from '$lib/utils/time';
+	import { fmt } from '$lib/utils/fmt';
 	import { size } from '$lib/utils/size';
 	import { removeFile } from '../api/files.remote';
 
@@ -11,6 +11,7 @@
 		onedit
 	}: { file: File.Info; ontag: (tag: string) => void; onedit: () => void } = $props();
 
+	const f = fmt();
 	const remove = $derived(removeFile.for(file.id));
 	const image = $derived(file.contentType.startsWith('image/'));
 	const kind = $derived(
@@ -35,7 +36,7 @@
 		<div class="info">
 			<span class="name">{file.filename}</span>
 			<span class="meta">
-				{size(file.size)} · {file.contentType} · {ago(file.timeCreated)}
+				{size(file.size)} · {file.contentType} · {f.ago(file.timeCreated)}
 			</span>
 			{#if file.tags.length > 0}
 				<span class="tags">

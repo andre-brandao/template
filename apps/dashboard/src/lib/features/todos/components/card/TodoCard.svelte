@@ -6,8 +6,11 @@
 	import StateToggle from '../StateToggle.svelte';
 	import TagList from '../TagList.svelte';
 	import { color } from '../../state';
+	import { fmt } from '$lib/utils/fmt';
 
 	let { todo }: { todo: Todo.Info } = $props();
+
+	const f = fmt();
 	const remove = $derived(removeTodo.for(todo.id));
 
 	const preview = $derived(
@@ -38,7 +41,7 @@
 	<div class="meta">
 		<TagList tags={todo.tags} />
 		{#if todo.dueDate}
-			<span class="due">Due {new Date(todo.dueDate).toLocaleDateString()}</span>
+			<span class="due">Due {f.date(todo.dueDate)}</span>
 		{/if}
 	</div>
 

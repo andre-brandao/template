@@ -5,13 +5,16 @@
 	import PreLoadingIndicator from './PreLoadingIndicator.svelte';
 	import Topbar from '$lib/components/layout/Topbar.svelte';
 	import Sidebar from '$lib/components/layout/Sidebar.svelte';
-	import { provide } from '$lib/features/auth/context';
+	import { provide } from '$lib/utils/context';
 
 	let { data, children } = $props();
 
 	const me = provide({
 		get current() {
 			return data.user;
+		},
+		get prefs() {
+			return data.prefs;
 		}
 	});
 </script>

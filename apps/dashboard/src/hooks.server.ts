@@ -9,6 +9,7 @@ import { VisibleError } from "@template/core/error";
 import { Log } from "@template/core/util/log";
 import { dev } from "$app/environment";
 import { read } from "$lib/server/session";
+import { read as theme } from "$lib/server/theme";
 
 const log = Log.create({ namespace: "dashboard.hooks.server" });
 
@@ -39,7 +40,14 @@ const handleAuth: Handle = async ({ event, resolve }) => {
   return Actor.provide("user", { userID: session.userID }, () => resolve(event));
 };
 
-export const handle = sequence(handleDb, handleStorage, handleAuth);
+// Read inside the callback, not before `resolve` — the root layout's load reconciles the
+// cookie against the database, and `transformPageChunk` runs late enough to see that.
+const handleTheme: Handle = ({ event, resolve }) =>
+  resolve(event, {
+    transformPageChunk: ({ html }) => html.replace("%theme%", theme(event)),
+  });
+
+export const handle = sequence(handleDb, handleStorage, handleAuth, handleTheme);
 
 export const handleError: HandleServerError = ({ error, event, status, message }) => {
   if (status === 404) return { message: "Not found" };

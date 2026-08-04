@@ -23,8 +23,8 @@
     "@template/sdk": "workspace:*",
     "@template/ui": "workspace:*",
     "carta-md": "^4.11.2",
-    "isomorphic-dompurify": "^3.19.0",
-    "layerchart": "^2.0.1",
+    "isomorphic-dompurify": "^3.21.0",
+    "layerchart": "^2.0.4",
     "sst": "catalog:",
     "zod": "catalog:"
   },

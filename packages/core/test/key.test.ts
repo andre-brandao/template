@@ -1,4 +1,4 @@
-import { describe, expect } from "bun:test";
+import { describe, expect, it } from "bun:test";
 import { Key } from "../src/key";
 import { User } from "../src/user";
 import { testEmail, withTestUser } from "./util";
@@ -86,6 +86,25 @@ describe("key", () => {
     await Key.verify(key.key);
 
     expect((await Key.list(undefined))[0]?.timeUsed).not.toBeNull();
+  });
+
+  withTestUser("the signing key is app-level and never authenticates a request", async () => {
+    const signing = await Key.signing();
+
+    expect(signing.secret).toStartWith("sk-");
+    expect(await Key.secret(signing.id)).toBe(signing.secret);
+    // It shares the table with api keys but is neither a bearer token nor the user's.
+    expect(await Key.verify(signing.secret)).toBeNull();
+    expect(await Key.list(undefined)).toBeEmpty();
+  });
+
+  it("signing is minted once and cached for the process", async () => {
+    expect((await Key.signing()).id).toBe((await Key.signing()).id);
+  });
+
+  withTestUser("secret only resolves signing keys", async ({ userID }) => {
+    const key = await Key.create({ userID, name: "laptop" });
+    expect(await Key.secret(key.id)).toBeNull();
   });
 
   withTestUser("a key belonging to another user is not listable or removable", async () => {

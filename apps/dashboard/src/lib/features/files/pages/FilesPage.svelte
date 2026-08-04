@@ -1,30 +1,13 @@
 <script lang="ts">
-	import { z } from 'zod';
 	import { Button, Drawer } from '@template/ui';
-	import type { File } from '@template/core/file';
-	import { query } from '$lib/utils/params';
+	import type { Storage } from '@template/core/storage';
 	import { getFiles } from '../api/files.remote';
-	import FileFilters from '../components/FileFilters.svelte';
 	import FileCard from '../components/FileCard.svelte';
 	import FileForm from '../components/FileForm.svelte';
 
-	const params = query(
-		z.object({
-			q: z.string().default(''),
-			tag: z.string().default(''),
-			page: z.coerce.number().int().min(1).default(1)
-		})
-	);
+	const files = $derived(await getFiles());
 
-	const args = $derived({
-		q: params.q || undefined,
-		tag: params.tag || undefined,
-		page: params.page
-	});
-	const files = $derived(await getFiles(args));
-	const pages = $derived(Math.max(1, Math.ceil(files.total / files.pageSize)));
-
-	let editing = $state<File.Info | null>(null);
+	let editing = $state<Storage.Entry | null>(null);
 	let open = $state(false);
 	let picker: HTMLInputElement | undefined = $state();
 	let uploading = $state(false);
@@ -44,7 +27,7 @@
 		);
 		failed = results.filter((name): name is string => name !== null);
 		uploading = false;
-		await getFiles(args).refresh();
+		await getFiles().refresh();
 	}
 </script>
 
@@ -69,11 +52,6 @@
 	<h1>Files</h1>
 
 	<div class="toolbar">
-		<FileFilters
-			filters={{ search: params.q, tag: params.tag }}
-			onchange={(next) => params.update({ q: next.search, tag: next.tag, page: undefined })}
-		/>
-		<span class="sep"></span>
 		<input
 			type="file"
 			multiple
@@ -93,34 +71,19 @@
 	{/each}
 
 	<div class="list">
-		{#each files.data as file (file.id)}
+		{#each files as file (file.key)}
 			<FileCard
 				{file}
-				ontag={(tag) => params.update({ tag, page: undefined })}
 				onedit={() => {
 					editing = file;
 					open = true;
 				}}
 			/>
 		{/each}
-		{#if files.data.length === 0}
-			<p class="empty">
-				{params.q || params.tag ? 'No files match this filter' : 'No files yet — drop one here'}
-			</p>
+		{#if files.length === 0}
+			<p class="empty">No files yet — drop one here</p>
 		{/if}
 	</div>
-
-	{#if pages > 1}
-		<div class="pager">
-			{#if files.page > 1}
-				<Button variant="ghost" onclick={() => params.update({ page: files.page - 1 })}>Prev</Button>
-			{/if}
-			<span>Page {files.page} of {pages}</span>
-			{#if files.page < pages}
-				<Button variant="ghost" onclick={() => params.update({ page: files.page + 1 })}>Next</Button>
-			{/if}
-		</div>
-	{/if}
 
 	{#if drag > 0}
 		<div class="overlay">Drop files to upload</div>
@@ -129,7 +92,7 @@
 
 <Drawer bind:open>
 	{#if editing}
-		<h2>Edit file</h2>
+		<h2>Rename file</h2>
 		<FileForm file={editing} onsuccess={() => (open = false)} />
 	{/if}
 </Drawer>
@@ -158,13 +121,6 @@
 		margin-bottom: 1.25em;
 	}
 
-	.sep {
-		width: 1px;
-		align-self: stretch;
-		background: var(--border);
-		margin-left: auto;
-	}
-
 	.error {
 		margin: 0 0 0.5em;
 		color: var(--danger, crimson);
@@ -181,16 +137,6 @@
 		color: var(--dim);
 		font-size: 0.85em;
 		margin: 0.5em 0.2em;
-	}
-
-	.pager {
-		display: flex;
-		align-items: center;
-		gap: 0.75em;
-		margin-top: 1em;
-		color: var(--muted);
-		font-family: var(--font-mono);
-		font-size: 0.82em;
 	}
 
 	.overlay {

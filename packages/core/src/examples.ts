@@ -34,13 +34,9 @@ export namespace Examples {
   } as const;
 
   export const File = {
-    id: Id("file"),
-    userID: Id("user"),
-    filename: "screenshot.png",
-    contentType: "image/png",
+    key: `${Id("user")}/screenshot.png`,
     size: 102400,
-    tags: [] as string[],
-    timeCreated: "2026-06-07T00:00:00.000Z",
+    lastModified: "2026-06-07T00:00:00.000Z",
   } as const;
 
   export const Event = {

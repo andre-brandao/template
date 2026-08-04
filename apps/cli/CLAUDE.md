@@ -11,14 +11,14 @@ The one entrypoint that runs and talks to the template. Bun-only, no build step 
 
 ## Layout
 
-| File            | Owns                                                              |
-| --------------- | ----------------------------------------------------------------- |
+| File            | Owns                                                                 |
+| --------------- | -------------------------------------------------------------------- |
 | `src/index.ts`  | Command table + help text. Every command is one entry in `commands`. |
-| `src/serve.ts`  | `serve api\|mcp\|auth\|dashboard`                                 |
-| `src/api.ts`    | SDK reflection, param parsing, result printing                     |
-| `src/auth.ts`   | `login` (browser PKCE), `logout`, `whoami`                        |
-| `src/config.ts` | `~/.config/template/config.json` read/write + token/url resolution |
-| `src/args.ts`   | Raw `--flag` helpers (`value`, `strip`)                            |
+| `src/serve.ts`  | `serve api\|mcp\|auth\|dashboard`                                    |
+| `src/api.ts`    | SDK reflection, param parsing, result printing                       |
+| `src/auth.ts`   | `login` (browser PKCE), `logout`, `whoami`                           |
+| `src/config.ts` | `~/.config/template/config.json` read/write + token/url resolution   |
+| `src/args.ts`   | Raw `--flag` helpers (`value`, `strip`)                              |
 
 ## Rules
 

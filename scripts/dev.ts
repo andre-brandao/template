@@ -115,7 +115,16 @@ async function pglite() {
 // running on exit so the next start is instant — `bun docker:down` stops it.
 async function docker() {
   const up = spawn(
-    ["docker", "compose", "-f", `${root}/infra/docker/compose.yml`, "up", "-d", "--wait", "postgres"],
+    [
+      "docker",
+      "compose",
+      "-f",
+      `${root}/infra/docker/compose.yml`,
+      "up",
+      "-d",
+      "--wait",
+      "postgres",
+    ],
     root,
   );
   if ((await up.exited) !== 0) throw new Error("Failed to start the postgres container");
@@ -125,7 +134,7 @@ async function docker() {
 }
 
 console.log(`Starting database (${driver}) on ${pgport}...`);
-await(driver === "docker" ? docker() : pglite());
+await (driver === "docker" ? docker() : pglite());
 
 console.log("Seeding database...");
 const seed = spawn(["bun", "seed.ts"], import.meta.dir);

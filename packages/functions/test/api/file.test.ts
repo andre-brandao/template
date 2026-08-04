@@ -3,76 +3,74 @@ import { setupApiTest } from "./util";
 import { app } from "../../src/api/routes";
 import { User } from "@template/core/user";
 import { Key } from "@template/core/key";
-import type { File as FileInfo } from "@template/core/file";
+import { Storage } from "@template/core/storage";
+import { serve } from "@template/core/storage/adapter/serve";
 
 // 1x1 transparent PNG.
 const PNG_BASE64 =
   "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=";
 
+/** `Storage.Entry`/`Meta` after JSON — `lastModified` arrives as an ISO string. */
+type Entry = { key: string; size: number; lastModified: string | null };
+type Meta = Entry & { contentType: string };
+
 function pngFile(name = "pixel.png") {
   return new File([Buffer.from(PNG_BASE64, "base64")], name, { type: "image/png" });
 }
 
-const json = (res: Response) => res.json() as Promise<FileInfo.Info>;
+const { test, postForm, get, del, patch, noAuth, expectError, userID } = setupApiTest();
 
-const { test, postForm, get, del, patch, expectError } = setupApiTest();
+async function upload(file: File) {
+  const form = new FormData();
+  form.append("file", file);
+  return (await postForm("/file", form)).json() as Promise<Meta>;
+}
 
 describe("file", () => {
-  test("POST /file uploads a file with tags", async () => {
-    const form = new FormData();
-    form.append("file", pngFile());
-    form.append("tags", "a,b");
-    const response = await postForm("/file", form);
-    expect(response.status).toBe(200);
-    const body = await json(response);
-    expect(body.filename).toBe("pixel.png");
+  test("POST /file stores the object under the user's prefix", async () => {
+    const body = await upload(pngFile("stored.png"));
+    expect(body.key).toBe(`${userID()}/stored.png`);
+    expect(body.size).toBe(Buffer.from(PNG_BASE64, "base64").length);
     expect(body.contentType).toBe("image/png");
-    expect(body.tags).toEqual(["a", "b"]);
+    expect(body.lastModified).toBeString();
   });
 
   test("POST /file accepts any content type", async () => {
-    const form = new FormData();
-    form.append("file", new File(["hello"], "note.txt", { type: "text/plain" }));
-    const response = await postForm("/file", form);
+    const body = await upload(new File(["hello"], "note.txt", { type: "text/plain" }));
+    expect(body.contentType).toStartWith("text/plain");
+  });
+
+  test("POST /file flattens a traversing filename to a basename", async () => {
+    const body = await upload(pngFile("../../escape.png"));
+    expect(body.key).toBe(`${userID()}/escape.png`);
+    expect(await Storage.disk().head("escape.png")).toBeNull();
+  });
+
+  test("GET /file lists the user's own objects", async () => {
+    await upload(pngFile("listed.png"));
+    const rows = (await (await get("/file")).json()) as Entry[];
+    expect(rows.map((row) => row.key)).toContain(`${userID()}/listed.png`);
+  });
+
+  test("PATCH /file/:name renames the object", async () => {
+    await upload(pngFile("before.png"));
+
+    const response = await patch("/file/before.png", { name: "after.png" });
     expect(response.status).toBe(200);
-    expect((await json(response)).contentType).toStartWith("text/plain");
+    expect(((await response.json()) as Meta).key).toBe(`${userID()}/after.png`);
+
+    expect((await get("/file/after.png/content")).status).toBe(200);
+    await expectError(await get("/file/before.png/content"), 404);
   });
 
-  test("GET /file lists with tag filter", async () => {
-    const tag = `t-${crypto.randomUUID()}`;
-    const form = new FormData();
-    form.append("file", pngFile("tagged.png"));
-    form.append("tags", tag);
-    const uploaded = await json(await postForm("/file", form));
-
-    const page = (await (await get(`/file?tags=${tag}`)).json()) as { data: FileInfo.Info[] };
-    expect(page.data.map((f) => f.id)).toEqual([uploaded.id]);
+  test("PATCH /file/:name 404s for an object that isn't there", async () => {
+    await expectError(await patch("/file/ghost.png", { name: "other.png" }), 404);
   });
 
-  test("PATCH /file/:id renames and re-tags", async () => {
-    const form = new FormData();
-    form.append("file", pngFile());
-    const uploaded = await json(await postForm("/file", form));
+  test("GET /file/:name/content round-trips the bytes", async () => {
+    await upload(pngFile("roundtrip.png"));
 
-    const response = await patch(`/file/${uploaded.id}`, {
-      filename: "renamed.png",
-      tags: ["done"],
-    });
-    expect(response.status).toBe(200);
-    const body = await json(response);
-    expect(body.filename).toBe("renamed.png");
-    expect(body.tags).toEqual(["done"]);
-  });
-
-  test("GET /file/:id and /file/:id/content round-trip", async () => {
-    const form = new FormData();
-    form.append("file", pngFile());
-    const uploaded = await json(await postForm("/file", form));
-
-    const meta = await json(await get(`/file/${uploaded.id}`));
-    expect(meta.id).toBe(uploaded.id);
-
-    const content = await get(`/file/${uploaded.id}/content`);
+    const content = await get("/file/roundtrip.png/content");
     expect(content.status).toBe(200);
     expect(content.headers.get("content-type")).toBe("image/png");
     expect(new Uint8Array(await content.arrayBuffer())).toEqual(
@@ -80,27 +78,45 @@ describe("file", () => {
     );
   });
 
-  test("DELETE /file/:id removes it", async () => {
-    const form = new FormData();
-    form.append("file", pngFile());
-    const uploaded = await json(await postForm("/file", form));
+  test("DELETE /file/:name removes it", async () => {
+    await upload(pngFile("doomed.png"));
 
-    await del(`/file/${uploaded.id}`);
-    await expectError(await get(`/file/${uploaded.id}`), 404);
+    expect((await del("/file/doomed.png")).status).toBe(200);
+    await expectError(await get("/file/doomed.png/content"), 404);
   });
 
-  test("a file is not visible to another user", async () => {
-    const form = new FormData();
-    form.append("file", pngFile());
-    const uploaded = await json(await postForm("/file", form));
+  test("GET /file/signed serves bytes for a signed link and refuses a tampered one", async () => {
+    // Signed against the same disk the route reads from, so the bytes are actually there.
+    const disk = serve(Storage.fake(), {
+      url: "http://localhost/file/signed",
+      key: Key.signing,
+    });
+
+    await Storage.provide(disk, async () => {
+      await Storage.disk().put("usr_x/note.txt", new TextEncoder().encode("hi"), "text/plain");
+      const url = (await Storage.disk().temporaryUrl("usr_x/note.txt", { expires: 60 }))!;
+
+      // No authorization header — the signature is the credential.
+      const response = await noAuth(url);
+      expect(response.status).toBe(200);
+      expect(response.headers.get("content-type")).toBe("text/plain");
+      expect(await response.text()).toBe("hi");
+
+      await expectError(await noAuth(url.replace(/sig=.*/, "sig=forged")), 403);
+    });
+  });
+
+  test("another user's prefix is a different namespace", async () => {
+    await upload(pngFile("private.png"));
 
     const otherEmail = `test-${crypto.randomUUID()}@example.com`;
     const otherUserID = await User.create({ name: "Other User", email: otherEmail });
     const otherToken = (await Key.create({ userID: otherUserID, name: "other" })).key;
+    const headers = { authorization: `Bearer ${otherToken}` };
 
-    const response = await app.request(`/file/${uploaded.id}`, {
-      headers: { authorization: `Bearer ${otherToken}` },
-    });
-    await expectError(response, 404);
+    await expectError(await app.request("/file/private.png/content", { headers }), 404);
+
+    const rows = (await (await app.request("/file", { headers })).json()) as Entry[];
+    expect(rows).toBeEmpty();
   });
 });

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import { page } from '$app/state';
+	import { dev } from '$app/environment';
 	import type { User } from '@template/core/user';
 	import Avatar from '../Avatar.svelte';
 
@@ -29,6 +30,10 @@
 		</a>
 		{@render head?.()}
 	</div>
+
+	{#if dev}
+		<span class="env" title="Not production — data here is throwaway">dev</span>
+	{/if}
 
 	{#if user}
 		<div class="side">
@@ -112,6 +117,24 @@
 		height: 8px;
 		border-radius: 2px;
 		background: var(--accent);
+	}
+
+	/* Loud on purpose: the whole point is to catch the eye of someone who thinks
+	   they are looking at production. Sits outside `.lead` so it trails the project
+	   switcher instead of competing with it for the rail's width. */
+	.env {
+		flex-shrink: 0;
+		align-self: center;
+		padding: 0.15em 0.5em;
+		font-family: var(--font-mono);
+		font-size: 0.66em;
+		font-weight: 600;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		border-radius: var(--radius);
+		border: 1px solid color-mix(in oklab, var(--progress) 45%, transparent);
+		background: color-mix(in oklab, var(--progress) 16%, var(--surface));
+		color: var(--progress);
 	}
 
 	.side {

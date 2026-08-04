@@ -38,13 +38,10 @@ export function group(todos: Todo.Info[], by: By): Group[] {
       items: todos.filter((todo) => todo.status === status),
     }));
 
-  const buckets = bucket(todos, by);
-  const named = [...buckets]
-    .filter(([key]) => key !== "none")
+  // Unplaced work sorts by date like everything else — pinning it last would hide the
+  // earliest thing on the board. With no dates at all, `first` is Infinity and it lands
+  // at the end anyway.
+  return [...bucket(todos, by)]
     .map(([key, group]) => ({ key, ...group }))
     .sort((a, b) => first(a.items) - first(b.items) || a.label.localeCompare(b.label));
-
-  const loose = buckets.get("none");
-  // Whatever hasn't been placed yet sits at the end, where it reads as a to-sort pile.
-  return loose ? [...named, { key: "none", ...loose }] : named;
 }

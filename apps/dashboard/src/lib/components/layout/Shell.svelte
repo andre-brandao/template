@@ -82,10 +82,12 @@
 		background: var(--surface);
 	}
 
+	/* Wide enough for the board's five columns and a month of cronograma; prose and
+	   forms cap themselves far below this. */
 	main {
 		flex: 1;
 		min-width: 0;
-		max-width: 960px;
+		max-width: 1440px;
 		margin: 0 auto;
 		padding: 1.75em 1.25em 3em;
 	}

@@ -3,13 +3,11 @@
 	import favicon from '$lib/assets/favicon.svg';
 	import { navigating } from '$app/state';
 	import PreLoadingIndicator from './PreLoadingIndicator.svelte';
-	import Topbar from '$lib/components/layout/Topbar.svelte';
-	import Sidebar from '$lib/components/layout/Sidebar.svelte';
 	import { provide } from '$lib/utils/context';
 
 	let { data, children } = $props();
 
-	const me = provide({
+	provide({
 		get current() {
 			return data.user;
 		},
@@ -26,15 +24,7 @@
 {/if}
 
 <div class="shell">
-	<Topbar user={me.current} />
-	<div class="body">
-		{#if me.current}
-			<Sidebar />
-		{/if}
-		<main>
-			{@render children()}
-		</main>
-	</div>
+	{@render children()}
 </div>
 
 <style>
@@ -42,17 +32,5 @@
 		display: flex;
 		flex-direction: column;
 		min-height: 100vh;
-	}
-
-	.body {
-		display: flex;
-		flex: 1;
-	}
-
-	main {
-		flex: 1;
-		max-width: 960px;
-		margin: 0 auto;
-		padding: 1.75em 1.25em 3em;
 	}
 </style>

@@ -1,16 +1,34 @@
 <script lang="ts">
+	import type { Snippet } from 'svelte';
 	import { page } from '$app/state';
 	import type { User } from '@template/core/user';
 	import Avatar from '../Avatar.svelte';
 
-	let { user }: { user: User.Info | null } = $props();
+	// `onmenu` is passed exactly where a sidebar exists to open, so it doubles as the
+	// signal to render the rail — the left cell that lines up with that sidebar.
+	let {
+		user,
+		onmenu,
+		head
+	}: { user: User.Info | null; onmenu?: () => void; head?: Snippet } = $props();
 
 	// A shortcut into settings; the sidebar's "Settings" link lands on the same page.
 	const active = $derived(page.url.pathname.startsWith('/settings'));
 </script>
 
 <header>
-	<a href="/" class="brand"><span class="dot"></span>Todos</a>
+	<div class="lead" class:rail={!!onmenu}>
+		{#if onmenu}
+			<button class="menu" type="button" aria-label="Open menu" onclick={onmenu}>
+				<span aria-hidden="true">&#9776;</span>
+			</button>
+		{/if}
+		<a href="/" class="brand" aria-label="Home">
+			<span class="dot"></span>
+			{#if !head}<span class="word">Todos</span>{/if}
+		</a>
+		{@render head?.()}
+	</div>
 
 	{#if user}
 		<div class="side">
@@ -30,19 +48,57 @@
 
 <style>
 	header {
+		position: sticky;
+		top: 0;
+		z-index: 20;
 		display: flex;
-		align-items: center;
-		justify-content: space-between;
+		align-items: stretch;
 		gap: 1em;
-		padding: 0.9em 1.25em;
+		/* Fixed, so a taller control in the rail can't grow the bar. */
+		height: var(--topbar);
+		padding-right: 1.25em;
 		border-bottom: 1px solid var(--border);
 		background: var(--surface);
+	}
+
+	.lead {
+		display: flex;
+		align-items: center;
+		gap: 0.55em;
+		min-width: 0;
+		padding-inline: 1.25em;
+	}
+
+	/* Same width and divider as the sidebar below it, so the two read as one column. */
+	.rail {
+		width: var(--rail);
+		flex-shrink: 0;
+		padding-inline: 0.75em;
+		border-right: 1px solid var(--border);
+	}
+
+	.menu {
+		display: none;
+		flex-shrink: 0;
+		padding: 0.3em 0.6em;
+		font-size: 1em;
+		line-height: 1;
+		border: 1px solid var(--border);
+		border-radius: var(--radius);
+		background: var(--surface-2);
+		color: var(--ink);
+		cursor: pointer;
+	}
+
+	.menu:hover {
+		border-color: var(--border-bright);
 	}
 
 	.brand {
 		display: inline-flex;
 		align-items: center;
 		gap: 0.55em;
+		flex-shrink: 0;
 		font-family: var(--font-mono);
 		font-size: 0.85em;
 		letter-spacing: 0.04em;
@@ -62,6 +118,7 @@
 		display: flex;
 		align-items: center;
 		gap: 1.1em;
+		margin-left: auto;
 	}
 
 	.me {
@@ -108,7 +165,17 @@
 		color: var(--ink);
 	}
 
-	@media (max-width: 600px) {
+	@media (max-width: 700px) {
+		/* The sidebar is off canvas here, so there is no column left to align to. */
+		.rail {
+			width: auto;
+			border-right: none;
+		}
+
+		.menu {
+			display: block;
+		}
+
 		.meta {
 			display: none;
 		}

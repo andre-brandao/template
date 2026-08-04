@@ -14,7 +14,7 @@ test("the settings nav links the user and workspace sections", async ({ page, as
   await as("user");
   await page.goto("/settings/experience");
 
-  const nav = page.locator("main nav");
+  const nav = page.locator("aside nav");
   await expect(nav.getByRole("link", { name: "Profile" })).toBeVisible();
   await expect(nav.getByRole("link", { name: "API keys" })).toBeVisible();
   await expect(nav.getByRole("link", { name: "Experience" })).toHaveAttribute(

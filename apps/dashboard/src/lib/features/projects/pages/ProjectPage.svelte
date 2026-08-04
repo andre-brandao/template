@@ -30,8 +30,6 @@
 	};
 </script>
 
-<a class="back" href="/projects">&larr; Back to projects</a>
-
 <!--
 	Each section awaits its own query in the markup — Svelte runs sibling awaits
 	concurrently, so this is a `Promise.all` without the plumbing, and a slow list
@@ -76,8 +74,6 @@
 		{/if}
 
 		<div class="row">
-			<a class="link" href="/projects/{id}/todos">Todos</a>
-			<a class="link" href="/projects/{id}/insights">Insights</a>
 			<form
 				{...remove.enhance(async (f) => {
 					await f.submit();
@@ -145,19 +141,6 @@
 </Timeline>
 
 <style>
-	.back {
-		display: inline-block;
-		font-family: var(--font-mono);
-		font-size: 0.82em;
-		color: var(--muted);
-		text-decoration: none;
-		margin-bottom: 1em;
-	}
-
-	.back:hover {
-		color: var(--ink);
-	}
-
 	.head {
 		display: flex;
 		align-items: start;
@@ -196,19 +179,6 @@
 
 	.row form {
 		margin-left: auto;
-	}
-
-	.link {
-		font-family: var(--font-mono);
-		font-size: 0.72em;
-		text-transform: uppercase;
-		letter-spacing: 0.04em;
-		color: var(--muted);
-		text-decoration: none;
-	}
-
-	.link:hover {
-		color: var(--accent);
 	}
 
 	section {

@@ -38,6 +38,10 @@
   --cal-3: color-mix(in oklab, var(--accent) 76%, var(--surface-2));
   --cal-4: var(--accent);
   --radius: 8px;
+  /* The app frame. The topbar's left cell and the sidebar share `--rail` so they line
+     up as one column, and `--topbar` is fixed so its contents can't change its height. */
+  --rail: 220px;
+  --topbar: 60px;
   --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-mono: ui-monospace, "JetBrains Mono", "SF Mono", "Cascadia Code", monospace;
   --shadow-1: 0 1px 2px light-dark(rgb(0 0 0 / 0.08), rgb(0 0 0 / 0.3));

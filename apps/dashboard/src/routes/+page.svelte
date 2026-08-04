@@ -1,9 +1,13 @@
 <script lang="ts">
 	import { user } from '$lib/utils/context';
+	import Topbar from '$lib/components/layout/Topbar.svelte';
 
 	const me = user();
 	const current = $derived(me.current);
 </script>
+
+<!-- The only page outside the app shell, so it carries its own header. -->
+<Topbar user={current} />
 
 <section>
 	<h1>Todos</h1>

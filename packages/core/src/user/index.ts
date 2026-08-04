@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { eq, sql } from "drizzle-orm";
+import { asc, eq, ilike, sql } from "drizzle-orm";
 import { fn } from "../util/fn";
 import { Database } from "../drizzle";
 import { Actor } from "../actor";
@@ -95,6 +95,26 @@ export namespace User {
         .from(UserTable)
         .where(eq(UserTable.id, id))
         .then((rows) => rows.at(0) ?? null),
+    ),
+  );
+
+  /**
+   * The directory behind assignee pickers. Not exposed over the HTTP API — the dashboard
+   * reads it straight from core, like `providers`.
+   */
+  export const list = fn(z.object({ search: z.string().optional() }).optional(), (input) =>
+    Database.use((tx) =>
+      tx
+        .select({
+          id: UserTable.id,
+          name: UserTable.name,
+          email: UserTable.email,
+          image: UserTable.image,
+        })
+        .from(UserTable)
+        .where(input?.search ? ilike(UserTable.name, `%${input.search}%`) : undefined)
+        .orderBy(asc(UserTable.name))
+        .limit(100),
     ),
   );
 

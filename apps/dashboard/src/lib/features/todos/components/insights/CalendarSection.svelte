@@ -1,10 +1,10 @@
 <script lang="ts">
-	import type { Range } from '@template/ui';
+	import type { Insights } from '@template/core/todo';
 	import { getCalendar } from '../../api/insights.remote';
 	import Section from './Section.svelte';
 	import CalendarChart from './CalendarChart.svelte';
 
-	let { range }: { range: Range } = $props();
+	let { range }: { range: Insights.Range } = $props();
 
 	const data = $derived(await getCalendar(range));
 </script>

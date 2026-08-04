@@ -5,6 +5,7 @@ export namespace Identifier {
   export const prefixes = {
     user: "usr",
     provider: "prv",
+    project: "prj",
     todo: "tod",
     key: "key",
     event: "evt",

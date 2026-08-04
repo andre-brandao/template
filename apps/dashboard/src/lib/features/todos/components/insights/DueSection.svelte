@@ -1,11 +1,14 @@
 <script lang="ts">
+	import type { Insights } from '@template/core/todo';
 	import { getDue } from '../../api/insights.remote';
-	import StatePill from '../StatePill.svelte';
+	import StatusPill from '../StatusPill.svelte';
 	import Section from './Section.svelte';
 	import { fmt } from '$lib/utils/fmt';
 
+	let { scope = {} }: { scope?: Insights.Scope } = $props();
+
 	const f = fmt();
-	const todos = $derived(await getDue());
+	const todos = $derived(await getDue(scope));
 
 	function date(todo: Awaited<ReturnType<typeof getDue>>[number]) {
 		return todo.dueDate ? f.date(todo.dueDate) : 'No due date';
@@ -21,7 +24,7 @@
 				<li>
 					<a href="/todos/{todo.id}">{todo.title}</a>
 					<span>{date(todo)}</span>
-					<StatePill state={todo.state} />
+					<StatusPill status={todo.status} />
 				</li>
 			{/each}
 		</ul>

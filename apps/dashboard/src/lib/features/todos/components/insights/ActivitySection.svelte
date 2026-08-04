@@ -1,10 +1,10 @@
 <script lang="ts">
-	import type { Range } from '@template/ui';
+	import type { Insights } from '@template/core/todo';
 	import { getActivity } from '../../api/insights.remote';
 	import Section from './Section.svelte';
 	import ActivityChart from './ActivityChart.svelte';
 
-	let { range }: { range: Range } = $props();
+	let { range }: { range: Insights.Range } = $props();
 
 	const activity = $derived(await getActivity(range));
 </script>

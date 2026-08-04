@@ -2,10 +2,10 @@
 	import { Button, Card } from '@template/ui';
 	import { removeTodo } from '../../api/todos.remote';
 	import type { Todo } from '@template/core/todo';
-	import StatePill from '../StatePill.svelte';
-	import StateToggle from '../StateToggle.svelte';
+	import StatusPill from '../StatusPill.svelte';
+	import StatusPicker from '../StatusPicker.svelte';
 	import TagList from '../TagList.svelte';
-	import { color } from '../../state';
+	import { color, late } from '../../status';
 	import { fmt } from '$lib/utils/fmt';
 
 	let { todo }: { todo: Todo.Info } = $props();
@@ -19,19 +19,25 @@
 			.replace(/[#*`_>~-]/g, ' ')
 			.replace(/!?\[([^\]]*)\]\([^)]*\)/g, '$1')
 			.replace(/\s+/g, ' ')
-			.trim(),
+			.trim()
+	);
+
+	const span = $derived(
+		[todo.startDate && f.date(todo.startDate), todo.dueDate && f.date(todo.dueDate)]
+			.filter(Boolean)
+			.join(' → ')
 	);
 </script>
 
 <!-- fallow-ignore-next-line code-duplication -->
-<Card accent={color(todo.state)} interactive>
+<Card accent={color(todo.status)} interactive>
 	{#each remove.fields.allIssues() ?? [] as issue, i (i)}
 		<p class="error">{issue.message}</p>
 	{/each}
 
 	<div class="head">
 		<a class="title" href="/todos/{todo.id}">{todo.title}</a>
-		<StatePill state={todo.state} />
+		<StatusPill status={todo.status} reason={todo.reason} />
 	</div>
 
 	{#if preview}
@@ -39,14 +45,14 @@
 	{/if}
 
 	<div class="meta">
+		{#if todo.stage}<span class="stage">{todo.stage}</span>{/if}
 		<TagList tags={todo.tags} />
-		{#if todo.dueDate}
-			<span class="due">Due {f.date(todo.dueDate)}</span>
-		{/if}
+		{#if span}<span class="span" class:late={late(todo)}>{span}</span>{/if}
 	</div>
 
 	<div class="actions">
-		<StateToggle {todo} />
+		<StatusPicker {todo} compact />
+		<span class="who">{todo.assignee?.name ?? 'Unassigned'}</span>
 		<!-- fallow-ignore-next-line code-duplication -->
 		<form {...remove}>
 			<input {...remove.fields.id.as('hidden', todo.id)} />
@@ -95,7 +101,18 @@
 		gap: 0.5em;
 	}
 
-	.due {
+	.stage {
+		border: 1px solid var(--border-bright);
+		border-radius: 4px;
+		font-family: var(--font-mono);
+		font-size: 0.7em;
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+		color: var(--muted);
+		padding: 0.2em 0.5em;
+	}
+
+	.span {
 		color: var(--dim);
 		font-size: 0.78em;
 		font-family: var(--font-mono);
@@ -103,10 +120,24 @@
 		white-space: nowrap;
 	}
 
+	.span.late {
+		color: var(--danger);
+	}
+
 	.actions {
 		display: flex;
 		align-items: center;
 		gap: 0.5em;
 		margin-top: 0.85em;
+	}
+
+	.who {
+		font-family: var(--font-mono);
+		font-size: 0.72em;
+		color: var(--dim);
+		margin-left: auto;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
 	}
 </style>

@@ -21,7 +21,8 @@ export namespace TodoApi {
       describeRoute({
         tags: ["Todo"],
         summary: "List todos",
-        description: "List the current user's todos, optionally filtered by state. Paginated.",
+        description:
+          "List todos, optionally narrowed by status, assignee, stage or owning entity. Paginated.",
         responses: {
           200: PaginatedResponse(Todo.Info, "A page of todos.", Examples.Todo),
           401: ErrorResponses[401],
@@ -29,10 +30,47 @@ export namespace TodoApi {
         },
       }),
       authRequired,
-      validator("query", PaginatedQuery.extend({ state: Todo.State.optional() })),
+      validator(
+        "query",
+        PaginatedQuery.extend({
+          status: Todo.Status.optional(),
+          assignee: z.string().optional(),
+          stage: z.string().optional(),
+          source: z.string().optional(),
+          sourceID: z.string().optional(),
+          createdBy: z.string().optional(),
+          search: z.string().optional(),
+        }),
+      ),
       async (c) => {
         const todos = await Todo.list(c.req.valid("query"));
         return c.json(todos, 200);
+      },
+    )
+    .get(
+      "/stage",
+      describeRoute({
+        tags: ["Todo"],
+        summary: "List stages",
+        description:
+          "The stage labels in use, with the span and counts derived from the todos in each.",
+        responses: {
+          200: {
+            content: { "application/json": { schema: Result(z.array(Todo.Stage)) } },
+            description: "The stages in use.",
+          },
+          401: ErrorResponses[401],
+          500: ErrorResponses[500],
+        },
+      }),
+      authRequired,
+      validator(
+        "query",
+        z.object({ source: z.string().optional(), sourceID: z.string().optional() }),
+      ),
+      async (c) => {
+        const stages = await Todo.stages(c.req.valid("query"));
+        return c.json(stages, 200);
       },
     )
     .get(

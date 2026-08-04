@@ -1,5 +1,5 @@
 <script module lang="ts">
-	export type View = 'list' | 'board' | 'table';
+	export type View = 'list' | 'board' | 'table' | 'timeline';
 </script>
 
 <script lang="ts">
@@ -7,7 +7,7 @@
 </script>
 
 <div class="tabs">
-	{#each ['list', 'board', 'table'] as const as v (v)}
+	{#each ['list', 'board', 'table', 'timeline'] as const as v (v)}
 		<button class="tab" class:active={view === v} onclick={() => onchange(v)}>{v}</button>
 	{/each}
 </div>

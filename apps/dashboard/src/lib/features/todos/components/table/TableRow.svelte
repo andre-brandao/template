@@ -2,17 +2,24 @@
 	import { Button } from '@template/ui';
 	import { removeTodo } from '../../api/todos.remote';
 	import type { Todo } from '@template/core/todo';
-	import StateToggle from '../StateToggle.svelte';
+	import StatusPicker from '../StatusPicker.svelte';
 	import TagList from '../TagList.svelte';
+	import { late } from '../../status';
+	import { fmt } from '$lib/utils/fmt';
 
 	let { todo }: { todo: Todo.Info } = $props();
+
+	const f = fmt();
 	const remove = $derived(removeTodo.for(todo.id));
 </script>
 
 <tr>
 	<td><a class="title" href="/todos/{todo.id}">{todo.title}</a></td>
+	<td class="dim">{todo.stage ?? '—'}</td>
+	<td class="dim">{todo.assignee?.name ?? 'Unassigned'}</td>
+	<td class="dim" class:late={late(todo)}>{todo.dueDate ? f.date(todo.dueDate) : '—'}</td>
 	<td><TagList tags={todo.tags} /></td>
-	<td><StateToggle {todo} /></td>
+	<td><StatusPicker {todo} compact /></td>
 	<td class="actions">
 		<form {...remove}>
 			<input {...remove.fields.id.as('hidden', todo.id)} />
@@ -33,6 +40,17 @@
 
 	tr:hover {
 		background: color-mix(in srgb, var(--ink) 4%, transparent);
+	}
+
+	.dim {
+		color: var(--muted);
+		font-family: var(--font-mono);
+		font-size: 0.8em;
+		white-space: nowrap;
+	}
+
+	.dim.late {
+		color: var(--danger);
 	}
 
 	.actions {

@@ -9,6 +9,10 @@ type IO = "pipe" | "inherit" | "ignore";
 const driver = process.env.DB ?? "docker";
 if (driver !== "pglite" && driver !== "docker") throw new Error(`Unknown DB: ${driver}`);
 
+// RESET=1 (or --reset) wipes the persisted schema before pushing; pglite is in-memory
+// and already starts empty, so it only matters for docker's pgdata volume.
+const reset = process.env.RESET === "1" || process.argv.includes("--reset");
+
 const pgport = Number(process.env.PGPORT ?? 5432);
 const url =
   process.env.DATABASE_URL ?? `postgresql://postgres:password@127.0.0.1:${pgport}/postgres`;
@@ -17,6 +21,8 @@ const env = {
   ...process.env,
   DATABASE_URL: url,
   PGPORT: String(pgport),
+  // pglite's socket server accepts exactly one connection; docker postgres pools.
+  PG_MAX: process.env.PG_MAX ?? (driver === "pglite" ? "1" : "10"),
   AUTH_URL: process.env.AUTH_URL ?? `http://localhost:${authport}`,
   SESSION_SECRET: process.env.SESSION_SECRET ?? "dev-session-secret",
 };
@@ -128,6 +134,11 @@ async function docker() {
     root,
   );
   if ((await up.exited) !== 0) throw new Error("Failed to start the postgres container");
+  if (reset) {
+    console.log("Resetting database...");
+    const wipe = spawn(["bun", "reset.ts"], import.meta.dir);
+    if ((await wipe.exited) !== 0) throw new Error("Failed to reset the database");
+  }
   // --force: the volume persists across runs, so drift would otherwise stop on a TTY prompt
   const push = spawn(["bun", "run", "db:push", "--force"], `${root}/packages/core`);
   if ((await push.exited) !== 0) throw new Error("Failed to push the schema");

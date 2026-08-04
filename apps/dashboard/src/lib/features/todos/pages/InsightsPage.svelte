@@ -8,7 +8,11 @@
 	import CalendarSection from '../components/insights/CalendarSection.svelte';
 	import DueSection from '../components/insights/DueSection.svelte';
 	import StatusSection from '../components/insights/StatusSection.svelte';
+	import LoadSection from '../components/insights/LoadSection.svelte';
 	import Skeleton from '../components/insights/Skeleton.svelte';
+	import { getProject } from '$lib/features/projects/api/projects.remote';
+
+	let { source, sourceID }: { source?: string; sourceID?: string } = $props();
 
 	const fallback = last(30);
 	const params = query(
@@ -17,17 +21,22 @@
 			end: z.iso.date().default(fallback.end)
 		})
 	);
+	const scope = $derived({ source, sourceID });
 	// valid() rejects out-of-order or over-long ranges, so garbage params collapse to the fallback.
-	const range = $derived(
-		 valid(params) ? params : fallback
-	);
+	const picked = $derived(valid(params) ? { start: params.start, end: params.end } : fallback);
+	const range = $derived({ ...picked, ...scope });
 	const commit = debounce(params.update, 250);
+
+	const project = $derived(
+		source === 'project' && sourceID ? await getProject(sourceID) : undefined
+	);
+	const title = $derived(project?.name ?? 'Insights');
 </script>
 
-<h1>Insights</h1>
+<h1>{title}</h1>
 
 <div class="toolbar">
-	<RangePicker {range} onchange={commit} />
+	<RangePicker range={picked} onchange={commit} />
 	{#if $effect.pending()}<span class="updating">updating…</span>{/if}
 </div>
 
@@ -48,12 +57,17 @@
 	</svelte:boundary>
 
 	<svelte:boundary>
-		<DueSection />
+		<DueSection {scope} />
 		{#snippet pending()}<Skeleton height="276px" />{/snippet}
 	</svelte:boundary>
 
 	<svelte:boundary>
 		<StatusSection {range} />
+		{#snippet pending()}<Skeleton height="264px" />{/snippet}
+	</svelte:boundary>
+
+	<svelte:boundary>
+		<LoadSection {range} />
 		{#snippet pending()}<Skeleton height="264px" />{/snippet}
 	</svelte:boundary>
 </div>

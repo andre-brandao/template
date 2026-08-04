@@ -27,6 +27,8 @@ const port = pick();
 
 // db:push (drizzle-kit) and anything importing Database read this
 process.env.DATABASE_URL ??= `postgresql://postgres:password@${host}:${port}/postgres`;
+// The socket server accepts exactly one connection, so the pool must not grow.
+process.env.PG_MAX = "1";
 
 const db = await PGlite.create({
   // dataDir: "/tmp/pglite/hono"

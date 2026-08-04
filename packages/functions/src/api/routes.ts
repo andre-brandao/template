@@ -6,6 +6,7 @@ import { Log } from "@template/core/util/log";
 import { KeyApi } from "./handler/key";
 import { UserApi } from "./handler/user";
 import { TodoApi } from "./handler/todo";
+import { ProjectApi } from "./handler/project";
 import { FileApi } from "./handler/file";
 import { auth } from "./middleware";
 
@@ -35,6 +36,7 @@ export const routes = app
   .route("/", UserApi.route)
   .route("/key", KeyApi.route)
   .route("/todo", TodoApi.route)
+  .route("/project", ProjectApi.route)
   .route("/file", FileApi.route)
   .onError((error, c) => {
     if (error instanceof VisibleError) {

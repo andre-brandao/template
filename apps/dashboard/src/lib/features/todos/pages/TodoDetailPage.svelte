@@ -1,18 +1,20 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { Button, Card } from '@template/ui';
+	import { Button, Card, Input } from '@template/ui';
 	import { Markdown, MarkdownEditor } from 'carta-md';
 	import 'carta-md/default.css';
 	import '@cartamd/plugin-attachment/default.css';
 	import '$lib/markdown.css';
 	import { createCarta } from '$lib/markdown';
 	import type { Event } from '@template/core/event';
-	import { getTodo, removeTodo, updateTodo } from '../api/todos.remote';
+	import { getTodo, planTodo, removeTodo, updateTodo } from '../api/todos.remote';
 	import Timeline from '$lib/features/events/components/Timeline.svelte';
-	import StatePill from '../components/StatePill.svelte';
-	import StateToggle from '../components/StateToggle.svelte';
+	import StatusPill from '../components/StatusPill.svelte';
+	import StatusPicker from '../components/StatusPicker.svelte';
+	import AssigneePicker from '../components/AssigneePicker.svelte';
+	import StagePicker from '../components/StagePicker.svelte';
 	import TagList from '../components/TagList.svelte';
-	import { color } from '../state';
+	import { color, late } from '../status';
 	import { fmt } from '$lib/utils/fmt';
 
 	let { id }: { id: string } = $props();
@@ -25,7 +27,14 @@
 	const todo = $derived((void gen, await getTodo(id)));
 	const remove = $derived(removeTodo.for(todo.id));
 	const update = $derived(updateTodo.for(todo.id));
+	const plan = $derived(planTodo.for(todo.id));
 	const carta = createCarta();
+
+	const scope = $derived({
+		source: todo.source ?? undefined,
+		sourceID: todo.sourceID ?? undefined
+	});
+	const day = (at: string | null) => at?.slice(0, 10) ?? '';
 
 	let editing = $state(false);
 	let body = $state('');
@@ -35,20 +44,23 @@
 		editing = true;
 	}
 
+	async function saved() {
+		await getTodo(todo.id).refresh();
+		gen++;
+	}
+
 	const eventLabels: Record<string, string> = {
 		'todo.created': 'Created',
 		'todo.updated': 'Updated',
-		'todo.closed': 'Closed',
-		'todo.reopened': 'Reopened',
+		'todo.status': 'Status',
+		'todo.assigned': 'Assigned',
 		'todo.removed': 'Removed'
 	};
 
 	function eventLabel(event: Event.Info) {
 		const base = eventLabels[event.type] ?? event.type;
-		if (event.type !== 'todo.closed') return base;
-		const reason = event.data.reason;
-		if (reason === 'completed') return `${base} as completed`;
-		if (reason === 'not_planned') return `${base} as not planned`;
+		if (event.type === 'todo.status')
+			return `${base} → ${event.data.to}${event.data.reason ? ` (${event.data.reason})` : ''}`;
 		return base;
 	}
 </script>
@@ -56,29 +68,73 @@
 <a class="back" href="/todos">&larr; Back to todos</a>
 
 <!-- fallow-ignore-next-line code-duplication -->
-<Card accent={color(todo.state)}>
+<Card accent={color(todo.status)}>
 	{#each remove.fields.allIssues() ?? [] as issue, i (i)}
 		<p class="error">{issue.message}</p>
 	{/each}
 
 	<div class="head">
 		<h1>{todo.title}</h1>
-		<StatePill state={todo.state} />
+		<StatusPill status={todo.status} reason={todo.reason} />
 	</div>
 
 	<TagList tags={todo.tags} />
 
-	{#if todo.dueDate}
-		<p class="due">Due {f.date(todo.dueDate)}</p>
-	{/if}
+	<dl class="facts">
+		<div><dt>Stage</dt><dd>{todo.stage ?? '—'}</dd></div>
+		<div>
+			<dt>Planned</dt>
+			<dd class:late={late(todo)}>
+				{todo.startDate ? f.date(todo.startDate) : '—'} → {todo.dueDate
+					? f.date(todo.dueDate)
+					: '—'}
+			</dd>
+		</div>
+		<div>
+			<dt>Actual</dt>
+			<dd>
+				{todo.timeStarted ? f.date(todo.timeStarted) : 'not started'}
+				{#if todo.timeDone}&rarr; {f.date(todo.timeDone)}{/if}
+			</dd>
+		</div>
+		{#if todo.source === 'project' && todo.sourceID}
+			<div><dt>Project</dt><dd><a href="/projects/{todo.sourceID}">open</a></dd></div>
+		{/if}
+	</dl>
+
+	<form
+		class="plan"
+		{...plan.enhance(async (f) => {
+			await f.submit();
+			await saved();
+		})}
+	>
+		<input {...plan.fields.id.as('hidden', todo.id)} />
+		<label>
+			<span>Stage</span>
+			<StagePicker {scope} {...plan.fields.stage.as('text')} value={todo.stage ?? ''} />
+		</label>
+		<label>
+			<span>Assignee</span>
+			<AssigneePicker {...plan.fields.assignee.as('select')} value={todo.assignee?.id ?? ''} />
+		</label>
+		<label>
+			<span>Start</span>
+			<Input {...plan.fields.startDate.as('date')} value={day(todo.startDate)} />
+		</label>
+		<label>
+			<span>Due</span>
+			<Input {...plan.fields.dueDate.as('date')} value={day(todo.dueDate)} />
+		</label>
+		<Button type="submit" variant="secondary" pending={!!plan.pending}>Save plan</Button>
+	</form>
 
 	{#if editing}
 		<form
 			class="edit"
 			{...update.enhance(async (f) => {
 				await f.submit();
-				await getTodo(todo.id).refresh();
-				gen++;
+				await saved();
 				editing = false;
 			})}
 		>
@@ -98,16 +154,20 @@
 		{:else}
 			<p class="empty-body">No description yet.</p>
 		{/if}
-		<Button variant="ghost" onclick={edit}>{todo.body ? 'Edit description' : 'Add description'}</Button>
+		<Button variant="ghost" onclick={edit}>
+			{todo.body ? 'Edit description' : 'Add description'}
+		</Button>
 	{/if}
 
 	<div class="actions">
-		<StateToggle {todo} />
+		<StatusPicker {todo} />
 		<!-- fallow-ignore-next-line code-duplication -->
-		<form {...remove.enhance(async (f) => {
-			await f.submit();
-			goto('/todos');
-		})}>
+		<form
+			{...remove.enhance(async (f) => {
+				await f.submit();
+				goto('/todos');
+			})}
+		>
 			<input {...remove.fields.id.as('hidden', todo.id)} />
 			<Button variant="danger" type="submit" pending={!!remove.pending}>Delete</Button>
 		</form>
@@ -148,10 +208,54 @@
 		word-break: break-word;
 	}
 
-	.due {
+	.facts {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 1.25em;
+		margin: 1em 0 0;
+	}
+
+	dt {
+		font-family: var(--font-mono);
+		font-size: 0.68em;
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+		color: var(--dim);
+	}
+
+	dd {
+		margin: 0.2em 0 0;
+		font-size: 0.88em;
 		color: var(--muted);
-		font-size: 0.9em;
-		margin: 0.75em 0 0;
+	}
+
+	dd.late {
+		color: var(--danger);
+	}
+
+	.plan {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: end;
+		gap: 0.75em;
+		margin-top: 1em;
+		padding-top: 1em;
+		border-top: 1px solid var(--border);
+	}
+
+	.plan label {
+		display: flex;
+		flex-direction: column;
+		gap: 0.25em;
+		min-width: 9em;
+	}
+
+	.plan span {
+		font-family: var(--font-mono);
+		font-size: 0.68em;
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+		color: var(--dim);
 	}
 
 	.body {

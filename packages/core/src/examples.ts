@@ -12,15 +12,29 @@ export namespace Examples {
     image: null,
   };
 
+  export const Project = {
+    id: Id("project"),
+    createdBy: Id("user"),
+    name: "Quarterly close",
+    description: null,
+  } as const;
+
   export const Todo = {
     id: Id("todo"),
-    userID: Id("user"),
+    createdBy: Id("user"),
+    assignee: { id: Id("user"), name: "John Doe", image: null },
+    source: "project",
+    sourceID: Id("project"),
+    stage: "Sprint 1",
     title: "Write the quarterly report",
     body: null,
-    state: "open",
-    stateReason: null,
+    status: "active",
+    reason: null,
     tags: [] as string[],
-    dueDate: null,
+    startDate: "2026-06-07T00:00:00.000Z",
+    dueDate: "2026-06-14T00:00:00.000Z",
+    timeStarted: "2026-06-07T09:12:00.000Z",
+    timeDone: null,
   } as const;
 
   export const Key = {

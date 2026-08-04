@@ -2,6 +2,7 @@
 	import { page } from '$app/state';
 
 	const links = [
+		{ href: '/projects', label: 'Projects' },
 		{ href: '/todos', label: 'Todos' },
 		{ href: '/files', label: 'Files' },
 		{ href: '/insights', label: 'Insights' },

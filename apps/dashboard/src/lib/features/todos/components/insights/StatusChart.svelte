@@ -1,15 +1,16 @@
 <script lang="ts">
-	import { color, label } from '../../state';
+	import type { Todo } from '@template/core/todo';
+	import { color, label } from '../../status';
 
-	let { rows }: { rows: { state: 'open' | 'closed'; total: number; pct: number }[] } = $props();
+	let { rows }: { rows: { status: Todo.Status; total: number; pct: number }[] } = $props();
 </script>
 
 <!-- Plain HTML bars: layerchart's Bars mark infinite-loops on client render (2.0.0-next.66). -->
 <div class="bars">
-	{#each rows as row (row.state)}
-		<span class="name">{label(row.state)}</span>
+	{#each rows as row (row.status)}
+		<span class="name">{label(row.status)}</span>
 		<span class="track">
-			<span class="bar" style:width="{row.pct}%" style:background={color(row.state)}></span>
+			<span class="bar" style:width="{row.pct}%" style:background={color(row.status)}></span>
 		</span>
 		<span class="count">{row.total}</span>
 	{/each}

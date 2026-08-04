@@ -11,34 +11,46 @@ import {
 } from "./client";
 import { client } from "./client.gen";
 import type {
-  DeleteFileByIdErrors,
-  DeleteFileByIdResponses,
+  DeleteFileByNameErrors,
+  DeleteFileByNameResponses,
   DeleteKeyByIdErrors,
   DeleteKeyByIdResponses,
+  DeleteProjectByIdErrors,
+  DeleteProjectByIdResponses,
   DeleteTodoByIdErrors,
   DeleteTodoByIdResponses,
-  GetFileByIdContentErrors,
-  GetFileByIdContentResponses,
-  GetFileByIdErrors,
-  GetFileByIdResponses,
+  GetFileByNameContentErrors,
+  GetFileByNameContentResponses,
   GetFileErrors,
   GetFileResponses,
+  GetFileSignedErrors,
+  GetFileSignedResponses,
   GetKeyErrors,
   GetKeyResponses,
   GetMeErrors,
   GetMeResponses,
+  GetProjectByIdErrors,
+  GetProjectByIdResponses,
+  GetProjectErrors,
+  GetProjectResponses,
   GetTodoByIdErrors,
   GetTodoByIdResponses,
   GetTodoErrors,
   GetTodoResponses,
-  PatchFileByIdErrors,
-  PatchFileByIdResponses,
+  GetTodoStageErrors,
+  GetTodoStageResponses,
+  PatchFileByNameErrors,
+  PatchFileByNameResponses,
+  PatchProjectByIdErrors,
+  PatchProjectByIdResponses,
   PatchTodoByIdErrors,
   PatchTodoByIdResponses,
   PostFileErrors,
   PostFileResponses,
   PostKeyErrors,
   PostKeyResponses,
+  PostProjectErrors,
+  PostProjectResponses,
   PostTodoErrors,
   PostTodoResponses,
 } from "./types.gen";
@@ -191,13 +203,19 @@ export class TemplateSdk extends HeyApiClient {
   /**
    * List todos
    *
-   * List the current user's todos, optionally filtered by state. Paginated.
+   * List todos, optionally narrowed by status, assignee, stage or owning entity. Paginated.
    */
   public getTodo<ThrowOnError extends boolean = false>(
     parameters?: {
       page?: number;
       pageSize?: number;
-      state?: "open" | "closed";
+      status?: "backlog" | "planned" | "active" | "blocked" | "done";
+      assignee?: string;
+      stage?: string;
+      source?: string;
+      sourceID?: string;
+      createdBy?: string;
+      search?: string;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<GetTodoResponses, GetTodoErrors, ThrowOnError> {
@@ -208,7 +226,13 @@ export class TemplateSdk extends HeyApiClient {
           args: [
             { in: "query", key: "page" },
             { in: "query", key: "pageSize" },
-            { in: "query", key: "state" },
+            { in: "query", key: "status" },
+            { in: "query", key: "assignee" },
+            { in: "query", key: "stage" },
+            { in: "query", key: "source" },
+            { in: "query", key: "sourceID" },
+            { in: "query", key: "createdBy" },
+            { in: "query", key: "search" },
           ],
         },
       ],
@@ -229,6 +253,12 @@ export class TemplateSdk extends HeyApiClient {
       title: string;
       body?: string | null;
       tags?: Array<string>;
+      stage?: string | null;
+      assignee?: string | null;
+      source?: string | null;
+      sourceID?: string | null;
+      status?: "backlog" | "planned" | "active" | "blocked" | "done";
+      startDate?: string | null;
       dueDate?: string | null;
     },
     options?: Options<never, ThrowOnError>,
@@ -241,6 +271,12 @@ export class TemplateSdk extends HeyApiClient {
             { in: "body", key: "title" },
             { in: "body", key: "body" },
             { in: "body", key: "tags" },
+            { in: "body", key: "stage" },
+            { in: "body", key: "assignee" },
+            { in: "body", key: "source" },
+            { in: "body", key: "sourceID" },
+            { in: "body", key: "status" },
+            { in: "body", key: "startDate" },
             { in: "body", key: "dueDate" },
           ],
         },
@@ -256,6 +292,41 @@ export class TemplateSdk extends HeyApiClient {
         ...options?.headers,
         ...params.headers,
       },
+    });
+  }
+
+  /**
+   * List stages
+   *
+   * The stage labels in use, with the span and counts derived from the todos in each.
+   */
+  public getTodoStage<ThrowOnError extends boolean = false>(
+    parameters?: {
+      source?: string;
+      sourceID?: string;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<GetTodoStageResponses, GetTodoStageErrors, ThrowOnError> {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "query", key: "source" },
+            { in: "query", key: "sourceID" },
+          ],
+        },
+      ],
+    );
+    return (options?.client ?? this.client).get<
+      GetTodoStageResponses,
+      GetTodoStageErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/todo/stage",
+      ...options,
+      ...params,
     });
   }
 
@@ -312,9 +383,12 @@ export class TemplateSdk extends HeyApiClient {
       title?: string;
       body?: string | null;
       tags?: Array<string>;
+      stage?: string | null;
+      status?: "backlog" | "planned" | "active" | "blocked" | "done";
+      reason?: string | null;
+      startDate?: string | null;
       dueDate?: string | null;
-      state?: "open" | "closed";
-      stateReason?: "completed" | "not_planned" | null;
+      assignee?: string | null;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<PatchTodoByIdResponses, PatchTodoByIdErrors, ThrowOnError> {
@@ -327,9 +401,12 @@ export class TemplateSdk extends HeyApiClient {
             { in: "body", key: "title" },
             { in: "body", key: "body" },
             { in: "body", key: "tags" },
+            { in: "body", key: "stage" },
+            { in: "body", key: "status" },
+            { in: "body", key: "reason" },
+            { in: "body", key: "startDate" },
             { in: "body", key: "dueDate" },
-            { in: "body", key: "state" },
-            { in: "body", key: "stateReason" },
+            { in: "body", key: "assignee" },
           ],
         },
       ],
@@ -352,19 +429,18 @@ export class TemplateSdk extends HeyApiClient {
   }
 
   /**
-   * List files
+   * List projects
    *
-   * The user's files, newest first. Filter by tags (comma-separated) or search.
+   * List projects, optionally filtered by name. Paginated.
    */
-  public getFile<ThrowOnError extends boolean = false>(
+  public getProject<ThrowOnError extends boolean = false>(
     parameters?: {
       page?: number;
       pageSize?: number;
-      tags?: string;
       search?: string;
     },
     options?: Options<never, ThrowOnError>,
-  ): RequestResult<GetFileResponses, GetFileErrors, ThrowOnError> {
+  ): RequestResult<GetProjectResponses, GetProjectErrors, ThrowOnError> {
     const params = buildClientParams(
       [parameters],
       [
@@ -372,43 +448,172 @@ export class TemplateSdk extends HeyApiClient {
           args: [
             { in: "query", key: "page" },
             { in: "query", key: "pageSize" },
-            { in: "query", key: "tags" },
             { in: "query", key: "search" },
           ],
         },
       ],
     );
-    return (options?.client ?? this.client).get<GetFileResponses, GetFileErrors, ThrowOnError>({
+    return (options?.client ?? this.client).get<
+      GetProjectResponses,
+      GetProjectErrors,
+      ThrowOnError
+    >({
       security: [{ scheme: "bearer", type: "http" }],
-      url: "/file",
+      url: "/project",
       ...options,
       ...params,
     });
   }
 
   /**
-   * Upload file
-   *
-   * Multipart form with a `file` field, plus optional `tags` (comma-separated).
+   * Create project
    */
-  public postFile<ThrowOnError extends boolean = false>(
+  public postProject<ThrowOnError extends boolean = false>(
     parameters: {
-      file: Blob | File;
-      tags?: string;
+      name: string;
+      description?: string | null;
     },
     options?: Options<never, ThrowOnError>,
-  ): RequestResult<PostFileResponses, PostFileErrors, ThrowOnError> {
+  ): RequestResult<PostProjectResponses, PostProjectErrors, ThrowOnError> {
     const params = buildClientParams(
       [parameters],
       [
         {
           args: [
-            { in: "body", key: "file" },
-            { in: "body", key: "tags" },
+            { in: "body", key: "name" },
+            { in: "body", key: "description" },
           ],
         },
       ],
     );
+    return (options?.client ?? this.client).post<
+      PostProjectResponses,
+      PostProjectErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/project",
+      ...options,
+      ...params,
+      headers: {
+        "Content-Type": "application/json",
+        ...options?.headers,
+        ...params.headers,
+      },
+    });
+  }
+
+  /**
+   * Delete project
+   */
+  public deleteProjectById<ThrowOnError extends boolean = false>(
+    parameters: {
+      id: string;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<DeleteProjectByIdResponses, DeleteProjectByIdErrors, ThrowOnError> {
+    const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
+    return (options?.client ?? this.client).delete<
+      DeleteProjectByIdResponses,
+      DeleteProjectByIdErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/project/{id}",
+      ...options,
+      ...params,
+    });
+  }
+
+  /**
+   * Get project
+   */
+  public getProjectById<ThrowOnError extends boolean = false>(
+    parameters: {
+      id: string;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<GetProjectByIdResponses, GetProjectByIdErrors, ThrowOnError> {
+    const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
+    return (options?.client ?? this.client).get<
+      GetProjectByIdResponses,
+      GetProjectByIdErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/project/{id}",
+      ...options,
+      ...params,
+    });
+  }
+
+  /**
+   * Update project
+   */
+  public patchProjectById<ThrowOnError extends boolean = false>(
+    parameters: {
+      id: string;
+      name?: string;
+      description?: string | null;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<PatchProjectByIdResponses, PatchProjectByIdErrors, ThrowOnError> {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "path", key: "id" },
+            { in: "body", key: "name" },
+            { in: "body", key: "description" },
+          ],
+        },
+      ],
+    );
+    return (options?.client ?? this.client).patch<
+      PatchProjectByIdResponses,
+      PatchProjectByIdErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/project/{id}",
+      ...options,
+      ...params,
+      headers: {
+        "Content-Type": "application/json",
+        ...options?.headers,
+        ...params.headers,
+      },
+    });
+  }
+
+  /**
+   * List files
+   *
+   * Everything under the user's prefix on the default disk, newest first.
+   */
+  public getFile<ThrowOnError extends boolean = false>(
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<GetFileResponses, GetFileErrors, ThrowOnError> {
+    return (options?.client ?? this.client).get<GetFileResponses, GetFileErrors, ThrowOnError>({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/file",
+      ...options,
+    });
+  }
+
+  /**
+   * Upload file
+   *
+   * Multipart form with a `file` field. The filename becomes the key, so re-uploading the same name overwrites.
+   */
+  public postFile<ThrowOnError extends boolean = false>(
+    parameters: {
+      file: Blob | File;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<PostFileResponses, PostFileErrors, ThrowOnError> {
+    const params = buildClientParams([parameters], [{ args: [{ in: "body", key: "file" }] }]);
     return (options?.client ?? this.client).post<PostFileResponses, PostFileErrors, ThrowOnError>({
       ...formDataBodySerializer,
       security: [{ scheme: "bearer", type: "http" }],
@@ -424,81 +629,128 @@ export class TemplateSdk extends HeyApiClient {
   }
 
   /**
-   * Delete file
-   */
-  public deleteFileById<ThrowOnError extends boolean = false>(
-    parameters: {
-      id: string;
-    },
-    options?: Options<never, ThrowOnError>,
-  ): RequestResult<DeleteFileByIdResponses, DeleteFileByIdErrors, ThrowOnError> {
-    const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
-    return (options?.client ?? this.client).delete<
-      DeleteFileByIdResponses,
-      DeleteFileByIdErrors,
-      ThrowOnError
-    >({
-      security: [{ scheme: "bearer", type: "http" }],
-      url: "/file/{id}",
-      ...options,
-      ...params,
-    });
-  }
-
-  /**
-   * Get file metadata
-   */
-  public getFileById<ThrowOnError extends boolean = false>(
-    parameters: {
-      id: string;
-    },
-    options?: Options<never, ThrowOnError>,
-  ): RequestResult<GetFileByIdResponses, GetFileByIdErrors, ThrowOnError> {
-    const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
-    return (options?.client ?? this.client).get<
-      GetFileByIdResponses,
-      GetFileByIdErrors,
-      ThrowOnError
-    >({
-      security: [{ scheme: "bearer", type: "http" }],
-      url: "/file/{id}",
-      ...options,
-      ...params,
-    });
-  }
-
-  /**
-   * Update file
+   * Get signed file content
    *
-   * Rename or re-tag a file.
+   * Serves the bytes for a `temporaryUrl` minted by a disk that can't presign (fs, R2 binding). The signature stands in for the session, so no token is needed.
    */
-  public patchFileById<ThrowOnError extends boolean = false>(
+  public getFileSigned<ThrowOnError extends boolean = false>(
     parameters: {
-      id: string;
-      filename?: string;
-      tags?: Array<string>;
+      key: string;
+      expires: number;
+      kid: string;
+      sig: string;
     },
     options?: Options<never, ThrowOnError>,
-  ): RequestResult<PatchFileByIdResponses, PatchFileByIdErrors, ThrowOnError> {
+  ): RequestResult<GetFileSignedResponses, GetFileSignedErrors, ThrowOnError> {
     const params = buildClientParams(
       [parameters],
       [
         {
           args: [
-            { in: "path", key: "id" },
-            { in: "body", key: "filename" },
-            { in: "body", key: "tags" },
+            { in: "query", key: "key" },
+            { in: "query", key: "expires" },
+            { in: "query", key: "kid" },
+            { in: "query", key: "sig" },
+          ],
+        },
+      ],
+    );
+    return (options?.client ?? this.client).get<
+      GetFileSignedResponses,
+      GetFileSignedErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/file/signed",
+      ...options,
+      ...params,
+    });
+  }
+
+  /**
+   * Get file content
+   *
+   * Redirects to a presigned storage URL when the disk supports it; streams the bytes otherwise.
+   */
+  public getFileByNameContent<ThrowOnError extends boolean = false>(
+    parameters: {
+      name: string;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<GetFileByNameContentResponses, GetFileByNameContentErrors, ThrowOnError> {
+    const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "name" }] }]);
+    return (options?.client ?? this.client).get<
+      GetFileByNameContentResponses,
+      GetFileByNameContentErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/file/{name}/content",
+      ...options,
+      ...params,
+    });
+  }
+
+  /**
+   * Delete file
+   */
+  public deleteFileByName<ThrowOnError extends boolean = false>(
+    parameters: {
+      name: string;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<DeleteFileByNameResponses, DeleteFileByNameErrors, ThrowOnError> {
+    const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "name" }] }]);
+    return (options?.client ?? this.client).delete<
+      DeleteFileByNameResponses,
+      DeleteFileByNameErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/file/{name}",
+      ...options,
+      ...params,
+    });
+  }
+
+  /**
+   * Rename file
+   *
+   * Moves the object to a new key under the same prefix.
+   */
+  public patchFileByName<ThrowOnError extends boolean = false>(
+    parameters: {
+      path_name: string;
+      body_name: string;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<PatchFileByNameResponses, PatchFileByNameErrors, ThrowOnError> {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            {
+              in: "path",
+              key: "path_name",
+              map: "name",
+            },
+            {
+              in: "body",
+              key: "body_name",
+              map: "name",
+            },
           ],
         },
       ],
     );
     return (options?.client ?? this.client).patch<
-      PatchFileByIdResponses,
-      PatchFileByIdErrors,
+      PatchFileByNameResponses,
+      PatchFileByNameErrors,
       ThrowOnError
     >({
       security: [{ scheme: "bearer", type: "http" }],
-      url: "/file/{id}",
+      url: "/file/{name}",
       ...options,
       ...params,
       headers: {
@@ -506,30 +758,6 @@ export class TemplateSdk extends HeyApiClient {
         ...options?.headers,
         ...params.headers,
       },
-    });
-  }
-
-  /**
-   * Get file content
-   *
-   * Redirects to a presigned storage URL when the backend supports it; streams the bytes otherwise.
-   */
-  public getFileByIdContent<ThrowOnError extends boolean = false>(
-    parameters: {
-      id: string;
-    },
-    options?: Options<never, ThrowOnError>,
-  ): RequestResult<GetFileByIdContentResponses, GetFileByIdContentErrors, ThrowOnError> {
-    const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
-    return (options?.client ?? this.client).get<
-      GetFileByIdContentResponses,
-      GetFileByIdContentErrors,
-      ThrowOnError
-    >({
-      security: [{ scheme: "bearer", type: "http" }],
-      url: "/file/{id}/content",
-      ...options,
-      ...params,
     });
   }
 }

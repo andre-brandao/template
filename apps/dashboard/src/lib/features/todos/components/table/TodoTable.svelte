@@ -10,8 +10,11 @@
 		<thead>
 			<tr>
 				<th>Title</th>
+				<th>Stage</th>
+				<th>Assignee</th>
+				<th>Due</th>
 				<th>Tags</th>
-				<th>State</th>
+				<th>Status</th>
 				<th></th>
 			</tr>
 		</thead>
@@ -20,7 +23,7 @@
 				<TableRow {todo} />
 			{/each}
 			{#if todos.length === 0}
-				<tr><td colspan="4" class="empty">No tasks yet</td></tr>
+				<tr><td colspan="7" class="empty">No tasks yet</td></tr>
 			{/if}
 		</tbody>
 	</table>

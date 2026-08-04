@@ -1,77 +1,99 @@
 <script lang="ts">
-  import { z } from 'zod'
-  import { query } from '$lib/utils/params'
-  import { Button, Drawer } from '@template/ui'
-  import { getTodos } from '../api/todos.remote'
-  import TodoForm from '../components/form/TodoForm.svelte'
-  import TodoFilters from '../components/TodoFilters.svelte'
-  import ViewSelector from '../components/ViewSelector.svelte'
-  import TodosView from '../components/TodosView.svelte'
+	import { z } from 'zod';
+	import { query } from '$lib/utils/params';
+	import { Button, Drawer } from '@template/ui';
+	import { getTodos } from '../api/todos.remote';
+	import { getProject } from '$lib/features/projects/api/projects.remote';
+	import { STATUSES } from '../status';
+	import TodoForm from '../components/form/TodoForm.svelte';
+	import TodoFilters from '../components/TodoFilters.svelte';
+	import ViewSelector from '../components/ViewSelector.svelte';
+	import GroupSelector from '../components/GroupSelector.svelte';
+	import TodosView from '../components/TodosView.svelte';
 
-  const params = query(
-    z.object({
-      q: z.string().default(''),
-      state: z.enum(['all', 'open', 'closed']).default('all'),
-      view: z.enum(['list', 'board', 'table']).default('list'),
-    }),
-  )
+	let { source, sourceID }: { source?: string; sourceID?: string } = $props();
 
-  const todos = $derived(
-    await getTodos({
-      state: params.state === 'all' ? undefined : params.state,
-      q: params.q || undefined,
-    }),
-  )
+	const params = query(
+		z.object({
+			q: z.string().default(''),
+			status: z.enum(['all', ...STATUSES]).default('all'),
+			assignee: z.string().default(''),
+			stage: z.string().default(''),
+			view: z.enum(['list', 'board', 'table', 'timeline']).default('list'),
+			group: z.enum(['status', 'stage', 'assignee']).default('status')
+		})
+	);
 
-  let adding = $state(false)
+	const scope = $derived({ source, sourceID });
+
+	// Both queries are kicked off together — awaiting them in sequence would make the
+	// project name a waterfall in front of the todos it labels.
+	const data = $derived(
+		await Promise.all([
+			getTodos({
+				...scope,
+				status: params.status === 'all' ? undefined : params.status,
+				assignee: params.assignee || undefined,
+				stage: params.stage || undefined,
+				q: params.q || undefined
+			}),
+			source === 'project' && sourceID ? getProject(sourceID) : undefined
+		])
+	);
+	const todos = $derived(data[0]);
+	const title = $derived(data[1]?.name ?? 'Todos');
+
+	let adding = $state(false);
 </script>
 
-<h1>Todos</h1>
+<h1>{title}</h1>
 
 <div class="toolbar">
-  <TodoFilters
-    filters={{ state: params.state, search: params.q }}
-    onchange={(next) =>
-      params.update({ state: next.state, q: next.search })}
-  />
-  <span class="sep"></span>
-  <ViewSelector
-    view={params.view}
-    onchange={(view) => params.update({ view })}
-  />
-  <Button onclick={() => (adding = true)}>New todo</Button>
+	<TodoFilters
+		{scope}
+		filters={{
+			status: params.status,
+			assignee: params.assignee,
+			stage: params.stage,
+			search: params.q
+		}}
+		onchange={(next) =>
+			params.update({
+				status: next.status,
+				assignee: next.assignee,
+				stage: next.stage,
+				q: next.search
+			})}
+	>
+		{#snippet tools()}
+			{#if params.view === 'board' || params.view === 'timeline'}
+				<GroupSelector by={params.group} onchange={(group) => params.update({ group })} />
+			{/if}
+			<ViewSelector view={params.view} onchange={(view) => params.update({ view })} />
+			<Button onclick={() => (adding = true)}>New todo</Button>
+		{/snippet}
+	</TodoFilters>
 </div>
 
 <Drawer bind:open={adding}>
-  <h2>New todo</h2>
-  <TodoForm onsuccess={() => (adding = false)} />
+	<h2>New todo</h2>
+	<TodoForm {scope} onsuccess={() => (adding = false)} />
 </Drawer>
 
-<TodosView {todos} view={params.view} />
+<TodosView {todos} view={params.view} by={params.group} />
 
 <style>
-  h1 {
-    margin: 0 0 0.75em;
-    font-size: 1.4em;
-  }
+	h1 {
+		margin: 0 0 0.75em;
+		font-size: 1.4em;
+	}
 
-  .toolbar {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 0.75em;
-    margin-bottom: 1.25em;
-  }
+	.toolbar {
+		margin-bottom: 1.25em;
+	}
 
-  .sep {
-    width: 1px;
-    align-self: stretch;
-    background: var(--border);
-    margin-left: auto;
-  }
-
-  h2 {
-    margin: 0 0 1em;
-    font-size: 1.15em;
-  }
+	h2 {
+		margin: 0 0 1em;
+		font-size: 1.15em;
+	}
 </style>

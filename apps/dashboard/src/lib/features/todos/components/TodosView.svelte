@@ -1,25 +1,21 @@
-<script lang='ts'>
+<script lang="ts">
 	import type { Todo } from '@template/core/todo';
-  import TodoList from './list/TodoList.svelte';
-  import KanbanBoard from './kanban/KanbanBoard.svelte';
-  import TodoTable from './table/TodoTable.svelte';
+	import type { By } from '../group';
+	import type { View } from './ViewSelector.svelte';
+	import TodoList from './list/TodoList.svelte';
+	import KanbanBoard from './kanban/KanbanBoard.svelte';
+	import TodoTable from './table/TodoTable.svelte';
+	import TimelineView from './timeline/TimelineView.svelte';
 
-  type Props = {
-    todos: Todo.Info[];
-    view: 'list' | 'board' | 'table';
-  };
-
-  let { todos, view }: Props = $props();
-
-  const views = {
-    list: TodoList,
-    board: KanbanBoard,
-    table: TodoTable,
-  }
-
-  const SelectedView = $derived(views[view]);
+	let { todos, view, by = 'status' }: { todos: Todo.Info[]; view: View; by?: By } = $props();
 </script>
 
-{#if SelectedView}
-  <SelectedView {todos} />
+{#if view === 'board'}
+	<KanbanBoard {todos} {by} />
+{:else if view === 'timeline'}
+	<TimelineView {todos} by={by === 'status' ? 'stage' : by} />
+{:else if view === 'table'}
+	<TodoTable {todos} />
+{:else}
+	<TodoList {todos} />
 {/if}

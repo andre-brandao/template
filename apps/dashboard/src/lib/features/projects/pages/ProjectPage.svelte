@@ -5,6 +5,7 @@
 	import Timeline from '$lib/features/events/components/Timeline.svelte';
 	import StatusPill from '$lib/features/todos/components/StatusPill.svelte';
 	import { getStages, getTodos } from '$lib/features/todos/api/todos.remote';
+	import Skeleton from '$lib/features/todos/components/insights/Skeleton.svelte';
 	import { late } from '$lib/features/todos/status';
 	import { fmt } from '$lib/utils/fmt';
 	import { getProject, removeProject, updateProject } from '../api/projects.remote';
@@ -12,16 +13,7 @@
 	let { id }: { id: string } = $props();
 
 	const f = fmt();
-	let gen = $state(0);
 	const scope = $derived({ source: 'project', sourceID: id });
-	// One await for all three — chaining them would cost three round trips for a page
-	// that needs them all before it paints.
-	const data = $derived(
-		(void gen, await Promise.all([getProject(id), getStages(scope), getTodos(scope)]))
-	);
-	const project = $derived(data[0]);
-	const stages = $derived(data[1]);
-	const todos = $derived(data[2]);
 
 	const update = $derived(updateProject.for(id));
 	const remove = $derived(removeProject.for(id));
@@ -40,96 +32,111 @@
 
 <a class="back" href="/projects">&larr; Back to projects</a>
 
-<Card>
-	{#each update.fields.allIssues() ?? [] as issue, i (i)}
-		<p class="error">{issue.message}</p>
-	{/each}
+<!--
+	Each section awaits its own query in the markup — Svelte runs sibling awaits
+	concurrently, so this is a `Promise.all` without the plumbing, and a slow list
+	can't hold the header back.
+-->
+<svelte:boundary>
+	{@const project = await getProject(id)}
+	<Card>
+		{#each update.fields.allIssues() ?? [] as issue, i (i)}
+			<p class="error">{issue.message}</p>
+		{/each}
 
-	{#if editing}
-		<form
-			class="edit"
-			{...update.enhance(async (f) => {
-				await f.submit();
-				await getProject(id).refresh();
-				gen++;
-				editing = false;
-			})}
-		>
-			<input {...update.fields.id.as('hidden', id)} />
-			<Input {...update.fields.name.as('text')} value={project.name} />
-			<Input
-				{...update.fields.description.as('text')}
-				value={project.description ?? ''}
-				placeholder="Description"
-			/>
-			<div class="row">
-				<Button type="submit" pending={!!update.pending}>Save</Button>
-				<Button variant="ghost" type="button" onclick={() => (editing = false)}>Cancel</Button>
+		{#if editing}
+			<form
+				class="edit"
+				{...update.enhance(async (f) => {
+					await f.submit();
+					await getProject(id).refresh();
+					editing = false;
+				})}
+			>
+				<input {...update.fields.id.as('hidden', id)} />
+				<Input {...update.fields.name.as('text')} value={project.name} />
+				<Input
+					{...update.fields.description.as('text')}
+					value={project.description ?? ''}
+					placeholder="Description"
+				/>
+				<div class="row">
+					<Button type="submit" pending={!!update.pending}>Save</Button>
+					<Button variant="ghost" type="button" onclick={() => (editing = false)}>Cancel</Button>
+				</div>
+			</form>
+		{:else}
+			<div class="head">
+				<h1>{project.name}</h1>
+				<Button variant="ghost" onclick={() => (editing = true)}>Rename</Button>
 			</div>
-		</form>
-	{:else}
-		<div class="head">
-			<h1>{project.name}</h1>
-			<Button variant="ghost" onclick={() => (editing = true)}>Rename</Button>
-		</div>
-		{#if project.description}
-			<p class="blurb">{project.description}</p>
+			{#if project.description}
+				<p class="blurb">{project.description}</p>
+			{/if}
 		{/if}
-	{/if}
 
-	<div class="row">
-		<a class="link" href="/projects/{id}/todos">Todos</a>
-		<a class="link" href="/projects/{id}/insights">Insights</a>
-		<form
-			{...remove.enhance(async (f) => {
-				await f.submit();
-				goto('/projects');
-			})}
-		>
-			<input {...remove.fields.id.as('hidden', id)} />
-			<Button variant="danger" type="submit" pending={!!remove.pending}>Delete</Button>
-		</form>
-	</div>
-</Card>
+		<div class="row">
+			<a class="link" href="/projects/{id}/todos">Todos</a>
+			<a class="link" href="/projects/{id}/insights">Insights</a>
+			<form
+				{...remove.enhance(async (f) => {
+					await f.submit();
+					goto('/projects');
+				})}
+			>
+				<input {...remove.fields.id.as('hidden', id)} />
+				<Button variant="danger" type="submit" pending={!!remove.pending}>Delete</Button>
+			</form>
+		</div>
+	</Card>
+</svelte:boundary>
 
-<section>
-	<h2>Stages</h2>
-	{#if stages.length === 0}
-		<p class="empty">No stages yet — give a todo a stage label to start one.</p>
-	{:else}
-		<ul class="stages">
-			{#each stages as stage (stage.name)}
-				<li>
-					<a href="/projects/{id}/todos?stage={encodeURIComponent(stage.name)}">{stage.name}</a>
-					<span class="when">{span(stage) || 'undated'}</span>
-					<span class="count">{stage.done}/{stage.total}</span>
-					<span class="track">
-						<span class="fill" style:width="{(stage.done / stage.total) * 100}%"></span>
-					</span>
-				</li>
-			{/each}
-		</ul>
-	{/if}
-</section>
+<svelte:boundary>
+	{#snippet pending()}<Skeleton height="128px" />{/snippet}
+	{@const stages = await getStages(scope)}
+	<section>
+		<h2>Stages</h2>
+		{#if stages.length === 0}
+			<p class="empty">No stages yet — give a todo a stage label to start one.</p>
+		{:else}
+			<ul class="stages">
+				{#each stages as stage (stage.name)}
+					<li>
+						<a href="/projects/{id}/todos?stage={encodeURIComponent(stage.name)}">{stage.name}</a>
+						<span class="when">{span(stage) || 'undated'}</span>
+						<span class="count">{stage.done}/{stage.total}</span>
+						<span class="track">
+							<span class="fill" style:width="{(stage.done / stage.total) * 100}%"></span>
+						</span>
+					</li>
+				{/each}
+			</ul>
+		{/if}
+	</section>
+</svelte:boundary>
 
-<section>
-	<h2>Recent todos</h2>
-	{#if todos.length === 0}
-		<p class="empty">Nothing here yet.</p>
-	{:else}
-		<ul class="todos">
-			{#each todos.slice(0, 8) as todo (todo.id)}
-				<li>
-					<a href="/todos/{todo.id}">{todo.title}</a>
-					<span class="when" class:late={late(todo)}>
-						{todo.dueDate ? f.date(todo.dueDate) : '—'}
-					</span>
-					<StatusPill status={todo.status} />
-				</li>
-			{/each}
-		</ul>
-	{/if}
-</section>
+<svelte:boundary>
+	{#snippet pending()}<Skeleton height="128px" />{/snippet}
+	{@const todos = await getTodos(scope)}
+	<section>
+		<h2>Recent todos</h2>
+		{#if todos.length === 0}
+			<p class="empty">Nothing here yet.</p>
+		{:else}
+			<ul class="todos">
+				{#each todos.slice(0, 8) as todo (todo.id)}
+					<li>
+						<a href="/todos/{todo.id}">{todo.title}</a>
+						<span class="when" class:late={late(todo)}>
+							{todo.dueDate ? f.date(todo.dueDate) : '—'}
+						</span>
+						<StatusPill status={todo.status} />
+					</li>
+				{/each}
+			</ul>
+		{/if}
+	</section>
+</svelte:boundary>
 
 <Timeline source="project" sourceID={id} title="Activity">
 	{#snippet label(event: Event.Info)}

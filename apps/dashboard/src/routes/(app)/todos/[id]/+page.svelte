@@ -4,4 +4,7 @@
 	let { params } = $props();
 </script>
 
-<TodoDetailPage id={params.id} />
+<!-- Guarded for the same reason as /projects/[id] — see that route. -->
+{#if params.id}
+	<TodoDetailPage id={params.id} />
+{/if}

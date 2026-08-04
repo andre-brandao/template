@@ -4,4 +4,12 @@
 	let { params } = $props();
 </script>
 
-<ProjectPage id={params.id} />
+<!--
+	`params` is `page.params`, which swaps to the *next* route's params the moment a
+	navigation (or a hover-preload fork) starts — while async Svelte keeps this page
+	mounted until that route resolves. Without the guard the page re-queries with
+	`id: undefined`, which the remote function rejects on every attempt.
+-->
+{#if params.id}
+	<ProjectPage id={params.id} />
+{/if}

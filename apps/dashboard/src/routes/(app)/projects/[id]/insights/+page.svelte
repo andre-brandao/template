@@ -4,4 +4,7 @@
 	let { params } = $props();
 </script>
 
-<InsightsPage source="project" sourceID={params.id} />
+<!-- Guarded for the same reason as /projects/[id] — see that route. -->
+{#if params.id}
+	<InsightsPage source="project" sourceID={params.id} />
+{/if}

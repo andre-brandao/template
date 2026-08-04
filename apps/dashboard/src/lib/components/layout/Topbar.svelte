@@ -47,7 +47,7 @@
 			<a href="/logout">Log out</a>
 		</div>
 	{:else}
-		<a href="/login">Log in</a>
+		<a class="login" href="/login">Log in</a>
 	{/if}
 </header>
 
@@ -141,6 +141,13 @@
 		display: flex;
 		align-items: center;
 		gap: 1.1em;
+		margin-left: auto;
+	}
+
+	/* `header` stretches its children, so without this the link fills the bar's
+	   height and its text rides the top edge. */
+	.login {
+		align-self: center;
 		margin-left: auto;
 	}
 

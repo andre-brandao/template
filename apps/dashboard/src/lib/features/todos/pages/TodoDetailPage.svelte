@@ -174,7 +174,7 @@
 	</div>
 </Card>
 
-<Timeline source="todo" sourceID={todo.id} title="Activity">
+<Timeline source="todo" sourceID={todo.id} title="Logs">
 	{#snippet label(event)}
 		{eventLabel(event)}
 	{/snippet}

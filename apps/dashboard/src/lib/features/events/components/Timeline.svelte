@@ -9,7 +9,7 @@
 		sourceID,
 		label,
 		title,
-		empty = 'No activity yet.'
+		empty = 'No logs yet.'
 	}: {
 		source: string;
 		sourceID: string;

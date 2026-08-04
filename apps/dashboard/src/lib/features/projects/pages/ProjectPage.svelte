@@ -97,8 +97,8 @@
 
 		<!-- Heading lives here rather than Timeline's `title`, so it shares the page's
 		     scoped h2 style with the two lists above it. -->
-		<section class="activity">
-			<h2>Activity</h2>
+		<section class="logs">
+			<h2>Logs</h2>
 			<Timeline source="project" sourceID={id}>
 				{#snippet label(event: Event.Info)}
 					{eventLabels[event.type] ?? event.type}
@@ -148,7 +148,7 @@
 		min-width: 0;
 	}
 
-	.activity {
+	.logs {
 		display: block;
 		margin-top: 2.25em;
 	}

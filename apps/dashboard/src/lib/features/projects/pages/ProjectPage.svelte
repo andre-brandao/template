@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
-	import { Button, Card, Input } from '@template/ui';
 	import type { Event } from '@template/core/event';
 	import Timeline from '$lib/features/events/components/Timeline.svelte';
 	import StatusPill from '$lib/features/todos/components/StatusPill.svelte';
@@ -8,17 +6,12 @@
 	import Skeleton from '$lib/features/todos/components/insights/Skeleton.svelte';
 	import { late } from '$lib/features/todos/status';
 	import { fmt } from '$lib/utils/fmt';
-	import { getProject, removeProject, updateProject } from '../api/projects.remote';
+	import { getProject } from '../api/projects.remote';
 
 	let { id }: { id: string } = $props();
 
 	const f = fmt();
 	const scope = $derived({ source: 'project', sourceID: id });
-
-	const update = $derived(updateProject.for(id));
-	const remove = $derived(removeProject.for(id));
-
-	let editing = $state(false);
 
 	const span = (stage: { start: string | null; end: string | null }) =>
 		[stage.start && f.date(stage.start), stage.end && f.date(stage.end)].filter(Boolean).join(' → ');
@@ -37,152 +30,127 @@
 -->
 <svelte:boundary>
 	{@const project = await getProject(id)}
-	<Card>
-		{#each update.fields.allIssues() ?? [] as issue, i (i)}
-			<p class="error">{issue.message}</p>
-		{/each}
-
-		{#if editing}
-			<form
-				class="edit"
-				{...update.enhance(async (f) => {
-					await f.submit();
-					await getProject(id).refresh();
-					editing = false;
-				})}
-			>
-				<input {...update.fields.id.as('hidden', id)} />
-				<Input {...update.fields.name.as('text')} value={project.name} />
-				<Input
-					{...update.fields.description.as('text')}
-					value={project.description ?? ''}
-					placeholder="Description"
-				/>
-				<div class="row">
-					<Button type="submit" pending={!!update.pending}>Save</Button>
-					<Button variant="ghost" type="button" onclick={() => (editing = false)}>Cancel</Button>
-				</div>
-			</form>
-		{:else}
-			<div class="head">
-				<h1>{project.name}</h1>
-				<Button variant="ghost" onclick={() => (editing = true)}>Rename</Button>
-			</div>
-			{#if project.description}
-				<p class="blurb">{project.description}</p>
-			{/if}
+	<header>
+		<h1>{project.name}</h1>
+		{#if project.description}
+			<p class="blurb">{project.description}</p>
 		{/if}
-
-		<div class="row">
-			<form
-				{...remove.enhance(async (f) => {
-					await f.submit();
-					goto('/projects');
-				})}
-			>
-				<input {...remove.fields.id.as('hidden', id)} />
-				<Button variant="danger" type="submit" pending={!!remove.pending}>Delete</Button>
-			</form>
-		</div>
-	</Card>
+	</header>
 </svelte:boundary>
 
-<svelte:boundary>
-	{#snippet pending()}<Skeleton height="128px" />{/snippet}
-	{@const stages = await getStages(scope)}
-	<section>
-		<h2>Stages</h2>
-		{#if stages.length === 0}
-			<p class="empty">No stages yet — give a todo a stage label to start one.</p>
-		{:else}
-			<ul class="stages">
-				{#each stages as stage (stage.name)}
-					<li>
-						<a href="/projects/{id}/todos?stage={encodeURIComponent(stage.name)}">{stage.name}</a>
-						<span class="when">{span(stage) || 'undated'}</span>
-						<span class="count">{stage.done}/{stage.total}</span>
-						<span class="track">
-							<span class="fill" style:width="{(stage.done / stage.total) * 100}%"></span>
-						</span>
-					</li>
-				{/each}
-			</ul>
-		{/if}
-	</section>
-</svelte:boundary>
+<!--
+	Stages carry four columns of their own, so they take the long side of the split
+	and the two narrower lists share the short one.
+-->
+<div class="split">
+	<div class="col">
+		<svelte:boundary>
+			{#snippet pending()}<Skeleton height="128px" />{/snippet}
+			{@const stages = await getStages(scope)}
+			<section>
+				<h2>Stages</h2>
+				{#if stages.length === 0}
+					<p class="empty">No stages yet — give a todo a stage label to start one.</p>
+				{:else}
+					<ul class="stages">
+						{#each stages as stage (stage.name)}
+							<li>
+								<a href="/projects/{id}/todos?stage={encodeURIComponent(stage.name)}">{stage.name}</a>
+								<span class="when">{span(stage) || 'undated'}</span>
+								<span class="count">{stage.done}/{stage.total}</span>
+								<span class="track">
+									<span class="fill" style:width="{(stage.done / stage.total) * 100}%"></span>
+								</span>
+							</li>
+						{/each}
+					</ul>
+				{/if}
+			</section>
+		</svelte:boundary>
+	</div>
 
-<svelte:boundary>
-	{#snippet pending()}<Skeleton height="128px" />{/snippet}
-	{@const todos = await getTodos(scope)}
-	<section>
-		<h2>Recent todos</h2>
-		{#if todos.length === 0}
-			<p class="empty">Nothing here yet.</p>
-		{:else}
-			<ul class="todos">
-				{#each todos.slice(0, 8) as todo (todo.id)}
-					<li>
-						<a href="/todos/{todo.id}">{todo.title}</a>
-						<span class="when" class:late={late(todo)}>
-							{todo.dueDate ? f.date(todo.dueDate) : '—'}
-						</span>
-						<StatusPill status={todo.status} />
-					</li>
-				{/each}
-			</ul>
-		{/if}
-	</section>
-</svelte:boundary>
+	<div class="col">
+		<svelte:boundary>
+			{#snippet pending()}<Skeleton height="128px" />{/snippet}
+			{@const todos = await getTodos(scope)}
+			<section>
+				<h2>Recent todos</h2>
+				{#if todos.length === 0}
+					<p class="empty">Nothing here yet.</p>
+				{:else}
+					<ul class="todos">
+						{#each todos.slice(0, 8) as todo (todo.id)}
+							<li>
+								<a href="/todos/{todo.id}">{todo.title}</a>
+								<span class="meta">
+									<span class="when" class:late={late(todo)}>
+										{todo.dueDate ? f.date(todo.dueDate) : '—'}
+									</span>
+									<StatusPill status={todo.status} />
+								</span>
+							</li>
+						{/each}
+					</ul>
+				{/if}
+			</section>
+		</svelte:boundary>
 
-<Timeline source="project" sourceID={id} title="Activity">
-	{#snippet label(event: Event.Info)}
-		{eventLabels[event.type] ?? event.type}
-	{/snippet}
-</Timeline>
+		<!-- Heading lives here rather than Timeline's `title`, so it shares the page's
+		     scoped h2 style with the two lists above it. -->
+		<section class="activity">
+			<h2>Activity</h2>
+			<Timeline source="project" sourceID={id}>
+				{#snippet label(event: Event.Info)}
+					{eventLabels[event.type] ?? event.type}
+				{/snippet}
+			</Timeline>
+		</section>
+	</div>
+</div>
 
 <style>
-	.head {
-		display: flex;
-		align-items: start;
-		justify-content: space-between;
-		gap: 0.75em;
+	header {
+		margin-bottom: 2em;
 	}
 
 	h1 {
 		margin: 0;
-		font-size: 1.3em;
+		font-size: 1.5em;
 	}
 
 	h2 {
-		margin: 0 0 0.6em;
-		font-size: 1em;
+		margin: 0 0 0.75em;
+		font-size: 0.78em;
+		font-family: var(--font-mono);
+		font-weight: 500;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: var(--dim);
 	}
 
 	.blurb {
+		max-width: 60ch;
 		color: var(--muted);
-		font-size: 0.9em;
+		font-size: 0.95em;
+		line-height: 1.55;
 		margin: 0.5em 0 0;
 	}
 
-	.edit {
-		display: flex;
-		flex-direction: column;
-		gap: 0.6em;
+	/* Golden section: the long column is φ (1.618) times the short one. */
+	.split {
+		display: grid;
+		grid-template-columns: 1.618fr 1fr;
+		align-items: start;
+		gap: 2.5em;
 	}
 
-	.row {
-		display: flex;
-		align-items: center;
-		gap: 0.75em;
-		margin-top: 1em;
+	.col {
+		min-width: 0;
 	}
 
-	.row form {
-		margin-left: auto;
-	}
-
-	section {
-		margin-top: 1.5em;
+	.activity {
+		display: block;
+		margin-top: 2.25em;
 	}
 
 	ul {
@@ -195,19 +163,22 @@
 	}
 
 	li {
-		display: grid;
-		align-items: center;
 		gap: 0.75em;
 		padding: 0.6em 0;
 		border-top: 1px solid var(--border);
 	}
 
 	.stages li {
-		grid-template-columns: 1fr auto auto 6em;
+		display: grid;
+		align-items: center;
+		grid-template-columns: 1fr auto auto 5em;
 	}
 
+	/* Two lines, because this list sits in the short column. */
 	.todos li {
-		grid-template-columns: 1fr auto auto;
+		display: flex;
+		flex-direction: column;
+		gap: 0.4em;
 	}
 
 	li:first-child {
@@ -224,6 +195,12 @@
 
 	li a:hover {
 		color: var(--accent);
+	}
+
+	.meta {
+		display: flex;
+		align-items: center;
+		gap: 0.6em;
 	}
 
 	.when,
@@ -256,5 +233,12 @@
 		color: var(--dim);
 		font-size: 0.9em;
 		margin: 0;
+	}
+
+	@media (max-width: 900px) {
+		.split {
+			grid-template-columns: 1fr;
+			gap: 2.25em;
+		}
 	}
 </style>

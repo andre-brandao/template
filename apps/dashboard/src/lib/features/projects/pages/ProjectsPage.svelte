@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { z } from 'zod';
 	import { query } from '$lib/utils/params';
-	import { Button, Card, Drawer } from '@template/ui';
-	import { getProjects, removeProject } from '../api/projects.remote';
+	import { Button, Drawer } from '@template/ui';
+	import { getProjects } from '../api/projects.remote';
+	import Folder from '../components/Folder.svelte';
 	import ProjectForm from '../components/ProjectForm.svelte';
 
 	const params = query(z.object({ q: z.string().default('') }));
@@ -11,50 +12,56 @@
 	let adding = $state(false);
 </script>
 
-<h1>Projects</h1>
-
-<div class="toolbar">
-	<input
-		class="search"
-		type="search"
-		placeholder="Search projects…"
-		value={params.q}
-		oninput={(e) => params.update({ q: e.currentTarget.value })}
-	/>
+<div class="head">
+	<h1>Projects</h1>
 	<Button onclick={() => (adding = true)}>New project</Button>
 </div>
+
+<p class="lead">
+	Each project files a set of todos and keeps its own stages and insights. Open one to work inside
+	it.
+</p>
+
+<input
+	class="search"
+	type="search"
+	placeholder="Search projects…"
+	value={params.q}
+	oninput={(e) => params.update({ q: e.currentTarget.value })}
+/>
 
 <Drawer bind:open={adding}>
 	<h2>New project</h2>
 	<ProjectForm onsuccess={() => (adding = false)} />
 </Drawer>
 
-<div class="grid">
-	{#each projects as project (project.id)}
-		{@const remove = removeProject.for(project.id)}
-		<Card interactive>
-			<a class="name" href="/projects/{project.id}">{project.name}</a>
-			{#if project.description}
-				<p class="blurb">{project.description}</p>
-			{/if}
-			<div class="actions">
-				<a class="link" href="/projects/{project.id}/todos">Todos</a>
-				<a class="link" href="/projects/{project.id}/insights">Insights</a>
-				<form {...remove}>
-					<input {...remove.fields.id.as('hidden', project.id)} />
-					<Button variant="ghost" type="submit" pending={!!remove.pending}>Delete</Button>
-				</form>
-			</div>
-		</Card>
+<div class="drawer">
+	{#each projects as project, i (project.id)}
+		<Folder {project} pos={i % 3} />
 	{/each}
-	{#if projects.length === 0}
-		<p class="empty">No projects yet.</p>
-	{/if}
 </div>
 
+{#if projects.length === 0}
+	<p class="empty">
+		{#if params.q}
+			No projects match “{params.q}”.
+		{:else}
+			No projects yet. Create one to start filing todos.
+		{/if}
+	</p>
+{/if}
+
 <style>
+	.head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.75em;
+		margin-bottom: 0.4em;
+	}
+
 	h1 {
-		margin: 0 0 0.75em;
+		margin: 0;
 		font-size: 1.4em;
 	}
 
@@ -63,23 +70,22 @@
 		font-size: 1.15em;
 	}
 
-	.toolbar {
-		display: flex;
-		align-items: center;
-		flex-wrap: wrap;
-		gap: 0.75em;
-		margin-bottom: 1.25em;
+	.lead {
+		margin: 0 0 1.25em;
+		color: var(--muted);
+		max-width: 60ch;
 	}
 
 	.search {
 		font: inherit;
+		width: 100%;
+		max-width: 22em;
+		margin-bottom: 1.75em;
 		padding: 0.45em 0.7em;
 		border: 1px solid var(--border);
 		border-radius: 6px;
 		background: var(--surface);
 		color: var(--ink);
-		min-width: 14em;
-		margin-right: auto;
 	}
 
 	.search:focus-visible {
@@ -87,50 +93,10 @@
 		outline: none;
 	}
 
-	.grid {
+	.drawer {
 		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(15em, 1fr));
-		gap: 0.75em;
-	}
-
-	.name {
-		color: var(--ink);
-		font-weight: 500;
-		text-decoration: none;
-	}
-
-	.name:hover {
-		color: var(--accent);
-	}
-
-	.blurb {
-		color: var(--muted);
-		font-size: 0.85em;
-		margin: 0.4em 0 0;
-	}
-
-	.actions {
-		display: flex;
-		align-items: center;
-		gap: 0.75em;
-		margin-top: 0.85em;
-	}
-
-	.link {
-		font-family: var(--font-mono);
-		font-size: 0.72em;
-		text-transform: uppercase;
-		letter-spacing: 0.04em;
-		color: var(--muted);
-		text-decoration: none;
-	}
-
-	.link:hover {
-		color: var(--accent);
-	}
-
-	.actions form {
-		margin-left: auto;
+		grid-template-columns: repeat(auto-fill, minmax(16em, 1fr));
+		gap: 1.25em;
 	}
 
 	.empty {

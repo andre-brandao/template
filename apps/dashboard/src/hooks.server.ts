@@ -1,6 +1,7 @@
 import { sequence } from "@sveltejs/kit/hooks";
 import type { Handle, HandleServerError } from "@sveltejs/kit";
 import { env } from "$env/dynamic/private";
+import { Context } from "@template/core/context";
 import { Database } from "@template/core/drizzle";
 import { Storage } from "@template/core/storage";
 import { r2 } from "@template/core/storage/adapter/r2";
@@ -13,21 +14,33 @@ import { read as theme } from "$lib/server/theme";
 
 const log = Log.create({ namespace: "dashboard.hooks.server" });
 
-const handleDb: Handle = ({ event, resolve }) => {
-  // On Cloudflare the Hyperdrive binding exposes a pooled connection string at runtime;
-  // fall back to DATABASE_URL for local/node dev where the binding is absent.
-  const url =
-    event.platform?.env?.Hyperdrive?.connectionString ?? env.DATABASE_URL ?? Database.DEFAULT_URL;
-  return Database.provide(url, () => resolve(event));
+// Hyperdrive and R2 are only reachable through `event.platform`, per request — so the
+// Worker is the one target that has to build its providers inside the closure. A missing
+// binding throws rather than falling back to DATABASE_URL and local disk, which would be
+// a working-but-wrong deploy.
+const worker: Handle = ({ event, resolve }) => {
+  const cf = event.platform?.env;
+  if (!cf?.Hyperdrive || !cf.Files) throw new Error("Worker is missing a Hyperdrive/Files binding");
+
+  return Context.withProviders(
+    () => resolve(event),
+    Database.provider(cf.Hyperdrive.connectionString),
+    Storage.provider(r2(cf.Files)),
+  );
 };
 
-const handleStorage: Handle = ({ event, resolve }) => {
-  if (event.platform?.env?.Files) {
-    return Storage.provide(r2(event.platform.env.Files), () => resolve(event));
-  }
+// Everywhere else the config comes from env, which can't change after boot: read it once
+// and close over it. Safe at module scope — SvelteKit fills `$env/dynamic/private` before
+// it imports this file.
+function fromEnv(): Handle {
+  const url = env.DATABASE_URL ?? Database.DEFAULT_URL;
+  const disks = Storage.fromEnv(env);
 
-  return Storage.provide(Storage.fromEnv(env), () => resolve(event));
-};
+  return ({ event, resolve }) =>
+    Context.withProviders(() => resolve(event), Database.provider(url), Storage.provider(disks));
+}
+
+const handleProviders = env.SVELTE_ADAPTER === "cloudflare" ? worker : fromEnv();
 
 const handleAuth: Handle = async ({ event, resolve }) => {
   // Health probes don't need an actor; skip it so they don't spam logs.
@@ -47,7 +60,7 @@ const handleTheme: Handle = ({ event, resolve }) =>
     transformPageChunk: ({ html }) => html.replace("%theme%", theme(event)),
   });
 
-export const handle = sequence(handleDb, handleStorage, handleAuth, handleTheme);
+export const handle = sequence(handleProviders, handleAuth, handleTheme);
 
 export const handleError: HandleServerError = ({ error, event, status, message }) => {
   if (status === 404) return { message: "Not found" };

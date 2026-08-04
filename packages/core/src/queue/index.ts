@@ -79,7 +79,12 @@ export namespace Queue {
     }
   }
 
-  function run(job: Job) {
+  /**
+   * Runs one job's handler as its pushing actor, throwing on failure. `tick` uses it for
+   * the polling drivers; the Cloudflare consumer calls it directly, since that driver
+   * hands jobs over as a pushed batch instead of something to reserve.
+   */
+  export function run(job: Job) {
     const def = jobs.get(job.name);
     if (!def) throw new Error(`No handler defined for job ${job.name}`);
     const input = def.schema.parse(job.payload);

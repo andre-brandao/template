@@ -4,12 +4,17 @@ import { eq } from "drizzle-orm";
 import { Actor } from "../src/actor";
 import { Database } from "../src/drizzle";
 import { Queue } from "../src/queue";
+import { cloudflare, type Producer } from "../src/queue/adapter/cloudflare";
 import { db } from "../src/queue/adapter/db";
 import { memory } from "../src/queue/adapter/memory";
+import type { Job } from "../src/queue/port";
 import { JobTable } from "../src/queue/queue.sql";
 import { withTestUser } from "./util";
 
 const seen: string[] = [];
+
+/** What the real binding answers with — the adapter ignores it, the type doesn't. */
+const sendResponse = { metadata: { metrics: { backlogCount: 0, backlogBytes: 0 } } };
 
 const greet = Queue.define("test.greet", z.object({ name: z.string() }), async (input) => {
   seen.push(`${input.name}:${Actor.use().type}`);
@@ -112,6 +117,58 @@ describe("queue", () => {
 
     await Queue.provide(broken, () => Queue.work({ interval: 1, signal: abort.signal }));
     expect(tries).toBe(3);
+  });
+
+  it("cloudflare hands the job to the binding instead of running it", async () => {
+    seen.length = 0;
+    const sent: { body: Job; delay?: number }[] = [];
+    const binding: Producer = {
+      async send(body, opts) {
+        sent.push({ body, delay: opts?.delaySeconds });
+        return sendResponse;
+      },
+    };
+
+    await Actor.provide("public", {}, () =>
+      Queue.provide(cloudflare(binding), async () => {
+        const id = await greet.push({ name: "ada" }, { delay: 30 });
+        expect(id).toStartWith("job_");
+        expect(sent[0]?.body).toEqual({
+          id,
+          name: "test.greet",
+          payload: { name: "ada" },
+          userID: null,
+          attempts: 0,
+        });
+        expect(sent[0]?.delay).toBe(30);
+        expect(seen).toEqual([]);
+
+        // Nothing to poll — Cloudflare pushes the batch to the consumer worker.
+        expect(await Queue.drain()).toBe(0);
+      }),
+    );
+
+    // What the consumer does with each message it receives.
+    await Queue.run({ ...sent[0]!.body, attempts: 1 });
+    expect(seen).toEqual(["ada:public"]);
+  });
+
+  withTestUser("cloudflare captures the pushing user for the consumer", async ({ userID }) => {
+    seen.length = 0;
+    const sent: Job[] = [];
+    await Queue.provide(
+      cloudflare({
+        async send(body) {
+          sent.push(body);
+          return sendResponse;
+        },
+      }),
+      () => asUser.push({}),
+    );
+
+    expect(sent[0]?.userID).toBe(userID);
+    await Actor.provide("public", {}, () => Queue.run({ ...sent[0]!, attempts: 1 }));
+    expect(seen).toEqual([userID]);
   });
 
   withTestUser("db stores the job and runs it as the pushing user", async ({ userID }) => {

@@ -23,9 +23,11 @@
 
 	let {
 		range = $bindable(last(30)),
-		presets = [7, 30, 90],
+		presets = [7, 30, 90, 365],
 		onchange
 	}: { range?: Range; presets?: number[]; onchange?: (range: Range) => void } = $props();
+
+	const tag = (days: number) => (days === 365 ? '1y' : `${days}d`);
 
 	const active = (days: number) => {
 		const preset = last(days);
@@ -50,7 +52,7 @@
 	<div class="tabs">
 		{#each presets as days (days)}
 			<button class="tab" class:active={active(days)} onclick={() => set(last(days))}>
-				{days}d
+				{tag(days)}
 			</button>
 		{/each}
 	</div>

@@ -1,11 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { Button, Card, Input } from '@template/ui';
-	import { Markdown, MarkdownEditor } from 'carta-md';
-	import 'carta-md/default.css';
-	import '@cartamd/plugin-attachment/default.css';
-	import '$lib/markdown.css';
-	import { createCarta } from '$lib/markdown';
+	import { Button, Card, Input, Markdown, MarkdownEditor } from '@template/ui';
+	import { upload } from '$lib/upload';
 	import type { Event } from '@template/core/event';
 	import { getTodo, planTodo, removeTodo, updateTodo } from '../api/todos.remote';
 	import Timeline from '$lib/features/events/components/Timeline.svelte';
@@ -28,7 +24,6 @@
 	const remove = $derived(removeTodo.for(todo.id));
 	const update = $derived(updateTodo.for(todo.id));
 	const plan = $derived(planTodo.for(todo.id));
-	const carta = createCarta();
 
 	const scope = $derived({
 		source: todo.source ?? undefined,
@@ -139,7 +134,7 @@
 			})}
 		>
 			<input {...update.fields.id.as('hidden', todo.id)} />
-			<MarkdownEditor {carta} bind:value={body} />
+			<MarkdownEditor bind:value={body} {upload} />
 			<input {...update.fields.body.as('hidden', body)} />
 			<div class="edit-actions">
 				<Button type="submit" pending={!!update.pending}>Save</Button>
@@ -149,7 +144,7 @@
 	{:else}
 		{#if todo.body}
 			<div class="body">
-				<Markdown {carta} value={todo.body} />
+				<Markdown value={todo.body} />
 			</div>
 		{:else}
 			<p class="empty-body">No description yet.</p>

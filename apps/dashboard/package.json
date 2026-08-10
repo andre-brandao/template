@@ -16,16 +16,13 @@
     "test:e2e:ui": "playwright test -c e2e/playwright.config.ts --ui"
   },
   "dependencies": {
-    "@cartamd/plugin-attachment": "^4.2.0",
     "@openauthjs/openauth": "catalog:",
     "@template/core": "workspace:*",
     "@template/functions": "workspace:*",
     "@template/sdk": "workspace:*",
     "@template/ui": "workspace:*",
     "@tanstack/charts": "0.9.0",
-    "carta-md": "^4.11.2",
     "d3-scale": "^4.0.2",
-    "isomorphic-dompurify": "^3.21.0",
     "sst": "catalog:",
     "zod": "catalog:"
   },

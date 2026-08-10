@@ -4,7 +4,7 @@
 	import { query } from '$lib/utils/params';
 	import { Button, Drawer } from '@template/ui';
 	import { getTodos } from '../api/todos.remote';
-	import { getProject } from '$lib/features/projects/api/projects.remote';
+	import { getSource } from '$lib/features/events/api/sources.remote';
 	import { STATUSES } from '../status';
 	import TodoForm from '../components/form/TodoForm.svelte';
 	import TodoFilters from '../components/TodoFilters.svelte';
@@ -29,7 +29,7 @@
 	const scope = $derived({ source, sourceID });
 
 	// Both queries are kicked off together — awaiting them in sequence would make the
-	// project name a waterfall in front of the todos it labels.
+	// source name a waterfall in front of the todos it labels.
 	const data = $derived(
 		await Promise.all([
 			getTodos({
@@ -39,7 +39,7 @@
 				stage: params.stage || undefined,
 				q: params.q || undefined
 			}),
-			source === 'project' && sourceID ? getProject(sourceID) : undefined
+			source && sourceID ? getSource({ source, sourceID }) : undefined
 		])
 	);
 	const todos = $derived(data[0]);

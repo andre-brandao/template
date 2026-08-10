@@ -18,9 +18,3 @@ export const color = (status: Todo.Status) => meta[status].color;
 /** Past its due date with work still outstanding — the one thing worth shouting about. */
 export const late = (todo: Todo.Info) =>
   todo.status !== "done" && !!todo.dueDate && Date.parse(todo.dueDate) < Date.now();
-
-/** Reasons offered when closing, mirroring how issues get closed elsewhere. */
-export const REASONS = [
-  { value: "completed", label: "completed" },
-  { value: "not_planned", label: "not planned" },
-];

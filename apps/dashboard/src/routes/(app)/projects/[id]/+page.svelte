@@ -1,5 +1,7 @@
 <script lang="ts">
 	import ProjectPage from '$lib/features/projects/pages/ProjectPage.svelte';
+	import Stages from '$lib/features/todos/components/Stages.svelte';
+	import Recent from '$lib/features/todos/components/Recent.svelte';
 
 	let { params } = $props();
 </script>
@@ -11,5 +13,15 @@
 	`id: undefined`, which the remote function rejects on every attempt.
 -->
 {#if params.id}
-	<ProjectPage id={params.id} />
+	<ProjectPage id={params.id}>
+		{#snippet stages()}
+			<Stages
+				scope={{ source: 'project', sourceID: params.id }}
+				base="/projects/{params.id}/todos"
+			/>
+		{/snippet}
+		{#snippet todos()}
+			<Recent scope={{ source: 'project', sourceID: params.id }} />
+		{/snippet}
+	</ProjectPage>
 {/if}

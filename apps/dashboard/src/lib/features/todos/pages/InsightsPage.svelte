@@ -10,7 +10,7 @@
 	import StatusSection from '../components/insights/StatusSection.svelte';
 	import LoadSection from '../components/insights/LoadSection.svelte';
 	import Skeleton from '../components/insights/Skeleton.svelte';
-	import { getProject } from '$lib/features/projects/api/projects.remote';
+	import { getSource } from '$lib/features/events/api/sources.remote';
 
 	let { source, sourceID }: { source?: string; sourceID?: string } = $props();
 
@@ -27,10 +27,8 @@
 	const range = $derived({ ...picked, ...scope });
 	const commit = debounce(params.update, 250);
 
-	const project = $derived(
-		source === 'project' && sourceID ? await getProject(sourceID) : undefined
-	);
-	const title = $derived(project?.name ?? 'Insights');
+	const src = $derived(source && sourceID ? await getSource({ source, sourceID }) : undefined);
+	const title = $derived(src?.name ?? 'Insights');
 </script>
 
 <h1>{title}</h1>

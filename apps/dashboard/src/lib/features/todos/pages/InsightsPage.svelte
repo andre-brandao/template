@@ -41,10 +41,12 @@
 </div>
 
 <div class="sections" class:stale={$effect.pending()}>
-	<svelte:boundary>
-		<StatsSection {range} />
-		{#snippet pending()}<Skeleton height="88px" />{/snippet}
-	</svelte:boundary>
+	<div class="span">
+		<svelte:boundary>
+			<StatsSection {range} />
+			{#snippet pending()}<Skeleton height="88px" />{/snippet}
+		</svelte:boundary>
+	</div>
 
 	<svelte:boundary>
 		<ActivitySection {range} />
@@ -52,8 +54,13 @@
 	</svelte:boundary>
 
 	<svelte:boundary>
+		<StatusSection {range} />
+		{#snippet pending()}<Skeleton height="382px" />{/snippet}
+	</svelte:boundary>
+
+	<svelte:boundary>
 		<CalendarSection {range} />
-		{#snippet pending()}<Skeleton height="220px" />{/snippet}
+		{#snippet pending()}<Skeleton height="276px" />{/snippet}
 	</svelte:boundary>
 
 	<svelte:boundary>
@@ -61,15 +68,12 @@
 		{#snippet pending()}<Skeleton height="276px" />{/snippet}
 	</svelte:boundary>
 
-	<svelte:boundary>
-		<StatusSection {range} />
-		{#snippet pending()}<Skeleton height="264px" />{/snippet}
-	</svelte:boundary>
-
-	<svelte:boundary>
-		<LoadSection {range} />
-		{#snippet pending()}<Skeleton height="264px" />{/snippet}
-	</svelte:boundary>
+	<div class="span">
+		<svelte:boundary>
+			<LoadSection {range} />
+			{#snippet pending()}<Skeleton height="264px" />{/snippet}
+		</svelte:boundary>
+	</div>
 </div>
 
 <style>
@@ -87,10 +91,21 @@
 	}
 
 	.sections {
-		display: flex;
-		flex-direction: column;
+		display: grid;
+		grid-template-columns: 1fr;
 		gap: 1.25em;
 		transition: opacity 0.15s ease;
+	}
+
+	/* Two-up on desktop, columns in golden ratio: the busy chart gets the major share. */
+	@media (min-width: 1100px) {
+		.sections {
+			grid-template-columns: 1.618fr 1fr;
+		}
+
+		.span {
+			grid-column: 1 / -1;
+		}
 	}
 
 	.sections.stale {

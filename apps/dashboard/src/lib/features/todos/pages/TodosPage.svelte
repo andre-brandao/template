@@ -84,7 +84,9 @@
 
 <!-- Shallow-routed by `peek`: the URL reads /todos/[id] but this list stays mounted,
      so closing (or swiping back) lands right back on the filtered view. -->
-<Drawer bind:open={() => !!page.state.selected, (v) => !v && page.state.selected && history.back()}>
+<!-- Guarded: when the browser Back button closed the drawer, the entry is already
+     popped and `selected` is gone — backing again would leave the page entirely. -->
+<Drawer open={!!page.state.selected} onclose={() => page.state.selected && history.back()}>
 	{#if page.state.selected}
 		<TodoEditor id={page.state.selected} onremove={() => history.back()} />
 	{/if}

@@ -8,23 +8,32 @@
 	let {
 		open = $bindable(false),
 		side = 'right',
+		onclose,
 		children
 	}: {
 		open?: boolean;
 		side?: Side;
+		onclose?: () => void;
 		children: Snippet;
 	} = $props();
 
+	let dialog: HTMLDialogElement | undefined = $state();
 </script>
 
 <dialog
+	bind:this={dialog}
 	class={side}
-	{@attach (dialog) => (open ? dialog.showModal() : dialog.close())}
-	onclose={() => (open = false)}
+	{@attach (el) => (open ? el.showModal() : el.close())}
+	onclose={() => {
+		// Fires on every close — user-initiated or parent-driven — so handlers must
+		// be idempotent (e.g. shallow routing checks its state before history.back()).
+		open = false;
+		onclose?.();
+	}}
 	onclick={(e) => e.target === e.currentTarget && e.currentTarget.close()}
 >
 	<div class="chrome">
-		<button class="close" type="button" aria-label="Close" onclick={() => (open = false)}>✕</button>
+		<button class="close" type="button" aria-label="Close" onclick={() => dialog?.close()}>✕</button>
 	</div>
 	{#if open}
 		{@render children()}

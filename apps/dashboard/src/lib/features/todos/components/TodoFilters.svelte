@@ -11,6 +11,7 @@
 
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	import { LazySelect } from '@template/ui';
 	import { debounce } from '$lib/utils/debounce';
 	import { getStages, getUsers } from '../api/todos.remote';
 	import { STATUSES, label } from '../status';
@@ -27,11 +28,6 @@
 		tools?: Snippet;
 		onchange: (next: Filters) => void;
 	} = $props();
-
-	// Together, not chained: two dropdowns shouldn't cost two round trips.
-	const data = $derived(await Promise.all([getStages(scope), getUsers({})]));
-	const stages = $derived(data[0]);
-	const users = $derived(data[1]);
 
 	// Writable derived: typing overrides it, external changes (back/forward, reload) resnap it.
 	let input = $derived(filters.search);
@@ -76,27 +72,25 @@
 		{/each}
 	</div>
 
-	<select
+	<LazySelect
 		value={filters.assignee}
+		options={[
+			{ value: '', label: 'Anyone' },
+			{ value: 'none', label: 'Unassigned' }
+		]}
+		load={async () => (await getUsers({})).map((one) => ({ value: one.id, label: one.name }))}
 		onchange={(e) => onchange({ ...filters, assignee: e.currentTarget.value })}
-	>
-		<option value="">Anyone</option>
-		<option value="none">Unassigned</option>
-		{#each users as one (one.id)}
-			<option value={one.id}>{one.name}</option>
-		{/each}
-	</select>
+	/>
 
-	<select
+	<LazySelect
 		value={filters.stage}
+		options={[
+			{ value: '', label: 'Any stage' },
+			{ value: 'none', label: 'No stage' }
+		]}
+		load={async () => (await getStages(scope)).map((one) => ({ value: one.name, label: one.name }))}
 		onchange={(e) => onchange({ ...filters, stage: e.currentTarget.value })}
-	>
-		<option value="">Any stage</option>
-		<option value="none">No stage</option>
-		{#each stages as stage (stage.name)}
-			<option value={stage.name}>{stage.name}</option>
-		{/each}
-	</select>
+	/>
 </div>
 
 <style>
@@ -126,7 +120,7 @@
 	}
 
 	.search,
-	select {
+	.bar :global(select) {
 		font: inherit;
 		font-size: 0.85em;
 		height: 2.4em;
@@ -138,7 +132,7 @@
 	}
 
 	.search:focus-visible,
-	select:focus-visible {
+	.bar :global(select:focus-visible) {
 		border-color: var(--accent);
 		outline: none;
 	}

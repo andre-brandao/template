@@ -9,8 +9,8 @@ import { Actor } from "@template/core/actor";
 import { VisibleError } from "@template/core/error";
 import { Log } from "@template/core/util/log";
 import { dev } from "$app/environment";
-import { read } from "$lib/server/session";
-import { read as theme } from "$lib/server/theme";
+import * as session from "$lib/server/session";
+import * as theme from "$lib/server/theme";
 
 const log = Log.create({ namespace: "dashboard.hooks.server" });
 
@@ -46,18 +46,18 @@ const handleAuth: Handle = async ({ event, resolve }) => {
   // Health probes don't need an actor; skip it so they don't spam logs.
   if (event.url.pathname === "/healthz") return resolve(event);
 
-  const session = await read(event);
-  event.locals.session = session;
-  if (!session) return Actor.provide("public", {}, () => resolve(event));
+  const me = await session.read(event);
+  event.locals.session = me;
+  if (!me) return Actor.provide("public", {}, () => resolve(event));
 
-  return Actor.provide("user", { userID: session.userID }, () => resolve(event));
+  return Actor.provide("user", { userID: me.userID }, () => resolve(event));
 };
 
 // Read inside the callback, not before `resolve` — the root layout's load reconciles the
 // cookie against the database, and `transformPageChunk` runs late enough to see that.
 const handleTheme: Handle = ({ event, resolve }) =>
   resolve(event, {
-    transformPageChunk: ({ html }) => html.replace("%theme%", theme(event)),
+    transformPageChunk: ({ html }) => html.replace("%theme%", theme.read(event)),
   });
 
 export const handle = sequence(handleProviders, handleAuth, handleTheme);

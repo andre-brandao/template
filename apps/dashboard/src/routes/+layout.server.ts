@@ -1,7 +1,7 @@
 import { Actor } from "@template/core/actor";
 import { User } from "@template/core/user";
 import { DEFAULTS } from "@template/core/user/prefs";
-import { write } from "$lib/server/theme";
+import * as theme from "$lib/server/theme";
 import type { LayoutServerLoad } from "./$types";
 
 /** Feeds the session context in `+layout.svelte` — read it with `user()`, at any depth. */
@@ -15,7 +15,7 @@ export const load: LayoutServerLoad = async (event) => {
 
   // Realign the cookie with the stored preference, so a first visit from a new browser
   // paints in the right theme rather than defaulting to `system` for one navigation.
-  write(event, user.prefs.theme);
+  theme.write(event, user.prefs.theme);
 
   // Parsing rather than spreading: the row carries columns (prefs, timestamps) the
   // client has no business with, and `Info` strips everything it doesn't declare.

@@ -6,6 +6,7 @@
 	import StatusPicker from '../StatusPicker.svelte';
 	import TagList from '../TagList.svelte';
 	import { color, late } from '../../status';
+	import { peek } from '$lib/utils/peek';
 	import { fmt } from '$lib/utils/fmt';
 
 	let { todo }: { todo: Todo.Info } = $props();
@@ -36,7 +37,7 @@
 	{/each}
 
 	<div class="head">
-		<a class="title" href="/todos/{todo.id}">{todo.title}</a>
+		<a class="title" href="/todos/{todo.id}" onclick={peek({ selected: todo.id })}>{todo.title}</a>
 		<StatusPill status={todo.status} reason={todo.reason} />
 	</div>
 

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { z } from 'zod';
+	import { page } from '$app/state';
 	import { query } from '$lib/utils/params';
 	import { Button, Drawer } from '@template/ui';
 	import { getTodos } from '../api/todos.remote';
@@ -10,6 +11,7 @@
 	import ViewSelector from '../components/ViewSelector.svelte';
 	import GroupSelector from '../components/GroupSelector.svelte';
 	import TodosView from '../components/TodosView.svelte';
+	import TodoEditor from '../components/TodoEditor.svelte';
 
 	let { source, sourceID }: { source?: string; sourceID?: string } = $props();
 
@@ -19,7 +21,7 @@
 			status: z.enum(['all', ...STATUSES]).default('all'),
 			assignee: z.string().default(''),
 			stage: z.string().default(''),
-			view: z.enum(['list', 'board', 'table', 'timeline']).default('list'),
+			view: z.enum(['list', 'board', 'table', 'timeline']).default('table'),
 			group: z.enum(['status', 'stage', 'assignee']).default('status')
 		})
 	);
@@ -78,6 +80,14 @@
 <Drawer bind:open={adding}>
 	<h2>New todo</h2>
 	<TodoForm {scope} onsuccess={() => (adding = false)} />
+</Drawer>
+
+<!-- Shallow-routed by `peek`: the URL reads /todos/[id] but this list stays mounted,
+     so closing (or swiping back) lands right back on the filtered view. -->
+<Drawer bind:open={() => !!page.state.selected, (v) => !v && page.state.selected && history.back()}>
+	{#if page.state.selected}
+		<TodoEditor id={page.state.selected} onremove={() => history.back()} />
+	{/if}
 </Drawer>
 
 <TodosView {todos} view={params.view} by={params.group} />

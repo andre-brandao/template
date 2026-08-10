@@ -17,11 +17,11 @@
   },
   "dependencies": {
     "@openauthjs/openauth": "catalog:",
+    "@tanstack/charts": "0.9.0",
     "@template/core": "workspace:*",
     "@template/functions": "workspace:*",
     "@template/sdk": "workspace:*",
     "@template/ui": "workspace:*",
-    "@tanstack/charts": "0.9.0",
     "d3-scale": "^4.0.2",
     "sst": "catalog:",
     "zod": "catalog:"

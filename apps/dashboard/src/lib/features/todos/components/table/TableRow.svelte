@@ -5,6 +5,7 @@
 	import StatusPicker from '../StatusPicker.svelte';
 	import TagList from '../TagList.svelte';
 	import { late } from '../../status';
+	import { peek } from '$lib/utils/peek';
 	import { fmt } from '$lib/utils/fmt';
 
 	let { todo }: { todo: Todo.Info } = $props();
@@ -14,7 +15,7 @@
 </script>
 
 <tr>
-	<td><a class="title" href="/todos/{todo.id}">{todo.title}</a></td>
+	<td><a class="title" href="/todos/{todo.id}" onclick={peek({ selected: todo.id })}>{todo.title}</a></td>
 	<td class="dim">{todo.stage ?? '—'}</td>
 	<td class="dim">{todo.assignee?.name ?? 'Unassigned'}</td>
 	<td class="dim" class:late={late(todo)}>{todo.dueDate ? f.date(todo.dueDate) : '—'}</td>

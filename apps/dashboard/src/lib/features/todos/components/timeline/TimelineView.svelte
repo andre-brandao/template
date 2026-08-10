@@ -4,6 +4,7 @@
 	import { fmt } from '$lib/utils/fmt';
 	import { group, type By } from '../../group';
 	import { color, label, late } from '../../status';
+	import { peek } from '$lib/utils/peek';
 
 	let { todos, by = 'stage' }: { todos: Todo.Info[]; by?: By } = $props();
 
@@ -147,7 +148,7 @@
 							{@const real = actual(todo)}
 							<div class="row">
 								<div class="name">
-									<a href="/todos/{todo.id}">{todo.title}</a>
+									<a href="/todos/{todo.id}" onclick={peek({ selected: todo.id })}>{todo.title}</a>
 									<small>{todo.assignee?.name ?? 'Unassigned'}</small>
 								</div>
 								<div class="track">

@@ -10,7 +10,10 @@ declare global {
       session: import("$lib/server/session").Session | null;
     }
     // interface PageData {}
-    // interface PageState {}
+    interface PageState {
+      /** Id a peeked link pushed; the page hosting the link renders it in a drawer. */
+      selected?: string;
+    }
     interface Platform {
       env?: {
         Hyperdrive?: { connectionString: string };

@@ -3,11 +3,11 @@
 </script>
 
 <script lang="ts">
-	let { view = 'list', onchange }: { view?: View; onchange: (view: View) => void } = $props();
+	let { view = 'table', onchange }: { view?: View; onchange: (view: View) => void } = $props();
 </script>
 
 <div class="tabs">
-	{#each ['list', 'board', 'table', 'timeline'] as const as v (v)}
+	{#each ['table', 'board', 'timeline',  'list'] as const as v (v)}
 		<button class="tab" class:active={view === v} onclick={() => onchange(v)}>{v}</button>
 	{/each}
 </div>

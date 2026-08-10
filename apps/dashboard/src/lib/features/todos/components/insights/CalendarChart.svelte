@@ -9,57 +9,103 @@
 </script>
 
 <script lang="ts">
-	import { Calendar, Chart, Svg } from 'layerchart';
+	import { cell, defineChart } from '@tanstack/charts';
+	import { scaleBand } from '@tanstack/charts/scales/band';
+	import { Chart } from '@tanstack/charts/svelte';
+	import { tooltip } from '@tanstack/charts/tooltip';
+	import { portal } from '@tanstack/charts/tooltip/portal';
 
 	let { data }: { data: Data } = $props();
 
+	let width = $state(0);
+
 	const DAY = 86_400_000;
 	const at = (iso: string) => new Date(`${iso}T00:00:00`);
-
-	const start = $derived(at(data.start));
-	// timeDays(start, end) excludes `end`, so bump a day to render the final date.
-	const end = $derived(new Date(at(data.end).getTime() + DAY));
-
-	// One point per active day; Calendar keys cells to these by date value (d3 InternMap).
-	const points = $derived(data.days.map((d) => ({ date: at(d.day), count: d.count })));
+	const short = (day: Date) => day.toLocaleDateString('en', { month: 'short', day: 'numeric' });
 
 	// GitHub-style 5-step ramp: 0 empty, then quartiles of the busiest day.
 	const level = (n: number) =>
 		n === 0 || data.max === 0 ? 0 : Math.min(4, Math.ceil((n / data.max) * 4));
-	const fill = (n: number) => `var(--cal-${level(n)})`;
-	const label = (d: Date) => d.toLocaleDateString('en', { month: 'short', day: 'numeric' });
 
-	const months = (cells: { x: number; data: { date: Date } }[]) =>
-		cells
-			.filter((c, i) => i === 0 || c.data.date.getMonth() !== cells[i - 1].data.date.getMonth())
-			.map((c) => ({ x: c.x, name: c.data.date.toLocaleDateString('en', { month: 'short' }) }));
+	// One row per day from start..end inclusive, zero-filled; weeks are Sunday-started columns.
+	const grid = $derived.by(() => {
+		const counts = new Map(data.days.map((d) => [d.day, d.count]));
+		const start = at(data.start);
+		const stop = at(data.end);
+		const sunday = new Date(start.getTime() - start.getDay() * DAY);
+		const rows = [];
+		const ticks = [];
+		const labels = new Map<number, string>();
+		for (const date = new Date(start); date <= stop; date.setDate(date.getDate() + 1)) {
+			const day = date.toLocaleDateString('en-CA');
+			// Math.round absorbs DST hour shifts in the day distance.
+			const week = Math.floor(Math.round((date.getTime() - sunday.getTime()) / DAY) / 7);
+			const count = counts.get(day) ?? 0;
+			const first = rows.length === 0 || date.getDate() === 1;
+			if (first && !labels.has(week)) {
+				ticks.push(week);
+				labels.set(week, date.toLocaleDateString('en', { month: 'short' }));
+			}
+			rows.push({ day, date: new Date(date), week, weekday: date.getDay(), count, level: level(count) });
+		}
+		const weeks = [...new Set(rows.map((row) => row.week))];
+		return { rows, weeks, ticks, labels };
+	});
+
+	// Square GitHub-style cells: size follows the container but never balloons on short
+	// ranges — the grid stays compact and left-aligned, overflowing into a scroll if tight.
+	const size = $derived(Math.min(22, Math.max(10, Math.floor((width || 640) / grid.weeks.length))));
+
+	const definition = $derived(
+		defineChart({
+			marks: [
+				cell(grid.rows, {
+					x: 'week',
+					y: 'weekday',
+					color: 'level',
+					key: 'day',
+					inset: 0,
+					radius: 2,
+					stroke: 'color-mix(in oklab, var(--ink) 4%, transparent)',
+					strokeWidth: 1
+				})
+			],
+			x: {
+				scale: scaleBand<number>().domain(grid.weeks).paddingInner(0.08).paddingOuter(0),
+				axis: {
+					line: false,
+					ticks: {
+						values: grid.ticks,
+						size: 0,
+						format: (week: number) => grid.labels.get(week) ?? ''
+					}
+				}
+			},
+			y: {
+				scale: scaleBand<number>().domain([0, 1, 2, 3, 4, 5, 6]).paddingInner(0.08).paddingOuter(0),
+				axis: false
+			},
+			color: { domain: [0, 1, 2, 3, 4], range: [0, 1, 2, 3, 4].map((n) => `var(--cal-${n})`) },
+			margin: { top: 4, right: 0, bottom: 24, left: 0 },
+			tooltip: {
+				use: tooltip,
+				portal,
+				anchor: 'point',
+				offset: 5,
+				format: (point) => `${point.datum.count} created · ${short(point.datum.date)}`
+			}
+		})
+	);
 </script>
 
-<Chart data={points} x={(p) => p.date} height={132} padding={{ top: 18, bottom: 4, left: 4, right: 4 }}>
-	<Svg>
-		<Calendar {start} {end} monthLabel={false}>
-			{#snippet children({ cells, cellSize })}
-				{@const gap = Math.min(2, cellSize[0] * 0.14)}
-				{#each months(cells) as month (month.x)}
-					<text x={month.x} y={-7} class="month">{month.name}</text>
-				{/each}
-				{#each cells as cell (cell.data.date.getTime())}
-					<rect
-						x={cell.x}
-						y={cell.y}
-						width={cellSize[0] - gap}
-						height={cellSize[1] - gap}
-						rx="2"
-						fill={fill(cell.data.count ?? 0)}
-						class="cell"
-					>
-						<title>{cell.data.count ?? 0} created · {label(cell.data.date)}</title>
-					</rect>
-				{/each}
-			{/snippet}
-		</Calendar>
-	</Svg>
-</Chart>
+<div class="grid" bind:clientWidth={width}>
+	<Chart
+		{definition}
+		ariaLabel="Todos created per day, weeks as columns"
+		width={grid.weeks.length * size}
+		height={7 * size + 28}
+	/>
+</div>
 
 <div class="scale">
 	<span>{data.total} created</span>
@@ -73,15 +119,8 @@
 </div>
 
 <style>
-	.month {
-		fill: var(--dim);
-		font-size: 10px;
-		font-family: var(--font-mono);
-	}
-
-	.cell {
-		stroke: color-mix(in oklab, var(--ink) 4%, transparent);
-		stroke-width: 1;
+	.grid {
+		overflow-x: auto;
 	}
 
 	.scale {

@@ -11,10 +11,7 @@
 
 <Section title="Activity">
 	{#if activity.active}
-		<!-- {#key}: layerchart 2.0.0-next crashes the tab on in-place data updates; remount instead -->
-		{#key activity.series}
-			<ActivityChart series={activity.series} />
-		{/key}
+		<ActivityChart series={activity.series} />
 	{:else}
 		<p class="empty">No activity in this range</p>
 	{/if}

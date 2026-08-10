@@ -1,13 +1,5 @@
 @import "tailwindcss";
 
-@theme inline {
-  --color-series-1: var(--series-1);
-  --color-series-2: var(--series-2);
-  --color-pending: var(--pending);
-  --color-progress: var(--progress);
-  --color-done: var(--done);
-}
-
 /* One token list for both themes. `light-dark()` picks a side from `color-scheme`, so
    the only thing `data-theme` has to do is pin that — see the two rules below. */
 :root {
@@ -56,20 +48,6 @@
 
 :root[data-theme="dark"] {
   color-scheme: dark;
-}
-
-/* LayerChart theme (https://next.layerchart.com/docs/getting-started) */
-.lc-root-container {
-  /* Default marks color when not using explicit color or color scale */
-  --color-primary: var(--accent);
-
-  /* Progressively darker shades representing surfaces (backgrounds) */
-  --color-surface-100: var(--bg);
-  --color-surface-200: var(--surface);
-  --color-surface-300: var(--surface-2);
-
-  /* Content (text) color */
-  --color-surface-content: var(--ink);
 }
 
 * {

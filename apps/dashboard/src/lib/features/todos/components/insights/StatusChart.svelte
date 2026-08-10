@@ -1,53 +1,38 @@
 <script lang="ts">
 	import type { Todo } from '@template/core/todo';
+	import { barX, defineChart, text } from '@tanstack/charts';
+	import { scaleBand } from '@tanstack/charts/scales/band';
+	import { scaleLinear } from '@tanstack/charts/scales/linear';
+	import { Chart } from '@tanstack/charts/svelte';
 	import { color, label } from '../../status';
 
-	let { rows }: { rows: { status: Todo.Status; total: number; pct: number }[] } = $props();
+	type Row = { status: Todo.Status; total: number; pct: number };
+
+	let { rows }: { rows: Row[] } = $props();
+
+	const name = (row: Row) => label(row.status);
+	const paint = (row: Row) => color(row.status);
+
+	const definition = $derived(
+		defineChart({
+			marks: [
+				barX(rows, { x: 'total', y: name, fill: paint, radius: 4, inset: 2, maxThickness: 18 }),
+				text(rows, {
+					x: 'total',
+					y: name,
+					text: 'total',
+					anchor: 'start',
+					dx: 8,
+					fill: 'var(--muted)',
+					fontSize: 11
+				})
+			],
+			x: { scale: scaleLinear, axis: false },
+			y: { scale: () => scaleBand().padding(0.3), axis: { line: false, ticks: { size: 0 } } },
+			margin: { right: 28 },
+			focus: false
+		})
+	);
 </script>
 
-<!-- Plain HTML bars: layerchart's Bars mark infinite-loops on client render (2.0.0-next.66). -->
-<div class="bars">
-	{#each rows as row (row.status)}
-		<span class="name">{label(row.status)}</span>
-		<span class="track">
-			<span class="bar" style:width="{row.pct}%" style:background={color(row.status)}></span>
-		</span>
-		<span class="count">{row.total}</span>
-	{/each}
-</div>
-
-<style>
-	.bars {
-		display: grid;
-		grid-template-columns: auto 1fr auto;
-		align-items: center;
-		gap: 0.6em 0.9em;
-	}
-
-	.name {
-		font-size: 0.85em;
-		color: var(--muted);
-	}
-
-	.track {
-		height: 1.4em;
-		background: var(--surface-2);
-		border-radius: 4px;
-		overflow: hidden;
-	}
-
-	.bar {
-		display: block;
-		height: 100%;
-		border-radius: 4px;
-		transition: width 0.3s ease;
-	}
-
-	.count {
-		font-family: var(--font-mono);
-		font-size: 0.85em;
-		color: var(--muted);
-		min-width: 2ch;
-		text-align: right;
-	}
-</style>
+<Chart {definition} ariaLabel="Todos by status" height={rows.length * 36 + 8} />

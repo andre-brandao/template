@@ -25,7 +25,7 @@
 
 		<label class="field">
 			<span>Name</span>
-			<Input {...rename.fields.to.as('text')} value={name} />
+			<Input {...rename.fields.to.as('text', name)} />
 		</label>
 
 		<div class="footer">

@@ -5,14 +5,24 @@
 
 	let {
 		value,
+		selected,
 		empty = 'Unassigned',
 		...rest
-	}: { value?: string | null; empty?: string } & HTMLSelectAttributes = $props();
+	}: {
+		value?: string | null;
+		/** The already-loaded current assignee, so SSR can label it without the directory. */
+		selected?: { id: string; name: string } | null;
+		empty?: string;
+	} & HTMLSelectAttributes = $props();
 </script>
 
 <!-- Only a picker needs the whole directory, and only once it's touched. -->
 <LazySelect
-	options={[{ value: '', label: empty }]}
+	dedupe
+	options={[
+		{ value: '', label: empty },
+		...(selected ? [{ value: selected.id, label: selected.name }] : [])
+	]}
 	load={async () =>
 		(await getUsers({})).map((one) => ({ value: one.id, label: one.name, hint: one.email }))}
 	value={value ?? ''}

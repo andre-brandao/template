@@ -140,23 +140,23 @@
 					<input {...plan.fields.id.as('hidden', todo.id)} />
 					<label>
 						<span>Stage</span>
-						<StagePicker {scope} {...plan.fields.stage.as('text')} value={todo.stage ?? ''} />
+						<StagePicker {scope} {...plan.fields.stage.as('text', todo.stage ?? '')} />
 					</label>
 					<label>
 						<span>Assignee</span>
 						<AssigneePicker
-							{...plan.fields.assignee.as('select')}
-							value={todo.assignee?.id ?? ''}
+							selected={todo.assignee}
+							{...plan.fields.assignee.as('select', todo.assignee?.id ?? '')}
 						/>
 					</label>
 					<div class="pair">
 						<label>
 							<span>Start</span>
-							<Input {...plan.fields.startDate.as('date')} value={day(todo.startDate)} />
+							<Input {...plan.fields.startDate.as('date', day(todo.startDate))} />
 						</label>
 						<label>
 							<span>Due</span>
-							<Input {...plan.fields.dueDate.as('date')} value={day(todo.dueDate)} />
+							<Input {...plan.fields.dueDate.as('date', day(todo.dueDate))} />
 						</label>
 					</div>
 					<Button type="submit" variant="secondary" pending={!!plan.pending}>Save plan</Button>

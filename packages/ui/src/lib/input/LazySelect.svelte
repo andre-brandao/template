@@ -7,6 +7,7 @@
 		load,
 		options = [],
 		value = '',
+		dedupe = false,
 		...rest
 	}: {
 		/** Fetches the remaining options; called once, on first hover/focus. */
@@ -14,6 +15,8 @@
 		/** Static options shown before anything is fetched. */
 		options?: Option[];
 		value?: string | null;
+		/** Drop loaded options that repeat a static one — for statics that mirror loadable entries. */
+		dedupe?: boolean;
 	} & HTMLSelectAttributes = $props();
 
 	let extra = $state.raw<Option[]>([]);
@@ -30,7 +33,10 @@
 </script>
 
 <Select
-	options={[...options, ...extra]}
+	options={[
+		...options,
+		...(dedupe ? extra.filter((one) => !options.some((o) => o.value === one.value)) : extra)
+	]}
 	value={value ?? ''}
 	{...rest}
 	onpointerenter={fetch}

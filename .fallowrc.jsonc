@@ -119,12 +119,13 @@
         "from": "server",
         "allow": ["shared", "core", "functions"],
       },
-      // Shared stays a runtime leaf, but may name core's contracts (`User.Info`,
-      // `Prefs`) in its types — an erased import ships nothing and keeps the
+      // Shared may compose design-system primitives — ui is a leaf like shared
+      // itself, so no back-flow — and may name core's contracts (`User.Info`,
+      // `Prefs`) in its types: an erased import ships nothing and keeps the
       // context/prop shapes from drifting away from what the server hands over.
       {
         "from": "shared",
-        "allow": [],
+        "allow": ["ui"],
         "allowTypeOnly": ["core"],
       },
       // Backend / design-system layering. Dependencies flow one way toward core;

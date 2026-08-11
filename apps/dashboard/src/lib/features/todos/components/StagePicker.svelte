@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { HTMLInputAttributes } from 'svelte/elements';
+	import { Input } from '@template/ui';
 	import { getStages } from '../api/todos.remote';
 
 	let {
@@ -25,26 +26,9 @@
 	const list = $derived(`stages-${rest.id ?? rest.name ?? 'todo'}`);
 </script>
 
-<input type="text" list={list} {placeholder} {...rest} onpointerenter={fetch} onfocus={fetch} />
+<Input type="text" list={list} {placeholder} {...rest} onpointerenter={fetch} onfocus={fetch} />
 <datalist id={list}>
 	{#each stages as stage (stage.name)}
 		<option value={stage.name}></option>
 	{/each}
 </datalist>
-
-<style>
-	input {
-		min-width: 0;
-		font: inherit;
-		padding: 0.5em 0.7em;
-		border: 1px solid var(--border);
-		border-radius: var(--radius);
-		background: var(--surface);
-		color: var(--ink);
-	}
-
-	input:focus-visible {
-		border-color: var(--accent);
-		outline: none;
-	}
-</style>

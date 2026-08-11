@@ -40,11 +40,7 @@ describe("group by status", () => {
 describe("group by stage", () => {
   it("buckets by stage and folds stageless todos into one group", () => {
     const out = group(
-      [
-        make({ id: "a", stage: "build" }),
-        make({ id: "b", stage: "build" }),
-        make({ id: "c" }),
-      ],
+      [make({ id: "a", stage: "build" }), make({ id: "b", stage: "build" }), make({ id: "c" })],
       "stage",
     );
     expect(out.find((g) => g.key === "build")?.items.map((t) => t.id)).toEqual(["a", "b"]);
@@ -100,10 +96,7 @@ describe("group by assignee", () => {
 
   it("keeps same-named buckets apart when ids differ", () => {
     const out = group(
-      [
-        make({ id: "a", assignee: ana }),
-        make({ id: "b", assignee: { ...bea, name: "Ana" } }),
-      ],
+      [make({ id: "a", assignee: ana }), make({ id: "b", assignee: { ...bea, name: "Ana" } })],
       "assignee",
     );
     expect(out.length).toBe(2);

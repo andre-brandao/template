@@ -5,7 +5,7 @@
 	import Header from '$lib/components/Header.svelte';
 	import { Button, Drawer } from '@template/ui';
 	import { getTodos } from '../api/todos.remote';
-	import { getSource } from '$lib/features/events/api/sources.remote';
+	import Source from '$lib/features/events/components/Source.svelte';
 	import { STATUSES } from '../status';
 	import TodoForm from '../components/form/TodoForm.svelte';
 	import TodoFilters from '../components/TodoFilters.svelte';
@@ -29,27 +29,21 @@
 
 	const scope = $derived({ source, sourceID });
 
-	// Both queries are kicked off together — awaiting them in sequence would make the
-	// source name a waterfall in front of the todos it labels.
-	const data = $derived(
-		await Promise.all([
-			getTodos({
-				...scope,
-				status: params.status === 'all' ? undefined : params.status,
-				assignee: params.assignee || undefined,
-				stage: params.stage || undefined,
-				q: params.q || undefined
-			}),
-			source && sourceID ? getSource({ source, sourceID }) : undefined
-		])
+	const todos = $derived(
+		await getTodos({
+			...scope,
+			status: params.status === 'all' ? undefined : params.status,
+			assignee: params.assignee || undefined,
+			stage: params.stage || undefined,
+			q: params.q || undefined
+		})
 	);
-	const todos = $derived(data[0]);
-	const title = $derived(data[1]?.name ?? 'Todos');
 
 	let adding = $state(false);
 </script>
 
-<Header {title}>
+<Header>
+	{#snippet title()}<Source {source} {sourceID} fallback="Todos" />{/snippet}
 	{#snippet actions()}
 		<Button onclick={() => (adding = true)}>New todo</Button>
 	{/snippet}

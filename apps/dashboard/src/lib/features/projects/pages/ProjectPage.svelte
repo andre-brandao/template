@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import type { Event } from '@template/core/event';
+	import Header from '$lib/components/Header.svelte';
 	import Timeline from '$lib/features/events/components/Timeline.svelte';
 	import { getProject } from '../api/projects.remote';
 
@@ -17,12 +18,7 @@
 
 <svelte:boundary>
 	{@const project = await getProject(id)}
-	<header>
-		<h1>{project.name}</h1>
-		{#if project.description}
-			<p class="blurb">{project.description}</p>
-		{/if}
-	</header>
+	<Header title={project.name}>{project.description}</Header>
 </svelte:boundary>
 
 <!--
@@ -57,15 +53,6 @@
 </div>
 
 <style>
-	header {
-		margin-bottom: 2em;
-	}
-
-	h1 {
-		margin: 0;
-		font-size: 1.5em;
-	}
-
 	h2 {
 		margin: 0 0 0.75em;
 		font-size: 0.78em;
@@ -74,14 +61,6 @@
 		letter-spacing: 0.08em;
 		text-transform: uppercase;
 		color: var(--dim);
-	}
-
-	.blurb {
-		max-width: 60ch;
-		color: var(--muted);
-		font-size: 0.95em;
-		line-height: 1.55;
-		margin: 0.5em 0 0;
 	}
 
 	/* Golden section: the long column is φ (1.618) times the short one. */

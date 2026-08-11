@@ -33,6 +33,8 @@
 </svelte:boundary>
 
 <style>
+	/* Shared list chrome with Recent.svelte — the row layouts differ, and keeping
+	   each card self-contained is worth the duplicated base rules. */
 	ul {
 		list-style: none;
 		display: flex;

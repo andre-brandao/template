@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { Button, FormBoundary, Input } from '@template/ui';
+	import Header from '$lib/components/Header.svelte';
 	import { getProject, updateProject } from '../api/projects.remote';
 	import DeleteDialog from '../components/DeleteDialog.svelte';
 
@@ -11,9 +12,7 @@
 	let saved = $state(false);
 </script>
 
-<header>
-	<h1>Settings</h1>
-</header>
+<Header title="Settings" />
 
 <!--
 	Label rail on the short side of the golden section, controls on the long one, so
@@ -75,15 +74,6 @@
 </section>
 
 <style>
-	header {
-		margin-bottom: 2em;
-	}
-
-	h1 {
-		margin: 0;
-		font-size: 1.5em;
-	}
-
 	h2 {
 		margin: 0 0 0.4em;
 		font-size: 0.95em;

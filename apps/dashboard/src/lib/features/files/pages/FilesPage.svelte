@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Button, Drawer } from '@template/ui';
 	import type { Storage } from '@template/core/storage';
+	import Header from '$lib/components/Header.svelte';
 	import { getFiles } from '../api/files.remote';
 	import FileCard from '../components/FileCard.svelte';
 	import FileForm from '../components/FileForm.svelte';
@@ -49,7 +50,7 @@
 		if (e.dataTransfer?.files.length) upload(e.dataTransfer.files);
 	}}
 >
-	<h1>Files</h1>
+	<Header title="Files" />
 
 	<div class="toolbar">
 		<input
@@ -101,11 +102,6 @@
 	.page {
 		position: relative;
 		min-height: 60vh;
-	}
-
-	h1 {
-		margin: 0 0 0.75em;
-		font-size: 1.4em;
 	}
 
 	h2 {

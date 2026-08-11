@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { z } from 'zod';
 	import { query } from '$lib/utils/params';
+	import Header from '$lib/components/Header.svelte';
 	import { RangePicker, last, valid, type Range } from '@template/ui';
 	import { debounce } from '$lib/utils/debounce';
 	import StatsSection from '../components/insights/StatsSection.svelte';
@@ -31,7 +32,7 @@
 	const title = $derived(src?.name ?? 'Insights');
 </script>
 
-<h1>{title}</h1>
+<Header {title} />
 
 <div class="toolbar">
 	<RangePicker range={picked} onchange={commit} />
@@ -75,11 +76,6 @@
 </div>
 
 <style>
-	h1 {
-		margin: 0 0 0.75em;
-		font-size: 1.4em;
-	}
-
 	.toolbar {
 		display: flex;
 		align-items: center;

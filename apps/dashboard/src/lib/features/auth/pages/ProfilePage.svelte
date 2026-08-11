@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Header from '$lib/components/Header.svelte';
 	import { getMe, getProviders } from '../api/profile.remote';
 	import ProfileForm from '../components/ProfileForm.svelte';
 	import ProviderList from '../components/ProviderList.svelte';
@@ -7,7 +8,7 @@
 	const providers = $derived(await getProviders());
 </script>
 
-<h1>Profile</h1>
+<Header title="Profile" />
 
 <ProfileForm {user} />
 
@@ -18,11 +19,6 @@
 <ProviderList {providers} />
 
 <style>
-	h1 {
-		margin: 0 0 1em;
-		font-size: 1.4em;
-	}
-
 	h2 {
 		margin: 2.25em 0 0.4em;
 		font-size: 1.1em;

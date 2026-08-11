@@ -2,6 +2,7 @@
 	import { z } from 'zod';
 	import { page } from '$app/state';
 	import { query } from '$lib/utils/params';
+	import Header from '$lib/components/Header.svelte';
 	import { Button, Drawer } from '@template/ui';
 	import { getTodos } from '../api/todos.remote';
 	import { getSource } from '$lib/features/events/api/sources.remote';
@@ -48,7 +49,7 @@
 	let adding = $state(false);
 </script>
 
-<h1>{title}</h1>
+<Header {title} />
 
 <div class="toolbar">
 	<TodoFilters
@@ -95,11 +96,6 @@
 <TodosView {todos} view={params.view} by={params.group} />
 
 <style>
-	h1 {
-		margin: 0 0 0.75em;
-		font-size: 1.4em;
-	}
-
 	.toolbar {
 		margin-bottom: 1.25em;
 	}

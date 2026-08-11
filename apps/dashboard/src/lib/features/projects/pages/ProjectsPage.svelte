@@ -2,6 +2,7 @@
 	import { z } from 'zod';
 	import { query } from '$lib/utils/params';
 	import { Button, Drawer } from '@template/ui';
+	import Header from '$lib/components/Header.svelte';
 	import { getProjects } from '../api/projects.remote';
 	import Folder from '../components/Folder.svelte';
 	import ProjectForm from '../components/ProjectForm.svelte';
@@ -12,15 +13,13 @@
 	let adding = $state(false);
 </script>
 
-<div class="head">
-	<h1>Projects</h1>
-	<Button onclick={() => (adding = true)}>New project</Button>
-</div>
-
-<p class="lead">
+<Header title="Projects">
+	{#snippet actions()}
+		<Button onclick={() => (adding = true)}>New project</Button>
+	{/snippet}
 	Each project files a set of todos and keeps its own stages and insights. Open one to work inside
 	it.
-</p>
+</Header>
 
 <input
 	class="search"
@@ -52,28 +51,9 @@
 {/if}
 
 <style>
-	.head {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 0.75em;
-		margin-bottom: 0.4em;
-	}
-
-	h1 {
-		margin: 0;
-		font-size: 1.4em;
-	}
-
 	h2 {
 		margin: 0 0 1em;
 		font-size: 1.15em;
-	}
-
-	.lead {
-		margin: 0 0 1.25em;
-		color: var(--muted);
-		max-width: 60ch;
 	}
 
 	.search {

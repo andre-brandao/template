@@ -33,6 +33,7 @@
   /* The app frame. The topbar's left cell and the sidebar share `--rail` so they line
      up as one column, and `--topbar` is fixed so its contents can't change its height. */
   --rail: 220px;
+  --rail-tight: 60px;
   --topbar: 60px;
   --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-mono: ui-monospace, "JetBrains Mono", "SF Mono", "Cascadia Code", monospace;

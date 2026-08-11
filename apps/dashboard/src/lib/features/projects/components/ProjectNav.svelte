@@ -3,7 +3,7 @@
 	import Avatar from '$lib/components/Avatar.svelte';
 	import { getProjects } from '../api/projects.remote';
 
-	let { id }: { id: string } = $props();
+	let { id, tight = false }: { id: string; tight?: boolean } = $props();
 
 	const projects = $derived(await getProjects({}));
 	const current = $derived(projects.find((p) => p.id === id));
@@ -17,11 +17,20 @@
 
 <svelte:window onkeydown={(e) => e.key === 'Escape' && (open = false)} />
 
-<div class="switcher" onfocusout={(e) => (open = e.currentTarget.contains(e.relatedTarget as Node))}>
-	<button type="button" aria-expanded={open} onclick={() => (open = !open)}>
-		{#if image}
-			<Avatar name={label} {image} size={16} />
-		{/if}
+<div
+	class="switcher"
+	class:tight
+	onfocusout={(e) => (open = e.currentTarget.contains(e.relatedTarget as Node))}
+>
+	<button
+		type="button"
+		aria-expanded={open}
+		title={tight ? label : undefined}
+		onclick={() => (open = !open)}
+	>
+		<!-- Unconditional here, unlike in the list: collapsed the avatar is all that
+		     is left, and Avatar falls back to an initial when there is no image. -->
+		<Avatar name={label} {image} size={16} />
 		<span class="name">{label}</span>
 		<span class="caret" aria-hidden="true">▾</span>
 	</button>
@@ -54,6 +63,21 @@
 		position: relative;
 		flex: 1;
 		min-width: 0;
+	}
+
+	/* Down to the avatar and its frame — the name lives in the tooltip and in the
+	   list that drops out of it. */
+	.tight {
+		flex: 0 0 auto;
+	}
+
+	.tight .name,
+	.tight .caret {
+		display: none;
+	}
+
+	.tight button {
+		padding: 0.35em;
 	}
 
 	button {

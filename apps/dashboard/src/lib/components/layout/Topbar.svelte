@@ -4,6 +4,7 @@
 	import { dev } from '$app/environment';
 	import { resolve } from '$app/paths';
 	import type { User } from '@template/core/user';
+	import PanelLeft from '@lucide/svelte/icons/panel-left';
 	import Avatar from '../Avatar.svelte';
 	import Menu from '../Menu.svelte';
 	import Breadcrumbs from './Breadcrumbs.svelte';
@@ -13,12 +14,16 @@
 	let {
 		user,
 		onmenu,
+		ontight,
+		tight = false,
 		head,
 		crumbs
 	}: {
 		user: User.Info | null;
 		onmenu?: () => void;
-		head?: Snippet;
+		ontight?: () => void;
+		tight?: boolean;
+		head?: Snippet<[boolean]>;
 		crumbs?: { href?: string; label: string }[];
 	} = $props();
 
@@ -26,18 +31,42 @@
 	const active = $derived(page.url.pathname.startsWith('/settings'));
 </script>
 
+{#snippet brand()}
+	<a href={resolve('/')} class="brand" aria-label="Home">
+		<span class="dot"></span>
+		{#if !head}<span class="word">Todos</span>{/if}
+	</a>
+{/snippet}
+
 <header>
-	<div class="lead" class:rail={!!onmenu}>
-		{#if onmenu}
+	{#if onmenu}
+		<!-- Same width and divider as the sidebar below it, so the two read as one
+		     column: the brand tops the rail the way it tops the menu. -->
+		<div class="rail" class:tight>
 			<button class="menu" type="button" aria-label="Open menu" onclick={onmenu}>
-				<span aria-hidden="true">&#9776;</span>
+				<PanelLeft size={17} strokeWidth={1.75} />
+			</button>
+			<!-- Collapsed the corner has room for one mark. The project's says more than
+			     the app's, and the sidebar's home link covers what the brand was for. -->
+			{#if !(tight && head)}{@render brand()}{/if}
+			{@render head?.(tight)}
+		</div>
+	{/if}
+
+	<!-- The toggle sits just past the divider, at the head of the content it widens. -->
+	<div class="lead">
+		{#if ontight}
+			<button
+				class="toggle"
+				type="button"
+				aria-label={tight ? 'Expand sidebar' : 'Collapse sidebar'}
+				aria-expanded={!tight}
+				onclick={ontight}
+			>
+				<PanelLeft size={17} strokeWidth={1.75} />
 			</button>
 		{/if}
-		<a href={resolve('/')} class="brand" aria-label="Home">
-			<span class="dot"></span>
-			{#if !head}<span class="word">Todos</span>{/if}
-		</a>
-		{@render head?.()}
+		{#if !onmenu}{@render brand()}{@render head?.(false)}{/if}
 	</div>
 
 	{#if crumbs}<Breadcrumbs items={crumbs} />{/if}
@@ -100,37 +129,55 @@
 		background: var(--surface);
 	}
 
-	.lead {
+	.lead,
+	.rail {
 		display: flex;
 		align-items: center;
 		gap: 0.55em;
 		min-width: 0;
-		padding-inline: 1.25em;
 	}
 
-	/* Same width and divider as the sidebar below it, so the two read as one column. */
 	.rail {
 		width: var(--rail);
 		flex-shrink: 0;
 		padding-inline: 0.75em;
 		border-right: 1px solid var(--border);
+		transition: width 160ms ease;
 	}
 
-	.menu {
+	.tight {
+		width: var(--rail-tight);
+		justify-content: center;
+		padding-inline: 0.5em;
+	}
+
+	/* Tight against the divider so the toggle reads as the leading edge of the
+	   content pane rather than as another item in the bar. */
+	.lead {
+		padding-inline: 0.6em 1.25em;
+	}
+
+	.menu,
+	.toggle {
 		display: none;
 		flex-shrink: 0;
-		padding: 0.3em 0.6em;
-		font-size: 1em;
-		line-height: 1;
-		border: 1px solid var(--border);
+		align-items: center;
+		padding: 0.4em;
+		border: none;
 		border-radius: var(--radius);
-		background: var(--surface-2);
-		color: var(--ink);
+		background: none;
+		color: var(--muted);
 		cursor: pointer;
 	}
 
-	.menu:hover {
-		border-color: var(--border-bright);
+	.toggle {
+		display: inline-flex;
+	}
+
+	.menu:hover,
+	.toggle:hover {
+		background: var(--surface-2);
+		color: var(--ink);
 	}
 
 	.brand {
@@ -151,6 +198,11 @@
 		height: 8px;
 		border-radius: 2px;
 		background: var(--accent);
+	}
+
+	/* 60px of corner fits the mark and nothing else. */
+	.tight .word {
+		display: none;
 	}
 
 	/* Loud on purpose: the whole point is to catch the eye of someone who thinks
@@ -278,10 +330,21 @@
 			width: auto;
 			flex-shrink: 1;
 			border-right: none;
+			padding-right: 0;
 		}
 
 		.menu {
-			display: block;
+			display: inline-flex;
+		}
+
+		/* Nothing to collapse once the rail itself is gone — which leaves `.lead`
+		   holding nothing, so it must not reserve its padding either. */
+		.toggle {
+			display: none;
+		}
+
+		.lead {
+			padding-inline: 0;
 		}
 
 		.meta {

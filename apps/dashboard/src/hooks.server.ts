@@ -6,6 +6,7 @@ import { Database } from "@template/core/drizzle";
 import { Storage } from "@template/core/storage";
 import { r2 } from "@template/core/storage/adapter/r2";
 import { Actor } from "@template/core/actor";
+import { User } from "@template/core/user";
 import { VisibleError } from "@template/core/error";
 import { Log } from "@template/core/util/log";
 import { dev } from "$app/environment";
@@ -50,7 +51,12 @@ const handleAuth: Handle = async ({ event, resolve }) => {
   event.locals.session = me;
   if (!me) return Actor.provide("public", {}, () => resolve(event));
 
-  return Actor.provide("user", { userID: me.userID }, () => resolve(event));
+  // The role is read per request rather than sealed into the cookie, so a demotion takes
+  // effect immediately. A missing row means the cookie outlived its user.
+  const row = await User.fromID(me.userID);
+  if (!row) return Actor.provide("public", {}, () => resolve(event));
+
+  return Actor.provide("user", { userID: me.userID, role: row.role }, () => resolve(event));
 };
 
 // Read inside the callback, not before `resolve` — the root layout's load reconciles the

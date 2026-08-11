@@ -13,11 +13,17 @@ export function auth() {
 // runs. This turns a thrown `VisibleError` into a form-wide `invalid()` issue,
 // shown via `fields.allIssues()`; anything else fails as a normal SvelteKit
 // error response.
+//
+// A denial is the exception: it isn't something the user can fix by editing the
+// form, so it renders as the error page rather than a phantom field issue.
 export async function guard<T>(fn: () => Promise<T>): Promise<T> {
   try {
     return await fn();
   } catch (err) {
-    if (err instanceof VisibleError) invalid(err.message);
+    if (err instanceof VisibleError) {
+      if (err.type === "forbidden") error(403, err.message);
+      invalid(err.message);
+    }
     error(500, "Internal Error");
   }
 }
@@ -33,16 +39,12 @@ export function remote<S extends z.ZodType, R>(
   gates: Gate[] = [auth],
   schema: any = core.schema,
 ) {
-  const call = async (input: z.infer<S>) => {
-    await run(gates);
-    return core(input);
-  };
   const guarded = async (input: z.infer<S>) => {
     await run(gates);
     return guard(async () => core(input));
   };
   return {
-    query: () => query(schema, call),
+    query: () => query(schema, guarded),
     form: () => form(schema, guarded),
     command: () => command(schema, guarded),
     public: () =>

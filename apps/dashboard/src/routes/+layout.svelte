@@ -4,6 +4,7 @@
 	import { navigating } from '$app/state';
 	import PreLoadingIndicator from './PreLoadingIndicator.svelte';
 	import ViewTransitions from './ViewTransitions.svelte';
+	import { Permission } from '@template/core/permission';
 	import { provide } from '$lib/utils/context';
 
 	let { data, children } = $props();
@@ -14,7 +15,8 @@
 		},
 		get prefs() {
 			return data.prefs;
-		}
+		},
+		can: (grants, owned) => Permission.can(data.user?.role, grants, owned)
 	});
 </script>
 

@@ -7,6 +7,8 @@
 
 	const projects = $derived(await getProjects({}));
 	const current = $derived(projects.find((p) => p.id === id));
+	const label = $derived(current?.name ?? 'Project');
+	const image = $derived(current?.image ?? null);
 	// Keep the reader on the same subpage when they switch projects.
 	const sub = $derived(page.url.pathname.slice(`/projects/${id}`.length));
 
@@ -17,10 +19,10 @@
 
 <div class="switcher" onfocusout={(e) => (open = e.currentTarget.contains(e.relatedTarget as Node))}>
 	<button type="button" aria-expanded={open} onclick={() => (open = !open)}>
-		{#if current?.image}
-			<Avatar name={current.name} image={current.image} size={16} />
+		{#if image}
+			<Avatar name={label} {image} size={16} />
 		{/if}
-		<span class="name">{current?.name ?? 'Project'}</span>
+		<span class="name">{label}</span>
 		<span class="caret" aria-hidden="true">▾</span>
 	</button>
 

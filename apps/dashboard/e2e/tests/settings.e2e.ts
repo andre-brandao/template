@@ -61,8 +61,10 @@ test("picking a theme applies instantly and survives a reload", async ({ page, a
   await expect(html).toHaveAttribute("data-theme", "dark");
 
   // The cookie is what makes the server paint it correctly on a cold load; the save
-  // round-trip is what sets it, so let it land before reloading.
+  // round-trip is what sets it, so let it (and the invalidateAll() that follows,
+  // whose same-URL revalidation counts as a navigation) land before reloading.
   await save;
+  await page.waitForLoadState("networkidle");
   await page.reload();
   await expect(html).toHaveAttribute("data-theme", "dark");
   await expect(page.getByRole("radio", { name: "Dark" })).toBeChecked();
@@ -70,9 +72,12 @@ test("picking a theme applies instantly and survives a reload", async ({ page, a
 
 test("the date format preference reaches the rest of the app", async ({ page, as }) => {
   const session = await as("user");
+  // Unique per attempt: todos are workspace-wide and the database lives for the
+  // whole run, so a fixed title accumulates rows across projects and retries.
+  const title = `Ship the settings page ${Date.now()}`;
   await Database.provide(process.env.DATABASE_URL!, () =>
     Actor.provide("user", { userID: session.userID }, () =>
-      Todo.create({ title: "Ship the settings page", dueDate: "2024-03-12T12:00:00.000Z" }),
+      Todo.create({ title, dueDate: "2024-03-12T12:00:00.000Z" }),
     ),
   );
 
@@ -86,17 +91,22 @@ test("the date format preference reaches the rest of the app", async ({ page, as
   const mdy = saved(page);
   await page.selectOption("select[name='date']", "mdy");
   await mdy;
+  // Each save is followed by an invalidateAll(); its same-URL revalidation counts
+  // as a navigation and would interrupt the goto below. Let it settle first.
+  await page.waitForLoadState("networkidle");
 
   await page.goto("/todos");
   // The table's Due column carries the bare date; "Due" itself is the column header.
-  await expect(page.getByText("Mar 12, 2024", { exact: true })).toBeVisible();
+  const row = page.getByRole("row", { name: title });
+  await expect(row.getByText("Mar 12, 2024", { exact: true })).toBeVisible();
 
   await page.goto("/settings/experience");
   await page.waitForLoadState("networkidle");
   const ymd = saved(page);
   await page.selectOption("select[name='date']", "ymd");
   await ymd;
+  await page.waitForLoadState("networkidle");
 
   await page.goto("/todos");
-  await expect(page.getByText("2024 Mar 12", { exact: true })).toBeVisible();
+  await expect(row.getByText("2024 Mar 12", { exact: true })).toBeVisible();
 });

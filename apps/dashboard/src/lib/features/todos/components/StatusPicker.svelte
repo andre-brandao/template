@@ -36,7 +36,15 @@
 			<div class="list">
 				{#each items as item (item.key)}
 					{@const form = setStatus.for(`${todo.id}:${item.key}`)}
-					<form {...form}>
+					<!-- Closing on click would detach the form before the browser submits it
+					     ("form is not connected"); enhance runs after the data is captured,
+					     so the menu can close while the request proceeds. -->
+					<form
+						{...form.enhance(async (f) => {
+							close();
+							await f.submit();
+						})}
+					>
 						<input {...form.fields.id.as('hidden', todo.id)} />
 						<input {...form.fields.status.as('hidden', item.status)} />
 						<input {...form.fields.reason.as('hidden', note || item.reason)} />
@@ -45,7 +53,6 @@
 							type="submit"
 							role="menuitem"
 							disabled={!!form.pending || (item.status === todo.status && !item.reason)}
-							onclick={close}
 						>
 							<span class="dot" style:--c={color(item.status)}></span>
 							{item.label}

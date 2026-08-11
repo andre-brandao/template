@@ -17,10 +17,17 @@
   "ignorePatterns": ["**/*.gen.ts"],
   // infra/*/stage.ts share a small boilerplate header across cloud targets
   // (aws, cf); the overlap is stage-setup wiring, not logic worth extracting.
+  // Stages/Recent share list-chrome CSS: the row layouts differ, and keeping each
+  // card self-contained beats extracting presentation coincidence.
   "duplicates": {
-    "ignore": ["infra/**"],
+    "ignore": [
+      "infra/**",
+      "apps/dashboard/src/lib/features/todos/components/Stages.svelte",
+      "apps/dashboard/src/lib/features/todos/components/Recent.svelte",
+    ],
   },
   "health": {
+    "maxCrap": 69,
     "thresholdOverrides": [
       {
         "files": ["**/*.svelte"],

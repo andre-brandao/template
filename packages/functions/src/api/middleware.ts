@@ -1,9 +1,23 @@
-import { type MiddlewareHandler } from "hono";
+import { type MiddlewareHandler, type Next } from "hono";
 import { VisibleError, ErrorCodes } from "@template/core/error";
 import { Actor } from "@template/core/actor";
 import { Key } from "@template/core/key";
+import { User } from "@template/core/user";
 import { subjects } from "../auth/subject";
 import { client } from "./auth";
+
+// Both token kinds resolve to a bare user id. The role always comes from the row, so an
+// API key can never outlive the permissions of the user who minted it.
+async function actor(userID: string, next: Next) {
+  const row = await User.fromID(userID);
+  if (!row)
+    throw new VisibleError(
+      "authentication",
+      ErrorCodes.Authentication.INVALID_TOKEN,
+      "Token belongs to a user that no longer exists",
+    );
+  return Actor.provide("user", { userID, role: row.role }, next);
+}
 
 export const auth: MiddlewareHandler = async (c, next) => {
   const header = c.req.header("authorization");
@@ -28,7 +42,7 @@ export const auth: MiddlewareHandler = async (c, next) => {
         ErrorCodes.Authentication.INVALID_TOKEN,
         "Invalid or expired API key",
       );
-    return Actor.provide("user", { userID }, next);
+    return actor(userID, next);
   }
 
   const result = await client.verify(subjects, token);
@@ -39,5 +53,5 @@ export const auth: MiddlewareHandler = async (c, next) => {
       "Invalid or expired token",
     );
 
-  return Actor.provide("user", { userID: result.subject.properties.userID }, next);
+  return actor(result.subject.properties.userID, next);
 };

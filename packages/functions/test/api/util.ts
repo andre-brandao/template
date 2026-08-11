@@ -13,7 +13,7 @@ export function setupApiTest() {
   let token: string;
 
   const withContext = async <T>(fn: () => T | Promise<T>): Promise<T> => {
-    return Actor.provide("user", { userID }, fn);
+    return Actor.provide("user", { userID, role: "member" }, fn);
   };
 
   beforeAll(async () => {

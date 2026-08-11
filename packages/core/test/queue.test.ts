@@ -36,7 +36,7 @@ describe("queue", () => {
     await Actor.provide("public", {}, () =>
       Queue.provide(Queue.fromEnv({ QUEUE_DRIVER: "sync" }), async () => {
         await greet.push({ name: "ada" });
-        expect(seen).toEqual(["ada:public"]);
+        expect(seen).toEqual(["ada:system"]);
         expect(await Queue.tick()).toBe(false);
       }),
     );
@@ -60,7 +60,7 @@ describe("queue", () => {
         expect(queue.rows).toHaveLength(1);
 
         expect(await Queue.drain()).toBe(1);
-        expect(seen).toEqual(["grace:public"]);
+        expect(seen).toEqual(["grace:system"]);
         expect(queue.rows).toHaveLength(0);
       }),
     );
@@ -150,7 +150,7 @@ describe("queue", () => {
 
     // What the consumer does with each message it receives.
     await Queue.run({ ...sent[0]!.body, attempts: 1 });
-    expect(seen).toEqual(["ada:public"]);
+    expect(seen).toEqual(["ada:system"]);
   });
 
   withTestUser("cloudflare captures the pushing user for the consumer", async ({ userID }) => {

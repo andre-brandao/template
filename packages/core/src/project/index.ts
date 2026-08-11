@@ -31,6 +31,7 @@ export namespace Project {
   export const create = fn(
     z.object({ name: Info.shape.name, description: Info.shape.description.optional() }),
     async (input) => {
+      Actor.check({ project: ["create"] });
       const id = Identifier.create("project");
       return Database.transaction(async (tx) => {
         await tx.insert(ProjectTable).values({
@@ -53,6 +54,7 @@ export namespace Project {
   export const list = fn(
     Common.PaginatedInput.extend({ search: z.string().optional() }),
     (input) => {
+      Actor.check({ project: ["read"] });
       const { page, pageSize, limit, offset } = Common.page(input);
       const conditions = [isNull(ProjectTable.timeDeleted)];
       if (input.search) conditions.push(ilike(ProjectTable.name, `%${input.search}%`));
@@ -73,18 +75,20 @@ export namespace Project {
     },
   );
 
-  export const fromID = fn(Info.shape.id, (id) =>
-    Database.use((tx) =>
+  export const fromID = fn(Info.shape.id, (id) => {
+    Actor.check({ project: ["read"] });
+    return Database.use((tx) =>
       tx
         .select()
         .from(ProjectTable)
         .where(and(eq(ProjectTable.id, id), isNull(ProjectTable.timeDeleted)))
         .then((rows) => (rows[0] ? serialize(rows[0]) : null)),
-    ),
-  );
+    );
+  });
 
   export const update = fn(Patch.extend({ id: Info.shape.id }), async ({ id, ...patch }) => {
     const before = found("Project", await fromID.force(id));
+    Actor.check({ project: ["update"] }, before.createdBy);
 
     return Database.transaction(async (tx) => {
       await tx
@@ -106,6 +110,7 @@ export namespace Project {
    */
   export const remove = fn(Info.shape.id, async (id) => {
     const before = found("Project", await fromID.force(id));
+    Actor.check({ project: ["delete"] }, before.createdBy);
 
     return Database.transaction(async (tx) => {
       await tx.update(ProjectTable).set({ timeDeleted: new Date() }).where(eq(ProjectTable.id, id));

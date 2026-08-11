@@ -128,7 +128,8 @@ const result = await Database.provide(url, async () => {
   // Unassigned shows up as its own lane in the board and the load chart.
   const assignees = [userID, ...mates, null, ...mates];
 
-  await Actor.provide("user", { userID }, async () => {
+  // Matches the row the seed just wrote, so anything a real member can't do fails here too.
+  await Actor.provide("user", { userID, role: "member" }, async () => {
     const list = await Todo.list({ page: 1, pageSize: 100 });
     if (list.total > 0) return;
 

@@ -11,7 +11,9 @@ describe("user", () => {
     const email = testEmail();
     const userID = await Auth.provision({ provider: "email", accountId: email, email });
 
-    const providers = await Actor.provide("user", { userID }, () => User.providers());
+    const providers = await Actor.provide("user", { userID, role: "member" }, () =>
+      User.providers(),
+    );
 
     // Every known provider is listed, connected or not.
     expect(providers.map((provider) => provider.id)).toEqual([...ProviderIds]);

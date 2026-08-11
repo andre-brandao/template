@@ -6,6 +6,7 @@ import { Actor } from "../actor";
 import { Common } from "../common";
 import { Examples } from "../examples";
 import { Identifier } from "../identifier";
+import { Permission } from "../permission";
 import { UserTable } from "./user.sql";
 import { Patch } from "./prefs";
 import { ProviderIds, ProviderTable } from "./provider.sql";
@@ -18,6 +19,9 @@ export namespace User {
       email: z.string().email(),
       emailVerified: z.boolean().optional(),
       image: z.string().nullable(),
+      // Read-only here: `Patch` never picks it, so the only way to change a role is SQL
+      // until `assign` lands.
+      role: z.enum(Permission.roles),
     })
     .meta({
       ref: "User",

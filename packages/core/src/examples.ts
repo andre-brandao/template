@@ -10,7 +10,8 @@ export namespace Examples {
     email: "john@example.com",
     emailVerified: true,
     image: null,
-  };
+    role: "member",
+  } as const;
 
   export const Project = {
     id: Id("project"),

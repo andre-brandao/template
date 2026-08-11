@@ -20,7 +20,7 @@ export type User = {
 };
 
 /**
- * Not found error
+ * Permission error
  */
 export type ErrorResponse = {
   /**
@@ -78,7 +78,7 @@ export type Key = {
 };
 
 /**
- * A todo item that belongs to a user.
+ * A unit of work, owned by whatever entity created it.
  */
 export type Todo = {
   /**
@@ -86,30 +86,68 @@ export type Todo = {
    * The format and length of IDs may change over time.
    */
   id: string;
-  userID: string;
+  createdBy: string;
+  assignee: {
+    id: string;
+    name: string;
+    image: string | null;
+  } | null;
+  source: string | null;
+  sourceID: string | null;
+  stage: string | null;
   title: string;
   body: string | null;
-  state: "open" | "closed";
-  stateReason: "completed" | "not_planned" | null;
+  status: "backlog" | "planned" | "active" | "blocked" | "done";
+  reason: string | null;
   tags: Array<string>;
+  startDate: string | null;
   dueDate: string | null;
+  timeStarted: string | null;
+  timeDone: string | null;
 };
 
 /**
- * An uploaded file that belongs to a user.
+ * A stage label, with the span and counts derived from its todos.
  */
-export type File = {
+export type Stage = {
+  name: string;
+  total: number;
+  done: number;
+  start: string | null;
+  end: string | null;
+};
+
+/**
+ * A container for todos. Todos point at it through source/sourceID.
+ */
+export type Project = {
   /**
    * Unique object identifier.
    * The format and length of IDs may change over time.
    */
   id: string;
-  userID: string;
-  filename: string;
-  contentType: string;
+  createdBy: string;
+  name: string;
+  description: string | null;
+};
+
+/**
+ * An object on the user's storage disk, with its content type.
+ */
+export type FileMeta = {
+  key: string;
   size: number;
-  tags: Array<string>;
-  timeCreated: string;
+  lastModified: string | null;
+  contentType: string;
+};
+
+/**
+ * An object on the user's storage disk.
+ */
+export type File = {
+  key: string;
+  size: number;
+  lastModified: string | null;
 };
 
 export type GetMeData = {
@@ -247,7 +285,13 @@ export type GetTodoData = {
   query?: {
     page?: number;
     pageSize?: number;
-    state?: "open" | "closed";
+    status?: "backlog" | "planned" | "active" | "blocked" | "done";
+    assignee?: string;
+    stage?: string;
+    source?: string;
+    sourceID?: string;
+    createdBy?: string;
+    search?: string;
   };
   url: "/todo";
 };
@@ -293,6 +337,12 @@ export type PostTodoData = {
     title: string;
     body?: string | null;
     tags?: Array<string>;
+    stage?: string | null;
+    assignee?: string | null;
+    source?: string | null;
+    sourceID?: string | null;
+    status?: "backlog" | "planned" | "active" | "blocked" | "done";
+    startDate?: string | null;
     dueDate?: string | null;
   };
   path?: never;
@@ -325,6 +375,38 @@ export type PostTodoResponses = {
 };
 
 export type PostTodoResponse = PostTodoResponses[keyof PostTodoResponses];
+
+export type GetTodoStageData = {
+  body?: never;
+  path?: never;
+  query?: {
+    source?: string;
+    sourceID?: string;
+  };
+  url: "/todo/stage";
+};
+
+export type GetTodoStageErrors = {
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Internal Server Error
+   */
+  500: ErrorResponse;
+};
+
+export type GetTodoStageError = GetTodoStageErrors[keyof GetTodoStageErrors];
+
+export type GetTodoStageResponses = {
+  /**
+   * The stages in use.
+   */
+  200: Array<Stage>;
+};
+
+export type GetTodoStageResponse = GetTodoStageResponses[keyof GetTodoStageResponses];
 
 export type DeleteTodoByIdData = {
   body?: never;
@@ -401,9 +483,12 @@ export type PatchTodoByIdData = {
     title?: string;
     body?: string | null;
     tags?: Array<string>;
+    stage?: string | null;
+    status?: "backlog" | "planned" | "active" | "blocked" | "done";
+    reason?: string | null;
+    startDate?: string | null;
     dueDate?: string | null;
-    state?: "open" | "closed";
-    stateReason?: "completed" | "not_planned" | null;
+    assignee?: string | null;
   };
   path: {
     id: string;
@@ -442,23 +527,18 @@ export type PatchTodoByIdResponses = {
 
 export type PatchTodoByIdResponse = PatchTodoByIdResponses[keyof PatchTodoByIdResponses];
 
-export type GetFileData = {
+export type GetProjectData = {
   body?: never;
   path?: never;
   query?: {
     page?: number;
     pageSize?: number;
-    tags?: string;
     search?: string;
   };
-  url: "/file";
+  url: "/project";
 };
 
-export type GetFileErrors = {
-  /**
-   * Bad Request
-   */
-  400: ErrorResponse;
+export type GetProjectErrors = {
   /**
    * Unauthorized
    */
@@ -469,14 +549,14 @@ export type GetFileErrors = {
   500: ErrorResponse;
 };
 
-export type GetFileError = GetFileErrors[keyof GetFileErrors];
+export type GetProjectError = GetProjectErrors[keyof GetProjectErrors];
 
-export type GetFileResponses = {
+export type GetProjectResponses = {
   /**
    * A page of results.
    */
   200: {
-    data: Array<File>;
+    data: Array<Project>;
     /**
      * Page number returned.
      */
@@ -492,12 +572,189 @@ export type GetFileResponses = {
   };
 };
 
+export type GetProjectResponse = GetProjectResponses[keyof GetProjectResponses];
+
+export type PostProjectData = {
+  body: {
+    name: string;
+    description?: string | null;
+  };
+  path?: never;
+  query?: never;
+  url: "/project";
+};
+
+export type PostProjectErrors = {
+  /**
+   * Bad Request
+   */
+  400: ErrorResponse;
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Internal Server Error
+   */
+  500: ErrorResponse;
+};
+
+export type PostProjectError = PostProjectErrors[keyof PostProjectErrors];
+
+export type PostProjectResponses = {
+  /**
+   * The created project.
+   */
+  200: Project;
+};
+
+export type PostProjectResponse = PostProjectResponses[keyof PostProjectResponses];
+
+export type DeleteProjectByIdData = {
+  body?: never;
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/project/{id}";
+};
+
+export type DeleteProjectByIdErrors = {
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Not Found
+   */
+  404: ErrorResponse;
+  /**
+   * Internal Server Error
+   */
+  500: ErrorResponse;
+};
+
+export type DeleteProjectByIdError = DeleteProjectByIdErrors[keyof DeleteProjectByIdErrors];
+
+export type DeleteProjectByIdResponses = {
+  /**
+   * Deleted.
+   */
+  200: "ok";
+};
+
+export type DeleteProjectByIdResponse =
+  DeleteProjectByIdResponses[keyof DeleteProjectByIdResponses];
+
+export type GetProjectByIdData = {
+  body?: never;
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/project/{id}";
+};
+
+export type GetProjectByIdErrors = {
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Not Found
+   */
+  404: ErrorResponse;
+  /**
+   * Internal Server Error
+   */
+  500: ErrorResponse;
+};
+
+export type GetProjectByIdError = GetProjectByIdErrors[keyof GetProjectByIdErrors];
+
+export type GetProjectByIdResponses = {
+  /**
+   * The project.
+   */
+  200: Project;
+};
+
+export type GetProjectByIdResponse = GetProjectByIdResponses[keyof GetProjectByIdResponses];
+
+export type PatchProjectByIdData = {
+  body: {
+    name?: string;
+    description?: string | null;
+  };
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/project/{id}";
+};
+
+export type PatchProjectByIdErrors = {
+  /**
+   * Bad Request
+   */
+  400: ErrorResponse;
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Not Found
+   */
+  404: ErrorResponse;
+  /**
+   * Internal Server Error
+   */
+  500: ErrorResponse;
+};
+
+export type PatchProjectByIdError = PatchProjectByIdErrors[keyof PatchProjectByIdErrors];
+
+export type PatchProjectByIdResponses = {
+  /**
+   * The updated project.
+   */
+  200: Project;
+};
+
+export type PatchProjectByIdResponse = PatchProjectByIdResponses[keyof PatchProjectByIdResponses];
+
+export type GetFileData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/file";
+};
+
+export type GetFileErrors = {
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Internal Server Error
+   */
+  500: ErrorResponse;
+};
+
+export type GetFileError = GetFileErrors[keyof GetFileErrors];
+
+export type GetFileResponses = {
+  /**
+   * The user's files.
+   */
+  200: Array<File>;
+};
+
 export type GetFileResponse = GetFileResponses[keyof GetFileResponses];
 
 export type PostFileData = {
   body?: {
     file: Blob | File;
-    tags?: string;
   };
   path?: never;
   query?: never;
@@ -525,21 +782,57 @@ export type PostFileResponses = {
   /**
    * The uploaded file.
    */
-  200: File;
+  200: FileMeta;
 };
 
 export type PostFileResponse = PostFileResponses[keyof PostFileResponses];
 
-export type DeleteFileByIdData = {
+export type GetFileSignedData = {
   body?: never;
-  path: {
-    id: string;
+  path?: never;
+  query: {
+    key: string;
+    expires: number;
+    kid: string;
+    sig: string;
   };
-  query?: never;
-  url: "/file/{id}";
+  url: "/file/signed";
 };
 
-export type DeleteFileByIdErrors = {
+export type GetFileSignedErrors = {
+  /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
+   * Not Found
+   */
+  404: ErrorResponse;
+  /**
+   * Internal Server Error
+   */
+  500: ErrorResponse;
+};
+
+export type GetFileSignedError = GetFileSignedErrors[keyof GetFileSignedErrors];
+
+export type GetFileSignedResponses = {
+  /**
+   * The raw file bytes.
+   */
+  200: unknown;
+};
+
+export type GetFileByNameContentData = {
+  body?: never;
+  path: {
+    name: string;
+  };
+  query?: never;
+  url: "/file/{name}/content";
+};
+
+export type GetFileByNameContentErrors = {
   /**
    * Unauthorized
    */
@@ -554,65 +847,59 @@ export type DeleteFileByIdErrors = {
   500: ErrorResponse;
 };
 
-export type DeleteFileByIdError = DeleteFileByIdErrors[keyof DeleteFileByIdErrors];
+export type GetFileByNameContentError =
+  GetFileByNameContentErrors[keyof GetFileByNameContentErrors];
 
-export type DeleteFileByIdResponses = {
+export type GetFileByNameContentResponses = {
+  /**
+   * The raw file bytes.
+   */
+  200: unknown;
+};
+
+export type DeleteFileByNameData = {
+  body?: never;
+  path: {
+    name: string;
+  };
+  query?: never;
+  url: "/file/{name}";
+};
+
+export type DeleteFileByNameErrors = {
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Internal Server Error
+   */
+  500: ErrorResponse;
+};
+
+export type DeleteFileByNameError = DeleteFileByNameErrors[keyof DeleteFileByNameErrors];
+
+export type DeleteFileByNameResponses = {
   /**
    * Deleted.
    */
   200: "ok";
 };
 
-export type DeleteFileByIdResponse = DeleteFileByIdResponses[keyof DeleteFileByIdResponses];
+export type DeleteFileByNameResponse = DeleteFileByNameResponses[keyof DeleteFileByNameResponses];
 
-export type GetFileByIdData = {
-  body?: never;
-  path: {
-    id: string;
-  };
-  query?: never;
-  url: "/file/{id}";
-};
-
-export type GetFileByIdErrors = {
-  /**
-   * Unauthorized
-   */
-  401: ErrorResponse;
-  /**
-   * Not Found
-   */
-  404: ErrorResponse;
-  /**
-   * Internal Server Error
-   */
-  500: ErrorResponse;
-};
-
-export type GetFileByIdError = GetFileByIdErrors[keyof GetFileByIdErrors];
-
-export type GetFileByIdResponses = {
-  /**
-   * The file's metadata.
-   */
-  200: File;
-};
-
-export type GetFileByIdResponse = GetFileByIdResponses[keyof GetFileByIdResponses];
-
-export type PatchFileByIdData = {
+export type PatchFileByNameData = {
   body: {
-    filename?: string;
-    tags?: Array<string>;
+    name: string;
   };
   path: {
-    id: string;
+    name: string;
   };
   query?: never;
-  url: "/file/{id}";
+  url: "/file/{name}";
 };
 
-export type PatchFileByIdErrors = {
+export type PatchFileByNameErrors = {
   /**
    * Bad Request
    */
@@ -631,46 +918,13 @@ export type PatchFileByIdErrors = {
   500: ErrorResponse;
 };
 
-export type PatchFileByIdError = PatchFileByIdErrors[keyof PatchFileByIdErrors];
+export type PatchFileByNameError = PatchFileByNameErrors[keyof PatchFileByNameErrors];
 
-export type PatchFileByIdResponses = {
+export type PatchFileByNameResponses = {
   /**
-   * The updated file.
+   * The renamed file.
    */
-  200: File;
+  200: FileMeta;
 };
 
-export type PatchFileByIdResponse = PatchFileByIdResponses[keyof PatchFileByIdResponses];
-
-export type GetFileByIdContentData = {
-  body?: never;
-  path: {
-    id: string;
-  };
-  query?: never;
-  url: "/file/{id}/content";
-};
-
-export type GetFileByIdContentErrors = {
-  /**
-   * Unauthorized
-   */
-  401: ErrorResponse;
-  /**
-   * Not Found
-   */
-  404: ErrorResponse;
-  /**
-   * Internal Server Error
-   */
-  500: ErrorResponse;
-};
-
-export type GetFileByIdContentError = GetFileByIdContentErrors[keyof GetFileByIdContentErrors];
-
-export type GetFileByIdContentResponses = {
-  /**
-   * The raw file bytes.
-   */
-  200: unknown;
-};
+export type PatchFileByNameResponse = PatchFileByNameResponses[keyof PatchFileByNameResponses];

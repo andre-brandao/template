@@ -5,10 +5,11 @@ export namespace Identifier {
   export const prefixes = {
     user: "usr",
     provider: "prv",
+    project: "prj",
     todo: "tod",
     key: "key",
     event: "evt",
-    file: "fil",
+    job: "job",
   } as const;
 
   export function create(prefix: keyof typeof prefixes, given?: string): string {

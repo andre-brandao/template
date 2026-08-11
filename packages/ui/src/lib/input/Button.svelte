@@ -6,18 +6,20 @@
 		variant = 'primary',
 		type = 'button',
 		pending = false,
+		disabled = false,
 		onclick,
 		children
 	}: {
 		variant?: 'primary' | 'secondary' | 'danger' | 'ghost';
 		type?: 'button' | 'submit' | 'reset';
 		pending?: boolean;
+		disabled?: boolean;
 		onclick?: (e: MouseEvent) => void;
 		children: Snippet;
 	} = $props();
 </script>
 
-<button {type} class={variant} disabled={pending} aria-busy={pending} {onclick}>
+<button {type} class={variant} disabled={pending || disabled} aria-busy={pending} {onclick}>
 	{#if pending}
 		<Spinner />
 	{/if}

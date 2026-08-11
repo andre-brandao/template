@@ -1,6 +1,6 @@
 /// <reference lib="dom" />
 
-import { describe, expect, test } from "bun:test";
+import { describe, expect, mock, test } from "bun:test";
 import { render } from "@testing-library/svelte";
 import { createRawSnippet } from "svelte";
 
@@ -39,6 +39,29 @@ describe("Drawer", () => {
     });
     const dialog = container.querySelector("dialog") as HTMLDialogElement;
     expect(dialog.open).toBe(false);
+  });
+
+  test("onclose fires when the dialog closes itself", () => {
+    const onclose = mock(() => {});
+    const { container } = render(Drawer, {
+      open: true,
+      onclose,
+      children: createRawSnippet(() => ({ render: () => `<p>Body</p>` })),
+    });
+    (container.querySelector("dialog") as HTMLDialogElement).close();
+    expect(onclose).toHaveBeenCalledTimes(1);
+  });
+
+  test("onclose also fires when the parent drives open to false", async () => {
+    const onclose = mock(() => {});
+    const { container, rerender } = render(Drawer, {
+      open: true,
+      onclose,
+      children: createRawSnippet(() => ({ render: () => `<p>Body</p>` })),
+    });
+    await rerender({ open: false });
+    expect((container.querySelector("dialog") as HTMLDialogElement).open).toBe(false);
+    expect(onclose).toHaveBeenCalledTimes(1);
   });
 
   test("side sets the class used for left/right positioning", () => {

@@ -1,6 +1,7 @@
 /// <reference path="../../.sst/platform/config.d.ts" />
 import { database, hyperdrive } from "./database";
 import { files } from "./storage";
+import { jobs } from "./queue";
 import { environment } from "./secrets";
 import { subdomain } from "./stage";
 
@@ -9,7 +10,7 @@ const api = new sst.cloudflare.Worker("Api", {
   domain: subdomain("api"),
   url: true,
   environment,
-  link: [database, hyperdrive, files],
+  link: [database, hyperdrive, files, jobs],
   placement: {
     region: "aws:sa-east-1",
   },

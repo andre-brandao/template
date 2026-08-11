@@ -1,7 +1,9 @@
+<script module lang="ts">
+	export type Option = { value: string; label: string; hint?: string };
+</script>
+
 <script lang="ts">
 	import type { HTMLSelectAttributes } from 'svelte/elements';
-
-	type Option = { value: string; label: string; hint?: string };
 
 	let { options, ...rest }: { options: Option[] } & HTMLSelectAttributes = $props();
 </script>

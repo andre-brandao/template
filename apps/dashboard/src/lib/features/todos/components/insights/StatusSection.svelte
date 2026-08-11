@@ -1,10 +1,10 @@
 <script lang="ts">
-	import type { Range } from '@template/ui';
+	import type { Insights } from '@template/core/todo';
 	import { getStatus } from '../../api/insights.remote';
 	import Section from './Section.svelte';
 	import StatusChart from './StatusChart.svelte';
 
-	let { range }: { range: Range } = $props();
+	let { range }: { range: Insights.Range } = $props();
 
 	const status = $derived(await getStatus(range));
 </script>

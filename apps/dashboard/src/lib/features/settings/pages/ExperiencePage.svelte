@@ -3,6 +3,7 @@
 	import { Select } from '@template/ui';
 	import { Locales, Prefs, type Patch } from '@template/core/user/prefs';
 	import { user } from '$lib/utils/context';
+	import Header from '$lib/components/Header.svelte';
 	import { save } from '../api/prefs.remote';
 	import ThemePicker from '../components/ThemePicker.svelte';
 	import Formats from '../components/Formats.svelte';
@@ -31,7 +32,7 @@
 	}
 </script>
 
-<h1>Experience</h1>
+<Header title="Experience" />
 
 <h2>Appearance</h2>
 <p class="lead">Pick a colour scheme, or follow whatever your device is set to.</p>
@@ -54,11 +55,6 @@
 <Formats {prefs} onpick={pick} />
 
 <style>
-	h1 {
-		margin: 0 0 1em;
-		font-size: 1.4em;
-	}
-
 	h2 {
 		margin: 2.25em 0 0.4em;
 		font-size: 1.1em;

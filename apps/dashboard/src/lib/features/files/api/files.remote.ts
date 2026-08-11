@@ -1,42 +1,29 @@
-import { query } from "$app/server";
+import { form, query } from "$app/server";
+import { invalid } from "@sveltejs/kit";
 import { z } from "zod";
-import { File } from "@template/core/file";
-import { auth, remote } from "$lib/server/remote";
+import { Actor } from "@template/core/actor";
+import { Storage } from "@template/core/storage";
+import { auth } from "$lib/server/remote";
+import { key } from "$lib/server/files";
 
-export const getFiles = query(
-  z.object({
-    q: z.string().optional(),
-    tag: z.string().optional(),
-    page: z.number().optional(),
-  }),
+/** Whatever is under the user's prefix, newest first — `Storage.Entry` straight through. */
+export const getFiles = query(async () => {
+  auth();
+  const rows = await Storage.disk().list(`${Actor.userID()}/`);
+  return rows.sort((a, b) => (b.lastModified?.getTime() ?? 0) - (a.lastModified?.getTime() ?? 0));
+});
+
+export const renameFile = form(
+  z.object({ name: z.string(), to: z.string().trim().min(1).max(255) }),
   async (input) => {
     auth();
-    return File.list({
-      search: input.q,
-      tags: input.tag ? [input.tag] : undefined,
-      page: input.page,
-    });
+    const from = key(input.name);
+    if (!(await Storage.disk().exists(from))) invalid("That file no longer exists");
+    await Storage.disk().move(from, key(input.to));
   },
 );
 
-export const updateFile = remote(File.update)
-  .with(
-    z.object({
-      id: File.Info.shape.id,
-      filename: z.string().trim().min(1).max(255),
-      tags: z
-        .string()
-        .default("")
-        .transform((s) =>
-          s
-            .split(",")
-            .map((tag) => tag.trim())
-            .filter(Boolean),
-        ),
-    }),
-  )
-  .form();
-
-export const removeFile = remote(File.remove)
-  .with(z.object({ id: File.Info.shape.id }).transform((input) => input.id))
-  .form();
+export const removeFile = form(z.object({ name: z.string() }), async (input) => {
+  auth();
+  await Storage.disk().delete(key(input.name));
+});

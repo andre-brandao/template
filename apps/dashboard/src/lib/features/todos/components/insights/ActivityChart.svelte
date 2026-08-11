@@ -3,35 +3,49 @@
 </script>
 
 <script lang="ts">
-	import { Area, Axis, Chart, Highlight, Layer, Legend } from 'layerchart';
+	import { areaY, crosshair, defineChart, lineY } from '@tanstack/charts';
+	import { colorLegend } from '@tanstack/charts/legend';
+	import { scaleLinear } from '@tanstack/charts/scales/linear';
+	import { Chart } from '@tanstack/charts/svelte';
+	import { tooltip } from '@tanstack/charts/tooltip';
+	import { portal } from '@tanstack/charts/tooltip/portal';
+	import { scaleTime } from 'd3-scale';
 
 	let { series }: { series: Point[] } = $props();
 
 	const date = (point: Point) => new Date(`${point.day}T00:00:00`);
-	const short = (date: Date) => date.toLocaleDateString('en', { month: 'short', day: 'numeric' });
+	const short = (day: Date) => day.toLocaleDateString('en', { month: 'short', day: 'numeric' });
 	const whole = (value: number) => (Number.isInteger(value) ? String(value) : '');
+
+	const rows = $derived(
+		series.flatMap((point) => [
+			{ date: date(point), kind: 'Created', value: point.created },
+			{ date: date(point), kind: 'Completed', value: point.completed }
+		])
+	);
+
+	const definition = $derived(
+		defineChart({
+			marks: [
+				areaY(rows, { x: 'date', y1: 0, y2: 'value', z: 'kind', color: 'kind', fillOpacity: 0.1 }),
+				lineY(rows, { x: 'date', y: 'value', color: 'kind', strokeWidth: 2 }),
+				crosshair({ x: { strokeDasharray: '3 3' }, y: false })
+			],
+			x: { scale: scaleTime, axis: { ticks: { format: short } } },
+			y: { scale: scaleLinear, nice: true, grid: true, axis: { ticks: { count: 4, format: whole } } },
+			color: {
+				domain: ['Created', 'Completed'],
+				range: ['var(--series-1)', 'var(--series-2)'],
+				legend: colorLegend({ placement: 'bottom' })
+			},
+			focus: 'group-x',
+			tooltip: {
+				use: tooltip,
+				portal,
+				items: [{ channel: 'x', text: (point) => short(point.xValue as Date) }, { channel: 'y' }]
+			}
+		})
+	);
 </script>
 
-<Chart
-	data={series}
-	x={date}
-	yDomain={[0, null]}
-	yNice
-	series={[
-		{ key: 'created', label: 'Created', value: (point: Point) => point.created, color: 'var(--series-1)' },
-		{ key: 'completed', label: 'Completed', value: (point: Point) => point.completed, color: 'var(--series-2)' }
-	]}
-	tooltipContext={{ mode: 'bisect-x' }}
-	padding={{ left: 24, bottom: 24 }}
-	height={260}
->
-	<Layer>
-		<Axis placement="left" grid rule ticks={4} format={whole} />
-		<Axis placement="bottom" rule format={short} />
-		<Area seriesKey="created" class="fill-series-1/10" line={{ class: 'stroke-2 stroke-series-1' }} />
-		<Area seriesKey="completed" class="fill-series-2/10" line={{ class: 'stroke-2 stroke-series-2' }} />
-		<Highlight points lines />
-	</Layer>
-	<Legend placement="bottom" />
-	<!-- Tooltip.Root disabled: breaks under layerchart 2.0.0-next.66 + experimental async; Highlight still tracks hover -->
-</Chart>
+<Chart {definition} ariaLabel="Todos created and completed per day" height={300} />

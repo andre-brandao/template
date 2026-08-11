@@ -2,6 +2,7 @@
 
 import { Actor } from "@template/core/actor";
 import { Database, sql } from "@template/core/drizzle";
+import { Project } from "@template/core/project";
 import { Todo } from "@template/core/todo";
 import { Auth } from "@template/core/user/auth";
 import { Key } from "@template/core/key";
@@ -14,6 +15,18 @@ const count = Number(process.env.SEED_TODO_COUNT ?? 260);
 const days = Number(process.env.SEED_DAYS ?? 365);
 const DAY = 86_400_000;
 const now = Date.now();
+
+/** How far back the planned work goes — everything older is history without a stage. */
+const PLANNED = 112 * DAY;
+const SPRINT = 14 * DAY;
+
+const team = [
+  { email: "ana@example.com", name: "Ana Ribeiro" },
+  { email: "bruno@example.com", name: "Bruno Costa" },
+  { email: "cami@example.com", name: "Cami Duarte" },
+];
+
+const projects = ["Website relaunch", "Mobile app", "Internal tools"];
 
 const verbs = [
   "Review",
@@ -68,34 +81,90 @@ function when() {
   return new Date(midnight - (midnight % DAY) + rand(8, 22) * 3_600_000);
 }
 
-function status() {
+/** The sprint covering an instant, numbered from the start of the planned window. */
+function stage(at: number) {
+  return `Sprint ${Math.floor((at - (now - PLANNED)) / SPRINT) + 1}`;
+}
+
+/**
+ * Weighted by how long ago the work was due: settled in the past, in flight around
+ * now, untouched in the future. Keeps the board, the pipeline and the burn-down
+ * looking like a team that is actually working.
+ */
+function roll<const T>(odds: [number, T][], rest: T) {
   const r = Math.random();
-  if (r < 0.45) return "done";
-  if (r < 0.65) return "in_progress";
-  return "pending";
+  return odds.find(([p]) => r < p)?.[1] ?? rest;
+}
+
+function status(due: number) {
+  if (due < now - 3 * DAY)
+    return roll(
+      [
+        [0.85, "done"],
+        [0.95, "blocked"],
+      ],
+      "active",
+    );
+  if (due < now + SPRINT)
+    return roll(
+      [
+        [0.3, "done"],
+        [0.6, "active"],
+        [0.75, "blocked"],
+      ],
+      "planned",
+    );
+  return roll([[0.6, "backlog"]], "planned");
 }
 
 const result = await Database.provide(url, async () => {
   const userID = await Auth.provision({ provider: "email", accountId: email, email, name });
   const key = await Key.create({ userID, name: "seed" });
+  const mates = await Promise.all(
+    team.map((one) =>
+      Auth.provision({ provider: "email", accountId: one.email, email: one.email, name: one.name }),
+    ),
+  );
+  // Unassigned shows up as its own lane in the board and the load chart.
+  const assignees = [userID, ...mates, null, ...mates];
 
   await Actor.provide("user", { userID }, async () => {
     const list = await Todo.list({ page: 1, pageSize: 100 });
     if (list.total > 0) return;
 
+    const ids = await Promise.all(projects.map((project) => Project.create({ name: project })));
+
     await Promise.all(
       Array.from({ length: count }, async () => {
         const at = when();
-        const s = status();
-        const due = new Date(at.getTime() + rand(1, 30) * DAY);
-        const done = s === "done" ? new Date(rand(at.getTime(), now)) : at;
-        const id = await Todo.create({ title: title(), status: s, dueDate: due.toISOString() });
-        // Todo.create stamps time_created to now; backdate it (and completion) here.
+        const sourceID = pick(ids);
+        const planned = at.getTime() > now - PLANNED;
+        // Planned work starts a few days after it lands and runs for a week or two.
+        const start = at.getTime() + rand(0, 4) * DAY;
+        const due = start + rand(3, 16) * DAY;
+        const state = planned ? status(due) : Math.random() < 0.9 ? "done" : "blocked";
+        const started = state === "backlog" || state === "planned" ? null : new Date(start);
+        const done = state === "done" ? new Date(rand(start, Math.min(due, now))) : null;
+
+        const id = await Todo.create({
+          title: title(),
+          status: state,
+          source: "project",
+          sourceID,
+          assignee: pick(assignees),
+          stage: planned ? stage(start) : undefined,
+          startDate: planned ? new Date(start).toISOString() : undefined,
+          dueDate: new Date(due).toISOString(),
+        });
+
+        // Todo.create stamps the clock to now; backdate the whole trail here.
         await Database.use((tx) =>
           tx.execute(sql`
             update todo
             set time_created = ${at.toISOString()}::timestamptz,
-                time_updated = ${done.toISOString()}::timestamptz
+                time_updated = ${(done ?? at).toISOString()}::timestamptz,
+                time_started = ${started?.toISOString() ?? null}::timestamptz,
+                time_done = ${done?.toISOString() ?? null}::timestamptz
             where id = ${id}
           `),
         );

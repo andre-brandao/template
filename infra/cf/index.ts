@@ -1,6 +1,7 @@
 export * as dashboard from "./dashboard";
 export * as database from "./database";
 export * as storage from "./storage";
+export * as queue from "./queue";
 export * as auth from "./auth";
 export * as api from "./api";
 export * as mcp from "./mcp";

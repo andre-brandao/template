@@ -1,8 +1,8 @@
 <script lang="ts">
 	import type { User } from '@template/core/user';
 	import { Button, FormBoundary, Input } from '@template/ui';
-	import Avatar from '$lib/components/Avatar.svelte';
-	import { rename } from '../api/profile.remote';
+	import AvatarUpload from '$lib/components/AvatarUpload.svelte';
+	import { getMe, rename } from '../api/profile.remote';
 
 	let { user }: { user: User.Info } = $props();
 
@@ -12,7 +12,13 @@
 </script>
 
 <div class="head">
-	<Avatar name={user.name} image={user.image} size={56} />
+	<AvatarUpload
+		name={user.name}
+		image={user.image}
+		url="/avatars/user/{user.id}"
+		size={56}
+		onchange={() => getMe().refresh()}
+	/>
 	<div class="who">
 		<span class="email">{user.email}</span>
 		<span class="sub">{verified}</span>

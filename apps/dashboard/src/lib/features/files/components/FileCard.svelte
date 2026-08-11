@@ -1,24 +1,19 @@
 <script lang="ts">
 	import { Button, Card } from '@template/ui';
-	import type { File } from '@template/core/file';
+	import type { Storage } from '@template/core/storage';
 	import { fmt } from '$lib/utils/fmt';
 	import { size } from '$lib/utils/size';
 	import { removeFile } from '../api/files.remote';
 
-	let {
-		file,
-		ontag,
-		onedit
-	}: { file: File.Info; ontag: (tag: string) => void; onedit: () => void } = $props();
+	let { file, onedit }: { file: Storage.Entry; onedit: () => void } = $props();
 
 	const f = fmt();
-	const remove = $derived(removeFile.for(file.id));
-	const image = $derived(file.contentType.startsWith('image/'));
-	const kind = $derived(
-		file.filename.includes('.')
-			? (file.filename.split('.').at(-1) ?? '')
-			: (file.contentType.split('/').at(-1) ?? 'file')
-	);
+	const name = $derived(file.key.split('/').at(-1) ?? file.key);
+	const href = $derived(`/files/${encodeURIComponent(name)}`);
+	const remove = $derived(removeFile.for(file.key));
+	// No metadata table, so `list` can't report a content type — the extension is all we have.
+	const kind = $derived(name.includes('.') ? (name.split('.').at(-1) ?? 'file') : 'file');
+	const image = $derived(/\.(png|jpe?g|gif|webp|avif|svg)$/i.test(name));
 </script>
 
 <Card interactive>
@@ -28,35 +23,31 @@
 
 	<div class="row">
 		{#if image}
-			<img src="/files/{file.id}" alt={file.filename} loading="lazy" />
+			<img src={href} alt={name} loading="lazy" />
 		{:else}
 			<span class="kind">{kind}</span>
 		{/if}
 
 		<div class="info">
-			<span class="name">{file.filename}</span>
+			<span class="name">{name}</span>
 			<span class="meta">
-				{size(file.size)} · {file.contentType} · {f.ago(file.timeCreated)}
+				{size(file.size)}
+				{#if file.lastModified}
+					· {f.ago(file.lastModified.toISOString())}
+				{/if}
 			</span>
-			{#if file.tags.length > 0}
-				<span class="tags">
-					{#each file.tags as tag (tag)}
-						<button class="tag" type="button" onclick={() => ontag(tag)}>{tag}</button>
-					{/each}
-				</span>
-			{/if}
 		</div>
 
 		<div class="actions">
-			<a class="download" href="/files/{file.id}" download={file.filename}>Download</a>
-			<Button variant="ghost" onclick={onedit}>Edit</Button>
+			<a class="download" {href} download={name}>Download</a>
+			<Button variant="ghost" onclick={onedit}>Rename</Button>
 			<form
 				{...remove.enhance(async (f) => {
-					if (!confirm(`Delete ${file.filename}?`)) return;
+					if (!confirm(`Delete ${name}?`)) return;
 					await f.submit();
 				})}
 			>
-				<input {...remove.fields.id.as('hidden', file.id)} />
+				<input {...remove.fields.name.as('hidden', name)} />
 				<Button variant="danger" type="submit" pending={!!remove.pending}>Delete</Button>
 			</form>
 		</div>
@@ -120,28 +111,6 @@
 		color: var(--dim);
 		font-size: 0.78em;
 		font-family: var(--font-mono);
-	}
-
-	.tags {
-		display: inline-flex;
-		flex-wrap: wrap;
-		gap: 0.35em;
-	}
-
-	.tag {
-		border: 1px solid var(--border);
-		background: var(--surface-2);
-		color: var(--muted);
-		border-radius: 999px;
-		font-family: var(--font-mono);
-		font-size: 0.72em;
-		padding: 0.2em 0.55em;
-		cursor: pointer;
-	}
-
-	.tag:hover {
-		border-color: var(--accent);
-		color: var(--ink);
 	}
 
 	.actions {

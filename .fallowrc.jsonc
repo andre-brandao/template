@@ -17,10 +17,17 @@
   "ignorePatterns": ["**/*.gen.ts"],
   // infra/*/stage.ts share a small boilerplate header across cloud targets
   // (aws, cf); the overlap is stage-setup wiring, not logic worth extracting.
+  // Stages/Recent share list-chrome CSS: the row layouts differ, and keeping each
+  // card self-contained beats extracting presentation coincidence.
   "duplicates": {
-    "ignore": ["infra/**"],
+    "ignore": [
+      "infra/**",
+      "apps/dashboard/src/lib/features/todos/components/Stages.svelte",
+      "apps/dashboard/src/lib/features/todos/components/Recent.svelte",
+    ],
   },
   "health": {
+    "maxCrap": 69,
     "thresholdOverrides": [
       {
         "files": ["**/*.svelte"],
@@ -119,12 +126,13 @@
         "from": "server",
         "allow": ["shared", "core", "functions"],
       },
-      // Shared stays a runtime leaf, but may name core's contracts (`User.Info`,
-      // `Prefs`) in its types — an erased import ships nothing and keeps the
+      // Shared may compose design-system primitives — ui is a leaf like shared
+      // itself, so no back-flow — and may name core's contracts (`User.Info`,
+      // `Prefs`) in its types: an erased import ships nothing and keeps the
       // context/prop shapes from drifting away from what the server hands over.
       {
         "from": "shared",
-        "allow": [],
+        "allow": ["ui"],
         "allowTypeOnly": ["core"],
       },
       // Backend / design-system layering. Dependencies flow one way toward core;

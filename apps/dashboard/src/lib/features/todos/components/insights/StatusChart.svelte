@@ -1,52 +1,44 @@
 <script lang="ts">
-	import { color, label } from '../../state';
+	import type { Todo } from '@template/core/todo';
+	import { defineChart } from '@tanstack/charts';
+	import { colorLegend } from '@tanstack/charts/legend';
+	import { pie, polar, radialArc } from '@tanstack/charts/polar';
+	import { Chart } from '@tanstack/charts/svelte';
+	import { tooltip } from '@tanstack/charts/tooltip';
+	import { portal } from '@tanstack/charts/tooltip/portal';
+	import { color, label } from '../../status';
 
-	let { rows }: { rows: { state: 'open' | 'closed'; total: number; pct: number }[] } = $props();
+	type Row = { status: Todo.Status; total: number; pct: number };
+
+	let { rows }: { rows: Row[] } = $props();
+
+	const definition = $derived(
+		defineChart({
+			marks: [
+				polar({
+					inset: 4,
+					marks: [
+						radialArc(pie(rows, { value: 'total' }), {
+							innerRadius: ({ radius }) => radius * 0.6,
+							cornerRadius: 3,
+							color: (slice) => label(slice.status),
+							key: 'status'
+						})
+					]
+				})
+			],
+			color: {
+				domain: rows.map((row) => label(row.status)),
+				range: rows.map((row) => color(row.status)),
+				legend: colorLegend({ placement: 'bottom' })
+			},
+			tooltip: {
+				use: tooltip,
+				portal,
+				format: (point) => `${point.datum.total} ${label(point.datum.status)}`
+			}
+		})
+	);
 </script>
 
-<!-- Plain HTML bars: layerchart's Bars mark infinite-loops on client render (2.0.0-next.66). -->
-<div class="bars">
-	{#each rows as row (row.state)}
-		<span class="name">{label(row.state)}</span>
-		<span class="track">
-			<span class="bar" style:width="{row.pct}%" style:background={color(row.state)}></span>
-		</span>
-		<span class="count">{row.total}</span>
-	{/each}
-</div>
-
-<style>
-	.bars {
-		display: grid;
-		grid-template-columns: auto 1fr auto;
-		align-items: center;
-		gap: 0.6em 0.9em;
-	}
-
-	.name {
-		font-size: 0.85em;
-		color: var(--muted);
-	}
-
-	.track {
-		height: 1.4em;
-		background: var(--surface-2);
-		border-radius: 4px;
-		overflow: hidden;
-	}
-
-	.bar {
-		display: block;
-		height: 100%;
-		border-radius: 4px;
-		transition: width 0.3s ease;
-	}
-
-	.count {
-		font-family: var(--font-mono);
-		font-size: 0.85em;
-		color: var(--muted);
-		min-width: 2ch;
-		text-align: right;
-	}
-</style>
+<Chart {definition} ariaLabel="Todos by status" height={300} />

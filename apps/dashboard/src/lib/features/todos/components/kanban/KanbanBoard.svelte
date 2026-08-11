@@ -1,31 +1,34 @@
 <script lang="ts">
 	import type { Todo } from '@template/core/todo';
 	import TodoCard from '../card/TodoCard.svelte';
-	import { color, label } from '../../state';
+	import { group, type By } from '../../group';
 
-	let { todos }: { todos: Todo.Info[] } = $props();
-	const states = ['open', 'closed'] as const;
+	let { todos, by = 'status' }: { todos: Todo.Info[]; by?: By } = $props();
+
+	const columns = $derived(group(todos, by));
 </script>
 
 <div class="board">
-	{#each states as state (state)}
-		{@const items = todos.filter((t) => t.state === state)}
+	{#each columns as column (column.key)}
 		<div class="column">
 			<div class="column-head">
-				<span class="dot" style:background={color(state)}></span>
-				<span class="title">{label(state)}</span>
-				<span class="count">{items.length}</span>
+				<span class="dot" style:background={column.color ?? 'var(--border-bright)'}></span>
+				<span class="title">{column.label}</span>
+				<span class="count">{column.items.length}</span>
 			</div>
 			<div class="column-body">
-				{#each items as todo (todo.id)}
+				{#each column.items as todo (todo.id)}
 					<TodoCard {todo} />
 				{/each}
-				{#if items.length === 0}
+				{#if column.items.length === 0}
 					<p class="empty">No tasks</p>
 				{/if}
 			</div>
 		</div>
 	{/each}
+	{#if columns.length === 0}
+		<p class="empty">No tasks match this filter</p>
+	{/if}
 </div>
 
 <style>
@@ -65,11 +68,15 @@
 		width: 7px;
 		height: 7px;
 		border-radius: 50%;
+		flex-shrink: 0;
 	}
 
 	.title {
 		color: var(--ink);
 		flex: 1;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 
 	.count {

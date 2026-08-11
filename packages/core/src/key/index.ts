@@ -7,6 +7,7 @@ import { Common } from "../common";
 import { Database } from "../drizzle";
 import { Examples } from "../examples";
 import { Identifier } from "../identifier";
+import { memo } from "../util/memo";
 import { KeyTable } from "./key.sql";
 
 const CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -64,15 +65,76 @@ export namespace Key {
       ),
   );
 
-  /** Resolves a secret to its user, stamping `time_used` in the same round-trip. */
+  /**
+   * Resolves a secret to its user, stamping `time_used` in the same round-trip.
+   * `api` only — a signing key is not a bearer token, even though both live here.
+   */
   export const verify = fn(z.string(), (key) =>
     Database.use((tx) =>
       tx
         .update(KeyTable)
         .set({ timeUsed: new Date() })
-        .where(and(eq(KeyTable.key, key), isNull(KeyTable.timeDeleted), live()))
+        .where(
+          and(
+            eq(KeyTable.key, key),
+            eq(KeyTable.type, "api"),
+            isNull(KeyTable.timeDeleted),
+            live(),
+          ),
+        )
         .returning({ userID: KeyTable.userID })
         .then((rows) => rows.at(0)?.userID ?? null),
+    ),
+  );
+
+  /**
+   * The app's URL-signing key, minted on first use and cached for the process. The row
+   * has no user, so `list` and `remove` can't reach it. Two processes racing the first
+   * mint just leaves two usable keys — the signature carries the id that signed it.
+   */
+  export const signing = memo(async () => {
+    const existing = await Database.use((tx) =>
+      tx
+        .select()
+        .from(KeyTable)
+        .where(and(eq(KeyTable.type, "signing"), isNull(KeyTable.timeDeleted), live()))
+        .orderBy(desc(KeyTable.timeCreated))
+        .limit(1)
+        .then((rows) => rows.at(0)),
+    );
+    if (existing) return { id: existing.id, secret: existing.key };
+
+    const made = await Database.use((tx) =>
+      tx
+        .insert(KeyTable)
+        .values({
+          id: Identifier.create("key"),
+          userID: null,
+          name: "url-signing",
+          key: token(),
+          type: "signing",
+        })
+        .returning()
+        .then((rows) => rows[0]!),
+    );
+    return { id: made.id, secret: made.key };
+  });
+
+  /** The secret behind a signing key id — the verifying half, for routes checking a URL. */
+  export const secret = fn(Info.shape.id, (id) =>
+    Database.use((tx) =>
+      tx
+        .select({ key: KeyTable.key })
+        .from(KeyTable)
+        .where(
+          and(
+            eq(KeyTable.id, id),
+            eq(KeyTable.type, "signing"),
+            isNull(KeyTable.timeDeleted),
+            live(),
+          ),
+        )
+        .then((rows) => rows.at(0)?.key ?? null),
     ),
   );
 
@@ -85,7 +147,14 @@ export namespace Key {
       tx
         .select()
         .from(KeyTable)
-        .where(and(eq(KeyTable.userID, Actor.userID()), isNull(KeyTable.timeDeleted), live()))
+        .where(
+          and(
+            eq(KeyTable.userID, Actor.userID()),
+            eq(KeyTable.type, "api"),
+            isNull(KeyTable.timeDeleted),
+            live(),
+          ),
+        )
         .orderBy(desc(KeyTable.timeCreated))
         .then((rows) => rows.map((row) => serialize(row, current))),
     ),

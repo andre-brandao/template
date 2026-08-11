@@ -1,31 +1,18 @@
 <script lang="ts">
-	import SettingsNav from '$lib/features/settings/components/SettingsNav.svelte';
+	import Shell from '$lib/components/layout/Shell.svelte';
 
 	let { children } = $props();
+
+	const sections = [
+		{
+			title: 'User',
+			items: [
+				{ href: '/settings/profile', label: 'Profile' },
+				{ href: '/settings/experience', label: 'Experience' }
+			]
+		},
+		{ title: 'Workspace', items: [{ href: '/settings/keys', label: 'API keys' }] }
+	];
 </script>
 
-<div class="settings">
-	<SettingsNav />
-	<section>{@render children()}</section>
-</div>
-
-<style>
-	.settings {
-		display: flex;
-		align-items: start;
-		gap: 2.5em;
-	}
-
-	section {
-		flex: 1;
-		min-width: 0;
-		max-width: 46em;
-	}
-
-	@media (max-width: 700px) {
-		.settings {
-			flex-direction: column;
-			gap: 1.5em;
-		}
-	}
-</style>
+<Shell back={{ href: '/todos', label: 'Back' }} {sections}>{@render children()}</Shell>

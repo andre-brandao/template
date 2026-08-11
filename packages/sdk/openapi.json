@@ -90,7 +90,7 @@
           }
         },
         "required": ["type", "code", "message"],
-        "description": "Not found error"
+        "description": "Permission error"
       },
       "Key": {
         "type": "object",
@@ -164,8 +164,69 @@
             "description": "Unique object identifier.\nThe format and length of IDs may change over time.",
             "example": "tod_XXXXXXXXXXXXXXXXXXXXXXXXX"
           },
-          "userID": {
+          "createdBy": {
             "type": "string"
+          },
+          "assignee": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "image": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": ["id", "name", "image"]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "source": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "sourceID": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "stage": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "title": {
             "type": "string",
@@ -183,15 +244,15 @@
               }
             ]
           },
-          "state": {
+          "status": {
             "type": "string",
-            "enum": ["open", "closed"]
+            "enum": ["backlog", "planned", "active", "blocked", "done"]
           },
-          "stateReason": {
+          "reason": {
             "anyOf": [
               {
                 "type": "string",
-                "enum": ["completed", "not_planned"]
+                "maxLength": 200
               },
               {
                 "type": "null"
@@ -206,6 +267,18 @@
               "minLength": 1,
               "maxLength": 64
             }
+          },
+          "startDate": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "dueDate": {
             "anyOf": [
@@ -218,66 +291,211 @@
                 "type": "null"
               }
             ]
+          },
+          "timeStarted": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "timeDone": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
-        "required": ["id", "userID", "title", "body", "state", "stateReason", "tags", "dueDate"],
-        "description": "A todo item that belongs to a user.",
+        "required": [
+          "id",
+          "createdBy",
+          "assignee",
+          "source",
+          "sourceID",
+          "stage",
+          "title",
+          "body",
+          "status",
+          "reason",
+          "tags",
+          "startDate",
+          "dueDate",
+          "timeStarted",
+          "timeDone"
+        ],
+        "description": "A unit of work, owned by whatever entity created it.",
         "example": {
           "id": "tod_XXXXXXXXXXXXXXXXXXXXXXXXX",
-          "userID": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX",
+          "createdBy": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX",
+          "assignee": {
+            "id": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX",
+            "name": "John Doe",
+            "image": null
+          },
+          "source": "project",
+          "sourceID": "prj_XXXXXXXXXXXXXXXXXXXXXXXXX",
+          "stage": "Sprint 1",
           "title": "Write the quarterly report",
           "body": null,
-          "state": "open",
-          "stateReason": null,
+          "status": "active",
+          "reason": null,
           "tags": [],
-          "dueDate": null
+          "startDate": "2026-06-07T00:00:00.000Z",
+          "dueDate": "2026-06-14T00:00:00.000Z",
+          "timeStarted": "2026-06-07T09:12:00.000Z",
+          "timeDone": null
         }
       },
-      "File": {
+      "Stage": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "total": {
+            "type": "number"
+          },
+          "done": {
+            "type": "number"
+          },
+          "start": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "end": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": ["name", "total", "done", "start", "end"],
+        "description": "A stage label, with the span and counts derived from its todos."
+      },
+      "Project": {
         "type": "object",
         "properties": {
           "id": {
             "type": "string",
             "description": "Unique object identifier.\nThe format and length of IDs may change over time.",
-            "example": "fil_XXXXXXXXXXXXXXXXXXXXXXXXX"
+            "example": "prj_XXXXXXXXXXXXXXXXXXXXXXXXX"
           },
-          "userID": {
+          "createdBy": {
             "type": "string"
           },
-          "filename": {
-            "type": "string"
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
           },
-          "contentType": {
+          "description": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": ["id", "createdBy", "name", "description"],
+        "description": "A container for todos. Todos point at it through source/sourceID.",
+        "example": {
+          "id": "prj_XXXXXXXXXXXXXXXXXXXXXXXXX",
+          "createdBy": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX",
+          "name": "Quarterly close",
+          "description": null
+        }
+      },
+      "FileMeta": {
+        "type": "object",
+        "properties": {
+          "key": {
             "type": "string"
           },
           "size": {
             "type": "number"
           },
-          "tags": {
-            "maxItems": 20,
-            "type": "array",
-            "items": {
-              "type": "string",
-              "minLength": 1,
-              "maxLength": 64
-            }
+          "lastModified": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
-          "timeCreated": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+          "contentType": {
+            "type": "string"
           }
         },
-        "required": ["id", "userID", "filename", "contentType", "size", "tags", "timeCreated"],
-        "description": "An uploaded file that belongs to a user.",
+        "required": ["key", "size", "lastModified", "contentType"],
+        "description": "An object on the user's storage disk, with its content type.",
         "example": {
-          "id": "fil_XXXXXXXXXXXXXXXXXXXXXXXXX",
-          "userID": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX",
-          "filename": "screenshot.png",
-          "contentType": "image/png",
+          "key": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX/screenshot.png",
           "size": 102400,
-          "tags": [],
-          "timeCreated": "2026-06-07T00:00:00.000Z"
+          "lastModified": "2026-06-07T00:00:00.000Z",
+          "contentType": "image/png"
+        }
+      },
+      "File": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "size": {
+            "type": "number"
+          },
+          "lastModified": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": ["key", "size", "lastModified"],
+        "description": "An object on the user's storage disk.",
+        "example": {
+          "key": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX/screenshot.png",
+          "size": 102400,
+          "lastModified": "2026-06-07T00:00:00.000Z"
         }
       }
     }
@@ -591,7 +809,7 @@
         "operationId": "getTodo",
         "tags": ["Todo"],
         "summary": "List todos",
-        "description": "List the current user's todos, optionally filtered by state. Paginated.",
+        "description": "List todos, optionally narrowed by status, assignee, stage or owning entity. Paginated.",
         "responses": {
           "200": {
             "content": {
@@ -625,13 +843,24 @@
                   "data": [
                     {
                       "id": "tod_XXXXXXXXXXXXXXXXXXXXXXXXX",
-                      "userID": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX",
+                      "createdBy": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX",
+                      "assignee": {
+                        "id": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX",
+                        "name": "John Doe",
+                        "image": null
+                      },
+                      "source": "project",
+                      "sourceID": "prj_XXXXXXXXXXXXXXXXXXXXXXXXX",
+                      "stage": "Sprint 1",
                       "title": "Write the quarterly report",
                       "body": null,
-                      "state": "open",
-                      "stateReason": null,
+                      "status": "active",
+                      "reason": null,
                       "tags": [],
-                      "dueDate": null
+                      "startDate": "2026-06-07T00:00:00.000Z",
+                      "dueDate": "2026-06-14T00:00:00.000Z",
+                      "timeStarted": "2026-06-07T09:12:00.000Z",
+                      "timeDone": null
                     }
                   ],
                   "page": 1,
@@ -693,10 +922,52 @@
           },
           {
             "in": "query",
-            "name": "state",
+            "name": "status",
             "schema": {
               "type": "string",
-              "enum": ["open", "closed"]
+              "enum": ["backlog", "planned", "active", "blocked", "done"]
+            }
+          },
+          {
+            "in": "query",
+            "name": "assignee",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "stage",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "sourceID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "createdBy",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "search",
+            "schema": {
+              "type": "string"
             }
           }
         ]
@@ -794,6 +1065,64 @@
                       "maxLength": 64
                     }
                   },
+                  "stage": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "maxLength": 64
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "assignee": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "source": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "maxLength": 64
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "sourceID": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": ["backlog", "planned", "active", "blocked", "done"]
+                  },
+                  "startDate": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
                   "dueDate": {
                     "anyOf": [
                       {
@@ -814,6 +1143,75 @@
         }
       }
     },
+    "/todo/stage": {
+      "get": {
+        "operationId": "getTodoStage",
+        "tags": ["Todo"],
+        "summary": "List stages",
+        "description": "The stage labels in use, with the span and counts derived from the todos in each.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Stage"
+                  }
+                }
+              }
+            },
+            "description": "The stages in use."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "authentication",
+                  "code": "unauthorized",
+                  "message": "Authentication required"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "internal",
+                  "code": "internal_error",
+                  "message": "Internal server error"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "parameters": [
+          {
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "sourceID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
     "/todo/{id}": {
       "get": {
         "operationId": "getTodoById",
@@ -828,13 +1226,24 @@
                 },
                 "example": {
                   "id": "tod_XXXXXXXXXXXXXXXXXXXXXXXXX",
-                  "userID": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX",
+                  "createdBy": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX",
+                  "assignee": {
+                    "id": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX",
+                    "name": "John Doe",
+                    "image": null
+                  },
+                  "source": "project",
+                  "sourceID": "prj_XXXXXXXXXXXXXXXXXXXXXXXXX",
+                  "stage": "Sprint 1",
                   "title": "Write the quarterly report",
                   "body": null,
-                  "state": "open",
-                  "stateReason": null,
+                  "status": "active",
+                  "reason": null,
                   "tags": [],
-                  "dueDate": null
+                  "startDate": "2026-06-07T00:00:00.000Z",
+                  "dueDate": "2026-06-14T00:00:00.000Z",
+                  "timeStarted": "2026-06-07T09:12:00.000Z",
+                  "timeDone": null
                 }
               }
             },
@@ -1015,6 +1424,44 @@
                       "maxLength": 64
                     }
                   },
+                  "stage": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "maxLength": 64
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": ["backlog", "planned", "active", "blocked", "done"]
+                  },
+                  "reason": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "maxLength": 200
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "startDate": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
                   "dueDate": {
                     "anyOf": [
                       {
@@ -1027,15 +1474,10 @@
                       }
                     ]
                   },
-                  "state": {
-                    "type": "string",
-                    "enum": ["open", "closed"]
-                  },
-                  "stateReason": {
+                  "assignee": {
                     "anyOf": [
                       {
-                        "type": "string",
-                        "enum": ["completed", "not_planned"]
+                        "type": "string"
                       },
                       {
                         "type": "null"
@@ -1122,103 +1564,12 @@
         ]
       }
     },
-    "/file": {
-      "post": {
-        "operationId": "postFile",
-        "tags": ["File"],
-        "summary": "Upload file",
-        "description": "Multipart form with a `file` field, plus optional `tags` (comma-separated).",
-        "requestBody": {
-          "content": {
-            "multipart/form-data": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "file": {
-                    "type": "string",
-                    "format": "binary"
-                  },
-                  "tags": {
-                    "type": "string"
-                  }
-                },
-                "required": ["file"]
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/File"
-                },
-                "example": {
-                  "id": "fil_XXXXXXXXXXXXXXXXXXXXXXXXX",
-                  "userID": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX",
-                  "filename": "screenshot.png",
-                  "contentType": "image/png",
-                  "size": 102400,
-                  "tags": [],
-                  "timeCreated": "2026-06-07T00:00:00.000Z"
-                }
-              }
-            },
-            "description": "The uploaded file."
-          },
-          "400": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "validation",
-                  "code": "invalid_parameter",
-                  "message": "The request was invalid"
-                }
-              }
-            },
-            "description": "Bad Request"
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "authentication",
-                  "code": "unauthorized",
-                  "message": "Authentication required"
-                }
-              }
-            },
-            "description": "Unauthorized"
-          },
-          "500": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "internal",
-                  "code": "internal_error",
-                  "message": "Internal server error"
-                }
-              }
-            },
-            "description": "Internal Server Error"
-          }
-        }
-      },
+    "/project": {
       "get": {
-        "operationId": "getFile",
-        "tags": ["File"],
-        "summary": "List files",
-        "description": "The user's files, newest first. Filter by tags (comma-separated) or search.",
+        "operationId": "getProject",
+        "tags": ["Project"],
+        "summary": "List projects",
+        "description": "List projects, optionally filtered by name. Paginated.",
         "responses": {
           "200": {
             "content": {
@@ -1229,7 +1580,7 @@
                     "data": {
                       "type": "array",
                       "items": {
-                        "$ref": "#/components/schemas/File"
+                        "$ref": "#/components/schemas/Project"
                       }
                     },
                     "page": {
@@ -1251,13 +1602,10 @@
                 "example": {
                   "data": [
                     {
-                      "id": "fil_XXXXXXXXXXXXXXXXXXXXXXXXX",
-                      "userID": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX",
-                      "filename": "screenshot.png",
-                      "contentType": "image/png",
-                      "size": 102400,
-                      "tags": [],
-                      "timeCreated": "2026-06-07T00:00:00.000Z"
+                      "id": "prj_XXXXXXXXXXXXXXXXXXXXXXXXX",
+                      "createdBy": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX",
+                      "name": "Quarterly close",
+                      "description": null
                     }
                   ],
                   "page": 1,
@@ -1266,22 +1614,7 @@
                 }
               }
             },
-            "description": "A page of files."
-          },
-          "400": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "validation",
-                  "code": "invalid_parameter",
-                  "message": "The request was invalid"
-                }
-              }
-            },
-            "description": "Bad Request"
+            "description": "A page of projects."
           },
           "401": {
             "content": {
@@ -1334,36 +1667,126 @@
           },
           {
             "in": "query",
-            "name": "tags",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "query",
             "name": "search",
             "schema": {
               "type": "string"
             }
           }
         ]
-      }
-    },
-    "/file/{id}": {
-      "get": {
-        "operationId": "getFileById",
-        "tags": ["File"],
-        "summary": "Get file metadata",
+      },
+      "post": {
+        "operationId": "postProject",
+        "tags": ["Project"],
+        "summary": "Create project",
         "responses": {
           "200": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/File"
+                  "$ref": "#/components/schemas/Project"
                 }
               }
             },
-            "description": "The file's metadata."
+            "description": "The created project."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "validation",
+                  "code": "invalid_parameter",
+                  "message": "The request was invalid"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "authentication",
+                  "code": "unauthorized",
+                  "message": "Authentication required"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "internal",
+                  "code": "internal_error",
+                  "message": "Internal server error"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "description": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "maxLength": 2000
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": ["name"]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/project/{id}": {
+      "get": {
+        "operationId": "getProjectById",
+        "tags": ["Project"],
+        "summary": "Get project",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Project"
+                },
+                "example": {
+                  "id": "prj_XXXXXXXXXXXXXXXXXXXXXXXXX",
+                  "createdBy": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX",
+                  "name": "Quarterly close",
+                  "description": null
+                }
+              }
+            },
+            "description": "The project."
           },
           "401": {
             "content": {
@@ -1423,20 +1846,19 @@
         ]
       },
       "patch": {
-        "operationId": "patchFileById",
-        "tags": ["File"],
-        "summary": "Update file",
-        "description": "Rename or re-tag a file.",
+        "operationId": "patchProjectById",
+        "tags": ["Project"],
+        "summary": "Update project",
         "responses": {
           "200": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/File"
+                  "$ref": "#/components/schemas/Project"
                 }
               }
             },
-            "description": "The updated file."
+            "description": "The updated project."
           },
           "400": {
             "content": {
@@ -1516,14 +1938,21 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "filename": {
-                    "type": "string"
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
                   },
-                  "tags": {
-                    "type": "array",
-                    "items": {
-                      "type": "string"
-                    }
+                  "description": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "maxLength": 2000
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
                   }
                 }
               }
@@ -1532,9 +1961,9 @@
         }
       },
       "delete": {
-        "operationId": "deleteFileById",
-        "tags": ["File"],
-        "summary": "Delete file",
+        "operationId": "deleteProjectById",
+        "tags": ["Project"],
+        "summary": "Delete project",
         "responses": {
           "200": {
             "content": {
@@ -1605,12 +2034,249 @@
         ]
       }
     },
-    "/file/{id}/content": {
+    "/file": {
+      "post": {
+        "operationId": "postFile",
+        "tags": ["File"],
+        "summary": "Upload file",
+        "description": "Multipart form with a `file` field. The filename becomes the key, so re-uploading the same name overwrites.",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                },
+                "required": ["file"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FileMeta"
+                },
+                "example": {
+                  "key": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX/screenshot.png",
+                  "size": 102400,
+                  "lastModified": "2026-06-07T00:00:00.000Z",
+                  "contentType": "image/png"
+                }
+              }
+            },
+            "description": "The uploaded file."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "validation",
+                  "code": "invalid_parameter",
+                  "message": "The request was invalid"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "authentication",
+                  "code": "unauthorized",
+                  "message": "Authentication required"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "internal",
+                  "code": "internal_error",
+                  "message": "Internal server error"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        }
+      },
       "get": {
-        "operationId": "getFileByIdContent",
+        "operationId": "getFile",
+        "tags": ["File"],
+        "summary": "List files",
+        "description": "Everything under the user's prefix on the default disk, newest first.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/File"
+                  }
+                },
+                "example": [
+                  {
+                    "key": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX/screenshot.png",
+                    "size": 102400,
+                    "lastModified": "2026-06-07T00:00:00.000Z"
+                  }
+                ]
+              }
+            },
+            "description": "The user's files."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "authentication",
+                  "code": "unauthorized",
+                  "message": "Authentication required"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "internal",
+                  "code": "internal_error",
+                  "message": "Internal server error"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/file/signed": {
+      "get": {
+        "operationId": "getFileSigned",
+        "tags": ["File"],
+        "summary": "Get signed file content",
+        "description": "Serves the bytes for a `temporaryUrl` minted by a disk that can't presign (fs, R2 binding). The signature stands in for the session, so no token is needed.",
+        "responses": {
+          "200": {
+            "description": "The raw file bytes."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "forbidden",
+                  "code": "permission_denied",
+                  "message": "You do not have permission"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "not_found",
+                  "code": "resource_not_found",
+                  "message": "The requested resource could not be found"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "internal",
+                  "code": "internal_error",
+                  "message": "Internal server error"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "parameters": [
+          {
+            "in": "query",
+            "name": "key",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "in": "query",
+            "name": "expires",
+            "schema": {
+              "type": "number"
+            },
+            "required": true
+          },
+          {
+            "in": "query",
+            "name": "kid",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "in": "query",
+            "name": "sig",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          }
+        ]
+      }
+    },
+    "/file/{name}/content": {
+      "get": {
+        "operationId": "getFileByNameContent",
         "tags": ["File"],
         "summary": "Get file content",
-        "description": "Redirects to a presigned storage URL when the backend supports it; streams the bytes otherwise.",
+        "description": "Redirects to a presigned storage URL when the disk supports it; streams the bytes otherwise.",
         "responses": {
           "200": {
             "description": "The raw file bytes."
@@ -1667,7 +2333,173 @@
         "parameters": [
           {
             "in": "path",
-            "name": "id",
+            "name": "name",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          }
+        ]
+      }
+    },
+    "/file/{name}": {
+      "patch": {
+        "operationId": "patchFileByName",
+        "tags": ["File"],
+        "summary": "Rename file",
+        "description": "Moves the object to a new key under the same prefix.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FileMeta"
+                }
+              }
+            },
+            "description": "The renamed file."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "validation",
+                  "code": "invalid_parameter",
+                  "message": "The request was invalid"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "authentication",
+                  "code": "unauthorized",
+                  "message": "Authentication required"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "not_found",
+                  "code": "resource_not_found",
+                  "message": "The requested resource could not be found"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "internal",
+                  "code": "internal_error",
+                  "message": "Internal server error"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "parameters": [
+          {
+            "in": "path",
+            "name": "name",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 255
+                  }
+                },
+                "required": ["name"]
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteFileByName",
+        "tags": ["File"],
+        "summary": "Delete file",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "const": "ok"
+                }
+              }
+            },
+            "description": "Deleted."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "authentication",
+                  "code": "unauthorized",
+                  "message": "Authentication required"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "internal",
+                  "code": "internal_error",
+                  "message": "Internal server error"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "parameters": [
+          {
+            "in": "path",
+            "name": "name",
             "schema": {
               "type": "string"
             },

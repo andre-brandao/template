@@ -1,11 +1,33 @@
 <script module lang="ts">
-	export type Filters = { state: 'all' | 'open' | 'closed'; search: string };
+	import type { Todo } from '@template/core/todo';
+
+	export type Filters = {
+		status: 'all' | Todo.Status;
+		assignee: string;
+		stage: string;
+		search: string;
+	};
 </script>
 
 <script lang="ts">
+	import type { Snippet } from 'svelte';
+	import { LazySelect } from '@template/ui';
 	import { debounce } from '$lib/utils/debounce';
+	import { getStages, getUsers } from '../api/todos.remote';
+	import { STATUSES, label } from '../status';
 
-	let { filters, onchange }: { filters: Filters; onchange: (next: Filters) => void } = $props();
+	let {
+		filters,
+		scope = {},
+		tools,
+		onchange
+	}: {
+		filters: Filters;
+		scope?: { source?: string; sourceID?: string };
+		/** View/group switches and page actions — they ride the search row. */
+		tools?: Snippet;
+		onchange: (next: Filters) => void;
+	} = $props();
 
 	// Writable derived: typing overrides it, external changes (back/forward, reload) resnap it.
 	let input = $derived(filters.search);
@@ -17,7 +39,7 @@
 	}
 </script>
 
-<div class="row">
+<div class="bar">
 	<input
 		class="search"
 		type="search"
@@ -25,53 +47,105 @@
 		value={input}
 		oninput={(e) => onInput(e.currentTarget.value)}
 	/>
-	<div class="filters">
-		<button class="tab" class:active={filters.state === 'all'} onclick={() => onchange({ ...filters, state: 'all' })}>
-			All
-		</button>
-		<button class="tab" class:active={filters.state === 'open'} onclick={() => onchange({ ...filters, state: 'open' })}>
-			Open
-		</button>
+	{#if tools}
+		<div class="tools">{@render tools()}</div>
+	{/if}
+</div>
+
+<div class="bar">
+	<div class="tabs">
 		<button
 			class="tab"
-			class:active={filters.state === 'closed'}
-			onclick={() => onchange({ ...filters, state: 'closed' })}
+			class:active={filters.status === 'all'}
+			onclick={() => onchange({ ...filters, status: 'all' })}
 		>
-			Closed
+			All
 		</button>
+		{#each STATUSES as status (status)}
+			<button
+				class="tab"
+				class:active={filters.status === status}
+				onclick={() => onchange({ ...filters, status })}
+			>
+				{label(status)}
+			</button>
+		{/each}
 	</div>
+
+	<LazySelect
+		value={filters.assignee}
+		options={[
+			{ value: '', label: 'Anyone' },
+			{ value: 'none', label: 'Unassigned' }
+		]}
+		load={async () => (await getUsers({})).map((one) => ({ value: one.id, label: one.name }))}
+		onchange={(e) => onchange({ ...filters, assignee: e.currentTarget.value })}
+	/>
+
+	<LazySelect
+		value={filters.stage}
+		options={[
+			{ value: '', label: 'Any stage' },
+			{ value: 'none', label: 'No stage' }
+		]}
+		load={async () => (await getStages(scope)).map((one) => ({ value: one.name, label: one.name }))}
+		onchange={(e) => onchange({ ...filters, stage: e.currentTarget.value })}
+	/>
 </div>
 
 <style>
-	.row {
+	.bar {
 		display: flex;
 		align-items: center;
 		flex-wrap: wrap;
-		gap: 0.75em;
+		gap: 0.6em;
+	}
+
+	.bar + .bar {
+		margin-top: 0.6em;
+	}
+
+	.tools {
+		display: flex;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: 0.6em;
+		margin-left: auto;
 	}
 
 	.search {
-		font: inherit;
-		padding: 0.45em 0.7em;
-		border: 1px solid var(--border);
-		border-radius: 6px;
-		background: var(--surface);
-		color: var(--ink);
+		flex: 1 1 14em;
 		min-width: 12em;
+		max-width: 26em;
 	}
 
-	.search:focus-visible {
+	.search,
+	.bar :global(select) {
+		font: inherit;
+		font-size: 0.85em;
+		height: 2.4em;
+		padding: 0 0.7em;
+		border: 1px solid var(--border);
+		border-radius: var(--radius);
+		background: var(--surface);
+		color: var(--ink);
+	}
+
+	.search:focus-visible,
+	.bar :global(select:focus-visible) {
 		border-color: var(--accent);
 		outline: none;
 	}
 
-	.filters {
+	.tabs {
 		display: inline-flex;
+		align-items: center;
 		flex-wrap: wrap;
 		gap: 2px;
+		height: 2.4em;
 		background: var(--surface-2);
 		border: 1px solid var(--border);
-		border-radius: 6px;
-		padding: 2px;
+		border-radius: var(--radius);
+		padding: 0 2px;
 	}
 </style>

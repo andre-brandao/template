@@ -21,15 +21,18 @@ describe("event", () => {
     expect(byType).toHaveLength(1);
   });
 
-  withTestUser("todo mutations emit the expected event trail", async () => {
+  withTestUser("todo mutations emit the expected event trail", async ({ userID }) => {
     const id = await Todo.create({ title: "Ship it", tags: ["work"] });
-    await Todo.update({ id, state: "closed" });
-    await Todo.update({ id, state: "open" });
+    await Todo.update({ id, status: "active" });
+    await Todo.update({ id, assignee: userID });
+    await Todo.update({ id, status: "done" });
     await Todo.remove(id);
 
     const events = await Event.list({ source: "todo", sourceID: id });
     const types = events.map((e) => e.type).sort();
-    expect(types).toEqual(["todo.closed", "todo.created", "todo.removed", "todo.reopened"].sort());
+    expect(types).toEqual(
+      ["todo.assigned", "todo.created", "todo.removed", "todo.status", "todo.status"].sort(),
+    );
     expect(events.every((e) => e.tags.includes("work"))).toBe(true);
   });
 });

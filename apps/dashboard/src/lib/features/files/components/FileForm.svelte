@@ -1,43 +1,35 @@
 <script lang="ts">
 	import { Button, FormBoundary, Input } from '@template/ui';
-	import type { File } from '@template/core/file';
-	import TagEditor from '$lib/features/todos/components/TagEditor.svelte';
-	import { updateFile } from '../api/files.remote';
+	import type { Storage } from '@template/core/storage';
+	import { renameFile } from '../api/files.remote';
 
-	let { file, onsuccess }: { file: File.Info; onsuccess?: () => void } = $props();
+	let { file, onsuccess }: { file: Storage.Entry; onsuccess?: () => void } = $props();
 
-	const update = $derived(updateFile.for(file.id));
-	// Writable derived: edits override it, a different file resnaps it.
-	let tags = $derived([...file.tags]);
+	const name = $derived(file.key.split('/').at(-1) ?? file.key);
+	const rename = $derived(renameFile.for(file.key));
 </script>
 
 <FormBoundary>
-	{#each update.fields.allIssues() ?? [] as issue, i (i)}
+	{#each rename.fields.allIssues() ?? [] as issue, i (i)}
 		<p class="error">{issue.message}</p>
 	{/each}
 
 	<form
 		class="edit"
-		{...update.enhance(async (f) => {
+		{...rename.enhance(async (f) => {
 			await f.submit();
 			onsuccess?.();
 		})}
 	>
-		<input {...update.fields.id.as('hidden', file.id)} />
+		<input {...rename.fields.name.as('hidden', name)} />
 
 		<label class="field">
 			<span>Name</span>
-			<Input {...update.fields.filename.as('text')} value={file.filename} />
+			<Input {...rename.fields.to.as('text', name)} />
 		</label>
 
-		<div class="field">
-			<span>Tags</span>
-			<TagEditor bind:tags />
-			<input {...update.fields.tags.as('hidden', tags.join(','))} />
-		</div>
-
 		<div class="footer">
-			<Button type="submit" pending={!!update.pending}>Save</Button>
+			<Button type="submit" pending={!!rename.pending}>Save</Button>
 		</div>
 	</form>
 </FormBoundary>

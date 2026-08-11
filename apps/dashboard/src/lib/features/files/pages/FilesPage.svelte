@@ -1,32 +1,16 @@
 <script lang="ts">
-	import { z } from 'zod';
-	import { Button, Drawer } from '@template/ui';
-	import type { File } from '@template/core/file';
-	import { query } from '$lib/utils/params';
+	import { Drawer } from '@template/ui';
+	import type { Storage } from '@template/core/storage';
+	import Header from '$lib/components/Header.svelte';
 	import { getFiles } from '../api/files.remote';
-	import FileFilters from '../components/FileFilters.svelte';
 	import FileCard from '../components/FileCard.svelte';
 	import FileForm from '../components/FileForm.svelte';
+	import Upload from '../components/Upload.svelte';
 
-	const params = query(
-		z.object({
-			q: z.string().default(''),
-			tag: z.string().default(''),
-			page: z.coerce.number().int().min(1).default(1)
-		})
-	);
+	const files = $derived(await getFiles());
 
-	const args = $derived({
-		q: params.q || undefined,
-		tag: params.tag || undefined,
-		page: params.page
-	});
-	const files = $derived(await getFiles(args));
-	const pages = $derived(Math.max(1, Math.ceil(files.total / files.pageSize)));
-
-	let editing = $state<File.Info | null>(null);
+	let editing = $state<Storage.Entry | null>(null);
 	let open = $state(false);
-	let picker: HTMLInputElement | undefined = $state();
 	let uploading = $state(false);
 	let failed = $state<string[]>([]);
 	let drag = $state(0);
@@ -44,8 +28,21 @@
 		);
 		failed = results.filter((name): name is string => name !== null);
 		uploading = false;
-		await getFiles(args).refresh();
+		await getFiles().refresh();
 	}
+
+	function enter(e: DragEvent) {
+		if (!e.dataTransfer?.types.includes('Files')) return;
+		e.preventDefault();
+		drag += 1;
+	}
+
+	function drop(e: DragEvent) {
+		e.preventDefault();
+		drag = 0;
+		if (e.dataTransfer?.files.length) upload(e.dataTransfer.files);
+	}
+
 </script>
 
 <div
@@ -53,74 +50,35 @@
 	class:drop={drag > 0}
 	role="region"
 	aria-label="Files"
-	ondragenter={(e) => {
-		if (!e.dataTransfer?.types.includes('Files')) return;
-		e.preventDefault();
-		drag += 1;
-	}}
+	ondragenter={enter}
 	ondragover={(e) => e.preventDefault()}
 	ondragleave={() => (drag = Math.max(0, drag - 1))}
-	ondrop={(e) => {
-		e.preventDefault();
-		drag = 0;
-		if (e.dataTransfer?.files.length) upload(e.dataTransfer.files);
-	}}
+	ondrop={drop}
 >
-	<h1>Files</h1>
-
-	<div class="toolbar">
-		<FileFilters
-			filters={{ search: params.q, tag: params.tag }}
-			onchange={(next) => params.update({ q: next.search, tag: next.tag, page: undefined })}
-		/>
-		<span class="sep"></span>
-		<input
-			type="file"
-			multiple
-			hidden
-			bind:this={picker}
-			onchange={(e) => {
-				const list = e.currentTarget.files;
-				if (list?.length) upload(list);
-				e.currentTarget.value = '';
-			}}
-		/>
-		<Button pending={uploading} onclick={() => picker?.click()}>Upload</Button>
-	</div>
+	<Header title="Files">
+		{#snippet actions()}
+			<Upload {upload} pending={uploading} />
+		{/snippet}
+	</Header>
 
 	{#each failed as name (name)}
 		<p class="error">Upload failed: {name}</p>
 	{/each}
 
 	<div class="list">
-		{#each files.data as file (file.id)}
+		{#each files as file (file.key)}
 			<FileCard
 				{file}
-				ontag={(tag) => params.update({ tag, page: undefined })}
 				onedit={() => {
 					editing = file;
 					open = true;
 				}}
 			/>
 		{/each}
-		{#if files.data.length === 0}
-			<p class="empty">
-				{params.q || params.tag ? 'No files match this filter' : 'No files yet — drop one here'}
-			</p>
+		{#if files.length === 0}
+			<p class="empty">No files yet — drop one here</p>
 		{/if}
 	</div>
-
-	{#if pages > 1}
-		<div class="pager">
-			{#if files.page > 1}
-				<Button variant="ghost" onclick={() => params.update({ page: files.page - 1 })}>Prev</Button>
-			{/if}
-			<span>Page {files.page} of {pages}</span>
-			{#if files.page < pages}
-				<Button variant="ghost" onclick={() => params.update({ page: files.page + 1 })}>Next</Button>
-			{/if}
-		</div>
-	{/if}
 
 	{#if drag > 0}
 		<div class="overlay">Drop files to upload</div>
@@ -129,7 +87,7 @@
 
 <Drawer bind:open>
 	{#if editing}
-		<h2>Edit file</h2>
+		<h2>Rename file</h2>
 		<FileForm file={editing} onsuccess={() => (open = false)} />
 	{/if}
 </Drawer>
@@ -140,29 +98,9 @@
 		min-height: 60vh;
 	}
 
-	h1 {
-		margin: 0 0 0.75em;
-		font-size: 1.4em;
-	}
-
 	h2 {
 		margin: 0 0 1em;
 		font-size: 1.15em;
-	}
-
-	.toolbar {
-		display: flex;
-		align-items: center;
-		flex-wrap: wrap;
-		gap: 0.75em;
-		margin-bottom: 1.25em;
-	}
-
-	.sep {
-		width: 1px;
-		align-self: stretch;
-		background: var(--border);
-		margin-left: auto;
 	}
 
 	.error {
@@ -181,16 +119,6 @@
 		color: var(--dim);
 		font-size: 0.85em;
 		margin: 0.5em 0.2em;
-	}
-
-	.pager {
-		display: flex;
-		align-items: center;
-		gap: 0.75em;
-		margin-top: 1em;
-		color: var(--muted);
-		font-family: var(--font-mono);
-		font-size: 0.82em;
 	}
 
 	.overlay {

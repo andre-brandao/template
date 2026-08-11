@@ -11,6 +11,11 @@ describe("todo", () => {
     expect(response.data).toBeArray();
   });
 
+  test("GET /todo/stage", async () => {
+    const response = await validateOpenAPIRoute("get", "/todo/stage");
+    expect(response).toBeArray();
+  });
+
   test("POST /todo", async () => {
     const response = await validateOpenAPIRoute("post", "/todo", undefined, {
       title: Examples.Todo.title,
@@ -18,7 +23,7 @@ describe("todo", () => {
     const created = await Todo.fromID(response.id);
     expect(created).toBeDefined();
     expect(created!.title).toBe(Examples.Todo.title);
-    expect(created!.state).toBe("open");
+    expect(created!.status).toBe("backlog");
   });
 
   test("GET /todo/:id", async () => {
@@ -29,8 +34,9 @@ describe("todo", () => {
 
   test("PATCH /todo/:id", async () => {
     const id = await Todo.create({ title: "Mark done" });
-    const response = await validateOpenAPIRoute("patch", "/todo/:id", { id }, { state: "closed" });
-    expect(response.state).toBe("closed");
+    const response = await validateOpenAPIRoute("patch", "/todo/:id", { id }, { status: "active" });
+    expect(response.status).toBe("active");
+    expect(response.timeStarted).not.toBeNull();
   });
 
   test("DELETE /todo/:id", async () => {

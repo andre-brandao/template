@@ -91,12 +91,30 @@ function stage(at: number) {
  * now, untouched in the future. Keeps the board, the pipeline and the burn-down
  * looking like a team that is actually working.
  */
-function status(due: number) {
+function roll<const T>(odds: [number, T][], rest: T) {
   const r = Math.random();
-  if (due < now - 3 * DAY) return r < 0.85 ? "done" : r < 0.95 ? "blocked" : "active";
+  return odds.find(([p]) => r < p)?.[1] ?? rest;
+}
+
+function status(due: number) {
+  if (due < now - 3 * DAY)
+    return roll(
+      [
+        [0.85, "done"],
+        [0.95, "blocked"],
+      ],
+      "active",
+    );
   if (due < now + SPRINT)
-    return r < 0.3 ? "done" : r < 0.6 ? "active" : r < 0.75 ? "blocked" : "planned";
-  return r < 0.6 ? "backlog" : "planned";
+    return roll(
+      [
+        [0.3, "done"],
+        [0.6, "active"],
+        [0.75, "blocked"],
+      ],
+      "planned",
+    );
+  return roll([[0.6, "backlog"]], "planned");
 }
 
 const result = await Database.provide(url, async () => {

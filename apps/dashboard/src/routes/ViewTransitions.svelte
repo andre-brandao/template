@@ -1,7 +1,17 @@
 <script lang="ts">
 	import { onNavigate } from '$app/navigation';
+	import type { OnNavigate } from '@sveltejs/kit';
 
 	const depth = (url?: URL) => url?.pathname.split('/').filter(Boolean).length ?? 0;
+
+	const back = (nav: OnNavigate) => {
+		if (nav.type === 'popstate') return nav.delta < 0;
+		const link =
+			nav.type === 'link' && nav.event.target instanceof Element
+				? nav.event.target.closest('a')
+				: null;
+		return link?.dataset.transition === 'back' || depth(nav.to?.url) < depth(nav.from?.url);
+	};
 
 	// Progressive enhancement: browsers without the API (or users who opted out
 	// of motion) just get the instant swap.
@@ -10,16 +20,8 @@
 		if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
 		const menu = document.querySelector('[data-shell-nav]');
-		const link =
-			nav.type === 'link' && nav.event.target instanceof Element
-				? nav.event.target.closest('a')
-				: null;
-		const back =
-			nav.type === 'popstate'
-				? nav.delta < 0
-				: link?.dataset.transition === 'back' || depth(nav.to?.url) < depth(nav.from?.url);
 		const root = document.documentElement;
-		root.dataset.transition = back ? 'back' : 'forward';
+		root.dataset.transition = back(nav) ? 'back' : 'forward';
 
 		return new Promise((resolve) => {
 			const transition = document.startViewTransition(async () => {

@@ -2,17 +2,25 @@
 	import type { Snippet } from 'svelte';
 	import { page } from '$app/state';
 	import { dev } from '$app/environment';
+	import { resolve } from '$app/paths';
 	import type { User } from '@template/core/user';
 	import Avatar from '../Avatar.svelte';
 	import Menu from '../Menu.svelte';
+	import Breadcrumbs from './Breadcrumbs.svelte';
 
 	// `onmenu` is passed exactly where a sidebar exists to open, so it doubles as the
 	// signal to render the rail — the left cell that lines up with that sidebar.
 	let {
 		user,
 		onmenu,
-		head
-	}: { user: User.Info | null; onmenu?: () => void; head?: Snippet } = $props();
+		head,
+		crumbs
+	}: {
+		user: User.Info | null;
+		onmenu?: () => void;
+		head?: Snippet;
+		crumbs?: { href?: string; label: string }[];
+	} = $props();
 
 	// A shortcut into settings; the sidebar's "Settings" link lands on the same page.
 	const active = $derived(page.url.pathname.startsWith('/settings'));
@@ -25,12 +33,14 @@
 				<span aria-hidden="true">&#9776;</span>
 			</button>
 		{/if}
-		<a href="/" class="brand" aria-label="Home">
+		<a href={resolve('/')} class="brand" aria-label="Home">
 			<span class="dot"></span>
 			{#if !head}<span class="word">Todos</span>{/if}
 		</a>
 		{@render head?.()}
 	</div>
+
+	{#if crumbs}<Breadcrumbs items={crumbs} />{/if}
 
 	{#if dev}
 		<span class="env" title="Not production — data here is throwaway">dev</span>
@@ -59,17 +69,19 @@
 						<a
 							class="item"
 							role="menuitem"
-							href="/settings/profile"
+							href={resolve('/settings/profile')}
 							aria-current={active ? 'page' : undefined}
 							onclick={close}>Settings</a
 						>
-						<a class="item leave" role="menuitem" href="/logout" onclick={close}>Log out</a>
+						<a class="item leave" role="menuitem" href={resolve('/logout')} onclick={close}
+							>Log out</a
+						>
 					</div>
 				{/snippet}
 			</Menu>
 		</div>
 	{:else}
-		<a class="login" href="/login">Log in</a>
+		<a class="login" href={resolve('/login')}>Log in</a>
 	{/if}
 </header>
 
@@ -264,6 +276,7 @@
 		/* The sidebar is off canvas here, so there is no column left to align to. */
 		.rail {
 			width: auto;
+			flex-shrink: 1;
 			border-right: none;
 		}
 

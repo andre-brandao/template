@@ -84,6 +84,16 @@
 		animation: none;
 	}
 
+	:global(::view-transition-old(shell-header)) {
+		opacity: 0;
+		animation: none;
+	}
+
+	:global(::view-transition-new(shell-header)) {
+		animation: none;
+		mix-blend-mode: normal;
+	}
+
 	@keyframes oldleft {
 		to {
 			opacity: 0;
@@ -116,7 +126,9 @@
 		:global(::view-transition-old(shell-nav)),
 		:global(::view-transition-new(shell-nav)),
 		:global(::view-transition-old(shell-main)),
-		:global(::view-transition-new(shell-main)) {
+		:global(::view-transition-new(shell-main)),
+		:global(::view-transition-old(shell-header)),
+		:global(::view-transition-new(shell-header)) {
 			animation: none;
 		}
 	}

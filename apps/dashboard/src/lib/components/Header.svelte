@@ -6,16 +6,22 @@
 		$props();
 </script>
 
-<div class="head">
-	<h1>{title}</h1>
-	{#if actions}{@render actions()}{/if}
-</div>
+<header>
+	<div class="head">
+		<h1>{title}</h1>
+		{#if actions}{@render actions()}{/if}
+	</div>
 
-{#if children}
-	<p class="lead">{@render children()}</p>
-{/if}
+	{#if children}
+		<p class="lead">{@render children()}</p>
+	{/if}
+</header>
 
 <style>
+	header {
+		view-transition-name: shell-header;
+	}
+
 	.head {
 		display: flex;
 		align-items: center;

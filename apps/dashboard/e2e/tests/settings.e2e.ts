@@ -39,6 +39,9 @@ test("breadcrumbs show the current settings hierarchy", async ({ page, as }) => 
 test("picking a theme applies instantly and survives a reload", async ({ page, as }) => {
   await as("user");
   await page.goto("/settings/experience");
+  // The radios are SSR'd and clickable before Svelte attaches its delegated change
+  // handler; a click that lands pre-hydration silently does nothing.
+  await page.waitForLoadState("networkidle");
 
   const html = page.locator("html");
   await expect(html).toHaveAttribute("data-theme", "system");
@@ -62,16 +65,20 @@ test("the date format preference reaches the rest of the app", async ({ page, as
   );
 
   await page.goto("/settings/experience");
-  // A zone well clear of the date boundary, so the rendered day can't drift.
-  await page.selectOption("select[name='zone']", "UTC");
+  await page.waitForLoadState("networkidle");
+  // A DST-free zone well clear of the date boundary, so the rendered day can't
+  // drift. (`UTC` itself is absent from Node's `Intl.supportedValuesOf` list.)
+  await page.selectOption("select[name='zone']", "Asia/Tokyo");
   await page.selectOption("select[name='date']", "mdy");
 
   await page.goto("/todos");
-  await expect(page.getByText("Due Mar 12, 2024")).toBeVisible();
+  // The table's Due column carries the bare date; "Due" itself is the column header.
+  await expect(page.getByText("Mar 12, 2024", { exact: true })).toBeVisible();
 
   await page.goto("/settings/experience");
+  await page.waitForLoadState("networkidle");
   await page.selectOption("select[name='date']", "ymd");
 
   await page.goto("/todos");
-  await expect(page.getByText("Due 2024 Mar 12")).toBeVisible();
+  await expect(page.getByText("2024 Mar 12", { exact: true })).toBeVisible();
 });

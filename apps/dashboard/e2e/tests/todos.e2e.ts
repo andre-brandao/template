@@ -31,10 +31,11 @@ test("the board can group by stage", async ({ page, as }) => {
 
   await page.goto(`/projects/${project}/todos?view=board&group=stage`);
 
-  // Scoped to the board: the stage filter carries the same labels as options.
+  // Scoped to the column titles: the filter tabs and the cards' stage chips
+  // carry the same labels.
   const board = page.locator(".board");
-  await expect(board.getByText("Sprint 1", { exact: true })).toBeVisible();
-  await expect(board.getByText("Sprint 2", { exact: true })).toBeVisible();
+  await expect(board.locator(".title", { hasText: "Sprint 1" })).toBeVisible();
+  await expect(board.locator(".title", { hasText: "Sprint 2" })).toBeVisible();
 });
 
 test("the timeline plots dated todos", async ({ page, as }) => {
@@ -44,7 +45,8 @@ test("the timeline plots dated todos", async ({ page, as }) => {
   await page.goto(`/projects/${project}/todos?view=timeline`);
 
   await expect(page.getByRole("link", { name: "Kick off" })).toBeVisible();
-  await expect(page.getByText("planned")).toBeVisible();
+  // Case-sensitive: the status filter tab is capitalised "Planned".
+  await expect(page.getByText("planned", { exact: true })).toBeVisible();
 });
 
 test("starting a todo records it as active", async ({ page, as }) => {
@@ -52,8 +54,10 @@ test("starting a todo records it as active", async ({ page, as }) => {
   const project = await seed(session.userID, ["Start me"]);
 
   await page.goto(`/projects/${project}/todos`);
-  await page.getByRole("button", { name: "Backlog" }).first().click();
+  // Scoped to the row — the filter tabs carry the same status labels.
+  const row = page.getByRole("row", { name: "Start me" });
+  await row.getByRole("button", { name: "Backlog" }).click();
   await page.getByRole("menuitem", { name: "Active" }).click();
 
-  await expect(page.getByRole("button", { name: "Active" }).first()).toBeVisible();
+  await expect(row.getByRole("button", { name: "Active" })).toBeVisible();
 });

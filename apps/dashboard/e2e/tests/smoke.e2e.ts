@@ -2,7 +2,8 @@ import { test, expect } from "../util/fixtures";
 
 test("landing page renders for an anonymous visitor", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByRole("heading", { name: "Todos" })).toBeVisible();
+  // The headline spells the lifecycle stages; "Todos" is only the topbar brand.
+  await expect(page.getByRole("heading", { name: "Capture Move Ship" })).toBeVisible();
   // Scoped to main — the Topbar also carries a "Log in" link.
   await expect(page.locator("main").getByRole("link", { name: "Log in" })).toBeVisible();
 });

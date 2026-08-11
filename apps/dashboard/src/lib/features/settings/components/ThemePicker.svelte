@@ -37,6 +37,7 @@
 	}
 
 	.card {
+		position: relative;
 		flex: 1 1 8em;
 		display: flex;
 		flex-direction: column;
@@ -57,10 +58,14 @@
 		box-shadow: 0 0 0 1px var(--accent);
 	}
 
+	/* Invisible but still the click target — it covers the whole card so pointer
+	   input (and Playwright) lands on the control itself, not the swatch above it. */
 	input {
 		position: absolute;
+		inset: 0;
 		opacity: 0;
-		pointer-events: none;
+		margin: 0;
+		cursor: pointer;
 	}
 
 	.preview {

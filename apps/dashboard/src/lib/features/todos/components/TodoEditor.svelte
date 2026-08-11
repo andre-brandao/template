@@ -1,6 +1,5 @@
 <script lang="ts">
-	import { Button, Card, Input, Markdown, MarkdownEditor } from '@template/ui';
-	import { upload } from '$lib/upload';
+	import { Button, Card, Input } from '@template/ui';
 	import type { Event } from '@template/core/event';
 	import { getTodo, planTodo, removeTodo, updateTodo } from '../api/todos.remote';
 	import Timeline from '$lib/features/events/components/Timeline.svelte';
@@ -9,12 +8,11 @@
 	import AssigneePicker from './AssigneePicker.svelte';
 	import StagePicker from './StagePicker.svelte';
 	import TagList from './TagList.svelte';
-	import { color, late } from '../status';
-	import { fmt } from '$lib/utils/fmt';
+	import Facts from './editor/Facts.svelte';
+	import Description from './editor/Description.svelte';
+	import { color } from '../status';
 
 	let { id, onremove }: { id: string; onremove: () => void } = $props();
-
-	const f = fmt();
 	// `$derived(await query())` only re-subscribes when its args change, not when the
 	// query is refreshed in place — `gen` is read (and bumped after a save) purely to
 	// force this derived to re-evaluate and pick up the refreshed value.
@@ -31,14 +29,6 @@
 		sourceID: todo.sourceID ?? undefined
 	});
 	const day = (at: string | null) => at?.slice(0, 10) ?? '';
-
-	let editing = $state(false);
-	let body = $state('');
-
-	function edit() {
-		body = todo.body ?? '';
-		editing = true;
-	}
 
 	async function saved() {
 		await getTodo(todo.id).refresh();
@@ -73,62 +63,13 @@
 
 				<TagList tags={todo.tags} />
 
-				{#if editing}
-					<form
-						class="edit"
-						{...update.enhance(async (f) => {
-							await f.submit();
-							await saved();
-							editing = false;
-						})}
-					>
-						<input {...update.fields.id.as('hidden', todo.id)} />
-						<MarkdownEditor bind:value={body} {upload} />
-						<input {...update.fields.body.as('hidden', body)} />
-						<div class="edit-actions">
-							<Button type="submit" pending={!!update.pending}>Save</Button>
-							<Button variant="ghost" type="button" onclick={() => (editing = false)}>
-								Cancel
-							</Button>
-						</div>
-					</form>
-				{:else}
-					{#if todo.body}
-						<div class="body">
-							<Markdown value={todo.body} />
-						</div>
-					{:else}
-						<p class="empty-body">No description yet.</p>
-					{/if}
-					<Button variant="ghost" onclick={edit}>
-						{todo.body ? 'Edit description' : 'Add description'}
-					</Button>
-				{/if}
+				<Description {todo} {update} onsaved={saved} />
 			</Card>
 		</div>
 
 		<aside class="side">
 			<Card>
-				<dl class="facts">
-					<div>
-						<dt>Planned</dt>
-						<dd class:late={late(todo)}>
-							{todo.startDate ? f.date(todo.startDate) : '—'} → {todo.dueDate
-								? f.date(todo.dueDate)
-								: '—'}
-						</dd>
-					</div>
-					<div>
-						<dt>Actual</dt>
-						<dd>
-							{todo.timeStarted ? f.date(todo.timeStarted) : 'not started'}
-							{#if todo.timeDone}&rarr; {f.date(todo.timeDone)}{/if}
-						</dd>
-					</div>
-					{#if todo.source === 'project' && todo.sourceID}
-						<div><dt>Project</dt><dd><a href="/projects/{todo.sourceID}">open</a></dd></div>
-					{/if}
-				</dl>
+				<Facts {todo} />
 
 				<form
 					class="plan"
@@ -243,31 +184,6 @@
 		word-break: break-word;
 	}
 
-	.facts {
-		display: flex;
-		flex-direction: column;
-		gap: 0.9em;
-		margin: 0;
-	}
-
-	dt {
-		font-family: var(--font-mono);
-		font-size: 0.68em;
-		text-transform: uppercase;
-		letter-spacing: 0.04em;
-		color: var(--dim);
-	}
-
-	dd {
-		margin: 0.2em 0 0;
-		font-size: 0.88em;
-		color: var(--muted);
-	}
-
-	dd.late {
-		color: var(--danger);
-	}
-
 	.plan {
 		display: flex;
 		flex-direction: column;
@@ -296,27 +212,6 @@
 		text-transform: uppercase;
 		letter-spacing: 0.04em;
 		color: var(--dim);
-	}
-
-	.body {
-		margin-top: 1em;
-	}
-
-	.empty-body {
-		color: var(--dim);
-		font-size: 0.9em;
-		font-style: italic;
-		margin: 1em 0 0;
-	}
-
-	.edit {
-		margin-top: 1em;
-	}
-
-	.edit-actions {
-		display: flex;
-		gap: 0.5em;
-		margin-top: 0.6em;
 	}
 
 	.actions {

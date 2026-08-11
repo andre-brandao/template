@@ -49,7 +49,11 @@
 	let adding = $state(false);
 </script>
 
-<Header {title} />
+<Header {title}>
+	{#snippet actions()}
+		<Button onclick={() => (adding = true)}>New todo</Button>
+	{/snippet}
+</Header>
 
 <div class="toolbar">
 	<TodoFilters
@@ -73,7 +77,6 @@
 				<GroupSelector by={params.group} onchange={(group) => params.update({ group })} />
 			{/if}
 			<ViewSelector view={params.view} onchange={(view) => params.update({ view })} />
-			<Button onclick={() => (adding = true)}>New todo</Button>
 		{/snippet}
 	</TodoFilters>
 </div>

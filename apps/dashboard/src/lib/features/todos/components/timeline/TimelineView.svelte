@@ -3,8 +3,8 @@
 	import { user } from '$lib/utils/context';
 	import { fmt } from '$lib/utils/fmt';
 	import { group, type By } from '../../group';
-	import { color, label, late } from '../../status';
-	import { peek } from '$lib/utils/peek';
+	import Axis from './Axis.svelte';
+	import Row from './Row.svelte';
 
 	let { todos, by = 'stage' }: { todos: Todo.Info[]; by?: By } = $props();
 
@@ -55,25 +55,33 @@
 
 	const ticks = $derived.by(() => {
 		if (!span) return [];
-		const out: { at: number; text: string; major: boolean; off: boolean }[] = [];
 		const cursor = new Date(span.start);
 		if (unit === 'week') cursor.setUTCDate(cursor.getUTCDate() - ((cursor.getUTCDay() + 6) % 7));
 		if (unit === 'month') cursor.setUTCDate(1);
+		const out: number[] = [];
 		while (cursor.getTime() <= span.end) {
-			const time = cursor.getTime();
-			const day = cursor.getUTCDay();
-			if (time >= span.start)
-				out.push({
-					at: time,
-					text: unit === 'month' ? month.format(time) : short.format(time),
-					major: unit !== 'day' || day === 1,
-					off: unit === 'day' && (day === 0 || day === 6)
-				});
-			if (unit === 'month') cursor.setUTCMonth(cursor.getUTCMonth() + 1);
-			else cursor.setUTCDate(cursor.getUTCDate() + (unit === 'week' ? 7 : 1));
+			if (cursor.getTime() >= span.start) out.push(cursor.getTime());
+			step(cursor);
 		}
-		return out;
+		return out.map(tick);
 	});
+
+	/** Advance the cursor one axis unit. */
+	function step(cursor: Date) {
+		if (unit === 'month') return cursor.setUTCMonth(cursor.getUTCMonth() + 1);
+		cursor.setUTCDate(cursor.getUTCDate() + (unit === 'week' ? 7 : 1));
+	}
+
+	/** Label one ruled instant. */
+	function tick(at: number) {
+		const day = new Date(at).getUTCDay();
+		return {
+			at,
+			text: unit === 'month' ? month.format(at) : short.format(at),
+			major: unit !== 'day' || day === 1,
+			off: unit === 'day' && (day === 0 || day === 6)
+		};
+	}
 
 	const pct = (at: number) => (!span ? 0 : ((at - span.start) / (span.end - span.start)) * 100);
 
@@ -106,27 +114,7 @@
 {:else}
 	<div class="wrap">
 		<div class="grid" style:--cols={ticks.length} style:--col={col}>
-			<!-- One ruling for the whole chart, so the calendar reads through the group gaps. -->
-			<div class="field" aria-hidden="true">
-				{#each ticks as tick (tick.at)}
-					{#if tick.off}
-						<span class="off" style:left="{pct(tick.at)}%" style:width="{100 / span.days}%"></span>
-					{/if}
-					<span class="line" class:major={tick.major} style:left="{pct(tick.at)}%"></span>
-				{/each}
-			</div>
-
-			<div class="axis">
-				<div class="corner">{todos.length} todos</div>
-				<div class="scale">
-					{#each ticks as tick (tick.at)}
-						{#if tick.major}
-							<span class="tick" style:left="{pct(tick.at)}%">{tick.text}</span>
-						{/if}
-					{/each}
-					<span class="cap" style:left="{today}%"><span></span></span>
-				</div>
-			</div>
+			<Axis {ticks} {pct} {today} count={todos.length} days={span.days} />
 
 			{#each rows as row (row.key)}
 				{@const held = band(row.items)}
@@ -144,42 +132,7 @@
 							{/if}
 						</div>
 						{#each row.items as todo (todo.id)}
-							{@const plan = bar(todo.startDate, todo.dueDate)}
-							{@const real = actual(todo)}
-							<div class="row">
-								<div class="name">
-									<a href="/todos/{todo.id}" onclick={peek({ selected: todo.id })}>{todo.title}</a>
-									<small>{todo.assignee?.name ?? 'Unassigned'}</small>
-								</div>
-								<div class="track">
-									{#if plan}
-										<span
-											class="plan"
-											class:late={late(todo)}
-											style:left="{plan.left}%"
-											style:width="{plan.width}%"
-											style:--c={color(todo.status)}
-											title="{label(todo.status)} · {todo.startDate
-												? f.date(todo.startDate)
-												: '?'} → {todo.dueDate ? f.date(todo.dueDate) : '?'}"
-										></span>
-									{/if}
-									{#if real}
-										<span
-											class="real"
-											style:left="{real.left}%"
-											style:width="{real.width}%"
-											style:--c={color(todo.status)}
-											title="Started {f.date(todo.timeStarted!)}{todo.timeDone
-												? ` · done ${f.date(todo.timeDone)}`
-												: ''}"
-										></span>
-									{/if}
-									{#if !plan && !real}
-										<span class="undated">no dates</span>
-									{/if}
-								</div>
-							</div>
+							<Row {todo} plan={bar(todo.startDate, todo.dueDate)} real={actual(todo)} />
 						{/each}
 					</div>
 				</section>
@@ -225,9 +178,7 @@
 		min-width: max(100%, calc(var(--lane) + var(--name) + var(--cols) * var(--col)));
 	}
 
-	/* Overlays and the scale all start where the track starts, so a percent means the
-	   same instant in every layer. */
-	.field,
+	/* Starts where the track starts, so a percent means the same instant in every layer. */
 	.now {
 		position: absolute;
 		inset: 0 0 0 calc(var(--lane) + var(--name));
@@ -239,87 +190,6 @@
 		position: absolute;
 		inset: 0 0 0 var(--name);
 		pointer-events: none;
-	}
-
-	.line {
-		position: absolute;
-		top: 0;
-		bottom: 0;
-		border-left: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
-	}
-
-	.line.major {
-		border-left-color: var(--border);
-	}
-
-	.off {
-		position: absolute;
-		top: 0;
-		bottom: 0;
-		background: color-mix(in srgb, var(--ink) 3.5%, transparent);
-	}
-
-	.axis {
-		position: sticky;
-		top: 0;
-		z-index: 4;
-		display: flex;
-		align-items: stretch;
-		height: 2.4rem;
-		background: var(--surface-2);
-		border-bottom: 1px solid var(--border-bright);
-	}
-
-	.corner {
-		position: sticky;
-		left: 0;
-		z-index: 5;
-		flex: 0 0 calc(var(--lane) + var(--name));
-		display: flex;
-		align-items: center;
-		padding: 0 0.85rem;
-		background: var(--surface-2);
-		box-shadow: inset -1px 0 0 var(--border-bright);
-		font-family: var(--font-mono);
-		font-size: 0.7em;
-		letter-spacing: 0.04em;
-		color: var(--dim);
-	}
-
-	.scale {
-		position: relative;
-		flex: 1;
-	}
-
-	.tick {
-		position: absolute;
-		top: 0;
-		bottom: 0;
-		display: flex;
-		align-items: center;
-		padding-left: 0.4em;
-		border-left: 1px solid var(--border-bright);
-		font-family: var(--font-mono);
-		font-size: 0.68em;
-		color: var(--muted);
-		white-space: nowrap;
-	}
-
-	.cap {
-		position: absolute;
-		top: 0;
-		bottom: 0;
-		border-left: 1px solid var(--accent);
-	}
-
-	.cap span {
-		position: absolute;
-		bottom: -3px;
-		left: -3px;
-		width: 5px;
-		height: 5px;
-		border-radius: 50%;
-		background: var(--accent);
 	}
 
 	/* A stage is a block that wraps its own todos: rail on the left, window behind.
@@ -382,6 +252,11 @@
 		min-width: 0;
 	}
 
+	/* The rows are Row instances, so their sibling border lives with their parent. */
+	.rows :global(.row + .row) {
+		border-top: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+	}
+
 	.env {
 		position: absolute;
 		top: 0.3em;
@@ -389,92 +264,6 @@
 		border-radius: 5px;
 		background: color-mix(in srgb, var(--ink) 4%, transparent);
 		border-inline: 1px solid var(--border-bright);
-	}
-
-	.row {
-		display: flex;
-		align-items: stretch;
-		height: var(--h);
-	}
-
-	.row + .row {
-		border-top: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
-	}
-
-	.name {
-		position: sticky;
-		left: var(--lane);
-		z-index: 1;
-		flex: 0 0 var(--name);
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		gap: 0.15em;
-		padding: 0 0.85rem;
-		background: var(--surface);
-		box-shadow: inset -1px 0 0 var(--border);
-		overflow: hidden;
-	}
-
-	.row:hover .name {
-		background: var(--surface-2);
-	}
-
-	.name a {
-		color: var(--ink);
-		text-decoration: none;
-		font-size: 0.88em;
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-	}
-
-	.name a:hover {
-		color: var(--accent);
-	}
-
-	.name small {
-		color: var(--dim);
-		font-family: var(--font-mono);
-		font-size: 0.68em;
-	}
-
-	.track {
-		position: relative;
-		flex: 1;
-		min-width: 0;
-	}
-
-	.plan {
-		position: absolute;
-		top: calc(var(--h) / 2 - 0.85em);
-		height: 0.9em;
-		border-radius: 3px;
-		background: color-mix(in srgb, var(--c) 28%, transparent);
-		border: 1px solid color-mix(in srgb, var(--c) 55%, transparent);
-	}
-
-	.plan.late {
-		background: color-mix(in srgb, var(--danger) 28%, transparent);
-		border-color: color-mix(in srgb, var(--danger) 60%, transparent);
-	}
-
-	.real {
-		position: absolute;
-		top: calc(var(--h) / 2 + 0.2em);
-		height: 0.35em;
-		border-radius: 999px;
-		background: var(--c);
-	}
-
-	.undated {
-		position: absolute;
-		left: 0.7em;
-		top: 50%;
-		transform: translateY(-50%);
-		font-family: var(--font-mono);
-		font-size: 0.66em;
-		color: var(--dim);
 	}
 
 	.now span {

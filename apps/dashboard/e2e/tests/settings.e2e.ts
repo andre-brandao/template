@@ -1,7 +1,16 @@
+import type { Page } from "@playwright/test";
 import { Database } from "@template/core/drizzle";
 import { Actor } from "@template/core/actor";
 import { Todo } from "@template/core/todo";
 import { test, expect } from "../util/fixtures";
+
+// The prefs `save` command POSTs to the remote-function endpoint; navigating or
+// reloading before it resolves aborts the request and nothing is persisted. Arm
+// this BEFORE the interaction, await it before leaving the page.
+const saved = (page: Page) =>
+  page.waitForResponse(
+    (res) => res.url().includes("/_app/remote/") && res.request().method() === "POST",
+  );
 
 test("settings redirects to the profile page", async ({ page, as }) => {
   await as("user");
@@ -47,10 +56,13 @@ test("picking a theme applies instantly and survives a reload", async ({ page, a
   await expect(html).toHaveAttribute("data-theme", "system");
 
   // No reload between these two — the attribute is set before the command resolves.
+  const save = saved(page);
   await page.getByRole("radio", { name: "Dark" }).check();
   await expect(html).toHaveAttribute("data-theme", "dark");
 
-  // The cookie is what makes the server paint it correctly on a cold load.
+  // The cookie is what makes the server paint it correctly on a cold load; the save
+  // round-trip is what sets it, so let it land before reloading.
+  await save;
   await page.reload();
   await expect(html).toHaveAttribute("data-theme", "dark");
   await expect(page.getByRole("radio", { name: "Dark" })).toBeChecked();
@@ -68,8 +80,12 @@ test("the date format preference reaches the rest of the app", async ({ page, as
   await page.waitForLoadState("networkidle");
   // A DST-free zone well clear of the date boundary, so the rendered day can't
   // drift. (`UTC` itself is absent from Node's `Intl.supportedValuesOf` list.)
+  const zone = saved(page);
   await page.selectOption("select[name='zone']", "Asia/Tokyo");
+  await zone;
+  const mdy = saved(page);
   await page.selectOption("select[name='date']", "mdy");
+  await mdy;
 
   await page.goto("/todos");
   // The table's Due column carries the bare date; "Due" itself is the column header.
@@ -77,7 +93,9 @@ test("the date format preference reaches the rest of the app", async ({ page, as
 
   await page.goto("/settings/experience");
   await page.waitForLoadState("networkidle");
+  const ymd = saved(page);
   await page.selectOption("select[name='date']", "ymd");
+  await ymd;
 
   await page.goto("/todos");
   await expect(page.getByText("2024 Mar 12", { exact: true })).toBeVisible();

@@ -8,11 +8,14 @@ test("creating a todo through the form shows it in the list", async ({ page, as 
   await as("user");
   await page.goto("/todos");
 
+  // Unique per attempt: todos are workspace-wide and the database lives for the whole
+  // run, so a fixed title accumulates copies across browser projects and retries.
+  const title = `Write the quarterly report ${Date.now()}`;
   await page.getByRole("button", { name: "New todo" }).click();
-  await page.getByPlaceholder("What needs doing?").fill("Write the quarterly report");
+  await page.getByPlaceholder("What needs doing?").fill(title);
   await page.getByRole("button", { name: "Add todo" }).click();
 
-  await expect(page.getByRole("link", { name: "Write the quarterly report" })).toBeVisible();
+  await expect(page.getByRole("link", { name: title })).toBeVisible();
 });
 
 test("existing todos are listed", async ({ page, as }) => {

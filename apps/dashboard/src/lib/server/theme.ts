@@ -1,3 +1,5 @@
+// fallow-ignore-file duplicate-export -- session.ts exposes the same deliberate
+// cookie read/write pair; parallel namespace-style APIs, not a duplicate to merge.
 import type { RequestEvent } from "@sveltejs/kit";
 import { Prefs } from "@template/core/user/prefs";
 

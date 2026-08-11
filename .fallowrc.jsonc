@@ -50,7 +50,14 @@
   // @cloudflare/workers-types has no direct import — app.d.ts hand-rolls its Platform env
   // types — but it's kept for the workerd/adapter-cloudflare build to resolve Worker runtime
   // globals, so removing it risks breaking the Cloudflare target. Suppress the false positive.
-  "ignoreDependencies": ["@hono/standard-validator", "@template/ui", "@cloudflare/workers-types"],
+  // @sveltejs/package is only invoked as the `svelte-package` CLI in ui's prepack script,
+  // which import tracing can't see.
+  "ignoreDependencies": [
+    "@hono/standard-validator",
+    "@template/ui",
+    "@cloudflare/workers-types",
+    "@sveltejs/package",
+  ],
   "ignoreUnresolvedImports": ["@template/ui"],
   "boundaries": {
     // Zones glob over `apps/*` (not a fixed `root`) so every SvelteKit app under

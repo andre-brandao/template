@@ -1,9 +1,11 @@
 import { z } from "zod";
-import { asc, eq, ilike, sql } from "drizzle-orm";
+import { and, asc, count, eq, ilike, isNull, or, sql } from "drizzle-orm";
 import { fn } from "../util/fn";
 import { Database } from "../drizzle";
 import { Actor } from "../actor";
 import { Common } from "../common";
+import { ErrorCodes, found, VisibleError } from "../error";
+import { Event } from "../event";
 import { Examples } from "../examples";
 import { Identifier } from "../identifier";
 import { Permission } from "../permission";
@@ -19,8 +21,8 @@ export namespace User {
       email: z.string().email(),
       emailVerified: z.boolean().optional(),
       image: z.string().nullable(),
-      // Read-only here: `Patch` never picks it, so the only way to change a role is SQL
-      // until `assign` lands.
+      // Read-only through `update`, which picks its fields explicitly. `assign` is the
+      // only way to change one, and it wants `user: ["assign"]`.
       role: z.enum(Permission.roles),
     })
     .meta({
@@ -92,12 +94,17 @@ export namespace User {
     },
   );
 
+  /**
+   * Disabled accounts are invisible here, which is what locks them out: every auth path —
+   * the dashboard hooks, the API middleware, a replayed queue job — resolves its actor
+   * through this. The admin screens query directly so they can still see and restore them.
+   */
   export const fromID = fn(Info.shape.id, (id) =>
     Database.use((tx) =>
       tx
         .select()
         .from(UserTable)
-        .where(eq(UserTable.id, id))
+        .where(and(eq(UserTable.id, id), isNull(UserTable.timeDeleted)))
         .then((rows) => rows.at(0) ?? null),
     ),
   );
@@ -159,4 +166,145 @@ export namespace User {
         .where(eq(UserTable.id, Actor.userID())),
     ),
   );
+
+  /** The admin view of a user: the public shape plus whether the account is disabled. */
+  export const Row = Info.extend({ timeDeleted: z.iso.datetime().nullable() });
+  export type Row = z.infer<typeof Row>;
+
+  /** Reads past the disabled filter `fromID` applies — the admin screens act on those rows. */
+  const target = (id: string) =>
+    Database.use((tx) =>
+      tx
+        .select()
+        .from(UserTable)
+        .where(eq(UserTable.id, id))
+        .then((rows) => rows.at(0) ?? null),
+    );
+
+  /** Both ways an admin could lock themselves out: demoting or disabling their own account. */
+  function other(id: string) {
+    const actor = Actor.use();
+    if (actor.type === "user" && actor.properties.userID === id)
+      throw new VisibleError(
+        "validation",
+        ErrorCodes.Validation.INVALID_STATE,
+        "You cannot change your own account here",
+      );
+  }
+
+  /**
+   * The admin directory. Unlike `list` it paginates, carries the role, and can surface
+   * disabled accounts. Not exposed over the HTTP API — the dashboard reads it from core.
+   */
+  export const page = fn(
+    Common.PaginatedInput.extend({
+      search: z.string().optional(),
+      /** Include disabled accounts, which are hidden by default like every other soft delete. */
+      deleted: z.boolean().optional(),
+    }),
+    (input) => {
+      Actor.check({ admin: ["read"] });
+      const { page, pageSize, limit, offset } = Common.page(input);
+      const where = and(
+        input.deleted ? undefined : isNull(UserTable.timeDeleted),
+        input.search
+          ? or(
+              ilike(UserTable.name, `%${input.search}%`),
+              ilike(UserTable.email, `%${input.search}%`),
+            )
+          : undefined,
+      );
+      return Database.use(async (tx) => {
+        const [rows, totalRows] = await Promise.all([
+          tx
+            .select()
+            .from(UserTable)
+            .where(where)
+            .orderBy(asc(UserTable.name))
+            .limit(limit)
+            .offset(offset),
+          tx.select({ total: count() }).from(UserTable).where(where),
+        ] as const);
+        return {
+          data: rows.map(
+            (row): Row => ({
+              id: row.id,
+              name: row.name,
+              email: row.email,
+              emailVerified: row.emailVerified,
+              image: row.image,
+              role: row.role,
+              timeDeleted: row.timeDeleted?.toISOString() ?? null,
+            }),
+          ),
+          page,
+          pageSize,
+          total: totalRows[0]?.total ?? 0,
+        };
+      });
+    },
+  );
+
+  export const assign = fn(
+    z.object({ id: Info.shape.id, role: Info.shape.role }),
+    async (input) => {
+      Actor.check({ user: ["assign"] });
+      other(input.id);
+      const before = found("User", await target(input.id));
+      if (before.role === input.role) return;
+
+      return Database.transaction(async (tx) => {
+        await tx
+          .update(UserTable)
+          .set({ role: input.role, timeUpdated: new Date() })
+          .where(eq(UserTable.id, input.id));
+        await Event.create({
+          type: "user.assigned",
+          source: "user",
+          sourceID: input.id,
+          data: { from: before.role, to: input.role },
+        });
+      });
+    },
+  );
+
+  /**
+   * Disables an account. Their projects, todos and keys are left where they are — the row
+   * is one `restore` away, so nothing they created gets orphaned by a reversible action.
+   */
+  export const remove = fn(Info.shape.id, async (id) => {
+    Actor.check({ user: ["delete"] });
+    other(id);
+    const before = found("User", await target(id));
+    if (before.timeDeleted) return;
+
+    return Database.transaction(async (tx) => {
+      await tx.update(UserTable).set({ timeDeleted: new Date() }).where(eq(UserTable.id, id));
+      await Event.create({
+        type: "user.removed",
+        source: "user",
+        sourceID: id,
+        data: { email: before.email },
+      });
+    });
+  });
+
+  export const restore = fn(Info.shape.id, async (id) => {
+    Actor.check({ user: ["delete"] });
+    const before = found("User", await target(id));
+    if (!before.timeDeleted) return;
+
+    return Database.transaction(async (tx) => {
+      await tx
+        .update(UserTable)
+        .set({ timeDeleted: null, timeUpdated: new Date() })
+        .where(eq(UserTable.id, id));
+      await Event.create({
+        type: "user.restored",
+        source: "user",
+        sourceID: id,
+        data: { email: before.email },
+      });
+    });
+  });
 }

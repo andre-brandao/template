@@ -6,6 +6,7 @@
 	import type { User } from '@template/core/user';
 	import PanelLeft from '@lucide/svelte/icons/panel-left';
 	import Avatar from '../Avatar.svelte';
+	import Can from '../Can.svelte';
 	import Menu from '../Menu.svelte';
 	import Breadcrumbs from './Breadcrumbs.svelte';
 
@@ -102,6 +103,9 @@
 							aria-current={active ? 'page' : undefined}
 							onclick={close}>Settings</a
 						>
+						<Can grants={{ admin: ['read'] }}>
+							<a class="item" role="menuitem" href={resolve('/admin')} onclick={close}>Admin</a>
+						</Can>
 						<a class="item leave" role="menuitem" href={resolve('/logout')} onclick={close}
 							>Log out</a
 						>

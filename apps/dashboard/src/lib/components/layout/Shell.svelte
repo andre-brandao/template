@@ -35,7 +35,7 @@
 
 {#snippet menu()}
 	{#if back}
-		<a class="back" href={back.href}>&larr; {back.label}</a>
+		<a class="back" href={back.href} data-transition="back">&larr; {back.label}</a>
 	{/if}
 	<nav>
 		{#each sections as section (section.title ?? section.items[0]?.href)}
@@ -52,7 +52,7 @@
 <Topbar user={me.current} {head} onmenu={() => (open = true)} />
 
 <div class="body">
-	<aside>{@render menu()}</aside>
+	<aside><div class="menu" data-shell-nav>{@render menu()}</div></aside>
 	<main>{@render children()}</main>
 </div>
 
@@ -67,11 +67,16 @@
 		flex: 1;
 	}
 
-	aside,
+	.menu,
 	.sheet {
 		display: flex;
 		flex-direction: column;
 		gap: 1.25em;
+	}
+
+	.menu {
+		flex: 1;
+		view-transition-name: shell-nav;
 	}
 
 	aside {
@@ -96,6 +101,7 @@
 		max-width: 1440px;
 		margin: 0 auto;
 		padding: 1.75em 1.25em 3em;
+		view-transition-name: shell-main;
 	}
 
 	nav {

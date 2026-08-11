@@ -1,16 +1,16 @@
 <script lang="ts">
-	import { Button, Drawer } from '@template/ui';
+	import { Drawer } from '@template/ui';
 	import type { Storage } from '@template/core/storage';
 	import Header from '$lib/components/Header.svelte';
 	import { getFiles } from '../api/files.remote';
 	import FileCard from '../components/FileCard.svelte';
 	import FileForm from '../components/FileForm.svelte';
+	import Upload from '../components/Upload.svelte';
 
 	const files = $derived(await getFiles());
 
 	let editing = $state<Storage.Entry | null>(null);
 	let open = $state(false);
-	let picker: HTMLInputElement | undefined = $state();
 	let uploading = $state(false);
 	let failed = $state<string[]>([]);
 	let drag = $state(0);
@@ -30,6 +30,19 @@
 		uploading = false;
 		await getFiles().refresh();
 	}
+
+	function enter(e: DragEvent) {
+		if (!e.dataTransfer?.types.includes('Files')) return;
+		e.preventDefault();
+		drag += 1;
+	}
+
+	function drop(e: DragEvent) {
+		e.preventDefault();
+		drag = 0;
+		if (e.dataTransfer?.files.length) upload(e.dataTransfer.files);
+	}
+
 </script>
 
 <div
@@ -37,35 +50,16 @@
 	class:drop={drag > 0}
 	role="region"
 	aria-label="Files"
-	ondragenter={(e) => {
-		if (!e.dataTransfer?.types.includes('Files')) return;
-		e.preventDefault();
-		drag += 1;
-	}}
+	ondragenter={enter}
 	ondragover={(e) => e.preventDefault()}
 	ondragleave={() => (drag = Math.max(0, drag - 1))}
-	ondrop={(e) => {
-		e.preventDefault();
-		drag = 0;
-		if (e.dataTransfer?.files.length) upload(e.dataTransfer.files);
-	}}
+	ondrop={drop}
 >
-	<Header title="Files" />
-
-	<div class="toolbar">
-		<input
-			type="file"
-			multiple
-			hidden
-			bind:this={picker}
-			onchange={(e) => {
-				const list = e.currentTarget.files;
-				if (list?.length) upload(list);
-				e.currentTarget.value = '';
-			}}
-		/>
-		<Button pending={uploading} onclick={() => picker?.click()}>Upload</Button>
-	</div>
+	<Header title="Files">
+		{#snippet actions()}
+			<Upload {upload} pending={uploading} />
+		{/snippet}
+	</Header>
 
 	{#each failed as name (name)}
 		<p class="error">Upload failed: {name}</p>
@@ -107,14 +101,6 @@
 	h2 {
 		margin: 0 0 1em;
 		font-size: 1.15em;
-	}
-
-	.toolbar {
-		display: flex;
-		align-items: center;
-		flex-wrap: wrap;
-		gap: 0.75em;
-		margin-bottom: 1.25em;
 	}
 
 	.error {

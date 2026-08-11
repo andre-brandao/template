@@ -17,6 +17,7 @@ export namespace Examples {
     createdBy: Id("user"),
     name: "Quarterly close",
     description: null,
+    image: null,
   } as const;
 
   export const Todo = {

@@ -8,7 +8,13 @@
 
 <article class="folder" style:--x={pos}>
 	<!-- The list is ordered by name, so the tab letter is a real filing index. -->
-	<span class="tab" aria-hidden="true">{project.name.slice(0, 1).toUpperCase()}</span>
+	<span class="tab" aria-hidden="true">
+		{#if project.image}
+			<img src={project.image} alt="" />
+		{:else}
+			{project.name.slice(0, 1).toUpperCase()}
+		{/if}
+	</span>
 
 	<div class="body">
 		<a class="name" href="/projects/{project.id}">{project.name}</a>
@@ -52,6 +58,13 @@
 		color: var(--dim);
 		pointer-events: none;
 		transition: border-color 0.15s ease;
+	}
+
+	.tab img {
+		width: 16px;
+		height: 16px;
+		border-radius: 50%;
+		object-fit: cover;
 	}
 
 	.body {

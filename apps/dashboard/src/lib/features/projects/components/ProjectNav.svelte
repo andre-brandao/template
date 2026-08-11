@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import Avatar from '$lib/components/Avatar.svelte';
 	import { getProjects } from '../api/projects.remote';
 
 	let { id }: { id: string } = $props();
@@ -16,6 +17,9 @@
 
 <div class="switcher" onfocusout={(e) => (open = e.currentTarget.contains(e.relatedTarget as Node))}>
 	<button type="button" aria-expanded={open} onclick={() => (open = !open)}>
+		{#if current?.image}
+			<Avatar name={current.name} image={current.image} size={16} />
+		{/if}
 		<span class="name">{current?.name ?? 'Project'}</span>
 		<span class="caret" aria-hidden="true">▾</span>
 	</button>
@@ -32,7 +36,10 @@
 						onmousedown={(e) => e.preventDefault()}
 						onclick={() => (open = false)}
 					>
-						{p.name}
+						{#if p.image}
+							<Avatar name={p.name} image={p.image} size={16} />
+						{/if}
+						<span class="label">{p.name}</span>
 					</a>
 				</li>
 			{/each}
@@ -110,13 +117,18 @@
 	}
 
 	a {
-		display: block;
+		display: flex;
+		align-items: center;
+		gap: 0.45em;
 		font-family: var(--font-mono);
 		font-size: 0.8em;
 		padding: 0.45em 0.55em;
 		border-radius: var(--radius);
 		color: var(--muted);
 		text-decoration: none;
+	}
+
+	.label {
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;

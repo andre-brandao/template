@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Button, FormBoundary, Input } from '@template/ui';
 	import Header from '$lib/components/Header.svelte';
+	import AvatarUpload from '$lib/components/AvatarUpload.svelte';
 	import { getProject, updateProject } from '../api/projects.remote';
 	import DeleteDialog from '../components/DeleteDialog.svelte';
 
@@ -25,6 +26,13 @@
 	</div>
 
 	<div class="controls">
+		<AvatarUpload
+			name={project.name}
+			image={project.image}
+			url="/avatars/project/{id}"
+			onchange={() => getProject(id).refresh()}
+		/>
+
 		<FormBoundary>
 			{#each update.fields.allIssues() ?? [] as issue, i (i)}
 				<p class="error">{issue.message}</p>
@@ -90,6 +98,12 @@
 		margin-top: 2.5em;
 		padding-top: 2.5em;
 		border-top: 1px solid var(--border);
+	}
+
+	.controls {
+		display: flex;
+		flex-direction: column;
+		gap: 1.25em;
 	}
 
 	.label p {

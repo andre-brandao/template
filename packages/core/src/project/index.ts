@@ -17,6 +17,7 @@ export namespace Project {
       createdBy: z.string(),
       name: z.string().min(1).max(200),
       description: z.string().max(2000).nullable(),
+      image: z.string().nullable(),
     })
     .meta({
       ref: "Project",
@@ -25,7 +26,7 @@ export namespace Project {
     });
   export type Info = z.infer<typeof Info>;
 
-  const Patch = Info.pick({ name: true, description: true }).partial();
+  const Patch = Info.pick({ name: true, description: true, image: true }).partial();
 
   export const create = fn(
     z.object({ name: Info.shape.name, description: Info.shape.description.optional() }),
@@ -123,6 +124,7 @@ export namespace Project {
       createdBy: row.createdBy,
       name: row.name,
       description: row.description,
+      image: row.image,
     };
   }
 }

@@ -9,6 +9,7 @@ export const ProjectTable = table(
     createdBy: ulid("created_by").notNull(),
     name: text("name").notNull(),
     description: text(),
+    image: text(),
   },
   (table) => [index("project_created_by").on(table.createdBy)],
 );

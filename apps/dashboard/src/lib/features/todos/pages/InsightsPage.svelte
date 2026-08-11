@@ -32,12 +32,14 @@
 	const title = $derived(src?.name ?? 'Insights');
 </script>
 
-<Header {title} />
-
-<div class="toolbar">
-	<RangePicker range={picked} onchange={commit} />
-	{#if $effect.pending()}<span class="updating">updating…</span>{/if}
-</div>
+<Header {title}>
+	{#snippet actions()}
+		<div class="toolbar">
+			{#if $effect.pending()}<span class="updating">updating…</span>{/if}
+			<RangePicker range={picked} onchange={commit} />
+		</div>
+	{/snippet}
+</Header>
 
 <div class="sections" class:stale={$effect.pending()}>
 	<div class="span">
@@ -80,8 +82,8 @@
 		display: flex;
 		align-items: center;
 		flex-wrap: wrap;
+		justify-content: flex-end;
 		gap: 0.75em;
-		margin-bottom: 1.25em;
 	}
 
 	.sections {

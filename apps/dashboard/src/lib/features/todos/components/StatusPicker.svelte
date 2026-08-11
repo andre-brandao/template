@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { Todo } from '@template/core/todo';
 	import { Spinner } from '@template/ui';
+	import Menu from '$lib/components/Menu.svelte';
 	import { setStatus } from '../api/todos.remote';
 	import { STATUSES, color, label } from '../status';
 
@@ -18,89 +19,55 @@
 		{ key: 'not_planned', status: 'done' as const, label: 'Done · not planned', reason: 'not_planned' }
 	]);
 
-	let open = $state(false);
 	// One shared note: it gives `blocked` its why, and overrides the default done reason.
 	let note = $state('');
-	let wrap: HTMLElement | undefined = $state();
-	let at = $state({ top: 0, left: 0 });
-
-	const HEIGHT = 280;
-
-	/**
-	 * The menu is fixed, not absolute: the board nests it inside two scroll containers
-	 * that would otherwise clip it. That means measuring the trigger on open — and
-	 * closing on scroll, since a fixed layer can't follow it.
-	 */
-	function toggle() {
-		open = !open;
-		if (!open || !wrap) return;
-		const box = wrap.getBoundingClientRect();
-		const below = window.innerHeight - box.bottom;
-		at = {
-			top: below < HEIGHT ? Math.max(8, box.top - HEIGHT - 4) : box.bottom + 4,
-			left: Math.min(box.left, window.innerWidth - 240)
-		};
-	}
 </script>
 
-<svelte:window
-	onclick={(e) => open && wrap && !wrap.contains(e.target as Node) && (open = false)}
-	onkeydown={(e) => open && e.key === 'Escape' && (open = false)}
-	onscrollcapture={() => (open = false)}
-	onresize={() => (open = false)}
-/>
-
-<span class="picker" {@attach (el) => { wrap = el; }}>
-	<button
-		class="current"
-		class:compact
-		type="button"
-		style:--c={color(todo.status)}
-		aria-haspopup="menu"
-		aria-expanded={open}
-		onclick={toggle}
-	>
-		<span class="dot"></span>
-		{label(todo.status)}
-		<span class="caret">▾</span>
-	</button>
-
-	{#if open}
-		<div class="menu" role="menu" style:top="{at.top}px" style:left="{at.left}px">
-			{#each items as item (item.key)}
-				{@const form = setStatus.for(`${todo.id}:${item.key}`)}
-				<form {...form}>
-					<input {...form.fields.id.as('hidden', todo.id)} />
-					<input {...form.fields.status.as('hidden', item.status)} />
-					<input {...form.fields.reason.as('hidden', note || item.reason)} />
-					<button
-						class="item"
-						type="submit"
-						role="menuitem"
-						disabled={!!form.pending || (item.status === todo.status && !item.reason)}
-						onclick={() => (open = false)}
-					>
-						<span class="dot" style:--c={color(item.status)}></span>
-						{item.label}
-						{#if form.pending}<Spinner />{/if}
-					</button>
-				</form>
-			{/each}
-			<label class="note">
-				<span>Reason</span>
-				<input type="text" bind:value={note} placeholder="waiting on design…" />
-			</label>
-		</div>
-	{/if}
+<span class="picker">
+	<Menu>
+		{#snippet trigger(attrs)}
+			<button class="current" class:compact type="button" style:--c={color(todo.status)} {...attrs}>
+				<span class="dot"></span>
+				{label(todo.status)}
+				<span class="caret">▾</span>
+			</button>
+		{/snippet}
+		{#snippet children(close)}
+			<div class="list">
+				{#each items as item (item.key)}
+					{@const form = setStatus.for(`${todo.id}:${item.key}`)}
+					<form {...form}>
+						<input {...form.fields.id.as('hidden', todo.id)} />
+						<input {...form.fields.status.as('hidden', item.status)} />
+						<input {...form.fields.reason.as('hidden', note || item.reason)} />
+						<button
+							class="item"
+							type="submit"
+							role="menuitem"
+							disabled={!!form.pending || (item.status === todo.status && !item.reason)}
+							onclick={close}
+						>
+							<span class="dot" style:--c={color(item.status)}></span>
+							{item.label}
+							{#if form.pending}<Spinner />{/if}
+						</button>
+					</form>
+				{/each}
+				<label class="note">
+					<span>Reason</span>
+					<input type="text" bind:value={note} placeholder="waiting on design…" />
+				</label>
+			</div>
+		{/snippet}
+	</Menu>
 </span>
 
 <style>
 	.picker {
-		position: relative;
 		display: inline-flex;
 	}
 
-	.picker form {
+	.list form {
 		display: contents;
 	}
 
@@ -141,17 +108,10 @@
 		opacity: 0.7;
 	}
 
-	.menu {
-		position: fixed;
-		z-index: 40;
+	.list {
 		min-width: 14em;
 		max-height: 280px;
 		overflow-y: auto;
-		border: 1px solid var(--border);
-		border-radius: var(--radius);
-		background: var(--surface);
-		box-shadow: 0 8px 24px rgb(0 0 0 / 0.15);
-		overflow: hidden;
 	}
 
 	.item {

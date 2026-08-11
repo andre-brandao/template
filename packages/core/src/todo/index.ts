@@ -105,16 +105,23 @@ export namespace Todo {
     return { timeStarted: null, timeDone: null };
   }
 
-  function fields(patch: Patch, before: Info) {
+  /** The columns a patch copies through untouched. */
+  function plain(patch: Patch) {
     return {
       ...(patch.title !== undefined ? { title: patch.title } : {}),
       ...(patch.body !== undefined ? { body: patch.body } : {}),
       ...(patch.tags !== undefined ? { tags: patch.tags } : {}),
       ...(patch.stage !== undefined ? { stage: patch.stage } : {}),
       ...(patch.assignee !== undefined ? { assignee: patch.assignee } : {}),
+      ...(patch.reason !== undefined ? { reason: patch.reason } : {}),
+    };
+  }
+
+  function fields(patch: Patch, before: Info) {
+    return {
+      ...plain(patch),
       ...(patch.startDate !== undefined ? { startDate: date(patch.startDate) } : {}),
       ...(patch.dueDate !== undefined ? { dueDate: date(patch.dueDate) } : {}),
-      ...(patch.reason !== undefined ? { reason: patch.reason } : {}),
       // A transition drops the old reason unless this patch carries a new one.
       ...(patch.status !== undefined
         ? {
@@ -127,20 +134,21 @@ export namespace Todo {
     };
   }
 
+  /** The fields the activity log reports when they change. */
+  const LOGGED = ["title", "body", "tags", "stage", "startDate", "dueDate"] as const;
+
+  /** Tags compare by content; everything else by value. */
+  function same(key: (typeof LOGGED)[number], before: Info, patch: Patch) {
+    if (key === "tags") return patch.tags!.join(" ") === before.tags.join(" ");
+    return patch[key] === before[key];
+  }
+
   function diff(before: Info, patch: Patch) {
     const changed: Record<string, { before: unknown; after: unknown }> = {};
-    if (patch.title !== undefined && patch.title !== before.title)
-      changed.title = { before: before.title, after: patch.title };
-    if (patch.body !== undefined && patch.body !== before.body)
-      changed.body = { before: before.body, after: patch.body };
-    if (patch.tags !== undefined && patch.tags.join(" ") !== before.tags.join(" "))
-      changed.tags = { before: before.tags, after: patch.tags };
-    if (patch.stage !== undefined && patch.stage !== before.stage)
-      changed.stage = { before: before.stage, after: patch.stage };
-    if (patch.startDate !== undefined && patch.startDate !== before.startDate)
-      changed.startDate = { before: before.startDate, after: patch.startDate };
-    if (patch.dueDate !== undefined && patch.dueDate !== before.dueDate)
-      changed.dueDate = { before: before.dueDate, after: patch.dueDate };
+    for (const key of LOGGED) {
+      if (patch[key] === undefined || same(key, before, patch)) continue;
+      changed[key] = { before: before[key], after: patch[key] };
+    }
     return changed;
   }
 
@@ -314,6 +322,46 @@ export namespace Todo {
     ),
   );
 
+  async function moved(id: string, before: Info, next: Patch, tags: string[]) {
+    if (next.status === undefined || next.status === before.status) return;
+    await Event.create({
+      type: "todo.status",
+      source: "todo",
+      sourceID: id,
+      tags,
+      data: { from: before.status, to: next.status, reason: next.reason ?? null },
+    });
+  }
+
+  async function assigned(id: string, before: Info, next: Patch, tags: string[]) {
+    const prev = before.assignee?.id ?? null;
+    if (next.assignee === undefined || next.assignee === prev) return;
+    await Event.create({
+      type: "todo.assigned",
+      source: "todo",
+      sourceID: id,
+      tags,
+      data: { from: prev, to: next.assignee },
+    });
+  }
+
+  /** Emits the status/assignee/field events a patch implies. */
+  async function emit(id: string, before: Info, next: Patch) {
+    const tags = next.tags ?? before.tags;
+    await moved(id, before, next, tags);
+    await assigned(id, before, next, tags);
+
+    const changed = diff(before, next);
+    if (Object.keys(changed).length)
+      await Event.create({
+        type: "todo.updated",
+        source: "todo",
+        sourceID: id,
+        tags,
+        data: changed,
+      });
+  }
+
   export const update = fn(Patch.extend({ id: Info.shape.id }), async ({ id, ...patch }) => {
     const before = found("Todo", await fromID.force(id));
     const next = {
@@ -324,36 +372,7 @@ export namespace Todo {
 
     return Database.transaction(async (tx) => {
       await tx.update(TodoTable).set(fields(next, before)).where(eq(TodoTable.id, id));
-
-      const tags = next.tags ?? before.tags;
-
-      if (next.status !== undefined && next.status !== before.status)
-        await Event.create({
-          type: "todo.status",
-          source: "todo",
-          sourceID: id,
-          tags,
-          data: { from: before.status, to: next.status, reason: next.reason ?? null },
-        });
-
-      if (next.assignee !== undefined && next.assignee !== (before.assignee?.id ?? null))
-        await Event.create({
-          type: "todo.assigned",
-          source: "todo",
-          sourceID: id,
-          tags,
-          data: { from: before.assignee?.id ?? null, to: next.assignee },
-        });
-
-      const changed = diff(before, next);
-      if (Object.keys(changed).length)
-        await Event.create({
-          type: "todo.updated",
-          source: "todo",
-          sourceID: id,
-          tags,
-          data: changed,
-        });
+      await emit(id, before, next);
     });
   });
 

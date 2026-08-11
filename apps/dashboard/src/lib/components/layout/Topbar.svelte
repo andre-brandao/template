@@ -4,6 +4,7 @@
 	import { dev } from '$app/environment';
 	import type { User } from '@template/core/user';
 	import Avatar from '../Avatar.svelte';
+	import Menu from '../Menu.svelte';
 
 	// `onmenu` is passed exactly where a sidebar exists to open, so it doubles as the
 	// signal to render the rail — the left cell that lines up with that sidebar.
@@ -37,14 +38,35 @@
 
 	{#if user}
 		<div class="side">
-			<a class="me" href="/settings/profile" aria-current={active ? 'page' : undefined}>
-				<Avatar name={user.name} image={user.image} />
-				<span class="meta">
-					<span class="name">{user.name}</span>
-					<span class="email">{user.email}</span>
-				</span>
-			</a>
-			<a href="/logout">Log out</a>
+			<Menu align="end">
+				{#snippet trigger(attrs)}
+					<button class="me" type="button" {...attrs}>
+						<Avatar name={user.name} image={user.image} />
+						<span class="meta">
+							<span class="name">{user.name}</span>
+							<span class="email">{user.email}</span>
+						</span>
+						<span class="caret" aria-hidden="true">▾</span>
+					</button>
+				{/snippet}
+				{#snippet children(close)}
+					<div class="sheet">
+						<!-- The bar hides name and email on small screens; the menu carries them instead. -->
+						<div class="who">
+							<span class="name">{user.name}</span>
+							<span class="email">{user.email}</span>
+						</div>
+						<a
+							class="item"
+							role="menuitem"
+							href="/settings/profile"
+							aria-current={active ? 'page' : undefined}
+							onclick={close}>Settings</a
+						>
+						<a class="item leave" role="menuitem" href="/logout" onclick={close}>Log out</a>
+					</div>
+				{/snippet}
+			</Menu>
 		</div>
 	{:else}
 		<a class="login" href="/login">Log in</a>
@@ -140,7 +162,6 @@
 	.side {
 		display: flex;
 		align-items: center;
-		gap: 1.1em;
 		margin-left: auto;
 	}
 
@@ -149,6 +170,14 @@
 	.login {
 		align-self: center;
 		margin-left: auto;
+		font-family: var(--font-mono);
+		font-size: 0.82em;
+		color: var(--muted);
+		text-decoration: none;
+	}
+
+	.login:hover {
+		color: var(--ink);
 	}
 
 	.me {
@@ -157,13 +186,60 @@
 		gap: 0.6em;
 		padding: 0.25em 0.5em;
 		margin: -0.25em -0.5em;
+		border: none;
 		border-radius: var(--radius);
-		text-decoration: none;
+		background: none;
+		font: inherit;
+		text-align: left;
+		color: var(--ink);
+		cursor: pointer;
 	}
 
 	.me:hover,
-	.me[aria-current='page'] {
+	.me[aria-expanded='true'] {
 		background: var(--surface-2);
+	}
+
+	.caret {
+		font-size: 0.7em;
+		color: var(--dim);
+	}
+
+	.sheet {
+		min-width: 13em;
+		padding: 0.35em;
+	}
+
+	.who {
+		display: flex;
+		flex-direction: column;
+		gap: 0.1em;
+		padding: 0.5em 0.65em 0.6em;
+		margin-bottom: 0.35em;
+		border-bottom: 1px solid var(--border);
+	}
+
+	.item {
+		display: block;
+		padding: 0.5em 0.65em;
+		border-radius: calc(var(--radius) - 3px);
+		font-size: 0.88em;
+		color: var(--ink);
+		text-decoration: none;
+	}
+
+	.item:hover,
+	.item[aria-current='page'] {
+		background: var(--surface-2);
+	}
+
+	.leave {
+		color: var(--muted);
+	}
+
+	.leave:hover {
+		color: var(--danger);
+		background: color-mix(in srgb, var(--danger) 8%, transparent);
 	}
 
 	.meta {
@@ -182,17 +258,6 @@
 		font-family: var(--font-mono);
 		font-size: 0.7em;
 		color: var(--dim);
-	}
-
-	header a:not(.brand):not(.me) {
-		font-family: var(--font-mono);
-		font-size: 0.82em;
-		color: var(--muted);
-		text-decoration: none;
-	}
-
-	header a:not(.brand):not(.me):hover {
-		color: var(--ink);
 	}
 
 	@media (max-width: 700px) {

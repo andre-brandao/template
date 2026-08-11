@@ -3,6 +3,7 @@
 	import favicon from '$lib/assets/favicon.svg';
 	import { navigating } from '$app/state';
 	import PreLoadingIndicator from './PreLoadingIndicator.svelte';
+	import ViewTransitions from './ViewTransitions.svelte';
 	import { provide } from '$lib/utils/context';
 
 	let { data, children } = $props();
@@ -18,6 +19,8 @@
 </script>
 
 <svelte:head><link rel="icon" href={favicon} /></svelte:head>
+
+<ViewTransitions />
 
 {#if navigating.complete}
 	<PreLoadingIndicator />

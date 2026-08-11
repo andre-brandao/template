@@ -2,20 +2,29 @@
 	import type { Snippet } from 'svelte';
 
 	// Standard page header: a title row with optional actions, then children as the lead.
-	let { title, actions, children }: { title: string; actions?: Snippet; children?: Snippet } =
-		$props();
+	let {
+		title,
+		actions,
+		children
+	}: { title: string | Snippet; actions?: Snippet; children?: Snippet } = $props();
 </script>
 
-<div class="head">
-	<h1>{title}</h1>
-	{#if actions}{@render actions()}{/if}
-</div>
+<header>
+	<div class="head">
+		<h1>{#if typeof title === 'string'}{title}{:else}{@render title()}{/if}</h1>
+		{#if actions}{@render actions()}{/if}
+	</div>
 
-{#if children}
-	<p class="lead">{@render children()}</p>
-{/if}
+	{#if children}
+		<p class="lead">{@render children()}</p>
+	{/if}
+</header>
 
 <style>
+	header {
+		view-transition-name: shell-header;
+	}
+
 	.head {
 		display: flex;
 		align-items: center;

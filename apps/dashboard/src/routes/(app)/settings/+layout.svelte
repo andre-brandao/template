@@ -13,6 +13,10 @@
 		},
 		{ title: 'Workspace', items: [{ href: '/settings/keys', label: 'API keys' }] }
 	];
+	const crumbs = [
+		{ href: '/', label: 'Home' },
+		{ href: '/settings', label: 'Settings' }
+	];
 </script>
 
-<Shell back={{ href: '/todos', label: 'Back' }} {sections}>{@render children()}</Shell>
+<Shell back={{ href: '/todos', label: 'Back' }} {sections} {crumbs}>{@render children()}</Shell>

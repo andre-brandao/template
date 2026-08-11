@@ -23,6 +23,19 @@ test("the settings nav links the user and workspace sections", async ({ page, as
   );
 });
 
+test("breadcrumbs show the current settings hierarchy", async ({ page, as }) => {
+  await as("user");
+  await page.goto("/settings/experience");
+
+  const crumbs = page.getByRole("navigation", { name: "Breadcrumb" });
+  await expect(crumbs.getByRole("link", { name: "Home" })).toHaveAttribute("href", "/");
+  await expect(crumbs.getByRole("link", { name: "Settings" })).toHaveAttribute("href", "/settings");
+  await expect(crumbs.getByText("Experience", { exact: true })).toHaveAttribute(
+    "aria-current",
+    "page",
+  );
+});
+
 test("picking a theme applies instantly and survives a reload", async ({ page, as }) => {
   await as("user");
   await page.goto("/settings/experience");

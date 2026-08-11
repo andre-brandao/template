@@ -11,7 +11,7 @@
 	import StatusSection from '../components/insights/StatusSection.svelte';
 	import LoadSection from '../components/insights/LoadSection.svelte';
 	import Skeleton from '../components/insights/Skeleton.svelte';
-	import { getSource } from '$lib/features/events/api/sources.remote';
+	import Source from '$lib/features/events/components/Source.svelte';
 
 	let { source, sourceID }: { source?: string; sourceID?: string } = $props();
 
@@ -27,12 +27,10 @@
 	const picked = $derived(valid(params) ? { start: params.start, end: params.end } : fallback);
 	const range = $derived({ ...picked, ...scope });
 	const commit = debounce(params.update, 250);
-
-	const src = $derived(source && sourceID ? await getSource({ source, sourceID }) : undefined);
-	const title = $derived(src?.name ?? 'Insights');
 </script>
 
-<Header {title}>
+<Header>
+	{#snippet title()}<Source {source} {sourceID} fallback="Insights" />{/snippet}
 	{#snippet actions()}
 		<div class="toolbar">
 			{#if $effect.pending()}<span class="updating">updating…</span>{/if}

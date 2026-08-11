@@ -2,20 +2,25 @@
 	import type { Snippet } from 'svelte';
 	import { page } from '$app/state';
 	import { afterNavigate } from '$app/navigation';
+	import { resolve } from '$app/paths';
+	import type { Pathname } from '$app/types';
 	import { Drawer } from '@template/ui';
 	import { user } from '$lib/utils/context';
 	import Topbar from './Topbar.svelte';
 
 	type Item = { href: string; label: string; exact?: boolean };
+	type Crumb = { href?: string; label: string };
 
 	let {
 		back,
 		sections,
+		crumbs = [{ href: '/', label: 'Home' }],
 		head,
 		children
 	}: {
 		back?: { href: string; label: string };
 		sections: { title?: string; items: Item[]; bottom?: boolean }[];
+		crumbs?: Crumb[];
 		head?: Snippet;
 		children: Snippet;
 	} = $props();
@@ -29,30 +34,47 @@
 		(item.exact ? page.url.pathname === item.href : page.url.pathname.startsWith(item.href))
 			? 'page'
 			: undefined;
+	const current = $derived(
+		sections
+			.flatMap((section) => section.items)
+			.filter((item) => at(item))
+			.sort((a, b) => b.href.length - a.href.length)[0]
+	);
+	const trail = $derived.by(() => {
+		const items = crumbs.slice();
+		if (current && items.at(-1)?.href !== current.href)
+			items.push({ href: current.href, label: current.label });
+		if (current && current.href !== page.url.pathname) items.push({ label: 'Details' });
+		return items;
+	});
 
 	afterNavigate(() => (open = false));
 </script>
 
 {#snippet menu()}
 	{#if back}
-		<a class="back" href={back.href}>&larr; {back.label}</a>
+		<a class="back" href={resolve(back.href as Pathname)} data-transition="back"
+			>&larr; {back.label}</a
+		>
 	{/if}
 	<nav>
 		{#each sections as section (section.title ?? section.items[0]?.href)}
 			<div class="section" class:bottom={section.bottom}>
 				{#if section.title}<span class="title">{section.title}</span>{/if}
 				{#each section.items as item (item.href)}
-					<a class="navlink" href={item.href} aria-current={at(item)}>{item.label}</a>
+					<a class="navlink" href={resolve(item.href as Pathname)} aria-current={at(item)}
+						>{item.label}</a
+					>
 				{/each}
 			</div>
 		{/each}
 	</nav>
 {/snippet}
 
-<Topbar user={me.current} {head} onmenu={() => (open = true)} />
+<Topbar user={me.current} {head} crumbs={trail} onmenu={() => (open = true)} />
 
 <div class="body">
-	<aside>{@render menu()}</aside>
+	<aside><div class="menu" data-shell-nav>{@render menu()}</div></aside>
 	<main>{@render children()}</main>
 </div>
 
@@ -67,11 +89,16 @@
 		flex: 1;
 	}
 
-	aside,
+	.menu,
 	.sheet {
 		display: flex;
 		flex-direction: column;
 		gap: 1.25em;
+	}
+
+	.menu {
+		flex: 1;
+		view-transition-name: shell-nav;
 	}
 
 	aside {
@@ -96,6 +123,7 @@
 		max-width: 1440px;
 		margin: 0 auto;
 		padding: 1.75em 1.25em 3em;
+		view-transition-name: shell-main;
 	}
 
 	nav {

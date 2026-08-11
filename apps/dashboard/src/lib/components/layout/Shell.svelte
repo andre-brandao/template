@@ -15,7 +15,7 @@
 		children
 	}: {
 		back?: { href: string; label: string };
-		sections: { title?: string; items: Item[] }[];
+		sections: { title?: string; items: Item[]; bottom?: boolean }[];
 		head?: Snippet;
 		children: Snippet;
 	} = $props();
@@ -38,8 +38,8 @@
 		<a class="back" href={back.href}>&larr; {back.label}</a>
 	{/if}
 	<nav>
-		{#each sections as section (section.title ?? '')}
-			<div class="section">
+		{#each sections as section (section.title ?? section.items[0]?.href)}
+			<div class="section" class:bottom={section.bottom}>
 				{#if section.title}<span class="title">{section.title}</span>{/if}
 				{#each section.items as item (item.href)}
 					<a class="navlink" href={item.href} aria-current={at(item)}>{item.label}</a>
@@ -77,6 +77,12 @@
 	aside {
 		width: var(--rail);
 		flex-shrink: 0;
+		/* Pinned below the sticky topbar so the page scrolls under it; the fixed
+		   height leaves room for bottom-anchored items via margin-top: auto. */
+		position: sticky;
+		top: var(--topbar);
+		height: calc(100dvh - var(--topbar));
+		overflow-y: auto;
 		padding: 1.25em 0.75em;
 		border-right: 1px solid var(--border);
 		background: var(--surface);
@@ -96,6 +102,12 @@
 		display: flex;
 		flex-direction: column;
 		gap: 1.5em;
+		/* Fills the rail so a `bottom` section's auto margin has room to push. */
+		flex: 1;
+	}
+
+	.bottom {
+		margin-top: auto;
 	}
 
 	.section {

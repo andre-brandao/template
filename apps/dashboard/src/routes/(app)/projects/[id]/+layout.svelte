@@ -10,9 +10,12 @@
 			items: [
 				{ href: `/projects/${params.id}`, label: 'Overview', exact: true },
 				{ href: `/projects/${params.id}/todos`, label: 'Todos' },
-				{ href: `/projects/${params.id}/insights`, label: 'Insights' },
-				{ href: `/projects/${params.id}/settings`, label: 'Settings' }
+				{ href: `/projects/${params.id}/insights`, label: 'Insights' }
 			]
+		},
+		{
+			bottom: true,
+			items: [{ href: `/projects/${params.id}/settings`, label: 'Settings' }]
 		}
 	]);
 </script>

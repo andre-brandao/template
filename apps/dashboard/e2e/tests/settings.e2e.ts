@@ -95,7 +95,9 @@ test("the date format preference reaches the rest of the app", async ({ page, as
   // as a navigation and would interrupt the goto below. Let it settle first.
   await page.waitForLoadState("networkidle");
 
-  await page.goto("/todos");
+  // Retry once: even settled, WebKit sometimes lets the revalidation interrupt the
+  // hard navigation ("interrupted by another navigation"); by the retry it's done.
+  await page.goto("/todos").catch(() => page.goto("/todos"));
   // The table's Due column carries the bare date; "Due" itself is the column header.
   const row = page.getByRole("row", { name: title });
   await expect(row.getByText("Mar 12, 2024", { exact: true })).toBeVisible();
@@ -107,6 +109,6 @@ test("the date format preference reaches the rest of the app", async ({ page, as
   await ymd;
   await page.waitForLoadState("networkidle");
 
-  await page.goto("/todos");
+  await page.goto("/todos").catch(() => page.goto("/todos"));
   await expect(row.getByText("2024 Mar 12", { exact: true })).toBeVisible();
 });

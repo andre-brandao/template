@@ -38,7 +38,9 @@ export namespace Database {
     const sql = pg(url, {
       connect_timeout: 10,
       prepare: false,
-      max: 1,
+      // A shared client serves the whole process, so it needs room for concurrent
+      // requests. pglite accepts exactly one connection — dev sets PG_MAX=1 for it.
+      max: Number(process.env.PG_MAX ?? 10),
       idle_timeout: 20,
       // pglite emits a DEBUG notice per parse/bind; postgres.js console.logs every notice by default
       onnotice: (notice) => {

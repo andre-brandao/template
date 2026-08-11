@@ -36,12 +36,17 @@ jobs:
           report_paths: "**/junit.xml"
           check_name: Test report
           include_passed: true
+      - name: Coverage summary
+        if: always()
+        run: bun scripts/coverage.ts >> "$GITHUB_STEP_SUMMARY"
       - name: Upload test reports
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: junit
-          path: "**/junit.xml"
+          path: |
+            **/junit.xml
+            **/coverage/lcov.info
           if-no-files-found: warn
 
   fallow:

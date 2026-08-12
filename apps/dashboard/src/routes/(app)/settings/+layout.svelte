@@ -1,4 +1,7 @@
 <script lang="ts">
+	import KeyRound from '@lucide/svelte/icons/key-round';
+	import Sparkles from '@lucide/svelte/icons/sparkles';
+	import UserRound from '@lucide/svelte/icons/user-round';
 	import Shell from '$lib/components/layout/Shell.svelte';
 
 	let { children } = $props();
@@ -7,11 +10,14 @@
 		{
 			title: 'User',
 			items: [
-				{ href: '/settings/profile', label: 'Profile' },
-				{ href: '/settings/experience', label: 'Experience' }
+				{ href: '/settings/profile', label: 'Profile', icon: UserRound },
+				{ href: '/settings/experience', label: 'Experience', icon: Sparkles }
 			]
 		},
-		{ title: 'Workspace', items: [{ href: '/settings/keys', label: 'API keys' }] }
+		{
+			title: 'Workspace',
+			items: [{ href: '/settings/keys', label: 'API keys', icon: KeyRound }]
+		}
 	];
 	const crumbs = [
 		{ href: '/', label: 'Home' },

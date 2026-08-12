@@ -1,4 +1,5 @@
 import { describe, expect } from "bun:test";
+import { Actor } from "../src/actor";
 import { Project } from "../src/project";
 import { Todo } from "../src/todo";
 import { withTestUser } from "./util";
@@ -40,5 +41,32 @@ describe("project", () => {
 
     expect(await Project.fromID(sourceID)).toBeNull();
     expect((await Todo.list({ source: "project", sourceID })).data).toHaveLength(1);
+  });
+
+  withTestUser("a signed-out caller is denied", async () => {
+    const id = await Project.create({ name: "Private" });
+    await Actor.provide("public", {}, async () => {
+      // `list` guards before it touches a promise, same as the zod parse in `fn`; `remove`
+      // is async, so the identical throw surfaces as a rejection.
+      expect(() => Project.list({})).toThrow(/project:read/);
+      await expect(Project.remove(id)).rejects.toThrow(/project:read/);
+    });
+  });
+
+  // `member` is permissive on projects today, so ownership is exercised through the actor
+  // rather than the role map. This is the seam that tightens to `delete:own` later.
+  withTestUser("the owner argument reaches the check", async ({ userID }) => {
+    const id = await Project.create({ name: "Mine" });
+    const before = await Project.fromID(id);
+    expect(before?.createdBy).toBe(userID);
+    expect(Actor.can({ project: ["delete"] }, before?.createdBy)).toBe(true);
+  });
+
+  withTestUser("system bypasses enforcement", async () => {
+    const id = await Project.create({ name: "Batch" });
+    await Actor.provide("system", {}, async () => {
+      await Project.update({ id, name: "Renamed by a job" });
+      expect((await Project.fromID(id))?.name).toBe("Renamed by a job");
+    });
   });
 });

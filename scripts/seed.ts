@@ -5,6 +5,7 @@ import { Database, sql } from "@template/core/drizzle";
 import { Project } from "@template/core/project";
 import { Todo } from "@template/core/todo";
 import { Auth } from "@template/core/user/auth";
+import { User } from "@template/core/user";
 import { Key } from "@template/core/key";
 
 const url = process.env.DATABASE_URL ?? Database.DEFAULT_URL;
@@ -119,6 +120,9 @@ function status(due: number) {
 
 const result = await Database.provide(url, async () => {
   const userID = await Auth.provision({ provider: "email", accountId: email, email, name });
+  // The dev account owns the instance: `/admin` is otherwise unreachable without hand-writing
+  // the promotion SQL. The team below stay members, so both roles are represented locally.
+  await Actor.provide("system", {}, () => User.assign({ id: userID, role: "admin" }));
   const key = await Key.create({ userID, name: "seed" });
   const mates = await Promise.all(
     team.map((one) =>
@@ -128,7 +132,8 @@ const result = await Database.provide(url, async () => {
   // Unassigned shows up as its own lane in the board and the load chart.
   const assignees = [userID, ...mates, null, ...mates];
 
-  await Actor.provide("user", { userID }, async () => {
+  // Matches the row the seed just wrote, so a check that would fail for real fails here too.
+  await Actor.provide("user", { userID, role: "admin" }, async () => {
     const list = await Todo.list({ page: 1, pageSize: 100 });
     if (list.total > 0) return;
 

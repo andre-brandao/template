@@ -2,6 +2,7 @@
 	import { Button, FormBoundary, Input } from '@template/ui';
 	import Header from '$lib/components/Header.svelte';
 	import AvatarUpload from '$lib/components/AvatarUpload.svelte';
+	import Can from '$lib/components/Can.svelte';
 	import { getProject, updateProject } from '../api/projects.remote';
 	import DeleteDialog from '../components/DeleteDialog.svelte';
 
@@ -70,16 +71,18 @@
 	</div>
 </section>
 
-<section class="row danger">
-	<div class="label">
-		<h2>Delete project</h2>
-		<p>Deleting a project takes its stages and insights with it. Its todos are kept.</p>
-	</div>
+<Can grants={{ project: ['delete'] }} owner={project.createdBy}>
+	<section class="row danger">
+		<div class="label">
+			<h2>Delete project</h2>
+			<p>Deleting a project takes its stages and insights with it. Its todos are kept.</p>
+		</div>
 
-	<div class="controls">
-		<DeleteDialog {id} name={project.name} />
-	</div>
-</section>
+		<div class="controls">
+			<DeleteDialog {id} name={project.name} />
+		</div>
+	</section>
+</Can>
 
 <style>
 	h2 {

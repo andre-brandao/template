@@ -5,7 +5,7 @@ import { seed } from "../util/seed";
 // seeded project rather than relying on per-user lists.
 
 test("creating a todo through the form shows it in the list", async ({ page, as }) => {
-  await as("user");
+  await as();
   await page.goto("/todos");
 
   // Unique per attempt: todos are workspace-wide and the database lives for the whole
@@ -19,7 +19,7 @@ test("creating a todo through the form shows it in the list", async ({ page, as 
 });
 
 test("existing todos are listed", async ({ page, as }) => {
-  const session = await as("user");
+  const session = await as();
   const project = await seed(session.userID, ["Buy milk", "Renew passport"]);
 
   await page.goto(`/projects/${project}/todos`);
@@ -29,7 +29,7 @@ test("existing todos are listed", async ({ page, as }) => {
 });
 
 test("the board can group by stage", async ({ page, as }) => {
-  const session = await as("user");
+  const session = await as();
   const project = await seed(session.userID, ["Draft the brief", "Ship the build"]);
 
   await page.goto(`/projects/${project}/todos?view=board&group=stage`);
@@ -42,7 +42,7 @@ test("the board can group by stage", async ({ page, as }) => {
 });
 
 test("the timeline plots dated todos", async ({ page, as }) => {
-  const session = await as("user");
+  const session = await as();
   const project = await seed(session.userID, ["Kick off"]);
 
   await page.goto(`/projects/${project}/todos?view=timeline`);
@@ -53,7 +53,7 @@ test("the timeline plots dated todos", async ({ page, as }) => {
 });
 
 test("starting a todo records it as active", async ({ page, as }) => {
-  const session = await as("user");
+  const session = await as();
   const project = await seed(session.userID, ["Start me"]);
 
   await page.goto(`/projects/${project}/todos`);

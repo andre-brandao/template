@@ -3,12 +3,26 @@ import { and, eq } from "drizzle-orm";
 import { fn } from "../util/fn";
 import { Actor } from "../actor";
 import { Database } from "../drizzle";
+import { ErrorCodes, VisibleError } from "../error";
 import { Identifier } from "../identifier";
 import { User } from "./index";
 import { UserTable } from "./user.sql";
 import { ProviderIds, ProviderTable } from "./provider.sql";
 
 export namespace Auth {
+  /**
+   * A disabled account is turned away at the door rather than at the first query, so a
+   * logout/login round-trip can't hand the session back and bounce them off `fromID`.
+   */
+  function alive(row?: { timeDeleted: Date | null }) {
+    if (!row?.timeDeleted) return;
+    throw new VisibleError(
+      "forbidden",
+      ErrorCodes.Permission.ACCOUNT_RESTRICTED,
+      "This account has been disabled",
+    );
+  }
+
   const Tokens = z.object({
     access: z.string(),
     refresh: z.string().nullable().optional(),
@@ -42,15 +56,17 @@ export namespace Auth {
         };
 
         const byProvider = await tx
-          .select({ userID: ProviderTable.userID })
+          .select({ userID: ProviderTable.userID, timeDeleted: UserTable.timeDeleted })
           .from(ProviderTable)
+          .innerJoin(UserTable, eq(UserTable.id, ProviderTable.userID))
           .where(
             and(
               eq(ProviderTable.providerId, input.provider),
               eq(ProviderTable.accountId, input.accountId),
             ),
           )
-          .then((rows) => rows.at(0)?.userID);
+          .then((rows) => rows.at(0));
+        alive(byProvider);
         if (byProvider) {
           if (tokens)
             await tx
@@ -62,17 +78,21 @@ export namespace Auth {
                   eq(ProviderTable.accountId, input.accountId),
                 ),
               );
-          return byProvider;
+          return byProvider.userID;
         }
 
+        // Matched on email, not provider: linking a second login onto a disabled account
+        // would hand it back, so the same guard applies before the provider row is written.
         const byEmail = await tx
-          .select({ id: UserTable.id })
+          .select({ id: UserTable.id, timeDeleted: UserTable.timeDeleted })
           .from(UserTable)
           .where(eq(UserTable.email, input.email))
-          .then((rows) => rows.at(0)?.id);
+          .then((rows) => rows.at(0));
+        alive(byEmail);
 
         const userID =
-          byEmail ?? (await User.create({ name: input.name ?? input.email, email: input.email }));
+          byEmail?.id ??
+          (await User.create({ name: input.name ?? input.email, email: input.email }));
 
         await tx.insert(ProviderTable).values({
           id: Identifier.create("provider"),

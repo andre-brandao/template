@@ -33,6 +33,7 @@
   /* The app frame. The topbar's left cell and the sidebar share `--rail` so they line
      up as one column, and `--topbar` is fixed so its contents can't change its height. */
   --rail: 220px;
+  --rail-tight: 60px;
   --topbar: 60px;
   --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-mono: ui-monospace, "JetBrains Mono", "SF Mono", "Cascadia Code", monospace;
@@ -96,6 +97,29 @@ a {
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--dim);
+}
+
+/* A screen that scrolls its list rather than the page, so its header, filters and pager
+   stay put. `--fill` comes from the shell's <main> — what the viewport has left once the
+   topbar and that padding are taken — and the one `.scroll` child takes whatever the fixed
+   chrome above and below it doesn't use. */
+.fill {
+  display: flex;
+  flex-direction: column;
+  height: var(--fill);
+  /* Below this the list is too short to be worth its own scroller; let the page scroll
+     instead of squeezing it to two rows. */
+  min-height: 22em;
+}
+
+.scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  /* Reaching the end shouldn't hand the scroll to the document behind it. */
+  overscroll-behavior: contain;
+  /* Room for the scrollbar so rows don't shift under it. */
+  scrollbar-gutter: stable;
 }
 
 /* Shared by the app sidebar and the settings nav; each sets its own type scale. */

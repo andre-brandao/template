@@ -10,7 +10,8 @@ export namespace Examples {
     email: "john@example.com",
     emailVerified: true,
     image: null,
-  };
+    role: "member",
+  } as const;
 
   export const Project = {
     id: Id("project"),
@@ -57,6 +58,7 @@ export namespace Examples {
   export const Event = {
     id: Id("event"),
     userID: Id("user"),
+    user: { id: Id("user"), name: "John Doe", image: null },
     type: "todo.created",
     source: "todo",
     sourceID: Id("todo"),

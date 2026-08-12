@@ -1,6 +1,8 @@
 import { z } from "zod";
 import { Actor } from "../actor";
 import { Context } from "../context";
+import { found } from "../error";
+import { User } from "../user";
 import { Log } from "../util/log";
 import type * as port from "./port";
 import { db } from "./adapter/db";
@@ -84,12 +86,15 @@ export namespace Queue {
    * the polling drivers; the Cloudflare consumer calls it directly, since that driver
    * hands jobs over as a pushed batch instead of something to reserve.
    */
-  export function run(job: Job) {
+  export async function run(job: Job) {
     const def = jobs.get(job.name);
     if (!def) throw new Error(`No handler defined for job ${job.name}`);
     const input = def.schema.parse(job.payload);
-    if (!job.userID) return Actor.provide("public", {}, () => def.cb(input));
-    return Actor.provide("user", { userID: job.userID }, () => def.cb(input));
+    // No pusher means the app itself queued this, so it runs unchecked. A pushed job
+    // replays as its user, at whatever role that user holds *now*.
+    if (!job.userID) return Actor.provide("system", {}, () => def.cb(input));
+    const row = found("User", await User.fromID(job.userID));
+    return Actor.provide("user", { userID: job.userID, role: row.role }, () => def.cb(input));
   }
 
   /** Runs at most one job. False when nothing was due. */

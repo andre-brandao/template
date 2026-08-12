@@ -12,6 +12,7 @@
     "./error": "./src/error.ts",
     "./examples": "./src/examples.ts",
     "./identifier": "./src/identifier.ts",
+    "./permission": "./src/permission.ts",
     "./drizzle/*": "./src/drizzle/*.ts",
     "./email/*": "./src/email/*.ts",
     "./queue/*": "./src/queue/*.ts",

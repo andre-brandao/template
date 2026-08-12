@@ -48,7 +48,9 @@ describe("auth", () => {
       tokens: { access: "tok-1", refresh: "ref-1" },
     });
 
-    const first = await Actor.provide("user", { userID }, () => Auth.tokens("github"));
+    const first = await Actor.provide("user", { userID, role: "member" }, () =>
+      Auth.tokens("github"),
+    );
     expect(first?.access).toBe("tok-1");
     expect(first?.refresh).toBe("ref-1");
 
@@ -59,7 +61,9 @@ describe("auth", () => {
       email,
       tokens: { access: "tok-2", refresh: "ref-2" },
     });
-    const second = await Actor.provide("user", { userID }, () => Auth.tokens("github"));
+    const second = await Actor.provide("user", { userID, role: "member" }, () =>
+      Auth.tokens("github"),
+    );
     expect(second?.access).toBe("tok-2");
   });
 
@@ -67,7 +71,9 @@ describe("auth", () => {
     const email = testEmail();
     const userID = await Auth.provision({ provider: "email", accountId: email, email });
 
-    const tokens = await Actor.provide("user", { userID }, () => Auth.tokens("github"));
+    const tokens = await Actor.provide("user", { userID, role: "member" }, () =>
+      Auth.tokens("github"),
+    );
     expect(tokens).toBeNull();
   });
 });

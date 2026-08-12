@@ -27,6 +27,11 @@ function create(init: boolean) {
   let focused = $state(false);
   let timer: ReturnType<typeof setTimeout>;
 
+  const out = () => {
+    clearTimeout(timer);
+    hover = false;
+  };
+
   return {
     get tight() {
       return tight;
@@ -50,9 +55,19 @@ function create(init: boolean) {
     over() {
       timer = setTimeout(() => (hover = true), 90);
     },
-    out() {
-      clearTimeout(timer);
-      hover = false;
+    out,
+    /**
+     * The column is the topbar's left cell stacked on the sidebar, two elements that both
+     * start at the viewport's left edge and share a width — so "still in the column" is one
+     * horizontal test, and crossing from the menu up to the project picker doesn't read as
+     * leaving. It also rejects a phantom leave: a view transition hides the live DOM behind
+     * its snapshots, so mid-navigation the browser hit-tests the pointer onto <html> and
+     * reports it leaving a rail it never left.
+     */
+    leave(e: PointerEvent & { currentTarget: HTMLElement }) {
+      const edge = e.currentTarget.getBoundingClientRect().right;
+      if (e.clientX < edge && e.clientY >= 0 && e.clientY < innerHeight) return;
+      out();
     },
     /**
      * Kept apart from `hover` on purpose: clicking a link destroys it, which fires focusout

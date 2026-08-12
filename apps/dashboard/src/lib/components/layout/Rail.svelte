@@ -7,17 +7,28 @@
 	import type { Snippet } from 'svelte';
 	import PanelLeft from '@lucide/svelte/icons/panel-left';
 	import Brand from './Brand.svelte';
+	import { sidebar } from './rail.svelte';
 
-	let {
-		onmenu,
-		tight = false,
-		peek = false,
-		head
-	}: { onmenu: () => void; tight?: boolean; peek?: boolean; head?: Snippet<[boolean]> } =
-		$props();
+	let { onmenu, head }: { onmenu: () => void; head?: Snippet<[boolean]> } = $props();
+
+	// Straight from context rather than down through the Topbar: this cell is half the hover
+	// target, so it has to peek the rail open itself, not just be told the width.
+	const rail = sidebar();
+	const tight = $derived(rail.shut);
 </script>
 
-<div class="rail" class:tight class:peek>
+<!-- svelte-ignore a11y_no_static_element_interactions -->
+<!-- Hover here only widens the cell; nothing is operated by pointing at it, and everything
+     inside that can be used is a control in its own right. -->
+<div
+	class="rail"
+	class:tight
+	class:peek={rail.peek}
+	onpointerenter={rail.over}
+	onpointerleave={rail.leave}
+	onfocusin={() => rail.focus(true)}
+	onfocusout={(e) => rail.focus(e.currentTarget.contains(e.relatedTarget as Node))}
+>
 	<button class="menu" type="button" aria-label="Open menu" onclick={onmenu}>
 		<PanelLeft size={17} strokeWidth={1.75} />
 	</button>

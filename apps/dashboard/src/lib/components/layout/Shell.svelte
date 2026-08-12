@@ -31,17 +31,6 @@
 	const rail = sidebar();
 	let open = $state(false);
 
-	// A view transition hides the live DOM behind its snapshots, so mid-navigation the browser
-	// hit-tests the pointer onto <html> and reports it leaving a rail it never left — then
-	// entering again when the snapshots come down. Only a pointer genuinely outside the box
-	// shuts the peek; the phantom pair is ignored.
-	const leave = (e: PointerEvent & { currentTarget: HTMLElement }) => {
-		const box = e.currentTarget.getBoundingClientRect();
-		const inside =
-			e.clientX >= box.left && e.clientX < box.right && e.clientY >= box.top && e.clientY < box.bottom;
-		if (!inside) rail.out();
-	};
-
 	const current = $derived(
 		sections
 			.flatMap((section) => section.items)
@@ -59,14 +48,7 @@
 	afterNavigate(() => (open = false));
 </script>
 
-<Topbar
-	user={me.current}
-	{head}
-	crumbs={trail}
-	tight={rail.shut}
-	peek={rail.peek}
-	onmenu={() => (open = true)}
-/>
+<Topbar user={me.current} {head} crumbs={trail} onmenu={() => (open = true)} />
 
 <div class="body">
 	<!-- Collapsed, pointing at the rail peeks it open again and it shuts on the way out. Focus
@@ -75,7 +57,7 @@
 		class:tight={rail.shut}
 		class:peek={rail.peek}
 		onpointerenter={rail.over}
-		onpointerleave={leave}
+		onpointerleave={rail.leave}
 		onfocusin={() => rail.focus(true)}
 		onfocusout={(e) => rail.focus(e.currentTarget.contains(e.relatedTarget as Node))}
 	>

@@ -55,6 +55,11 @@ function shell(title: string, crumbs: string, body: string) {
   th, td { border: 1px solid var(--line); padding: 0.4em 0.8em; text-align: left; }
   blockquote { margin: 1em 0; padding: 0.1em 1em; border-left: 3px solid var(--line); color: var(--dim); }
   iframe { width: 100%; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+  iframe:fullscreen { border: none; border-radius: 0; }
+  .frame { position: relative; }
+  .frame button { position: absolute; top: 0.6rem; right: 0.6rem; width: 2rem; height: 2rem; cursor: pointer;
+    border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--dim); font-size: 1rem; }
+  .frame button:hover { color: var(--fg); }
   pre.mermaid { background: none; border: none; text-align: center; }
   #theme { margin-left: auto; width: 2rem; height: 2rem; cursor: pointer;
     border: 1px solid var(--line); border-radius: 999px; background: var(--bg); color: var(--fg); font-size: 0.9rem; }
@@ -77,6 +82,17 @@ ${body}
     // Mermaid bakes its theme into the rendered SVG; reload to redraw.
     if (document.querySelector(".mermaid")) location.reload();
   };
+  for (const frame of document.querySelectorAll("iframe")) {
+    const wrap = document.createElement("div");
+    wrap.className = "frame";
+    frame.replaceWith(wrap);
+    wrap.append(frame);
+    const full = document.createElement("button");
+    full.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>';
+    full.title = "Fullscreen";
+    full.onclick = () => frame.requestFullscreen();
+    wrap.append(full);
+  }
   const blocks = [...document.querySelectorAll("code.language-mermaid")];
   if (blocks.length) {
     for (const block of blocks) {

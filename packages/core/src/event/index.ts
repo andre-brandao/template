@@ -90,7 +90,15 @@ export namespace Event {
     if (input.type) conditions.push(eq(EventTable.type, input.type));
     if (input.userID) conditions.push(eq(EventTable.userID, input.userID));
     if (input.tags?.length) conditions.push(arrayOverlaps(EventTable.tags, input.tags));
-    if (input.search) conditions.push(ilike(EventTable.type, `%${input.search}%`));
+    // The log's one search box covers both columns a reader has in hand: the event name
+    // and the id of the row it happened to.
+    if (input.search)
+      conditions.push(
+        or(
+          ilike(EventTable.type, `%${input.search}%`),
+          ilike(EventTable.sourceID, `%${input.search}%`),
+        ) as SQL,
+      );
 
     const where = and(...conditions);
 

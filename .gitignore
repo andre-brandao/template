@@ -12,7 +12,8 @@ coverage
 *.lcov
 
 # logs
-logs
+# Anchored: unanchored, it also swallows routes/admin/logs/ and anything else named logs.
+/logs
 _.log
 report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 

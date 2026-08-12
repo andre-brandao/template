@@ -1,7 +1,7 @@
 import { test, expect } from "../util/fixtures";
 
 test("an authenticated user sees the app nav", async ({ page, as }) => {
-  await as("user");
+  await as();
   await page.goto("/");
   // Scoped to main — Topbar/Sidebar carry their own copies of these links.
   const main = page.locator("main");
@@ -12,7 +12,7 @@ test("an authenticated user sees the app nav", async ({ page, as }) => {
 });
 
 test("an authenticated user can open the todos page", async ({ page, as }) => {
-  await as("user");
+  await as();
   await page.goto("/todos");
   await expect(page).toHaveURL(/\/todos$/);
   await expect(page.getByRole("heading", { name: "Todos" })).toBeVisible();

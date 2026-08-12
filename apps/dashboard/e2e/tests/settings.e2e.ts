@@ -13,14 +13,14 @@ const saved = (page: Page) =>
   );
 
 test("settings redirects to the profile page", async ({ page, as }) => {
-  await as("user");
+  await as();
   await page.goto("/settings");
   await expect(page).toHaveURL(/\/settings\/profile$/);
   await expect(page.getByRole("heading", { name: "Profile" })).toBeVisible();
 });
 
 test("the settings nav links the user and workspace sections", async ({ page, as }) => {
-  await as("user");
+  await as();
   await page.goto("/settings/experience");
 
   const nav = page.locator("aside nav");
@@ -33,7 +33,7 @@ test("the settings nav links the user and workspace sections", async ({ page, as
 });
 
 test("breadcrumbs show the current settings hierarchy", async ({ page, as }) => {
-  await as("user");
+  await as();
   await page.goto("/settings/experience");
 
   const crumbs = page.getByRole("navigation", { name: "Breadcrumb" });
@@ -46,7 +46,7 @@ test("breadcrumbs show the current settings hierarchy", async ({ page, as }) => 
 });
 
 test("picking a theme applies instantly and survives a reload", async ({ page, as }) => {
-  await as("user");
+  await as();
   await page.goto("/settings/experience");
   // The radios are SSR'd and clickable before Svelte attaches its delegated change
   // handler; a click that lands pre-hydration silently does nothing.
@@ -71,7 +71,7 @@ test("picking a theme applies instantly and survives a reload", async ({ page, a
 });
 
 test("the date format preference reaches the rest of the app", async ({ page, as }) => {
-  const session = await as("user");
+  const session = await as();
   // Unique per attempt: todos are workspace-wide and the database lives for the
   // whole run, so a fixed title accumulates rows across projects and retries.
   const title = `Ship the settings page ${Date.now()}`;

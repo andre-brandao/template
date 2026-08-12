@@ -12,7 +12,7 @@ const day = (offset: number) => new Date(Date.now() + offset * DAY).toISOString(
 // relying on the actor. `Todo.create` reads the actor, so it runs inside `Actor.provide`.
 export function seed(uid: string, titles: string[], name = "E2E") {
   return Database.provide(process.env.DATABASE_URL!, () =>
-    Actor.provide("user", { userID: uid }, async () => {
+    Actor.provide("user", { userID: uid, role: "member" }, async () => {
       const project = await Project.create({ name: `${name} ${uid.slice(-6)}` });
       await Promise.all(
         titles.map((title, i) =>

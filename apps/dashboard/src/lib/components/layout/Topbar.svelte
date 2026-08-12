@@ -1,8 +1,9 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import { dev } from '$app/environment';
+	import { page } from '$app/state';
 	import type { User } from '@template/core/user';
-	import PanelLeft from '@lucide/svelte/icons/panel-left';
+	import Feedback from '$lib/features/feedback/components/Feedback.svelte';
 	import Brand from './Brand.svelte';
 	import Breadcrumbs from './Breadcrumbs.svelte';
 	import Me from './Me.svelte';
@@ -13,14 +14,12 @@
 	let {
 		user,
 		onmenu,
-		ontight,
 		tight = false,
 		head,
 		crumbs
 	}: {
 		user: User.Info | null;
 		onmenu?: () => void;
-		ontight?: () => void;
 		tight?: boolean;
 		head?: Snippet<[boolean]>;
 		crumbs?: { href?: string; label: string }[];
@@ -30,19 +29,7 @@
 <header>
 	{#if onmenu}<Rail {onmenu} {tight} {head} />{/if}
 
-	<!-- The toggle sits just past the divider, at the head of the content it widens. -->
 	<div class="lead">
-		{#if ontight}
-			<button
-				class="toggle"
-				type="button"
-				aria-label={tight ? 'Expand sidebar' : 'Collapse sidebar'}
-				aria-expanded={!tight}
-				onclick={ontight}
-			>
-				<PanelLeft size={17} strokeWidth={1.75} />
-			</button>
-		{/if}
 		{#if !onmenu}<Brand word={!head} />{@render head?.(false)}{/if}
 	</div>
 
@@ -52,7 +39,11 @@
 		<span class="env" title="Not production — data here is throwaway">dev</span>
 	{/if}
 
-	<Me {user} />
+	<!-- The right cluster, Cloudflare-style: utilities first, then the account. -->
+	<div class="tail">
+		{#if user && page.data.feedback}<Feedback />{/if}
+		<Me {user} />
+	</div>
 </header>
 
 <style>
@@ -80,23 +71,6 @@
 		padding-inline: 0.6em 1.25em;
 	}
 
-	.toggle {
-		display: inline-flex;
-		flex-shrink: 0;
-		align-items: center;
-		padding: 0.4em;
-		border: none;
-		border-radius: var(--radius);
-		background: none;
-		color: var(--muted);
-		cursor: pointer;
-	}
-
-	.toggle:hover {
-		background: var(--surface-2);
-		color: var(--ink);
-	}
-
 	/* Loud on purpose: the whole point is to catch the eye of someone who thinks
 	   they are looking at production. Sits outside `.lead` so it trails the project
 	   switcher instead of competing with it for the rail's width. */
@@ -115,13 +89,16 @@
 		color: var(--progress);
 	}
 
-	@media (max-width: 700px) {
-		/* Nothing to collapse once the rail itself is gone — which leaves `.lead`
-		   holding nothing, so it must not reserve its padding either. */
-		.toggle {
-			display: none;
-		}
+	.tail {
+		display: flex;
+		align-items: center;
+		gap: 0.5em;
+		margin-left: auto;
+	}
 
+	@media (max-width: 700px) {
+		/* Nothing leads once the rail itself is gone — `.lead` holds nothing, so it
+		   must not reserve its padding either. */
 		.lead {
 			padding-inline: 0;
 		}

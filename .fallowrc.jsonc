@@ -139,7 +139,7 @@
       // context/prop shapes from drifting away from what the server hands over.
       {
         "from": "shared",
-        "allow": ["ui"],
+        "allow": ["ui", "features/events", "features/feedback"],
         "allowTypeOnly": ["core"],
       },
       // Backend / design-system layering. Dependencies flow one way toward core;

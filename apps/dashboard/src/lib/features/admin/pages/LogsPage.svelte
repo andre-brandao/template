@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { z } from 'zod';
-	import { Button, Input, Pager, Select } from '@template/ui';
+	import { Button, Input, LazySelect, Pager } from '@template/ui';
 	import Header from '$lib/components/Header.svelte';
 	import { debounce } from '$lib/utils/debounce';
 	import { query } from '$lib/utils/params';
@@ -19,7 +19,6 @@
 		})
 	);
 
-	const facets = $derived(await getFacets());
 	const args = $derived({
 		search: params.q || undefined,
 		type: params.type || undefined,
@@ -31,10 +30,10 @@
 	const events = $derived(await getEvents(args));
 	const filtered = $derived(!!(params.q || params.type || params.source || params.user));
 
-	const any = (label: string, values: string[]) => [
-		{ value: '', label },
-		...values.map((value) => ({ value, label: value }))
-	];
+	// The facet lists are only ever read by the two selects, so they ride along with them
+	// instead of holding up the log. Both halves come from the one cached query.
+	const list = (key: 'types' | 'sources') => async () =>
+		(await getFacets())[key].map((one) => ({ value: one, label: one }));
 
 	// `undefined` drops the key entirely, so narrowing always lands back on page one and the
 	// URL stays as short as the filters actually in use.
@@ -51,20 +50,22 @@
 	</Header>
 
 	<div class="bar">
-	<Input
-		type="search"
-		placeholder="Search type or source id"
+		<Input
+			type="search"
+			placeholder="Search type or source id"
 			value={params.q}
 			oninput={(e) => commit(e.currentTarget.value)}
 		/>
-		<Select
-			options={any('All types', facets.types)}
+		<LazySelect
 			value={params.type}
+			options={[{ value: '', label: 'All types' }]}
+			load={list('types')}
 			onchange={(e) => pick({ type: e.currentTarget.value })}
 		/>
-		<Select
-			options={any('All sources', facets.sources)}
+		<LazySelect
 			value={params.source}
+			options={[{ value: '', label: 'All sources' }]}
+			load={list('sources')}
 			onchange={(e) => pick({ source: e.currentTarget.value })}
 		/>
 		{#if filtered}

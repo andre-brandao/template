@@ -5,9 +5,12 @@
 	import { size } from '$lib/utils/size';
 	import { getEvents, getStats } from '../api/admin.remote';
 
-	const stats = $derived(await getStats());
-	// One row is enough for both figures the doorway needs: the count and the newest stamp.
-	const events = $derived(await getEvents({ page: 1, pageSize: 1 }));
+	// One await, not two: a second `$derived(await …)` is not created until the first has
+	// resolved, so the round trips would queue up instead of running together.
+	// One event row is enough for both figures the doorway needs: the count and the newest stamp.
+	const [stats, events] = $derived(
+		await Promise.all([getStats(), getEvents({ page: 1, pageSize: 1 })])
+	);
 	const f = fmt();
 
 	// The teal ramp the contribution calendar already uses, biggest table darkest. Four

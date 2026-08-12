@@ -19,7 +19,7 @@
 	} = $props();
 
 	const f = fmt();
-	const events = $derived(await getEvents({ source, sourceID }));
+	const events = $derived((await getEvents({ source, sourceID })).data);
 </script>
 
 <div class="timeline">

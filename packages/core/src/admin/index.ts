@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { count, isNotNull, isNull, sql } from "drizzle-orm";
+import { count, isNotNull, isNull, sql, type SQL } from "drizzle-orm";
 import { fn } from "../util/fn";
 import { Actor } from "../actor";
 import { Database } from "../drizzle";
@@ -14,6 +14,12 @@ import { UserTable } from "../user/user.sql";
  * sync and no cache to invalidate.
  */
 export namespace Admin {
+  /**
+   * A catalog query, which drizzle's query builder can't express. `tx` is a union of the
+   * pooled db and a transaction, so `execute`'s generic never resolves — hence the cast.
+   */
+  const raw = (query: SQL) => Database.use((tx): Promise<any[]> => (tx as any).execute(query));
+
   export const Table = z.object({
     name: z.string(),
     rows: z.number(),
@@ -26,30 +32,29 @@ export namespace Admin {
    * is the planner's estimate rather than a `count(*)` — it costs nothing and is close enough
    * to answer "what is growing".
    */
-  export const tables = fn(z.void(), () => {
+  export const tables = fn(z.void(), async () => {
     Actor.check({ admin: ["read"] });
-    return Database.use(async (tx) => {
-      const run: any = tx;
-      const rows = await run.execute(sql`
+    const [rows, size] = await Promise.all([
+      raw(sql`
         SELECT relname AS name,
                n_live_tup AS rows,
                pg_total_relation_size(relid) AS bytes
         FROM pg_stat_user_tables
         ORDER BY pg_total_relation_size(relid) DESC
-      `);
-      const size = await run.execute(sql`SELECT pg_database_size(current_database()) AS bytes`);
-      return {
-        // Postgres hands bigints back as strings over the wire; the UI wants numbers.
-        tables: [...rows].map(
-          (row: any): Table => ({
-            name: row.name,
-            rows: Number(row.rows),
-            bytes: Number(row.bytes),
-          }),
-        ),
-        bytes: Number([...size][0]?.bytes ?? 0),
-      };
-    });
+      `),
+      raw(sql`SELECT pg_database_size(current_database()) AS bytes`),
+    ] as const);
+    return {
+      // Postgres hands bigints back as strings over the wire; the UI wants numbers.
+      tables: [...rows].map(
+        (row): Table => ({
+          name: row.name,
+          rows: Number(row.rows),
+          bytes: Number(row.bytes),
+        }),
+      ),
+      bytes: Number([...size][0]?.bytes ?? 0),
+    };
   });
 
   /** Queue depth and the age of the oldest thing still waiting — the "is it stuck" number. */
@@ -110,25 +115,22 @@ export namespace Admin {
   });
 
   /** Version, connection headroom and uptime — what you want when the pool misbehaves. */
-  export const server = fn(z.void(), () => {
+  export const server = fn(z.void(), async () => {
     Actor.check({ admin: ["read"] });
-    return Database.use(async (tx) => {
-      const run: any = tx;
-      const rows = await run.execute(sql`
-        -- server_version carries the packager's whole string ("17.10 (Debian 17.10-1...)");
-        -- the leading number is the part anyone reads.
-        SELECT split_part(current_setting('server_version'), ' ', 1) AS version,
-               (SELECT count(*) FROM pg_stat_activity) AS connections,
-               current_setting('max_connections') AS max,
-               pg_postmaster_start_time() AS started
-      `);
-      const row = [...rows][0];
-      return {
-        version: row?.version ?? "unknown",
-        connections: Number(row?.connections ?? 0),
-        max: Number(row?.max ?? 0),
-        started: row?.started ? new Date(row.started).toISOString() : null,
-      };
-    });
+    const rows = await raw(sql`
+      -- server_version carries the packager's whole string ("17.10 (Debian 17.10-1...)");
+      -- the leading number is the part anyone reads.
+      SELECT split_part(current_setting('server_version'), ' ', 1) AS version,
+             (SELECT count(*) FROM pg_stat_activity) AS connections,
+             current_setting('max_connections') AS max,
+             pg_postmaster_start_time() AS started
+    `);
+    const row = [...rows][0];
+    return {
+      version: row?.version ?? "unknown",
+      connections: Number(row?.connections ?? 0),
+      max: Number(row?.max ?? 0),
+      started: row?.started ? new Date(row.started).toISOString() : null,
+    };
   });
 }

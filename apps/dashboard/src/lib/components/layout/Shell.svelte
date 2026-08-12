@@ -134,6 +134,8 @@
 	}
 
 	aside {
+		display: flex;
+		flex-direction: column;
 		width: var(--rail);
 		flex-shrink: 0;
 		/* Pinned below the sticky topbar so the page scrolls under it; the fixed
@@ -170,11 +172,17 @@
 	/* Wide enough for the board's five columns and a month of cronograma; prose and
 	   forms cap themselves far below this. */
 	main {
+		--pad-top: 1.75em;
+		--pad-bottom: 3em;
+		/* What's left of the viewport once the topbar and this padding are taken. A page
+		   that scrolls a list internally sets `height: var(--fill)` on its root; keeping the
+		   sum here means the arithmetic can't drift from the padding it depends on. */
+		--fill: calc(100dvh - var(--topbar) - var(--pad-top) - var(--pad-bottom));
 		flex: 1;
 		min-width: 0;
 		max-width: 1440px;
 		margin: 0 auto;
-		padding: 1.75em 1.25em 3em;
+		padding: var(--pad-top) 1.25em var(--pad-bottom);
 		view-transition-name: shell-main;
 	}
 

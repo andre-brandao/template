@@ -1,6 +1,7 @@
 import { describe, expect } from "bun:test";
 import { Actor } from "../src/actor";
 import { Admin } from "../src/admin";
+import { Event } from "../src/event";
 import { Auth } from "../src/user/auth";
 import { User } from "../src/user";
 import { testEmail, withTestUser } from "./util";
@@ -98,5 +99,46 @@ describe("admin users", () => {
     expect(() => User.page({})).toThrow(/admin:read/);
     await expect(User.assign({ id: one.id, role: "admin" })).rejects.toThrow(/user:assign/);
     await expect(User.remove(one.id)).rejects.toThrow(/user:delete/);
+  });
+});
+
+describe("admin logs", () => {
+  withTestUser(
+    "an unpinned read spans every actor and resolves who acted",
+    async ({ userID }) => {
+      const one = await mate();
+      await User.assign({ id: one.id, role: "admin" });
+
+      const all = await Event.list({ type: "user.assigned", search: one.id });
+      expect(all.total).toBe(1);
+      // The join resolves the acting user rather than leaving a bare id.
+      expect(all.data[0]?.user?.id).toBe(userID);
+      expect(all.data[0]?.sourceID).toBe(one.id);
+    },
+    "admin",
+  );
+
+  withTestUser(
+    "filters compose and narrow the total",
+    async () => {
+      const one = await mate();
+      await User.remove(one.id);
+
+      const bySource = await Event.list({ source: "user", search: one.id });
+      expect(bySource.data.map((e) => e.type)).toContain("user.removed");
+
+      const wrong = await Event.list({ type: "todo.created", search: one.id });
+      expect(wrong.total).toBe(0);
+
+      const facets = await Event.facets();
+      expect(facets.types).toContain("user.removed");
+      expect(facets.sources).toContain("user");
+    },
+    "admin",
+  );
+
+  withTestUser("a member cannot read the log", async () => {
+    expect(() => Event.list({})).toThrow(/admin:read/);
+    expect(() => Event.facets()).toThrow(/admin:read/);
   });
 });

@@ -1,10 +1,19 @@
 import { form, query } from "$app/server";
 import { z } from "zod";
 import { Admin } from "@template/core/admin";
+import { Event } from "@template/core/event";
 import { User } from "@template/core/user";
 import { auth, guard, remote } from "$lib/server/remote";
 
 export const getUsers = remote(User.page).query();
+
+// Unpinned from any `sourceID`, so core requires `admin: ["read"]` on the way through.
+export const getEvents = remote(Event.list).query();
+
+/** The filter options, kept apart from the list so typing a search doesn't refetch them. */
+export const getFacets = remote(Event.facets)
+  .with(z.void().transform(() => undefined))
+  .query();
 
 /** One round trip for the whole database screen: four independent reads, one await. */
 export const getStats = query(async () => {

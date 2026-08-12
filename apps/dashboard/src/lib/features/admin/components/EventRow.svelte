@@ -4,7 +4,7 @@
 	import Avatar from '$lib/components/Avatar.svelte';
 	import { fmt } from '$lib/utils/fmt';
 
-	let { row, onuser }: { row: Event.Row; onuser: (id: string) => void } = $props();
+	let { row, onuser }: { row: Event.Info; onuser: (id: string) => void } = $props();
 
 	const f = fmt();
 

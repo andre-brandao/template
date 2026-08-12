@@ -4,8 +4,11 @@
 	import ScrollText from '@lucide/svelte/icons/scroll-text';
 	import UsersRound from '@lucide/svelte/icons/users-round';
 	import Shell from '$lib/components/layout/Shell.svelte';
+	import { origin } from '$lib/components/layout/back.svelte';
 
 	let { children } = $props();
+
+	const from = origin('/admin', '/todos');
 
 	const sections = [
 		{
@@ -25,4 +28,4 @@
 	];
 </script>
 
-<Shell back={{ href: '/todos', label: 'Back' }} {sections} {crumbs}>{@render children()}</Shell>
+<Shell back={{ href: from.href, label: 'Back' }} {sections} {crumbs}>{@render children()}</Shell>

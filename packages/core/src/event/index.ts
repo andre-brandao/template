@@ -84,7 +84,7 @@ export namespace Event {
 
     const { page, pageSize, limit, offset } = Common.page(input);
 
-    const conditions: (SQL)[] = [];
+    const conditions: SQL[] = [];
     if (input.source) conditions.push(eq(EventTable.source, input.source));
     if (input.sourceID) conditions.push(eq(EventTable.sourceID, input.sourceID));
     if (input.type) conditions.push(eq(EventTable.type, input.type));

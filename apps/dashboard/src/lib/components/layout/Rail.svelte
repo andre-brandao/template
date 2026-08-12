@@ -11,11 +11,13 @@
 	let {
 		onmenu,
 		tight = false,
+		peek = false,
 		head
-	}: { onmenu: () => void; tight?: boolean; head?: Snippet<[boolean]> } = $props();
+	}: { onmenu: () => void; tight?: boolean; peek?: boolean; head?: Snippet<[boolean]> } =
+		$props();
 </script>
 
-<div class="rail" class:tight>
+<div class="rail" class:tight class:peek>
 	<button class="menu" type="button" aria-label="Open menu" onclick={onmenu}>
 		<PanelLeft size={17} strokeWidth={1.75} />
 	</button>
@@ -35,13 +37,32 @@
 		flex-shrink: 0;
 		padding-inline: 0.75em;
 		border-right: 1px solid var(--border);
-		transition: width 160ms ease;
+		position: relative;
+		transition:
+			width 160ms ease,
+			margin-right 160ms ease;
 	}
 
 	.tight {
 		width: var(--rail-tight);
 		justify-content: center;
 		padding-inline: 0.5em;
+	}
+
+	/* The sidebar's peek widens over the page rather than pushing it, and the divider only
+	   stays one line if this cell does the same — over the breadcrumbs, opaque, and carrying
+	   the top of the same edge shadow. */
+	.peek {
+		margin-right: calc(var(--rail-tight) - var(--rail));
+		background: var(--surface);
+		box-shadow: 10px 0 24px -14px light-dark(rgb(0 0 0 / 0.18), rgb(0 0 0 / 0.6));
+		z-index: 1;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.rail {
+			transition: none;
+		}
 	}
 
 	.menu {

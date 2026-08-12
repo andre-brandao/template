@@ -1,0 +1,66 @@
+import { createContext } from "svelte";
+
+/**
+ * The rail's collapsed state, plus the transient hover and focus that peek it open again.
+ *
+ * Created once in the root layout rather than in the Shell: each route group mounts its own
+ * Shell, so state held in the component was rebuilt — and re-animated — every time a
+ * navigation crossed a group boundary. Context rather than a module-level `$state` for the
+ * usual reason: the server renders every request in one process, and a module would hand
+ * one visitor's rail to the next.
+ *
+ * Seeded from a cookie, which is the whole point of the round trip — `localStorage` can only
+ * be read after hydration, so a collapsed rail painted wide and then snapped shut.
+ */
+const [sidebar, set] = createContext<ReturnType<typeof create>>();
+
+export { sidebar };
+
+/** Call once, in the root layout. */
+export function provide(init: boolean) {
+  set(create(init));
+}
+
+function create(init: boolean) {
+  let tight = $state(init);
+  let hover = $state(false);
+  let focused = $state(false);
+  let timer: ReturnType<typeof setTimeout>;
+
+  return {
+    get tight() {
+      return tight;
+    },
+    /** Pointed at while collapsed. Still collapsed — just not drawn that way for the moment. */
+    get peek() {
+      return tight && (hover || focused);
+    },
+    get shut() {
+      return tight && !hover && !focused;
+    },
+    toggle() {
+      clearTimeout(timer);
+      hover = false;
+      focused = false;
+      tight = !tight;
+      // Read back in `+layout.server.ts`, so the next full load paints at the right width.
+      document.cookie = `rail=${tight ? "tight" : "wide"};path=/;max-age=31536000;samesite=lax`;
+    },
+    // A short intent delay so brushing past the rail on the way somewhere else doesn't open it.
+    over() {
+      timer = setTimeout(() => (hover = true), 90);
+    },
+    out() {
+      clearTimeout(timer);
+      hover = false;
+    },
+    /**
+     * Kept apart from `hover` on purpose: clicking a link destroys it, which fires focusout
+     * with nothing to hand focus to. Folded together that would shut a rail the pointer is
+     * still resting on, and the next frame would open it again.
+     */
+    focus(on: boolean) {
+      focused = on;
+    },
+  };
+}

@@ -1,6 +1,5 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
-	import { onMount } from 'svelte';
 	import { page } from '$app/state';
 	import { afterNavigate } from '$app/navigation';
 	import { Drawer } from '@template/ui';
@@ -9,6 +8,7 @@
 	import Footer from './Footer.svelte';
 	import Nav from './Nav.svelte';
 	import { at, type Item } from './nav';
+	import { sidebar } from './rail.svelte';
 	import Topbar from './Topbar.svelte';
 
 	type Crumb = { href?: string; label: string };
@@ -28,12 +28,19 @@
 	} = $props();
 
 	const me = user();
+	const rail = sidebar();
 	let open = $state(false);
-	// Read after mount so the server and the first client render agree; the rail
-	// only snaps shut for people who asked for it, and only once.
-	let tight = $state(false);
-	onMount(() => (tight = localStorage.getItem('rail') === 'tight'));
-	const toggle = () => localStorage.setItem('rail', (tight = !tight) ? 'tight' : 'wide');
+
+	// A view transition hides the live DOM behind its snapshots, so mid-navigation the browser
+	// hit-tests the pointer onto <html> and reports it leaving a rail it never left — then
+	// entering again when the snapshots come down. Only a pointer genuinely outside the box
+	// shuts the peek; the phantom pair is ignored.
+	const leave = (e: PointerEvent & { currentTarget: HTMLElement }) => {
+		const box = e.currentTarget.getBoundingClientRect();
+		const inside =
+			e.clientX >= box.left && e.clientX < box.right && e.clientY >= box.top && e.clientY < box.bottom;
+		if (!inside) rail.out();
+	};
 
 	const current = $derived(
 		sections
@@ -52,20 +59,36 @@
 	afterNavigate(() => (open = false));
 </script>
 
-<Topbar user={me.current} {head} crumbs={trail} {tight} onmenu={() => (open = true)} />
+<Topbar
+	user={me.current}
+	{head}
+	crumbs={trail}
+	tight={rail.shut}
+	peek={rail.peek}
+	onmenu={() => (open = true)}
+/>
 
 <div class="body">
-	<aside class:tight>
-		<div class="menu" data-shell-nav><Nav {back} {sections} slim={tight} /></div>
+	<!-- Collapsed, pointing at the rail peeks it open again and it shuts on the way out. Focus
+	     does the same, so tabbing into an icon-only rail still reads. -->
+	<aside
+		class:tight={rail.shut}
+		class:peek={rail.peek}
+		onpointerenter={rail.over}
+		onpointerleave={leave}
+		onfocusin={() => rail.focus(true)}
+		onfocusout={(e) => rail.focus(e.currentTarget.contains(e.relatedTarget as Node))}
+	>
+		<div class="menu" data-shell-nav><Nav {back} {sections} slim={rail.shut} /></div>
 		<!-- Below the line, like the content footer across the divider — the two strips
 		     share --footer so their top borders draw one continuous rule. -->
 		<div class="strip">
 			<button
 				class="toggle"
 				type="button"
-				aria-label={tight ? 'Expand sidebar' : 'Collapse sidebar'}
-				aria-expanded={!tight}
-				onclick={toggle}
+				aria-label={rail.tight ? 'Expand sidebar' : 'Collapse sidebar'}
+				aria-expanded={!rail.tight}
+				onclick={rail.toggle}
 			>
 				<PanelLeft size={17} strokeWidth={1.75} />
 			</button>
@@ -117,11 +140,25 @@
 		height: calc(100dvh - var(--topbar));
 		border-right: 1px solid var(--border);
 		background: var(--surface);
-		transition: width 160ms ease;
+		/* Above `main`, below the topbar's 20, so a peek can cover the page. */
+		z-index: 10;
+		transition:
+			width 160ms ease,
+			margin-right 160ms ease;
 	}
 
 	.tight {
 		width: var(--rail-tight);
+	}
+
+	/* Peeking floats over the page rather than pushing it: the width grows while the margin
+	   shrinks by the same amount on the same curve, so the column left for the content never
+	   moves. Dropping `.tight` is what widens it — this only pays for the overlap. */
+	.peek {
+		margin-right: calc(var(--rail-tight) - var(--rail));
+		/* --shadow-2 falls downwards, which a full-height edge never shows. Same weight,
+		   turned to the side the panel actually hangs over. */
+		box-shadow: 10px 0 24px -14px light-dark(rgb(0 0 0 / 0.18), rgb(0 0 0 / 0.6));
 	}
 
 	.tight .menu {
@@ -183,6 +220,12 @@
 		margin: 0 auto;
 		padding: var(--pad-top) 1.25em var(--pad-bottom);
 		view-transition-name: shell-main;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		aside {
+			transition: none;
+		}
 	}
 
 	@media (max-width: 700px) {

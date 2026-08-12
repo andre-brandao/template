@@ -1,13 +1,19 @@
 <script lang="ts">
 	import './layout.css';
 	import favicon from '$lib/assets/favicon.svg';
+	import { untrack } from 'svelte';
 	import { navigating } from '$app/state';
 	import PreLoadingIndicator from './PreLoadingIndicator.svelte';
 	import ViewTransitions from './ViewTransitions.svelte';
 	import { Permission } from '@template/core/permission';
+	import { provide as rail } from '$lib/components/layout/rail.svelte';
 	import { provide } from '$lib/utils/context';
 
 	let { data, children } = $props();
+
+	// Here rather than in the Shell so the rail survives a navigation between route groups.
+	// Read once: the cookie only seeds it, and the toggle owns it from then on.
+	rail(untrack(() => data.rail));
 
 	provide({
 		get current() {

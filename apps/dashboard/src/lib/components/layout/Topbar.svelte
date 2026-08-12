@@ -15,19 +15,21 @@
 		user,
 		onmenu,
 		tight = false,
+		peek = false,
 		head,
 		crumbs
 	}: {
 		user: User.Info | null;
 		onmenu?: () => void;
 		tight?: boolean;
+		peek?: boolean;
 		head?: Snippet<[boolean]>;
 		crumbs?: { href?: string; label: string }[];
 	} = $props();
 </script>
 
 <header>
-	{#if onmenu}<Rail {onmenu} {tight} {head} />{/if}
+	{#if onmenu}<Rail {onmenu} {tight} {peek} {head} />{/if}
 
 	<div class="lead">
 		{#if !onmenu}<Brand word={!head} />{@render head?.(false)}{/if}

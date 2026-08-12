@@ -37,6 +37,9 @@
 	{#each sections as section (section.title ?? section.items[0]?.href)}
 		<div class="section" class:bottom={section.bottom}>
 			{#if section.title && !slim}<span class="title">{section.title}</span>{/if}
+			<!-- Collapsed there is no room for the name, but the grouping it marked still has to
+			     read — a rule stands in for it, and `hr` keeps the boundary for a screen reader. -->
+			{#if section.title && slim}<hr class="rule" />{/if}
 			{#each section.items as item (item.href)}
 				<NavLink {item} {slim} />
 			{/each}
@@ -71,6 +74,15 @@
 		color: var(--dim);
 		padding: 0 0.7em;
 		margin-bottom: 0.35em;
+	}
+
+	/* Sits where the title sat, so the rhythm between sections doesn't change with the rail. */
+	.rule {
+		width: 100%;
+		height: 0;
+		margin: 0 0 0.35em;
+		border: none;
+		border-top: 1px solid var(--border);
 	}
 
 	.back {

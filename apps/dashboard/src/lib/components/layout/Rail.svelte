@@ -17,18 +17,9 @@
 	const tight = $derived(rail.shut);
 </script>
 
-<!-- svelte-ignore a11y_no_static_element_interactions -->
 <!-- Hover here only widens the cell; nothing is operated by pointing at it, and everything
      inside that can be used is a control in its own right. -->
-<div
-	class="rail"
-	class:tight
-	class:peek={rail.peek}
-	onpointerenter={rail.over}
-	onpointerleave={rail.leave}
-	onfocusin={() => rail.focus(true)}
-	onfocusout={(e) => rail.focus(e.currentTarget.contains(e.relatedTarget as Node))}
->
+<div class="rail" class:tight class:peek={rail.peek} {...rail.attrs}>
 	<button class="menu" type="button" aria-label="Open menu" onclick={onmenu}>
 		<PanelLeft size={17} strokeWidth={1.75} />
 	</button>

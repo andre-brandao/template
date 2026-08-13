@@ -53,14 +53,7 @@
 <div class="body">
 	<!-- Collapsed, pointing at the rail peeks it open again and it shuts on the way out. Focus
 	     does the same, so tabbing into an icon-only rail still reads. -->
-	<aside
-		class:tight={rail.shut}
-		class:peek={rail.peek}
-		onpointerenter={rail.over}
-		onpointerleave={rail.leave}
-		onfocusin={() => rail.focus(true)}
-		onfocusout={(e) => rail.focus(e.currentTarget.contains(e.relatedTarget as Node))}
-	>
+	<aside class:tight={rail.shut} class:peek={rail.peek} {...rail.attrs}>
 		<div class="menu" data-shell-nav><Nav {back} {sections} slim={rail.shut} /></div>
 		<!-- Below the line, like the content footer across the divider — the two strips
 		     share --footer so their top borders draw one continuous rule. -->

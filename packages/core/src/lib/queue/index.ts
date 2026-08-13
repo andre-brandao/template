@@ -138,9 +138,9 @@ export namespace Queue {
     log.info("worker stopped");
   }
 
-  /** `QUEUE_DRIVER=sync|memory|db`, default `sync`. The `db` driver needs the app's transaction runner. */
+  /** `QUEUE_DRIVER=sync|memory|db`. The `db` driver needs the app's transaction runner. */
   export function fromEnv(env: Record<string, string | undefined>, database?: Runner): Port {
-    const driver = env.QUEUE_DRIVER ?? "sync";
+    const driver = env.QUEUE_DRIVER ?? "db";
     const cfg = {
       retries: env.QUEUE_RETRIES ? Number(env.QUEUE_RETRIES) : undefined,
       backoff: env.QUEUE_BACKOFF ? Number(env.QUEUE_BACKOFF) : undefined,

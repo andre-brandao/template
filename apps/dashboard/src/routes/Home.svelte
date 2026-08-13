@@ -4,7 +4,7 @@
   rather than in a `$derived` the page evaluates either way.
 -->
 <script lang="ts">
-	import { last } from '@template/ui';
+	import { Card, last } from '@template/ui';
 	import Rule from '$lib/components/Rule.svelte';
 	import { getStatus } from '$lib/features/todos/api/insights.remote';
 	import { color, label, STATUSES } from '$lib/features/todos/status';
@@ -48,10 +48,12 @@
 
 <nav class="places" aria-label="Sections">
 	{#each places as place (place.href)}
-		<a href={place.href}>
-			<span class="label">{place.label}</span>
-			<span class="hint">{place.hint}</span>
-		</a>
+		<Card href={place.href} interactive>
+			<div class="place">
+				<span class="label">{place.label}</span>
+				<span class="hint">{place.hint}</span>
+			</div>
+		</Card>
 	{/each}
 </nav>
 
@@ -67,7 +69,6 @@
 		color: var(--muted);
 	}
 
-	/* Quiet on purpose — the rule above is the one loud thing on the page. */
 	.places {
 		display: grid;
 		grid-template-columns: 1fr 1fr;
@@ -75,19 +76,10 @@
 		margin-top: 2.8em;
 	}
 
-	.places a {
+	.place {
 		display: flex;
 		flex-direction: column;
 		gap: 0.3em;
-		padding: 1em 1.1em;
-		background: var(--surface);
-		border: 1px solid var(--border);
-		border-radius: var(--radius);
-		text-decoration: none;
-	}
-
-	.places a:hover {
-		border-color: var(--border-bright);
 	}
 
 	.label {

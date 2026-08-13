@@ -4,15 +4,31 @@
 	let {
 		accent,
 		interactive = false,
+		href,
 		children
-	}: { accent?: string; interactive?: boolean; children: Snippet } = $props();
+	}: { accent?: string; interactive?: boolean; href?: string; children: Snippet } = $props();
 </script>
 
-<div class="card" class:accent={!!accent} class:interactive style:--accent-rail={accent}>
+<svelte:element
+	this={href ? 'a' : 'div'}
+	{href}
+	class="card"
+	class:accent={!!accent}
+	class:interactive
+	style:--accent-rail={accent}
+>
 	{@render children()}
-</div>
+</svelte:element>
 
 <style>
+	/* As a link the card is the whole click target; the chrome carries the affordance,
+	   so the anchor drops its own. */
+	a.card {
+		display: block;
+		color: inherit;
+		text-decoration: none;
+	}
+
 	.card {
 		position: relative;
 		background: var(--surface, #fff);

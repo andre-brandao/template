@@ -17,7 +17,7 @@ const [sidebar, set] = createContext<ReturnType<typeof create>>();
 export { sidebar };
 
 /** Call once, in the root layout. */
-export function provide(init: boolean) {
+export function createRail(init: boolean) {
   set(create(init));
 }
 
@@ -26,11 +26,6 @@ function create(init: boolean) {
   let hover = $state(false);
   let focused = $state(false);
   let timer: ReturnType<typeof setTimeout>;
-
-  const out = () => {
-    clearTimeout(timer);
-    hover = false;
-  };
 
   return {
     get tight() {
@@ -51,31 +46,40 @@ function create(init: boolean) {
       // Read back in `+layout.server.ts`, so the next full load paints at the right width.
       document.cookie = `rail=${tight ? "tight" : "wide"};path=/;max-age=31536000;samesite=lax`;
     },
-    // A short intent delay so brushing past the rail on the way somewhere else doesn't open it.
-    over() {
-      timer = setTimeout(() => (hover = true), 90);
-    },
-    out,
     /**
-     * The column is the topbar's left cell stacked on the sidebar, two elements that both
-     * start at the viewport's left edge and share a width — so "still in the column" is one
-     * horizontal test, and crossing from the menu up to the project picker doesn't read as
-     * leaving. It also rejects a phantom leave: a view transition hides the live DOM behind
-     * its snapshots, so mid-navigation the browser hit-tests the pointer onto <html> and
-     * reports it leaving a rail it never left.
+     * The peek wiring, spread onto both halves of the hover target — the topbar's rail
+     * cell and the sidebar are one column, so they must open and shut as one.
      */
-    leave(e: PointerEvent & { currentTarget: HTMLElement }) {
-      const edge = e.currentTarget.getBoundingClientRect().right;
-      if (e.clientX < edge && e.clientY >= 0 && e.clientY < innerHeight) return;
-      out();
-    },
-    /**
-     * Kept apart from `hover` on purpose: clicking a link destroys it, which fires focusout
-     * with nothing to hand focus to. Folded together that would shut a rail the pointer is
-     * still resting on, and the next frame would open it again.
-     */
-    focus(on: boolean) {
-      focused = on;
+    attrs: {
+      // A short intent delay so brushing past the rail on the way somewhere else doesn't open it.
+      onpointerenter: () => {
+        timer = setTimeout(() => (hover = true), 90);
+      },
+      /**
+       * The column is the topbar's left cell stacked on the sidebar, two elements that both
+       * start at the viewport's left edge and share a width — so "still in the column" is one
+       * horizontal test, and crossing from the menu up to the project picker doesn't read as
+       * leaving. It also rejects a phantom leave: a view transition hides the live DOM behind
+       * its snapshots, so mid-navigation the browser hit-tests the pointer onto <html> and
+       * reports it leaving a rail it never left.
+       */
+      onpointerleave: (e: PointerEvent & { currentTarget: HTMLElement }) => {
+        const edge = e.currentTarget.getBoundingClientRect().right;
+        if (e.clientX < edge && e.clientY >= 0 && e.clientY < innerHeight) return;
+        clearTimeout(timer);
+        hover = false;
+      },
+      onfocusin: () => {
+        focused = true;
+      },
+      /**
+       * Kept apart from `hover` on purpose: clicking a link destroys it, which fires focusout
+       * with nothing to hand focus to. Folded together that would shut a rail the pointer is
+       * still resting on, and the next frame would open it again.
+       */
+      onfocusout: (e: FocusEvent & { currentTarget: HTMLElement }) => {
+        focused = e.currentTarget.contains(e.relatedTarget as Node);
+      },
     },
   };
 }

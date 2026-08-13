@@ -20,6 +20,7 @@
 	} = $props();
 </script>
 
+<!-- fallow-ignore-next-line complexity -->
 {#if back}
 	<a
 		class="back"

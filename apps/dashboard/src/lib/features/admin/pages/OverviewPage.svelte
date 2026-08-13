@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { Card } from '@template/ui';
 	import Header from '$lib/components/Header.svelte';
 	import Rule from '$lib/components/Rule.svelte';
 	import { fmt } from '$lib/utils/fmt';
@@ -79,11 +80,13 @@
 
 <nav class="places" aria-label="Back office">
 	{#each places as place (place.href)}
-		<a href={place.href}>
-			<span class="label">{place.label}</span>
-			<span class="value">{place.value}</span>
-			<span class="note">{place.note}</span>
-		</a>
+		<Card href={place.href} interactive>
+			<div class="place">
+				<span class="label">{place.label}</span>
+				<span class="value">{place.value}</span>
+				<span class="note">{place.note}</span>
+			</div>
+		</Card>
 	{/each}
 </nav>
 
@@ -117,19 +120,10 @@
 		margin: 3em 0 2.5em;
 	}
 
-	.places a {
+	.place {
 		display: flex;
 		flex-direction: column;
 		gap: 0.2em;
-		padding: 1em 1.1em;
-		background: var(--surface);
-		border: 1px solid var(--border);
-		border-radius: var(--radius);
-		text-decoration: none;
-	}
-
-	.places a:hover {
-		border-color: var(--border-bright);
 	}
 
 	.label {

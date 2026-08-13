@@ -24,6 +24,8 @@
 <input
 	class="search"
 	type="search"
+	name="search"
+	autocomplete="off"
 	placeholder="Search projects…"
 	value={params.q}
 	oninput={(e) => params.update({ q: e.currentTarget.value })}

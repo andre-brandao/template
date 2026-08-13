@@ -50,7 +50,7 @@
 		<Avatar {name} {image} {size} />
 		<span class="hint">Edit</span>
 	</button>
-	<input bind:this={input} type="file" accept="image/*" hidden onchange={pick} />
+	<input bind:this={input} type="file" name="avatar" accept="image/*" hidden onchange={pick} />
 
 	{#if image}
 		<button type="button" class="clear" disabled={pending} onclick={() => send({ method: 'DELETE' })}>

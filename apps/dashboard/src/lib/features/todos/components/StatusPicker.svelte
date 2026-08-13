@@ -62,7 +62,13 @@
 				{/each}
 				<label class="note">
 					<span>Reason</span>
-					<input type="text" bind:value={note} placeholder="waiting on design…" />
+					<input
+						type="text"
+						name="reason"
+						autocomplete="off"
+						bind:value={note}
+						placeholder="waiting on design…"
+					/>
 				</label>
 			</div>
 		{/snippet}

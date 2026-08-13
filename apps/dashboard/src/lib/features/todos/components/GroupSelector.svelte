@@ -6,7 +6,7 @@
 
 <label class="group">
 	<span>Group</span>
-	<select value={by} onchange={(e) => onchange(e.currentTarget.value as By)}>
+	<select name="group" value={by} onchange={(e) => onchange(e.currentTarget.value as By)}>
 		<option value="status">Status</option>
 		<option value="stage">Stage</option>
 		<option value="assignee">Assignee</option>

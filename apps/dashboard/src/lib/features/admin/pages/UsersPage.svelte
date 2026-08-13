@@ -35,12 +35,15 @@
 	<div class="bar">
 		<Input
 			type="search"
+			name="search"
+			autocomplete="off"
 			placeholder="Search name or email"
 			oninput={(e) => commit(e.currentTarget.value)}
 		/>
 		<label class="show">
 			<input
 				type="checkbox"
+				name="deleted"
 				checked={deleted}
 				onchange={(e) => {
 					deleted = e.currentTarget.checked;

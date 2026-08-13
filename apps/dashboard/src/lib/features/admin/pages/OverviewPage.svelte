@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type { Admin } from '@template/core/admin';
 	import { Card } from '@template/ui';
 	import Header from '$lib/components/Header.svelte';
 	import Rule from '$lib/components/Rule.svelte';
@@ -6,12 +7,6 @@
 	import { size } from '$lib/utils/size';
 	import { getEvents, getStats } from '../api/admin.remote';
 
-	// One await, not two: a second `$derived(await …)` is not created until the first has
-	// resolved, so the round trips would queue up instead of running together.
-	// One event row is enough for both figures the doorway needs: the count and the newest stamp.
-	const [stats, events] = $derived(
-		await Promise.all([getStats(), getEvents({ page: 1, pageSize: 1 })])
-	);
 	const f = fmt();
 
 	// The teal ramp the contribution calendar already uses, biggest table darkest. Four
@@ -21,20 +16,20 @@
 
 	// Measured against what the user tables add up to, not `pg_database_size` — that total
 	// counts catalogs nothing here lists, so the segments would never reach the end.
-	const bytes = $derived(stats.tables.tables.reduce((sum, table) => sum + table.bytes, 0));
+	const total = (tables: Admin.Table[]) => tables.reduce((sum, table) => sum + table.bytes, 0);
 
-	const parts = $derived.by(() => {
-		const total = Math.max(1, bytes);
-		const head = stats.tables.tables.slice(0, ramp.length).map((table, i) => ({
+	function parts(tables: Admin.Table[]) {
+		const whole = Math.max(1, total(tables));
+		const head = tables.slice(0, ramp.length).map((table, i) => ({
 			label: table.name,
 			value: size(table.bytes),
 			note: `${table.rows.toLocaleString()} rows`,
 			color: ramp[i],
-			pct: (table.bytes / total) * 100
+			pct: (table.bytes / whole) * 100
 		}));
-		const rest = stats.tables.tables.slice(ramp.length);
+		const rest = tables.slice(ramp.length);
 		if (rest.length === 0) return head;
-		const spare = rest.reduce((sum, table) => sum + table.bytes, 0);
+		const spare = total(rest);
 		return [
 			...head,
 			{
@@ -42,74 +37,95 @@
 				value: size(spare),
 				// Off the ramp on purpose: this segment is a leftover, not another table.
 				color: 'var(--dim)',
-				pct: (spare / total) * 100
+				pct: (spare / whole) * 100
 			}
 		];
-	});
-
-	const places = $derived([
-		{
-			href: '/admin/users',
-			label: 'Users',
-			value: stats.counts.users.toLocaleString(),
-			note: `${stats.counts.disabled} disabled`
-		},
-		{
-			href: '/admin/logs',
-			label: 'Logs',
-			value: events.total.toLocaleString(),
-			note: events.data[0] ? `last ${f.ago(events.data[0].timeCreated)}` : 'nothing recorded'
-		},
-		{
-			href: '/admin/database',
-			label: 'Database',
-			value: size(stats.tables.bytes),
-			note: 'total on disk'
-		}
-	]);
+	}
 </script>
+
+{#snippet place(href: string, label: string, value: string, note: string)}
+	<Card {href} interactive>
+		<div class="place">
+			<span class="label">{label}</span>
+			<span class="value">{value}</span>
+			<span class="note">{note}</span>
+		</div>
+	</Card>
+{/snippet}
 
 <Header title="Admin">
 	Live figures, read straight from Postgres each time this page loads. Nothing here is stored or
 	cached.
 </Header>
 
-<!-- "in tables", not "on disk": the card below carries `pg_database_size`, which counts the
-     catalogs no segment here stands for. The two figures differ, so they are named apart. -->
-<Rule {parts} tail={`${stats.tables.tables.length} tables · ${size(bytes)}`} />
+<!-- A boundary per query rather than one await for both: the stats read and the log tail are
+     independent, so neither waits on the other to paint. `getStats()` is one round trip no
+     matter how many boundaries below ask for it. -->
+<svelte:boundary>
+	{#snippet pending()}<div class="skel" style:height="76px"></div>{/snippet}
+	{@const tables = (await getStats()).tables.tables}
+	<!-- "in tables", not "on disk": the card below carries `pg_database_size`, which counts the
+	     catalogs no segment here stands for. The two figures differ, so they are named apart. -->
+	<Rule parts={parts(tables)} tail={`${tables.length} tables · ${size(total(tables))}`} />
+</svelte:boundary>
 
 <nav class="places" aria-label="Back office">
-	{#each places as place (place.href)}
-		<Card href={place.href} interactive>
-			<div class="place">
-				<span class="label">{place.label}</span>
-				<span class="value">{place.value}</span>
-				<span class="note">{place.note}</span>
-			</div>
-		</Card>
-	{/each}
+	<svelte:boundary>
+		{#snippet pending()}<div class="skel" style:height="88px"></div>{/snippet}
+		{@const counts = (await getStats()).counts}
+		{@render place(
+			'/admin/users',
+			'Users',
+			counts.users.toLocaleString(),
+			`${counts.disabled} disabled`
+		)}
+	</svelte:boundary>
+
+	<svelte:boundary>
+		{#snippet pending()}<div class="skel" style:height="88px"></div>{/snippet}
+		<!-- One event row is enough for both figures the doorway needs: the count and the
+		     newest stamp. -->
+		{@const events = await getEvents({ page: 1, pageSize: 1 })}
+		{@render place(
+			'/admin/logs',
+			'Logs',
+			events.total.toLocaleString(),
+			events.data[0] ? `last ${f.ago(events.data[0].timeCreated)}` : 'nothing recorded'
+		)}
+	</svelte:boundary>
+
+	<svelte:boundary>
+		{#snippet pending()}<div class="skel" style:height="88px"></div>{/snippet}
+		{@const stats = await getStats()}
+		{@render place('/admin/database', 'Database', size(stats.tables.bytes), 'total on disk')}
+	</svelte:boundary>
 </nav>
 
 <!-- Runs of text rather than three more tiles, so the row above reads as "the three
      places to go" instead of one stat block among several. -->
-<dl class="vitals">
-	<dt>Queue</dt>
-	<dd>
-		{stats.queue.pending} pending · {stats.queue.running} running · {stats.queue.failed} failed ·
-		oldest {stats.queue.oldest ? f.ago(stats.queue.oldest) : '—'}
-	</dd>
-	<dt>Server</dt>
-	<dd>
-		PostgreSQL {stats.server.version} · {stats.server.connections}/{stats.server.max} connections ·
-		up since {stats.server.started ? f.ago(stats.server.started) : '—'}
-	</dd>
-</dl>
+<svelte:boundary>
+	{#snippet pending()}<div class="skel" style:height="56px"></div>{/snippet}
+	{@const stats = await getStats()}
+	<dl class="vitals">
+		<dt>Queue</dt>
+		<dd>
+			{stats.queue.pending} pending · {stats.queue.running} running · {stats.queue.failed} failed ·
+			oldest {stats.queue.oldest ? f.ago(stats.queue.oldest) : '—'}
+		</dd>
+		<dt>Server</dt>
+		<dd>
+			PostgreSQL {stats.server.version} · {stats.server.connections}/{stats.server.max} connections ·
+			up since {stats.server.started ? f.ago(stats.server.started) : '—'}
+		</dd>
+	</dl>
+</svelte:boundary>
 
 <style>
 	/* Same measure as the rule, so the three doorways share its left spine and right edge
 	   instead of running out to the shell's full 1440px on their own. */
 	.places,
-	.vitals {
+	.vitals,
+	.skel {
 		max-width: 64em;
 	}
 
@@ -166,6 +182,19 @@
 		margin: 0;
 		color: var(--muted);
 		font-variant-numeric: tabular-nums;
+	}
+
+	.skel {
+		background: var(--surface);
+		border: 1px solid var(--border);
+		border-radius: var(--radius);
+		animation: pulse 1.2s ease-in-out infinite;
+	}
+
+	@keyframes pulse {
+		50% {
+			opacity: 0.45;
+		}
 	}
 
 	@media (max-width: 640px) {

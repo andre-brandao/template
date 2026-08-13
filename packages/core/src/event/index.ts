@@ -21,10 +21,9 @@ export namespace Event {
           image: z.string().nullable(),
         })
         .nullable(),
-      type: z.string().min(1).max(128)
-        .meta({
-          example: Examples.Event.type
-        }),
+      type: z.string().min(1).max(128).meta({
+        example: Examples.Event.type,
+      }),
       source: z.string().min(1).max(64).nullable(),
       sourceID: z.string().nullable(),
       tags: z.string().array().max(20),

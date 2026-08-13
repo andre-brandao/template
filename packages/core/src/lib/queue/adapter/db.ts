@@ -1,15 +1,21 @@
 import { eq, sql } from "drizzle-orm";
-import { Database } from "../../drizzle";
-import { Identifier } from "../../identifier";
+import type { PgAsyncDatabase, PgQueryResultHKT } from "drizzle-orm/pg-core";
+import { Identifier } from "../../../identifier";
 import { JobTable } from "../queue.sql";
 import type { Config, Port } from "../port";
+
+/** Whatever can run drizzle queries — the app's pooled db or an open transaction. */
+export type Tx = PgAsyncDatabase<PgQueryResultHKT, any>;
+export type Runner = <T>(fn: (tx: Tx) => Promise<T>) => Promise<T>;
 
 /**
  * Postgres-backed queue. `reserve` claims one row with `for update skip locked`, so
  * concurrent workers never hand out the same job, and a worker that dies mid-job only
- * holds it until `timeout` passes.
+ * holds it until `timeout` passes. The transaction runner is injected (`Database.use`
+ * in this app) so the adapter stays ignorant of the connection.
  */
-export function db(cfg: Config = {}): Port {
+export function db(cfg: Config & { use: Runner }): Port {
+  const use = cfg.use;
   const retries = cfg.retries ?? 3;
   const backoff = (cfg.backoff ?? 0) * 1000;
   const timeout = cfg.timeout ?? 60;
@@ -17,7 +23,7 @@ export function db(cfg: Config = {}): Port {
   return {
     async push(job) {
       const id = Identifier.create("job");
-      await Database.use((tx) =>
+      await use((tx) =>
         tx.insert(JobTable).values({
           id,
           name: job.name,
@@ -41,7 +47,7 @@ export function db(cfg: Config = {}): Port {
         limit 1
         for update skip locked
       )`;
-      const rows = await Database.use((tx) =>
+      const rows = await use((tx) =>
         tx
           .update(JobTable)
           .set({
@@ -63,10 +69,10 @@ export function db(cfg: Config = {}): Port {
       };
     },
     async ack(job) {
-      await Database.use((tx) => tx.delete(JobTable).where(eq(JobTable.id, job.id)));
+      await use((tx) => tx.delete(JobTable).where(eq(JobTable.id, job.id)));
     },
     async fail(job, err) {
-      await Database.use((tx) =>
+      await use((tx) =>
         tx
           .update(JobTable)
           .set({

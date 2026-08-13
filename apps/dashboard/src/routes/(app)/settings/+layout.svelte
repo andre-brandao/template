@@ -3,8 +3,11 @@
 	import Sparkles from '@lucide/svelte/icons/sparkles';
 	import UserRound from '@lucide/svelte/icons/user-round';
 	import Shell from '$lib/components/layout/Shell.svelte';
+	import { origin } from '$lib/components/layout/back.svelte';
 
 	let { children } = $props();
+
+	const from = origin('/settings', '/todos');
 
 	const sections = [
 		{
@@ -25,4 +28,4 @@
 	];
 </script>
 
-<Shell back={{ href: '/todos', label: 'Back' }} {sections} {crumbs}>{@render children()}</Shell>
+<Shell back={{ href: from.href, label: 'Back' }} {sections} {crumbs}>{@render children()}</Shell>

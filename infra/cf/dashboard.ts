@@ -3,6 +3,7 @@ import { createHash } from "crypto"
 import { readdirSync, statSync } from "fs"
 import { database, hyperdrive } from "./database";
 import { files } from "./storage";
+import { jobs } from "./queue";
 import { environment } from "./secrets";
 import { subdomain } from './stage'
 
@@ -48,7 +49,8 @@ const dashboard = new sst.cloudflare.Worker("Dashboard", {
   link: [
     database,
     hyperdrive,
-    files
+    files,
+    jobs
   ],
   placement: {
     region: "aws:sa-east-1",

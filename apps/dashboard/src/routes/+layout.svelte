@@ -1,15 +1,21 @@
 <script lang="ts">
 	import './layout.css';
 	import favicon from '$lib/assets/favicon.svg';
+	import { untrack } from 'svelte';
 	import { navigating } from '$app/state';
 	import PreLoadingIndicator from './PreLoadingIndicator.svelte';
 	import ViewTransitions from './ViewTransitions.svelte';
 	import { Permission } from '@template/core/permission';
-	import { provide } from '$lib/utils/context';
+	import { createRail } from '$lib/components/layout/rail.svelte';
+	import { createUser } from '$lib/utils/context';
 
 	let { data, children } = $props();
 
-	provide({
+	// Here rather than in the Shell so the rail survives a navigation between route groups.
+	// Read once: the cookie only seeds it, and the toggle owns it from then on.
+	createRail(untrack(() => data.rail));
+
+	createUser({
 		get current() {
 			return data.user;
 		},

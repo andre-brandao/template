@@ -4,7 +4,7 @@ import { fn } from "../util/fn";
 import { Actor } from "../actor";
 import { Database } from "../drizzle";
 import { ProjectTable } from "../project/project.sql";
-import { JobTable } from "../queue/queue.sql";
+import { JobTable } from "../lib/queue/queue.sql";
 import { TodoTable } from "../todo/todo.sql";
 import { UserTable } from "../user/user.sql";
 

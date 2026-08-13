@@ -3,6 +3,8 @@ import type { Handle, HandleServerError } from "@sveltejs/kit";
 import { env } from "$env/dynamic/private";
 import { Context } from "@template/core/context";
 import { Database } from "@template/core/drizzle";
+import { Queue } from "@template/core/queue";
+import { cloudflare } from "@template/core/queue/adapter/cloudflare";
 import { Storage } from "@template/core/storage";
 import { r2 } from "@template/core/storage/adapter/r2";
 import { Actor } from "@template/core/actor";
@@ -21,12 +23,16 @@ const log = Log.create({ namespace: "dashboard.hooks.server" });
 // a working-but-wrong deploy.
 const worker: Handle = ({ event, resolve }) => {
   const cf = event.platform?.env;
-  if (!cf?.Hyperdrive || !cf.Files) throw new Error("Worker is missing a Hyperdrive/Files binding");
+  if (!cf?.Hyperdrive || !cf.Files || !cf.Jobs)
+    throw new Error("Worker is missing a Hyperdrive/Files/Jobs binding");
 
   return Context.withProviders(
     () => resolve(event),
     Database.provider(cf.Hyperdrive.connectionString),
     Storage.provider(r2(cf.Files)),
+    // Native Cloudflare Queues, like the api worker — the consumer in
+    // `functions/src/queue/target/worker.ts` runs whatever this pushes.
+    Queue.provider(cloudflare(cf.Jobs)),
   );
 };
 
@@ -38,7 +44,13 @@ function fromEnv(): Handle {
   const disks = Storage.fromEnv(env);
 
   return ({ event, resolve }) =>
-    Context.withProviders(() => resolve(event), Database.provider(url), Storage.provider(disks));
+    Context.withProviders(
+      () => resolve(event),
+      Database.provider(url),
+      Storage.provider(disks),
+      // QUEUE_DRIVER=db needs the transaction runner, so it can't come from the env fallback.
+      Queue.provider(Queue.fromEnv(env, Database.use)),
+    );
 }
 
 const handleProviders = env.SVELTE_ADAPTER === "cloudflare" ? worker : fromEnv();

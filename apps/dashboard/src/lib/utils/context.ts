@@ -15,7 +15,7 @@ import type { Prefs } from "@template/core/user/prefs";
  * not, so it only names the type. Use it to hide controls, never to secure anything: core
  * runs the same check again on every mutation.
  */
-export const [user, provide] = createContext<{
+export const [user, createUser] = createContext<{
   readonly current: User.Info | null;
   readonly prefs: Prefs;
   can(grants: Permission.Grants, owned?: boolean): boolean;

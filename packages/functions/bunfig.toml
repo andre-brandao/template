@@ -1,2 +1,5 @@
 [test]
 preload = ["../../scripts/pglite.ts"]
+# Coverage should describe this package only: @template/core has its own suite, so
+# counting it here reports the same lines twice against a weaker set of tests.
+coveragePathIgnorePatterns = ["../core/**", "../../scripts/**", "test/**"]

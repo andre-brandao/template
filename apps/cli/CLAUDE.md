@@ -41,8 +41,17 @@ The one entrypoint that runs and talks to the template. Bun-only, no build step 
 
 ## Tests
 
-`test/cli.test.ts` covers arg parsing and SDK reflection — pure functions, no mocks, no
-network. Keep new tests in that shape; anything needing a live server belongs in e2e.
+- `test/cli.test.ts` — arg parsing, SDK reflection, client plumbing, `output()`.
+- `test/config.test.ts` — the token/url/issuer resolution order and `write`/`clear`,
+  against a real config file.
+- `test/setup.ts` (preloaded via `bunfig.toml`) — points `XDG_CONFIG_HOME` at a scratch
+  dir and clears `TEMPLATE_TOKEN`/`API_URL`/`AUTH_URL`. It has to be a preload because
+  `config.ts` freezes its file path at import.
+
+Keep new tests in that shape: no server, no network, no subprocess. Anything needing a
+live server belongs in e2e. Untested by design — `login()` (browser + port 3006), all of
+`serve.ts`, the OAuth refresh branch of `config.token()` (needs a reachable issuer), and
+the error branch of `output()` (`process.exit` would kill the runner).
 
 ## Docs
 

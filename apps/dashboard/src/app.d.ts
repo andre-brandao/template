@@ -18,6 +18,7 @@ declare global {
       env?: {
         Hyperdrive?: { connectionString: string };
         Files?: import("@cloudflare/workers-types").R2Bucket;
+        Jobs?: import("@cloudflare/workers-types").Queue<import("@template/core/queue/port").Job>;
       };
     }
   }

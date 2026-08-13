@@ -2,8 +2,8 @@ import { describe, expect, it } from "bun:test";
 import { Actor } from "../src/actor";
 import { Email } from "../src/email";
 import { createQueueSender } from "../src/email/adapter/queue";
-import { Queue } from "../src/queue";
-import { memory } from "../src/queue/adapter/memory";
+import { Queue } from "../src/lib/queue";
+import { memory } from "../src/lib/queue/adapter/memory";
 
 /** Stands in for whatever the worker provides — SES, Cloudflare, the console sender. */
 function capture() {

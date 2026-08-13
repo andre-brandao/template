@@ -1,5 +1,5 @@
 import { index, integer, jsonb, pgTable as table, text } from "drizzle-orm/pg-core";
-import { id, timestamp, timestamps, ulid } from "../drizzle/types";
+import { id, timestamp, timestamps, ulid } from "../../drizzle/types";
 
 export const JobTable = table(
   "job",

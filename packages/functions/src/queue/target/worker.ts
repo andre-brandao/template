@@ -9,8 +9,8 @@ import type { Job } from "@template/core/queue/port";
 import { Storage } from "@template/core/storage";
 import { r2 } from "@template/core/storage/adapter/r2";
 import { Log } from "@template/core/util/log";
+import { run } from "@template/core/jobs";
 import type { EmailEnv, QueueEnv } from "../../cf";
-import "@template/core/queue/jobs";
 
 /** Handlers may enqueue follow-ups and send mail, so this worker needs both bindings. */
 type Env = QueueEnv & EmailEnv;
@@ -35,7 +35,7 @@ async function handle(msg: Message<Job>, env: Env) {
   const err = await Promise.resolve()
     .then(() =>
       Context.withProviders(
-        () => Queue.run(job),
+        () => run(job),
         Database.provider(env.Hyperdrive.connectionString),
         Storage.provider(r2(env.Files)),
         Email.provider(createCloudflareSender(env.SEND_EMAIL)),

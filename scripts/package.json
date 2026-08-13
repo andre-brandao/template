@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "bun dev.ts",
+    "prototype": "bun prototype.ts",
     "typecheck": "tsc --noEmit",
     "seed": "bun seed.ts",
     "db:migrate": "bunx sst shell bun \"migrate.ts\""

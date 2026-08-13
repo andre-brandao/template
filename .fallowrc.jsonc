@@ -119,7 +119,7 @@
       // request-only glue. All may reach the design system + backend they consume.
       {
         "from": "app",
-        "allow": ["features", "server", "shared", "core"],
+        "allow": ["features", "server", "shared", "core", "ui"],
       },
       {
         "from": "features",
@@ -139,7 +139,7 @@
       // context/prop shapes from drifting away from what the server hands over.
       {
         "from": "shared",
-        "allow": ["ui"],
+        "allow": ["ui", "features/events", "features/feedback"],
         "allowTypeOnly": ["core"],
       },
       // Backend / design-system layering. Dependencies flow one way toward core;

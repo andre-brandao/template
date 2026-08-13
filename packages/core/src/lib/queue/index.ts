@@ -65,6 +65,7 @@ export namespace Queue {
     const job = await queue.reserve();
     if (!job) return false;
 
+    log.info("job running", { id: job.id, name: job.name, attempts: job.attempts });
     const err = await Promise.resolve()
       .then(() => runner(job))
       .then(

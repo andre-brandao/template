@@ -6,15 +6,15 @@ import { app as mcpApp } from "@template/functions/mcp";
 import { createAuth } from "@template/functions/auth";
 
 const dash = `${import.meta.dir}/../../dashboard`;
-const url = process.env.DATABASE_URL ?? Database.DEFAULT_URL;
+const db = Database.create();
 
 /**
- * Reuse one DB connection per request, mirroring the dashboard's `hooks.server.ts`.
- * Dev backends like pglite accept only a single active connection, so the raw API
- * app (which opens a fresh client per request) can't run against them without this.
+ * One pool for the process, mirroring the dashboard's `hooks.server.ts`. Dev backends
+ * like pglite accept only a single active connection, so a client per request can't
+ * run against them.
  */
 function serveApp(app: { fetch: (req: Request) => Response | Promise<Response> }, port: number) {
-  Bun.serve({ port, fetch: (req) => Database.provide(url, () => app.fetch(req)) });
+  Bun.serve({ port, fetch: (req) => Database.provide(db, () => app.fetch(req)) });
 }
 
 function forward(child: Bun.Subprocess) {
@@ -67,7 +67,7 @@ const targets: Record<string, () => void | Promise<void>> = {
     const sender = Email.fromEnv(process.env);
     Bun.serve({
       port,
-      fetch: (req) => Database.provide(url, () => Email.provide(sender, () => app.fetch(req))),
+      fetch: (req) => Database.provide(db, () => Email.provide(sender, () => app.fetch(req))),
     });
     console.log(`Auth running at http://localhost:${port}`);
   },

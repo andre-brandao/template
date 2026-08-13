@@ -11,22 +11,27 @@ const dir = fileURLToPath(new URL("../../../../packages/core/migrations", import
 
 export default async function () {
   await ensure();
-  await Database.provide(url, async () => {
+  // Released so global setup doesn't hold a connection for the whole run.
+  const client = Database.create(url);
+  await Database.provide(client, async () => {
     await run(sql`drop schema public cascade`);
     await run(sql`create schema public`);
     for (const stmt of statements()) await run(sql.raw(stmt));
   });
+  await Database.release(client);
 }
 
 /** Create the dedicated e2e database if it isn't there yet (CREATE DATABASE can't be conditional). */
-function ensure() {
-  return Database.provide(`${base}/postgres`, () =>
+async function ensure() {
+  const client = Database.create(`${base}/postgres`);
+  await Database.provide(client, () =>
     Database.use(async (tx) => {
       const rows = await tx.execute(sql`select 1 from pg_database where datname = ${db}`);
       // @ts-expect-error it works
       if (rows.length === 0) await tx.execute(sql.raw(`create database "${db}"`));
     }),
   );
+  await Database.release(client);
 }
 
 const run = (q: ReturnType<typeof sql.raw>) => Database.use((tx) => tx.execute(q));

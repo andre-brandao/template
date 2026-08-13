@@ -7,6 +7,7 @@ import { Common } from "../common";
 import { Examples } from "../examples";
 import { Identifier } from "../identifier";
 import { UserTable } from "../user/user.sql";
+import { Webhook } from "../webhook";
 import { EventTable } from "./event.sql";
 
 export namespace Event {
@@ -65,6 +66,38 @@ export namespace Event {
           sourceID: input.sourceID,
           tags: [...new Set([who.tag, ...(input.tags ?? [])])],
           data: input.data ?? {},
+        }),
+      );
+      return id;
+    },
+  );
+
+  /**
+   * An event that also leaves the building. Same audit row as `create`, plus a queued
+   * fan-out to every matching webhook. `state` is the only thing subscribers see of the
+   * payload and is never stored, which is why this is a second function rather than a flag.
+   */
+  export const publish = fn(
+    Info.pick({ source: true, sourceID: true, tags: true, data: true })
+      .partial()
+      .extend({
+        type: z.enum(Webhook.types),
+        state: z.record(z.string(), z.unknown()).optional(),
+      }),
+    async (input) => {
+      const id = await create(input);
+      // After the caller's transaction commits, so a rolled-back write emits nothing.
+      await Database.effect(() =>
+        Webhook.job.push({
+          event: {
+            id,
+            type: input.type,
+            source: input.source,
+            sourceID: input.sourceID,
+            // The subscriber gets the resulting state, not the audit diff in `input.data`.
+            data: input.state,
+            timeCreated: new Date().toISOString(),
+          },
         }),
       );
       return id;

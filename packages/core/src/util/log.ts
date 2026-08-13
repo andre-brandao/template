@@ -19,7 +19,8 @@ export namespace Log {
 
     const result = {
       info(msg: string, extra?: Record<string, any>) {
-        console.log(prefix(extra), msg);
+        // Read per call: scripts set the flag after this module is already evaluated.
+        if (process.env.LOG_QUIET !== "true") console.log(prefix(extra), msg);
         return result;
       },
       warn(msg: string, extra?: Record<string, any>) {

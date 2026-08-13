@@ -12,6 +12,7 @@ export namespace Permission {
     project: ["read", "create", "update", "delete"],
     todo: ["read", "create", "update", "delete"],
     key: ["read", "create", "update", "delete"],
+    webhook: ["read", "create", "update", "delete"],
   } as const;
 
   type Res = keyof typeof Statement;
@@ -31,6 +32,7 @@ export namespace Permission {
       project: ["read", "create", "update", "delete"],
       todo: ["read", "create", "update", "delete"],
       key: ["read", "create", "update", "delete"],
+      webhook: ["read", "create", "update", "delete"],
     },
     member: {
       user: ["read", "update:own"],

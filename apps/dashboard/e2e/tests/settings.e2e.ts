@@ -1,8 +1,10 @@
 import type { Page } from "@playwright/test";
 import { Database } from "@template/core/drizzle";
+import { Queue } from "@template/core/queue";
 import { Actor } from "@template/core/actor";
 import { Todo } from "@template/core/todo";
 import { test, expect } from "../util/fixtures";
+import { db } from "../util/db";
 
 // The prefs `save` command POSTs to the remote-function endpoint; navigating or
 // reloading before it resolves aborts the request and nothing is persisted. Arm
@@ -75,9 +77,13 @@ test("the date format preference reaches the rest of the app", async ({ page, as
   // Unique per attempt: todos are workspace-wide and the database lives for the
   // whole run, so a fixed title accumulates rows across projects and retries.
   const title = `Ship the settings page ${Date.now()}`;
-  await Database.provide(process.env.DATABASE_URL!, () =>
-    Actor.provide("user", { userID: session.userID }, () =>
-      Todo.create({ title, dueDate: "2024-03-12T12:00:00.000Z" }),
+  // `Todo.create` publishes, and publishing pushes a delivery job — the app under test has
+  // its own queue port, this direct call needs one too.
+  await Database.provide(db, () =>
+    Queue.provide(Queue.Providers.memory(), () =>
+      Actor.provide("user", { userID: session.userID, role: "member" }, () =>
+        Todo.create({ title, dueDate: "2024-03-12T12:00:00.000Z" }),
+      ),
     ),
   );
 

@@ -2,6 +2,7 @@ import { Database } from "@template/core/drizzle";
 import { Actor } from "@template/core/actor";
 import { Project } from "@template/core/project";
 import { Todo } from "@template/core/todo";
+import { db } from "./db";
 
 const DAY = 86_400_000;
 const day = (offset: number) => new Date(Date.now() + offset * DAY).toISOString();
@@ -10,7 +11,7 @@ const day = (offset: number) => new Date(Date.now() + offset * DAY).toISOString(
 // tests scope themselves to the returned project. Runs inside `Actor.provide` because
 // `Todo.create` reads the actor.
 export function seed(uid: string, titles: string[], name = "E2E") {
-  return Database.provide(process.env.DATABASE_URL!, () =>
+  return Database.provide(db, () =>
     Actor.provide("user", { userID: uid, role: "member" }, async () => {
       const project = await Project.create({ name: `${name} ${uid.slice(-6)}` });
       await Promise.all(

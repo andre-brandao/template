@@ -3,6 +3,7 @@ import { Database } from "@template/core/drizzle";
 import type { Permission } from "@template/core/permission";
 import { User } from "@template/core/user";
 import { seal } from "../../src/lib/server/session";
+import { db } from "./db";
 
 // Creates a real user in the same database the app reads, then seals the dashboard
 // session cookie the same way /callback does — so a browser carrying the `auth`
@@ -11,7 +12,7 @@ export function mint(
   role: Permission.Role = "member",
   opts: { email?: string; name?: string } = {},
 ) {
-  return Database.provide(process.env.DATABASE_URL!, async () => {
+  return Database.provide(db, async () => {
     const email = opts.email ?? `e2e-${crypto.randomUUID()}@example.com`;
     const userID = await User.create({ name: opts.name ?? "E2E User", email });
     // Signup makes everyone a member and the app reads the role off the row, so anything

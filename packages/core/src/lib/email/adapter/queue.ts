@@ -1,9 +1,14 @@
 import { z } from "zod";
-import { Actor } from "../../actor";
-import { Queue } from "../../lib/queue";
+import { Actor } from "../../../actor";
+import { Queue } from "../../queue";
 import { Email } from "../index";
+import type { Port } from "../port";
 
-/** The deferred send. Its handler is whatever sender the running process provides. */
+/**
+ * The deferred send. Its handler is whatever driver the running process provides.
+ * Called lazily — `Email.fromEnv` imports this module, so resolving `Email.send` at
+ * define time would race the cycle.
+ */
 export const job = Queue.define(
   "email.send",
   z.object({
@@ -23,22 +28,22 @@ export const job = Queue.define(
       .array()
       .optional(),
   }),
-  Email.send,
+  (input) => Email.send(input),
 );
 
 /**
  * Hands the mail to the queue instead of a provider, so an app that sends mail only
  * needs a queue driver — no SMTP credentials, no Cloudflare `send_email` binding. The
- * process that runs the job is the one that holds a real sender.
+ * process that runs the job is the one that holds a real driver.
  *
- * Pair it with a driver that defers (`db`, `cloudflare`, `memory`). `sync` runs the
- * handler inline, where it resolves this sender right back and loops.
+ * Pair it with a queue driver that defers (`db`, `cloudflare`, `memory`). `sync` runs
+ * the handler inline, where it resolves this driver right back and loops.
  */
-export function createQueueSender(): Email.SenderPort {
+export function queue(): Port {
   return {
-    async send(input) {
+    async send(msg) {
       const info = Actor.use();
-      await job.push(input, { userID: info.type === "user" ? info.properties.userID : null });
+      await job.push(msg, { userID: info.type === "user" ? info.properties.userID : null });
     },
   };
 }

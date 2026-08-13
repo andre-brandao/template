@@ -1,7 +1,6 @@
 import { MemoryStorage } from "@openauthjs/openauth/storage/memory";
 import { Database } from "@template/core/drizzle";
 import { Email } from "@template/core/email";
-import { createConsoleSender } from "@template/core/email/adapter/console";
 import { app as apiApp } from "@template/functions/api";
 import { app as mcpApp } from "@template/functions/mcp";
 import { createAuth } from "@template/functions/auth";
@@ -65,7 +64,7 @@ const targets: Record<string, () => void | Promise<void>> = {
   auth: () => {
     const port = Number(process.env.PORT) || 3002;
     const app = createAuth(MemoryStorage({ persist: process.env.AUTH_PERSIST }));
-    const sender = createConsoleSender();
+    const sender = Email.fromEnv(process.env);
     Bun.serve({
       port,
       fetch: (req) => Database.provide(url, () => Email.provide(sender, () => app.fetch(req))),

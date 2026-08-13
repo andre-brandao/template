@@ -1,13 +1,12 @@
 import { describe, expect, it } from "bun:test";
 import { Actor } from "../src/actor";
-import { Email } from "../src/email";
-import { createQueueSender } from "../src/email/adapter/queue";
+import { Email } from "../src/lib/email";
 import { Queue } from "../src/lib/queue";
 import { memory } from "../src/lib/queue/adapter/memory";
 
-/** Stands in for whatever the worker provides — SES, Cloudflare, the console sender. */
+/** Stands in for whatever the worker provides — SES, Cloudflare, the console driver. */
 function capture() {
-  const sent: Parameters<Email.SenderPort["send"]>[0][] = [];
+  const sent: Email.Message[] = [];
   return {
     sent,
     async send(input: (typeof sent)[number]) {
@@ -23,7 +22,7 @@ describe("email queue sender", () => {
 
     await Actor.provide("public", {}, () =>
       Queue.provide(queue, async () => {
-        await Email.provide(createQueueSender(), () =>
+        await Email.provide(Email.Providers.queue(), () =>
           Email.send({
             to: "ada@example.com",
             subject: "hello",

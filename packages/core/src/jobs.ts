@@ -8,7 +8,7 @@ import { User } from "./user";
  * process running `Queue.work()` one module to import for every handler to resolve.
  * Push with `jobs.email.push({ ... })`.
  */
-export { job as email } from "./email/adapter/queue";
+export { job as email } from "./lib/email/adapter/queue";
 
 /**
  * Runs one job as its pushing actor — what the worker targets hand to `Queue.work` and

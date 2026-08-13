@@ -1,7 +1,7 @@
 import type { SendEmail } from "@cloudflare/workers-types";
-import type { Email } from "../index";
+import type { Port } from "../port";
 
-export function createCloudflareSender(binding: SendEmail): Email.SenderPort {
+export function cloudflare(binding: SendEmail): Port {
   return {
     async send({ from, to, subject, body, html, attachments }) {
       await binding.send({

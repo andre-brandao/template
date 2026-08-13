@@ -2,9 +2,7 @@ import type { ExecutionContext } from "@cloudflare/workers-types";
 import { Context } from "@template/core/context";
 import { Database } from "@template/core/drizzle";
 import { Queue } from "@template/core/queue";
-import { cloudflare } from "@template/core/queue/adapter/cloudflare";
 import { Storage } from "@template/core/storage";
-import { r2 } from "@template/core/storage/adapter/r2";
 import type { QueueEnv } from "../../cf";
 import { app } from "../routes";
 
@@ -17,8 +15,8 @@ export default {
     return Context.withProviders(
       () => app.fetch(request, env, ctx),
       Database.provider(env.Hyperdrive.connectionString),
-      Storage.provider(r2(env.Files)),
-      Queue.provider(cloudflare(env.Jobs)),
+      Storage.provider(Storage.Providers.r2(env.Files)),
+      Queue.provider(Queue.Providers.cloudflare(env.Jobs)),
     );
   },
 };

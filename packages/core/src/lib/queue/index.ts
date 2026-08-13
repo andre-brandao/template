@@ -2,6 +2,7 @@ import { z } from "zod";
 import { Context } from "../../context";
 import { Log } from "../../util/log";
 import type * as port from "./port";
+import { cloudflare } from "./adapter/cloudflare";
 import { db, type Runner } from "./adapter/db";
 import { memory } from "./adapter/memory";
 import { sync } from "./adapter/sync";
@@ -21,6 +22,9 @@ export namespace Queue {
 
   export type Job = port.Job;
   export type Port = port.Port;
+
+  /** The drivers, re-exported so a target only imports `Queue`. */
+  export const Providers = { cloudflare, db, memory, sync };
 
   const ctx = Context.create<Port>();
   const jobs = new Map<string, { schema: z.ZodType; cb: (input: any) => Promise<void> }>();

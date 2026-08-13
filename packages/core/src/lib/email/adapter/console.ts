@@ -1,23 +1,13 @@
-import type { Email } from "../index";
-import { Log } from "../../util/log";
+import type { Message, Port } from "../port";
+import { Log } from "../../../util/log";
 
 const log = Log.create({ namespace: "email.console" });
 
-function boxedEmail({
-  from,
-  to,
-  subject,
-  body,
-}: {
-  from?: string;
-  to: string | string[];
-  subject: string;
-  body: string;
-}): string {
+function boxed({ from, to, subject, body }: Message): string {
   const lines = [
     "📧 CONSOLE EMAIL",
     "",
-    `From: ${from ?? "(not set)"}`,
+    `From: ${from}`,
     `To: ${Array.isArray(to) ? to.join(", ") : to}`,
     `Subject: ${subject}`,
     "",
@@ -32,14 +22,14 @@ function boxedEmail({
 }
 
 /** Logs the email instead of sending it. For local dev and self-host without SMTP. */
-export function createConsoleSender(): Email.SenderPort {
+export function console(): Port {
   log.warn(
     "CONSOLE SENDER: emails will not be sent only logged to console [DO NOT USE IN PRODUCTION]",
   );
   return {
-    async send({ from, to, subject, body }) {
-      log.info("email", { from, to, subject });
-      console.log(boxedEmail({ from, to, subject, body }));
+    async send(msg) {
+      log.info("email", { from: msg.from, to: msg.to, subject: msg.subject });
+      globalThis.console.log(boxed(msg));
     },
   };
 }

@@ -8,10 +8,8 @@ type R2Object = {
 };
 
 /**
- * Structural subset of Cloudflare's `R2Bucket` binding — deliberately not imported
- * from `@cloudflare/workers-types`, whose `.d.ts` has no imports/exports and so is
- * treated as a global script: importing anything from it redeclares ambient globals
- * (`File`, `Request`, ...) for the whole program. The real binding satisfies this.
+ * Structural subset of `R2Bucket` — importing `@cloudflare/workers-types` would
+ * redeclare ambient globals for the whole program. The real binding satisfies this.
  */
 export interface Bucket {
   put(

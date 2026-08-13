@@ -9,10 +9,8 @@ export type Tx = PgAsyncDatabase<PgQueryResultHKT, any>;
 export type Runner = <T>(fn: (tx: Tx) => Promise<T>) => Promise<T>;
 
 /**
- * Postgres-backed queue. `reserve` claims one row with `for update skip locked`, so
- * concurrent workers never hand out the same job, and a worker that dies mid-job only
- * holds it until `timeout` passes. The transaction runner is injected (`Database.use`
- * in this app) so the adapter stays ignorant of the connection.
+ * Postgres-backed queue. `reserve` claims a row with `for update skip locked`; a dead
+ * worker holds a job only until `timeout`. The transaction runner is injected.
  */
 export function db(cfg: Config & { use: Runner }): Port {
   const use = cfg.use;

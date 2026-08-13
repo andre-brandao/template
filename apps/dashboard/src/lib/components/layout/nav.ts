@@ -4,10 +4,8 @@ import type { LucideIcon } from "@lucide/svelte";
 export type Item = { href: string; label: string; icon?: LucideIcon; exact?: boolean };
 
 /**
- * Whether a nav item is the page being looked at. Shared so the lit link and the
- * breadcrumb trail can't disagree about which one that is: prefix matching keeps a
- * parent lit on its children, but an index route like /projects/[id] would then never
- * turn off — hence `exact`.
+ * Whether a nav item is the current page. Prefix matching keeps a parent lit on its
+ * children; `exact` is for index routes that would otherwise never turn off.
  */
 export function at(item: Item) {
   const hit = item.exact

@@ -38,11 +38,7 @@ export namespace Key {
     });
   export type Info = z.infer<typeof Info>;
 
-  /**
-   * Takes `userID` rather than reading the actor, so callers can mint a key for a
-   * user before an actor exists. Returns the raw secret — the convenient time to
-   * copy it, though `list` hands it back too.
-   */
+  /** Takes `userID` so a key can be minted before an actor exists. Returns the raw secret. */
   export const create = fn(
     z.object({
       userID: Identifier.schema("user"),
@@ -65,10 +61,7 @@ export namespace Key {
       ),
   );
 
-  /**
-   * Resolves a secret to its user, stamping `time_used` in the same round-trip.
-   * `api` only — a signing key is not a bearer token, even though both live here.
-   */
+  /** Resolves a secret to its user, stamping `time_used` in the same round-trip. `api` keys only. */
   export const verify = fn(z.string(), (key) =>
     Database.use((tx) =>
       tx
@@ -88,9 +81,8 @@ export namespace Key {
   );
 
   /**
-   * The app's URL-signing key, minted on first use and cached for the process. The row
-   * has no user, so `list` and `remove` can't reach it. Two processes racing the first
-   * mint just leaves two usable keys — the signature carries the id that signed it.
+   * URL-signing key, minted on first use and cached per process. No user row, so `list`
+   * and `remove` can't reach it. A racing first mint just leaves two usable keys.
    */
   export const signing = memo(async () => {
     const existing = await Database.use((tx) =>
@@ -138,10 +130,7 @@ export namespace Key {
     ),
   );
 
-  /**
-   * Every live key the user has. Pass the caller's own secret to have its key
-   * flagged `current`.
-   */
+  /** Every live key the user has. Pass the caller's secret to flag its key `current`. */
   export const list = fn(z.string().optional(), (current) =>
     Database.use((tx) =>
       tx

@@ -11,13 +11,8 @@ import { s3 } from "./adapter/s3";
 import { serve } from "./adapter/serve";
 
 /**
- * Named disks over a swappable backend, Laravel-style: `Storage.disk()` is the default
- * disk, `Storage.disk("s3")` picks another. Callers never learn which driver they got —
- * the target wires it once per request via `Storage.provider(...)`.
- *
- * A driver only implements `Disk` (see `port.ts`); `disk()` hands back that driver
- * wrapped in the wider `Api`, the same split as Laravel's `FilesystemAdapter` over a
- * Flysystem driver.
+ * Named disks over a swappable backend: `Storage.disk()` is the default, `disk("s3")`
+ * picks another. Drivers implement `Disk` (port.ts); `disk()` wraps them in the wider `Api`.
  */
 export namespace Storage {
   const log = Log.create({ namespace: "core.storage" });
@@ -97,11 +92,7 @@ export namespace Storage {
     return wrap(found);
   }
 
-  /**
-   * Same env fallback as `Database.use()`: routes that hit the raw Hono app
-   * directly (bypassing `target.ts`'s per-request wrapper — chiefly tests)
-   * still get a working backend instead of an error.
-   */
+  /** Env fallback for callers that bypass a target's per-request wrapper (chiefly tests). */
   function config(): Disks {
     try {
       return ctx.use();
@@ -112,10 +103,8 @@ export namespace Storage {
   }
 
   /**
-   * Builds the disk set from env for the non-Worker targets (Bun dev/self-host,
-   * Lambda). `STORAGE_DISK=fs|s3`, default `fs`. The Cloudflare Worker target
-   * doesn't use this — it wires the native R2 binding directly via
-   * `storage/adapter/r2` since that's only available per-request as `env.Files`.
+   * `STORAGE_DISK=fs|s3`, default `fs`. The Worker target skips this and wires its
+   * per-request R2 binding directly.
    */
   export function fromEnv(env: Record<string, string | undefined>): Disks {
     const name = env.STORAGE_DISK ?? "fs";

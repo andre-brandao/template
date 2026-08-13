@@ -22,10 +22,8 @@ export type Prefs = z.infer<typeof Prefs>;
 
 export const DEFAULTS = Prefs.parse({});
 
-// `.partial()` wraps the optional *outside* the default, so parsing still fills every
-// absent key — `Prefs.partial().parse({ theme: "light" })` returns all five fields. Merged
-// into jsonb that would reset the other four on every write. Dropping the default first is
-// what makes this an actual patch.
+// `.removeDefault().optional()` keeps absent keys absent, so the jsonb merge is a real
+// patch — plain `.partial()` would fill defaults and reset the other fields on every write.
 export const Patch = z.object({
   theme: Prefs.shape.theme.removeDefault().optional(),
   locale: Prefs.shape.locale.removeDefault().optional(),

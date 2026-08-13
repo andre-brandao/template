@@ -2,10 +2,8 @@ import { readdirSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { Database, sql } from "@template/core/drizzle";
 
-// e2e runs against a real Postgres (the app's actual dev DB), not pglite — its
-// socket server is single-connection and can't serve the app plus parallel test
-// workers at once. We isolate on a dedicated database and reset it each run, so
-// a developer's dev data (in `postgres`) is never touched.
+// e2e needs real Postgres (pglite is single-connection). A dedicated database is
+// reset each run so dev data in `postgres` is never touched.
 const base = process.env.E2E_PG ?? "postgresql://postgres:password@127.0.0.1:5432";
 const db = process.env.E2E_DB ?? "template_e2e";
 const url = `${base}/${db}`;

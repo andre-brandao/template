@@ -15,10 +15,8 @@ type Env = QueueEnv & EmailEnv;
 const log = Log.create({ namespace: "queue.worker" });
 
 /**
- * Cloudflare consumer for the queue the `cloudflare` driver pushes to. Cloudflare
- * delivers a batch and counts attempts itself, so this runs each job and acks or
- * retries it — the `reserve`/`ack` loop `work()` runs on the polling drivers has no
- * counterpart here.
+ * Cloudflare consumer for the `cloudflare` driver's queue. Cloudflare delivers batches
+ * and counts attempts, so this just runs each job and acks or retries.
  */
 export default {
   async queue(batch: MessageBatch<Job>, env: Env) {

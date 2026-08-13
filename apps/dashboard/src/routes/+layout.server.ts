@@ -8,10 +8,8 @@ import type { LayoutServerLoad } from "./$types";
 /** Feeds the session context in `+layout.svelte` — read it with `user()`, at any depth. */
 export const load: LayoutServerLoad = async (event) => {
   const feedback = Feedback.enabled();
-  // Unsigned and readable by the client on purpose: the sidebar toggle writes it directly,
-  // and the worst a forged value can do is pick a sidebar width. It has to reach the server
-  // at all so the first painted HTML is already the right width — localStorage can only be
-  // read after hydration, by which point a collapsed rail has flashed open.
+  // Unsigned, client-writable on purpose — worst forgery picks a sidebar width. A cookie
+  // (not localStorage) so the first painted HTML is already the right width.
   const rail = event.cookies.get("rail") === "tight";
 
   // The actor, not the cookie: a stale or revoked token leaves a `public` actor.

@@ -8,16 +8,9 @@ import { JobTable } from "../lib/queue/queue.sql";
 import { TodoTable } from "../todo/todo.sql";
 import { UserTable } from "../user/user.sql";
 
-/**
- * Read-only operational stats for the back office. Everything here is a live query against
- * Postgres catalogs or a plain count — nothing is stored, so there is no state to keep in
- * sync and no cache to invalidate.
- */
+/** Read-only operational stats for the back office — live queries only, nothing stored. */
 export namespace Admin {
-  /**
-   * A catalog query, which drizzle's query builder can't express. `tx` is a union of the
-   * pooled db and a transaction, so `execute`'s generic never resolves — hence the cast.
-   */
+  /** Catalog query the builder can't express; the union `tx` type forces the cast. */
   const raw = (query: SQL) => Database.use((tx): Promise<any[]> => (tx as any).execute(query));
 
   export const Table = z.object({
@@ -27,11 +20,7 @@ export namespace Admin {
   });
   export type Table = z.infer<typeof Table>;
 
-  /**
-   * Per-table size and live row estimate, biggest first, plus the database total. `n_live_tup`
-   * is the planner's estimate rather than a `count(*)` — it costs nothing and is close enough
-   * to answer "what is growing".
-   */
+  /** Per-table size and row estimate (planner's `n_live_tup` — cheap), plus the db total. */
   export const tables = fn(z.void(), async () => {
     Actor.check({ admin: ["read"] });
     const [rows, size] = await Promise.all([
@@ -118,8 +107,7 @@ export namespace Admin {
   export const server = fn(z.void(), async () => {
     Actor.check({ admin: ["read"] });
     const rows = await raw(sql`
-      -- server_version carries the packager's whole string ("17.10 (Debian 17.10-1...)");
-      -- the leading number is the part anyone reads.
+      -- server_version carries the packager's whole string; keep the leading number.
       SELECT split_part(current_setting('server_version'), ' ', 1) AS version,
              (SELECT count(*) FROM pg_stat_activity) AS connections,
              current_setting('max_connections') AS max,

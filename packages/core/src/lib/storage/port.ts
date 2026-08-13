@@ -6,9 +6,8 @@ export type Entry = { key: string; size: number; lastModified: Date | null };
 export type Meta = Entry & { contentType: string };
 
 /**
- * The driver contract — what a backend must implement, Flysystem's half of Laravel's
- * split. The friendlier API (`exists`, `size`, `move`, `files`, `temporaryUrl`) is
- * derived from these in `Storage`, so adding a backend stays a ~50 line job.
+ * The driver contract. The friendlier API (`exists`, `move`, `temporaryUrl`, ...) is
+ * derived from these in `Storage`.
  */
 export interface Disk {
   put(key: string, bytes: Uint8Array, contentType: string): Promise<void>;
@@ -21,10 +20,8 @@ export interface Disk {
   /** Server-side where the backend supports it, read-then-write where it doesn't. */
   copy(from: string, to: string): Promise<void>;
   /**
-   * Optional: a time-limited URL for direct client access, bypassing the app.
-   * Omitted when the backend can't sign (fs, native R2 binding) — `temporaryUrl`
-   * then returns null and callers fall back to proxying bytes. `method: "put"`
-   * reserves direct uploads.
+   * Optional time-limited URL for direct client access. Omitted when the backend can't
+   * sign (fs, native R2) — `temporaryUrl` returns null and callers proxy the bytes.
    */
   presign?(opts: { key: string; method: "get" | "put"; expires?: number }): Promise<string>;
 }

@@ -8,14 +8,9 @@ export function auth() {
   if (Actor.use().type !== "user") redirect(303, "/login");
 }
 
-// Schema validation only catches malformed input — business errors (invalid
-// credentials, not found, ...) are only known once the core function actually
-// runs. This turns a thrown `VisibleError` into a form-wide `invalid()` issue,
-// shown via `fields.allIssues()`; anything else fails as a normal SvelteKit
-// error response.
-//
-// A denial is the exception: it isn't something the user can fix by editing the
-// form, so it renders as the error page rather than a phantom field issue.
+// Turns a thrown `VisibleError` into a form-wide `invalid()` issue; anything else is a
+// normal SvelteKit error. A denial isn't fixable by editing the form, so it renders as
+// the error page instead.
 export async function guard<T>(fn: () => Promise<T>): Promise<T> {
   try {
     return await fn();

@@ -14,12 +14,16 @@ export namespace Event {
     .object({
       id: z.string().meta({ description: Common.IdDescription, example: Examples.Event.id }),
       userID: z.string().nullable(),
-      /**
-       * Who caused the entry, joined in the same query rather than looked up per row: every
-       * log line and timeline entry wants the name, and the left join costs nothing.
-       */
-      user: z.object({ id: z.string(), name: z.string(), image: z.string().nullable() }).nullable(),
-      type: z.string().min(1).max(128).meta({ example: Examples.Event.type }),
+      user: z
+        .object({
+          id: z.string(),
+          name: z.string(),
+          image: z.string().nullable(),
+        })
+        .nullable(),
+      type: z.string().min(1).max(128).meta({
+        example: Examples.Event.type,
+      }),
       source: z.string().min(1).max(64).nullable(),
       sourceID: z.string().nullable(),
       tags: z.string().array().max(20),

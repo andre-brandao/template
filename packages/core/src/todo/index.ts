@@ -19,10 +19,7 @@ export namespace Todo {
 
   const Tag = z.string().trim().min(1).max(64);
 
-  /**
-   * Joined in rather than looked up client-side: every list, card and timeline row wants
-   * the name, and a left join costs nothing next to fetching the directory per page.
-   */
+  /** Joined in — every list row wants the name, and a left join is cheap. */
   export const Assignee = z
     .object({ id: z.string(), name: z.string(), image: z.string().nullable() })
     .nullable();
@@ -93,9 +90,8 @@ export namespace Todo {
   type Patch = z.infer<typeof Patch>;
 
   /**
-   * The actual span, moved by the status alone: entering `active` stamps the real start
-   * (once — a blocked task that resumes keeps its original), `done` stamps the end, and
-   * falling back to backlog/planned means it never really started after all.
+   * Span moves with status: `active` stamps the start (once), `done` stamps the end,
+   * falling back to backlog/planned clears both.
    */
   function times(status: Status, started: string | null) {
     const now = new Date();
@@ -262,10 +258,7 @@ export namespace Todo {
     },
   );
 
-  /**
-   * The stage list, aggregated from the todos wearing each label — a stage spans whatever
-   * its members cover, so there is no second table that can drift out of sync.
-   */
+  /** Stage list aggregated from the todos wearing each label — no second table to drift. */
   export const stages = fn(
     z.object({ source: z.string().optional(), sourceID: z.string().optional() }),
     (input) =>

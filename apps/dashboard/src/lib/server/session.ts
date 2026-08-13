@@ -1,10 +1,8 @@
 import type { RequestEvent } from "@sveltejs/kit";
 
-// Signed-cookie session holding just the resolved identity. The issuer's access
-// token is verified once at /callback and discarded, so every later request is a
-// cheap HMAC check with no token in the browser and no refresh dance.
-// `dev` reads from NODE_ENV, not $app/environment, so the e2e `mint` helper can
-// build a cookie outside SvelteKit.
+// Signed-cookie session: the issuer token is verified once at /callback and discarded,
+// leaving a cheap HMAC check per request. `dev` reads NODE_ENV, not $app/environment,
+// so the e2e `mint` helper works outside SvelteKit.
 const dev = process.env.NODE_ENV !== "production";
 
 export interface Session {

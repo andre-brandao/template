@@ -70,12 +70,9 @@ export function rank(offset: string) {
 }
 
 /**
- * Every IANA zone, labelled `(GMT-03:00) America/Sao_Paulo` and ordered west to east.
- *
- * `supportedValuesOf` is ICU-dependent — Node ships 417 zones and omits `UTC` where Bun
- * lists 445 and includes it — so `current` is folded in when the runtime doesn't know it.
- * Without that the select renders with nothing selected and silently misreports the
- * user's stored zone.
+ * Every IANA zone, labelled `(GMT-03:00) America/Sao_Paulo`, west to east.
+ * `supportedValuesOf` is ICU-dependent, so an unknown `current` is folded in —
+ * otherwise the select renders with nothing selected.
  */
 export function zones(current?: string | null) {
   const now = new Date();

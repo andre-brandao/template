@@ -6,10 +6,8 @@ import type { Job, Port } from "../port";
 export type Producer = Pick<Queue<Job>, "send">;
 
 /**
- * Native Cloudflare Queues binding — push only. Cloudflare delivers batches to the
- * consumer worker (`functions/src/queue/target/worker.ts`), so there is nothing to
- * reserve and each message is acked there; retries and burial come from the queue's
- * own `dlq` settings, not `Config`. Cloudflare Worker deploy only.
+ * Native Cloudflare Queues binding — push only. Batches are delivered to the consumer
+ * worker, so nothing to reserve; retries/DLQ come from the queue's own settings.
  */
 export function cloudflare(binding: Producer): Port {
   return {

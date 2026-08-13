@@ -3,11 +3,8 @@
 import type { RequestEvent } from "@sveltejs/kit";
 import { Prefs } from "@template/core/user/prefs";
 
-// The theme has to be on `<html>` before first paint, and only `app.html` can put it
-// there — so it rides in its own cookie rather than costing a database read per request
-// in `hooks.server.ts`. Unlike the session cookie this one needs no signing: the worst a
-// forged value can do is render the page in the other theme. It stays `httpOnly` because
-// the client sets the DOM attribute directly and never has to read this back.
+// The theme must be on `<html>` before first paint, so it rides its own cookie instead
+// of a per-request database read. Unsigned — the worst a forged value does is flip the theme.
 const COOKIE = "theme";
 const OPTS = {
   httpOnly: true,

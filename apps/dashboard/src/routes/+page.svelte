@@ -7,10 +7,8 @@
 	const me = user();
 	const current = $derived(me.current);
 
-	// A diagram rather than a measurement — the arc every todo travels, in the colours the
-	// board and the charts give those stages. Equal thirds because none of them is bigger.
-	// The gloss goes in the value slot, where a signed-in visitor reads a count: nothing is
-	// being counted here, so it is the line that deserves the weight.
+	// A diagram, not a measurement — the arc every todo travels, in the board's stage
+	// colours. Equal thirds because none of them is bigger.
 	const stages = [
 		{ label: 'Capture', value: 'write it down', color: 'var(--pending)', pct: 1 },
 		{ label: 'Move', value: 'pull it across', color: 'var(--progress)', pct: 1 },

@@ -4,20 +4,12 @@ import { Email } from "./lib/email";
 import { Queue } from "./lib/queue";
 import { User } from "./user";
 
-/**
- * Jobs are defined next to the module that pushes them; importing them here gives a
- * process running `Queue.work()` one module to import for every handler to resolve.
- * Push with `jobs.email.push({ ... })`.
- */
+/** Every job in one import, so a worker process resolves all handlers. Push via `jobs.email.push`. */
 export const email = Email.job;
 
 /**
- * Runs one job as its pushing actor — what the worker targets hand to `Queue.work` and
- * the Cloudflare consumer. Living in the barrel is deliberate: importing `run` drags
- * every handler definition into the process with it.
- *
- * No pusher means the app itself queued the job, so it runs unchecked. A pushed job
- * replays as its user, at whatever role that user holds *now*.
+ * Runs one job as its pushing actor (no pusher → system). Lives in the barrel on
+ * purpose: importing `run` drags every handler definition into the process.
  */
 export async function run(job: Queue.Job) {
   if (!job.userID) return Actor.provide("system", {}, () => Queue.run(job));

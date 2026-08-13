@@ -10,10 +10,7 @@ import { UserTable } from "./user.sql";
 import { ProviderIds, ProviderTable } from "./provider.sql";
 
 export namespace Auth {
-  /**
-   * A disabled account is turned away at the door rather than at the first query, so a
-   * logout/login round-trip can't hand the session back and bounce them off `fromID`.
-   */
+  /** Turn disabled accounts away at login, not at the first query after. */
   function alive(row?: { timeDeleted: Date | null }) {
     if (!row?.timeDeleted) return;
     throw new VisibleError(
@@ -31,12 +28,8 @@ export namespace Auth {
   export type Tokens = z.infer<typeof Tokens>;
 
   /**
-   * Resolves an authenticated identity to a `userID`, called from the OpenAuth
-   * issuer's `success` handler. Idempotent: a returning login lands on the same
-   * user. A new provider for a known email links onto that user, so a password
-   * account and a GitHub login for one address share a single user. Any `tokens`
-   * (from an OAuth provider) are stored on the provider row and refreshed on every
-   * login, so the app can later call that provider's API as the user.
+   * Resolves a login to a `userID`, from the issuer's `success` handler. Idempotent; a new
+   * provider for a known email links onto that user. OAuth tokens are stored per login.
    */
   export const provision = fn(
     z.object({
@@ -81,8 +74,7 @@ export namespace Auth {
           return byProvider.userID;
         }
 
-        // Matched on email, not provider: linking a second login onto a disabled account
-        // would hand it back, so the same guard applies before the provider row is written.
+        // Linking a new provider onto a disabled account would hand it back — same guard.
         const byEmail = await tx
           .select({ id: UserTable.id, timeDeleted: UserTable.timeDeleted })
           .from(UserTable)
@@ -106,11 +98,7 @@ export namespace Auth {
       }),
   );
 
-  /**
-   * The stored OAuth tokens for the current user's connection to `provider`, or
-   * null if not connected. Returns the raw secrets — server-only, for calling the
-   * provider's API as the user.
-   */
+  /** Stored OAuth tokens for `provider`, or null if not connected. Raw secrets — server-only. */
   export const tokens = fn(z.enum(ProviderIds), (provider) =>
     Database.use((tx) =>
       tx

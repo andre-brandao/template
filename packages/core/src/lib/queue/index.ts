@@ -8,14 +8,8 @@ import { memory } from "./adapter/memory";
 import { sync } from "./adapter/sync";
 
 /**
- * Background jobs over a swappable driver, Laravel-style. `define` names a handler and
- * its payload schema; `push` hands the payload to whichever driver the target provided.
- * The `sync` driver runs it inline, `db` leaves it for `work()` in a worker process.
- *
- * Knows nothing about who is acting: `push` stores whatever `userID` the caller hands
- * it, and the runner decides what that means — the worker targets pass `jobs.run` to
- * `work`, which replays each job as its pushing actor; the `sync` driver runs inline
- * under the pusher's own.
+ * Background jobs over a swappable driver. `define` names a handler and its schema;
+ * `push` hands the payload to the driver — `sync` runs inline, `db` waits for `work()`.
  */
 export namespace Queue {
   const log = Log.create({ namespace: "core.queue" });
@@ -34,10 +28,7 @@ export namespace Queue {
   export const provider = ctx.provider;
   export const use = ctx.use;
 
-  /**
-   * Registers a handler and returns a typed dispatcher. The worker resolves handlers by
-   * name, so a process running `work()` must import every module that defines one.
-   */
+  /** Registers a handler and returns a typed dispatcher. A worker must import every defining module. */
   export function define<S extends z.ZodType>(
     name: string,
     schema: S,
@@ -61,11 +52,7 @@ export namespace Queue {
     return use().push({ name, payload, userID: opts?.userID ?? null, delay: opts?.delay });
   }
 
-  /**
-   * Runs one job's handler, throwing on failure. `tick` uses it for the polling
-   * drivers; the Cloudflare consumer calls it directly, since that driver hands jobs
-   * over as a pushed batch instead of something to reserve.
-   */
+  /** Runs one job's handler, throwing on failure. The Cloudflare consumer calls it directly. */
   export async function run(job: Job) {
     const def = jobs.get(job.name);
     if (!def) throw new Error(`No handler defined for job ${job.name}`);
@@ -102,11 +89,7 @@ export namespace Queue {
     return done;
   }
 
-  /**
-   * Worker loop — polls until the signal aborts. A backend that throws (a database
-   * blip, say) costs one interval rather than the whole process: `tick` already
-   * contains handler failures, so anything reaching here is the driver itself.
-   */
+  /** Worker loop — polls until the signal aborts. A driver error costs one interval, not the process. */
   export async function work(
     opts: { interval?: number; signal?: AbortSignal; run?: (job: Job) => Promise<unknown> } = {},
   ) {

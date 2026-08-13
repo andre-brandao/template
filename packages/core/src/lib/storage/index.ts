@@ -6,6 +6,7 @@ import { Log } from "../../util/log";
 import type * as port from "./port";
 import { fs } from "./adapter/fs";
 import { memory } from "./adapter/memory";
+import { r2 } from "./adapter/r2";
 import { s3 } from "./adapter/s3";
 import { serve } from "./adapter/serve";
 
@@ -29,6 +30,9 @@ export namespace Storage {
     default: string;
     disks: Record<string, Disk>;
   };
+
+  /** The drivers, re-exported so a target only imports `Storage`. */
+  export const Providers = { fs, memory, r2, s3, serve };
 
   /** What callers get: the driver plus everything derivable from it. */
   export type Api = Disk & {

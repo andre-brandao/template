@@ -1,5 +1,6 @@
 import { Actor } from "./actor";
 import { found } from "./error";
+import { Email } from "./lib/email";
 import { Queue } from "./lib/queue";
 import { User } from "./user";
 
@@ -8,7 +9,7 @@ import { User } from "./user";
  * process running `Queue.work()` one module to import for every handler to resolve.
  * Push with `jobs.email.push({ ... })`.
  */
-export { job as email } from "./email/adapter/queue";
+export const email = Email.job;
 
 /**
  * Runs one job as its pushing actor — what the worker targets hand to `Queue.work` and

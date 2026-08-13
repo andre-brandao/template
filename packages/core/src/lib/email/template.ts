@@ -1,6 +1,6 @@
 // fallow-ignore-file code-duplication
 import { Email } from "./index";
-import { User } from "../user";
+import { User } from "../../user";
 
 export namespace Template {
   export async function sendWelcome(userID: string) {

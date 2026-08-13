@@ -2,12 +2,9 @@ import type { Message, MessageBatch } from "@cloudflare/workers-types";
 import { Context } from "@template/core/context";
 import { Database } from "@template/core/drizzle";
 import { Email } from "@template/core/email";
-import { createCloudflareSender } from "@template/core/email/adapter/cloudflare";
 import { Queue } from "@template/core/queue";
-import { cloudflare } from "@template/core/queue/adapter/cloudflare";
 import type { Job } from "@template/core/queue/port";
 import { Storage } from "@template/core/storage";
-import { r2 } from "@template/core/storage/adapter/r2";
 import { Log } from "@template/core/util/log";
 import { run } from "@template/core/jobs";
 import type { EmailEnv, QueueEnv } from "../../cf";
@@ -37,9 +34,9 @@ async function handle(msg: Message<Job>, env: Env) {
       Context.withProviders(
         () => run(job),
         Database.provider(env.Hyperdrive.connectionString),
-        Storage.provider(r2(env.Files)),
-        Email.provider(createCloudflareSender(env.SEND_EMAIL)),
-        Queue.provider(cloudflare(env.Jobs)),
+        Storage.provider(Storage.Providers.r2(env.Files)),
+        Email.provider(Email.Providers.cloudflare(env.SEND_EMAIL)),
+        Queue.provider(Queue.Providers.cloudflare(env.Jobs)),
       ),
     )
     .then(

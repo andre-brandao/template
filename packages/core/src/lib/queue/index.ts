@@ -2,6 +2,7 @@ import { z } from "zod";
 import { Context } from "../../context";
 import { Log } from "../../util/log";
 import type * as port from "./port";
+import { cloudflare } from "./adapter/cloudflare";
 import { db, type Runner } from "./adapter/db";
 import { memory } from "./adapter/memory";
 import { sync } from "./adapter/sync";
@@ -22,33 +23,16 @@ export namespace Queue {
   export type Job = port.Job;
   export type Port = port.Port;
 
-  const ctx = Context.create<Port>();
+  /** The drivers, re-exported so a target only imports `Queue`. */
+  export const Providers = { cloudflare, db, memory, sync };
+
   const jobs = new Map<string, { schema: z.ZodType; cb: (input: any) => Promise<void> }>();
-  let fallback: Port | undefined;
 
-  export function provide<R>(port: Port, fn: () => R): R {
-    return ctx.provide(port, fn);
-  }
-
-  /** Curried form of `provide` for composition via `Context.withProviders`. */
-  export function provider(port: Port) {
-    return <R>(fn: () => R) => provide(port, fn);
-  }
-
-  /**
-   * Same env fallback as `Database.use()`, for callers that bypass a target's
-   * per-request wrapper (chiefly tests). Cached so the `memory` driver keeps
-   * its jobs across calls.
-   */
-  export function use(): Port {
-    try {
-      return ctx.use();
-    } catch (err) {
-      if (!(err instanceof Context.NotFound)) throw err;
-      fallback ??= fromEnv(process.env);
-      return fallback;
-    }
-  }
+  // Env fallback for callers that bypass a target's per-request wrapper (chiefly tests).
+  const ctx = Context.port(() => fromEnv(process.env));
+  export const provide = ctx.provide;
+  export const provider = ctx.provider;
+  export const use = ctx.use;
 
   /**
    * Registers a handler and returns a typed dispatcher. The worker resolves handlers by

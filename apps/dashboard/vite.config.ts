@@ -4,10 +4,8 @@ import { defineConfig, type PluginOption } from "vite";
 
 function cloudflaredPg(): PluginOption {
   return {
-    // Bundle postgres's CF Workers build instead of the Node.js build.
-    // The CF build (postgres/cf/src/index.js) uses cloudflare:sockets via a
-    // dynamic import inside Socket.connect(), so net/tls are never imported —
-    // unenv-sst has nothing to stub.
+    // Bundle postgres's CF Workers build instead of the Node one — it reaches
+    // cloudflare:sockets via dynamic import, so net/tls never need stubbing.
     name: "postgres-cloudflare",
     enforce: "pre",
     // fallow-ignore-next-line complexity

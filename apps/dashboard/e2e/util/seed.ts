@@ -6,10 +6,9 @@ import { Todo } from "@template/core/todo";
 const DAY = 86_400_000;
 const day = (offset: number) => new Date(Date.now() + offset * DAY).toISOString();
 
-// Seeds a project and its todos straight into the DB for a user (from `as()`), so
-// read/list tests don't have to create each one through the UI. Todos are visible
-// workspace-wide, so tests scope themselves to the returned project instead of
-// relying on the actor. `Todo.create` reads the actor, so it runs inside `Actor.provide`.
+// Seeds a project and its todos straight into the DB. Todos are workspace-wide, so
+// tests scope themselves to the returned project. Runs inside `Actor.provide` because
+// `Todo.create` reads the actor.
 export function seed(uid: string, titles: string[], name = "E2E") {
   return Database.provide(process.env.DATABASE_URL!, () =>
     Actor.provide("user", { userID: uid, role: "member" }, async () => {

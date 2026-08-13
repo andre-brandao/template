@@ -1,2 +1,4 @@
 [test]
 preload = ["./test/svelte-loader.ts"]
+# The svelte compile shim is scaffolding, not a subject.
+coveragePathIgnorePatterns = ["test/**"]

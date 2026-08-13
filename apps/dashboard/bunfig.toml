@@ -1,2 +1,5 @@
 [test]
 preload = ["./test/setup.ts"]
+# Coverage should describe this app only: @template/core and @template/ui have their
+# own suites, and e2e/ is driven by Playwright, not bun test.
+coveragePathIgnorePatterns = ["../../packages/**", "test/**", "e2e/**"]

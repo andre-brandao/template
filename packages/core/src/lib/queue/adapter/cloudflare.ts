@@ -1,5 +1,5 @@
 import type { Queue } from "@cloudflare/workers-types";
-import { Identifier } from "../../identifier";
+import { Identifier } from "../../../identifier";
 import type { Job, Port } from "../port";
 
 /** Only `send` is needed, so a producer is anything that can send — the binding included. */

@@ -137,7 +137,7 @@ export class VisibleError extends Error {
  * Assert a lookup returned a value, else throw a not-found VisibleError.
  */
 export function found<T>(resource: string, value: T | null | undefined): T {
-  if (value == null)
+  if (value == null || value == undefined)
     throw new VisibleError(
       "not_found",
       ErrorCodes.NotFound.RESOURCE_NOT_FOUND,

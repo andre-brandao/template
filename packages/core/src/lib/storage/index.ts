@@ -1,8 +1,8 @@
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { Context } from "../context";
-import { Key } from "../key";
-import { Log } from "../util/log";
+import { Context } from "../../context";
+import { Key } from "../../key";
+import { Log } from "../../util/log";
 import type * as port from "./port";
 import { fs } from "./adapter/fs";
 import { memory } from "./adapter/memory";

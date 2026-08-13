@@ -1,5 +1,6 @@
 import { z } from "zod";
-import { Queue } from "../../queue";
+import { Actor } from "../../actor";
+import { Queue } from "../../lib/queue";
 import { Email } from "../index";
 
 /** The deferred send. Its handler is whatever sender the running process provides. */
@@ -36,7 +37,8 @@ export const job = Queue.define(
 export function createQueueSender(): Email.SenderPort {
   return {
     async send(input) {
-      await job.push(input);
+      const info = Actor.use();
+      await job.push(input, { userID: info.type === "user" ? info.properties.userID : null });
     },
   };
 }

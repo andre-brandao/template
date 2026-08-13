@@ -3,12 +3,13 @@ import { z } from "zod";
 import { eq } from "drizzle-orm";
 import { Actor } from "../src/actor";
 import { Database } from "../src/drizzle";
-import { Queue } from "../src/queue";
-import { cloudflare, type Producer } from "../src/queue/adapter/cloudflare";
-import { db } from "../src/queue/adapter/db";
-import { memory } from "../src/queue/adapter/memory";
-import type { Job } from "../src/queue/port";
-import { JobTable } from "../src/queue/queue.sql";
+import { run } from "../src/jobs";
+import { Queue } from "../src/lib/queue";
+import { cloudflare, type Producer } from "../src/lib/queue/adapter/cloudflare";
+import { db } from "../src/lib/queue/adapter/db";
+import { memory } from "../src/lib/queue/adapter/memory";
+import type { Job } from "../src/lib/queue/port";
+import { JobTable } from "../src/lib/queue/queue.sql";
 import { withTestUser } from "./util";
 
 const seen: string[] = [];
@@ -16,12 +17,10 @@ const seen: string[] = [];
 /** What the real binding answers with — the adapter ignores it, the type doesn't. */
 const sendResponse = { metadata: { metrics: { backlogCount: 0, backlogBytes: 0 } } };
 
+// Handlers run under whatever actor the runner gives them — the worker targets pass
+// `jobs.run`, which replays the pusher; the `sync` driver inherits the pusher's own.
 const greet = Queue.define("test.greet", z.object({ name: z.string() }), async (input) => {
   seen.push(`${input.name}:${Actor.use().type}`);
-});
-
-const asUser = Queue.define("test.actor", z.object({}), async () => {
-  seen.push(Actor.userID());
 });
 
 const boom = Queue.define("test.boom", z.object({}), async () => {
@@ -36,7 +35,7 @@ describe("queue", () => {
     await Actor.provide("public", {}, () =>
       Queue.provide(Queue.fromEnv({ QUEUE_DRIVER: "sync" }), async () => {
         await greet.push({ name: "ada" });
-        expect(seen).toEqual(["ada:system"]);
+        expect(seen).toEqual(["ada:public"]);
         expect(await Queue.tick()).toBe(false);
       }),
     );
@@ -60,7 +59,7 @@ describe("queue", () => {
         expect(queue.rows).toHaveLength(1);
 
         expect(await Queue.drain()).toBe(1);
-        expect(seen).toEqual(["grace:system"]);
+        expect(seen).toEqual(["grace:public"]);
         expect(queue.rows).toHaveLength(0);
       }),
     );
@@ -148,8 +147,8 @@ describe("queue", () => {
       }),
     );
 
-    // What the consumer does with each message it receives.
-    await Queue.run({ ...sent[0]!.body, attempts: 1 });
+    // What the consumer does with each message it receives — no pusher, so system.
+    await run({ ...sent[0]!.body, attempts: 1 });
     expect(seen).toEqual(["ada:system"]);
   });
 
@@ -163,18 +162,18 @@ describe("queue", () => {
           return sendResponse;
         },
       }),
-      () => asUser.push({}),
+      () => greet.push({ name: "meta" }, { userID }),
     );
 
     expect(sent[0]?.userID).toBe(userID);
-    await Actor.provide("public", {}, () => Queue.run({ ...sent[0]!, attempts: 1 }));
-    expect(seen).toEqual([userID]);
+    await run({ ...sent[0]!, attempts: 1 });
+    expect(seen).toEqual(["meta:user"]);
   });
 
-  withTestUser("db stores the job and runs it as the pushing user", async ({ userID }) => {
+  withTestUser("db stores the job with its pusher, the worker runs it", async ({ userID }) => {
     seen.length = 0;
-    await Queue.provide(db(), async () => {
-      const id = await asUser.push({});
+    await Queue.provide(db({ use: Database.use }), async () => {
+      const id = await greet.push({ name: "stored" }, { userID });
       const row = await Database.use((tx) =>
         tx
           .select()
@@ -182,14 +181,13 @@ describe("queue", () => {
           .where(eq(JobTable.id, id))
           .then((rows) => rows[0]),
       );
-      expect(row?.name).toBe("test.actor");
+      expect(row?.name).toBe("test.greet");
       expect(row?.userID).toBe(userID);
       expect(seen).toEqual([]);
 
-      await Actor.provide("public", {}, async () => {
-        expect(await Queue.drain()).toBe(1);
-        expect(seen).toEqual([userID]);
-      });
+      // The worker loop hands `jobs.run` to `tick`, replaying the pusher.
+      expect(await Queue.tick(run)).toBe(true);
+      expect(seen).toEqual(["stored:user"]);
 
       expect(
         await Database.use((tx) => tx.select().from(JobTable).where(eq(JobTable.id, id))),
@@ -198,7 +196,7 @@ describe("queue", () => {
   });
 
   withTestUser("db reclaims a job whose reservation timed out", async () => {
-    await Queue.provide(db({ timeout: 0 }), async () => {
+    await Queue.provide(db({ use: Database.use, timeout: 0 }), async () => {
       await greet.push({ name: "stalled" });
       const first = await Queue.use().reserve();
       const again = await Queue.use().reserve();
@@ -209,7 +207,7 @@ describe("queue", () => {
   });
 
   withTestUser("db buries a job once retries run out", async () => {
-    await Queue.provide(db({ retries: 1 }), async () => {
+    await Queue.provide(db({ use: Database.use, retries: 1 }), async () => {
       const id = await boom.push({});
       expect(await Queue.drain()).toBe(1);
 

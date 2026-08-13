@@ -1,4 +1,4 @@
-import { Identifier } from "../../identifier";
+import { Identifier } from "../../../identifier";
 import type { Config, Job, Port } from "../port";
 
 type Row = Job & { time: number; reserved: number | null; failed: boolean; error?: string };

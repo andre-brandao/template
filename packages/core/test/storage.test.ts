@@ -2,9 +2,9 @@ import { describe, expect, it } from "bun:test";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { rm } from "node:fs/promises";
-import { Storage } from "../src/storage";
-import { fs } from "../src/storage/adapter/fs";
-import { check, serve } from "../src/storage/adapter/serve";
+import { Storage } from "../src/lib/storage";
+import { fs } from "../src/lib/storage/adapter/fs";
+import { check, serve } from "../src/lib/storage/adapter/serve";
 import { sign } from "../src/util/sign";
 
 function stub(tag: string): Storage.Disk {

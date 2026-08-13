@@ -1,4 +1,4 @@
-import { sign, verify } from "../../util/sign";
+import { sign, verify } from "../../../util/sign";
 import type { Disk } from "../port";
 
 export type Config = {

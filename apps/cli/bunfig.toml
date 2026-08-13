@@ -1,2 +1,5 @@
 [test]
 preload = ["./test/setup.ts"]
+# Coverage should describe this package only: the generated SDK is not ours to test,
+# and workspace deps are covered by their own suites.
+coveragePathIgnorePatterns = ["**/*.gen.ts", "../../packages/**", "test/**"]

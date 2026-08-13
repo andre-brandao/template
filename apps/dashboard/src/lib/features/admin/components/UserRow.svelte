@@ -1,20 +1,26 @@
 <script lang="ts">
+	import Check from '@lucide/svelte/icons/check';
+	import Copy from '@lucide/svelte/icons/copy';
+	import RotateCcw from '@lucide/svelte/icons/rotate-ccw';
 	import Trash2 from '@lucide/svelte/icons/trash-2';
-	import { Button, FormBoundary, Modal, Select } from '@template/ui';
+	import { Button, FormBoundary, Modal, Select, Spinner } from '@template/ui';
 	import { Permission } from '@template/core/permission';
 	import type { User } from '@template/core/user';
 	import Avatar from '$lib/components/Avatar.svelte';
 	import { user } from '$lib/utils/context';
+	import { fmt } from '$lib/utils/fmt';
 	import { assignRole, disableUser, enableUser } from '../api/admin.remote';
 
 	let { row, onchange }: { row: User.Row; onchange: () => void } = $props();
 
 	const me = user();
+	const f = fmt();
 	// Your own row is read-only: core refuses to let an admin demote or disable themselves,
 	// so offering the controls would only ever produce an error.
 	const self = $derived(row.id === me.current?.id);
 
 	let open = $state(false);
+	let copied = $state(false);
 
 	const assign = $derived(assignRole.for(row.id));
 	const toggle = $derived((row.timeDeleted ? enableUser : disableUser).for(row.id));
@@ -24,12 +30,18 @@
 
 	// Closing on the way out puts any failure back on the row, where the issue list already is.
 	const enhance = $derived(
-		toggle.enhance(async (f) => {
-			await f.submit();
+		toggle.enhance(async (form) => {
+			await form.submit();
 			open = false;
 			onchange();
 		})
 	);
+
+	function copy() {
+		navigator.clipboard.writeText(row.email);
+		copied = true;
+		setTimeout(() => (copied = false), 1200);
+	}
 </script>
 
 <li class:gone={!!row.timeDeleted}>
@@ -37,7 +49,12 @@
 
 	<div class="who">
 		<span class="name">{row.name}{#if self}<span class="tag">you</span>{/if}</span>
-		<span class="email">{row.email}</span>
+		<span class="email">
+			{row.email}
+			<button class="copy" type="button" onclick={copy} title={copied ? 'Copied' : 'Copy email'}>
+				{#if copied}<Check size={13} />{:else}<Copy size={13} />{/if}
+			</button>
+		</span>
 	</div>
 
 	<FormBoundary>
@@ -46,12 +63,18 @@
 		{/each}
 
 		<div class="acts">
+			{#if row.timeDeleted}
+				<span class="off" title={f.stamp(row.timeDeleted)}>
+					Disabled {f.ago(row.timeDeleted)}
+				</span>
+			{/if}
+
 			{#if self}
 				<span class="role">{row.role}</span>
 			{:else}
 				<form
-					{...assign.enhance(async (f) => {
-						await f.submit();
+					{...assign.enhance(async (form) => {
+						await form.submit();
 						onchange();
 					})}
 				>
@@ -68,7 +91,10 @@
 				{#if row.timeDeleted}
 					<form {...enhance}>
 						<input {...toggle.fields.id.as('hidden', row.id)} />
-						<Button type="submit" pending={!!toggle.pending}>Enable</Button>
+						<button class="back" type="submit" disabled={!!toggle.pending} title="Restore access">
+							{#if toggle.pending}<Spinner />{:else}<RotateCcw size={14} />{/if}
+							Enable
+						</button>
 					</form>
 				{:else}
 					<button class="drop" type="button" onclick={() => (open = true)} title="Disable user">
@@ -145,20 +171,61 @@
 		color: var(--muted);
 	}
 
+	.email {
+		display: flex;
+		align-items: center;
+		gap: 0.35em;
+	}
+
+	/* Dim until the row is hovered — the address is the content here, the button is a convenience. */
+	.copy {
+		display: grid;
+		place-items: center;
+		padding: 0.15em;
+		border: 0;
+		border-radius: calc(var(--radius) - 3px);
+		background: none;
+		color: var(--dim);
+		cursor: pointer;
+		opacity: 0.4;
+		transition: opacity 0.15s ease;
+	}
+
+	li:hover .copy,
+	.copy:focus-visible {
+		opacity: 1;
+	}
+
+	.copy:hover {
+		color: var(--ink);
+	}
+
 	.acts {
 		display: flex;
 		align-items: center;
 		gap: 0.5em;
 	}
 
-	.drop {
-		display: grid;
-		place-items: center;
+	.off {
+		font-size: 0.75em;
+		font-family: var(--font-mono);
+		color: var(--dim);
+		white-space: nowrap;
+	}
+
+	.drop,
+	.back {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.4em;
 		padding: 0.5em;
 		border: 1px solid var(--border);
 		border-radius: calc(var(--radius) - 2px);
 		background: var(--bg);
 		color: var(--dim);
+		font: inherit;
+		font-size: 0.85em;
 		cursor: pointer;
 		transition:
 			color 0.15s ease,
@@ -168,6 +235,20 @@
 	.drop:hover {
 		border-color: var(--danger, #c0392b);
 		color: var(--danger, #c0392b);
+	}
+
+	.back {
+		padding: 0.45em 0.7em;
+	}
+
+	.back:hover:not(:disabled) {
+		border-color: var(--accent);
+		color: var(--accent);
+	}
+
+	.back:disabled {
+		cursor: default;
+		opacity: 0.6;
 	}
 
 	h2 {

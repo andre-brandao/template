@@ -19,7 +19,6 @@ export namespace Database {
     PgQueryResultHKT,
     ExtractTablesWithRelations<Record<any, never>, Record<any, never>>
   >;
-  // Record<string, never>,
 
   export type TxOrDb = Transaction | PostgresJsDatabase;
 
@@ -96,7 +95,6 @@ export namespace Database {
     if (existing) {
       return callback(existing.tx);
     }
-    // return callback(getDatabase());
     const db = client();
     const effects: (() => void | Promise<void>)[] = [];
     const result = await TransactionContext.provide({ tx: db, effects }, () => callback(db));
@@ -105,10 +103,8 @@ export namespace Database {
   }
 
   /**
-   * Creates a fresh client per call. Workers forbid reusing a socket across requests
-   * (I/O objects are bound to the request that created them), so the client can't be
-   * cached at module scope. `clientsByUrl` still tracks it so `release()` can close the
-   * pglite hand-off connection in local dev.
+   * Fresh client per call — Workers forbid reusing a socket across requests.
+   * `clientsByUrl` tracks it so `release()` can close it.
    */
   export function provide<T>(url: string, fn: () => T): T {
     const made = createDb(url);
@@ -123,9 +119,8 @@ export namespace Database {
   }
 
   /**
-   * Closes and forgets the pooled client for `url`. Lets pglite's single connection
-   * pass between dev processes: the auth server releases it after each request so the
-   * dashboard can read once login redirects back. A no-op if nothing is pooled.
+   * Closes and forgets the pooled client for `url` — lets pglite's single connection
+   * pass between dev processes. No-op if nothing is pooled.
    */
   export async function release(url: string) {
     const sql = clientsByUrl.get(url);

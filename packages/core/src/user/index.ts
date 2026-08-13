@@ -32,10 +32,7 @@ export namespace User {
     });
   export type Info = z.infer<typeof Info>;
 
-  /**
-   * A login provider, connected or not. Not exposed over the HTTP API — the
-   * dashboard reads this straight from core.
-   */
+  /** A login provider, connected or not. Not in the HTTP API — the dashboard reads core directly. */
   export const Provider = z.object({
     id: z.enum(ProviderIds),
     /** The identity held at the provider — an email, or its own user id. Null when not connected. */
@@ -45,10 +42,7 @@ export namespace User {
   });
   export type Provider = z.infer<typeof Provider>;
 
-  /**
-   * Every known provider with its connection state — not just the connected
-   * ones — so the profile can offer the rest. Passwords are never selected.
-   */
+  /** Every provider with its connection state, so the profile can offer the unconnected ones. */
   export const providers = fn(z.void(), () =>
     Database.use(async (tx) => {
       const rows = await tx
@@ -95,9 +89,8 @@ export namespace User {
   );
 
   /**
-   * Disabled accounts are invisible here, which is what locks them out: every auth path —
-   * the dashboard hooks, the API middleware, a replayed queue job — resolves its actor
-   * through this. The admin screens query directly so they can still see and restore them.
+   * Disabled accounts are invisible here, which is what locks them out — every auth path
+   * resolves its actor through this. Admin screens query directly to restore them.
    */
   export const fromID = fn(Info.shape.id, (id) =>
     Database.use((tx) =>
@@ -109,10 +102,7 @@ export namespace User {
     ),
   );
 
-  /**
-   * The directory behind assignee pickers. Not exposed over the HTTP API — the dashboard
-   * reads it straight from core, like `providers`.
-   */
+  /** Directory behind assignee pickers. Not in the HTTP API — the dashboard reads core directly. */
   export const list = fn(z.object({ search: z.string().optional() }).optional(), (input) =>
     Database.use((tx) =>
       tx
@@ -150,11 +140,7 @@ export namespace User {
       ),
   );
 
-  /**
-   * Patch-merges display preferences. `||` is a shallow jsonb merge done in the one
-   * statement, so a single-field autosave can't clobber the rest and there's no
-   * read-modify-write race.
-   */
+  /** Patch-merges prefs with a jsonb `||` in one statement — no read-modify-write race. */
   export const prefs = fn(Patch, (input) =>
     Database.use((tx) =>
       tx
@@ -192,10 +178,7 @@ export namespace User {
       );
   }
 
-  /**
-   * The admin directory. Unlike `list` it paginates, carries the role, and can surface
-   * disabled accounts. Not exposed over the HTTP API — the dashboard reads it from core.
-   */
+  /** Admin directory: paginated, carries the role, can surface disabled accounts. */
   export const page = fn(
     Common.PaginatedInput.extend({
       search: z.string().optional(),
@@ -268,10 +251,7 @@ export namespace User {
     },
   );
 
-  /**
-   * Disables an account. Their projects, todos and keys are left where they are — the row
-   * is one `restore` away, so nothing they created gets orphaned by a reversible action.
-   */
+  /** Disables an account. Their rows stay put — one `restore` away, nothing orphaned. */
   export const remove = fn(Info.shape.id, async (id) => {
     Actor.check({ user: ["delete"] });
     other(id);

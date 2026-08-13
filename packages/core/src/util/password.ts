@@ -1,7 +1,5 @@
-// Runtime-agnostic password hashing built only on Web Crypto (`crypto.subtle`),
-// so it runs the same under Bun, Node, Cloudflare Workers and the browser — no
-// native `Bun.password`. PBKDF2-HMAC-SHA256 is the one password KDF Web Crypto
-// exposes everywhere. Stored form is self-describing: `pbkdf2$sha256$<iter>$<salt>$<hash>`.
+// Password hashing on Web Crypto only, so it runs under Bun, Node, Workers and the
+// browser. Stored form is self-describing: `pbkdf2$sha256$<iter>$<salt>$<hash>`.
 
 const ITER = 600_000;
 const KEYLEN = 32;

@@ -2,11 +2,8 @@ import { index, pgTable as table, text, uniqueIndex, varchar } from "drizzle-orm
 import { id, timestamp, timestamps, ulid } from "../drizzle/types";
 
 /**
- * Secrets. The value is stored plaintext; expiry is optional (null = never).
- *
- * `type` separates the two kinds that live here: `api` keys are user-minted bearer
- * tokens, `signing` keys are app-level (no user) and only ever HMAC signed URLs.
- * Auth resolves `api` alone, so a signing secret can't be spent as a bearer token.
+ * Secrets, stored plaintext; null expiry = never. `type` separates user-minted `api`
+ * bearer tokens from app-level `signing` keys — auth resolves `api` alone.
  */
 export const KeyTable = table(
   "key",

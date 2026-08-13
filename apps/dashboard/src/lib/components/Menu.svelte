@@ -3,12 +3,9 @@
 	import { createAttachmentKey } from 'svelte/attachments';
 
 	/**
-	 * A dropdown built on the native popover: the top layer escapes nested scroll
-	 * clipping and ancestor transforms, and light dismiss + Esc come for free.
-	 * The trigger snippet spreads `attrs` on its button; `children` gets `close`
-	 * so items can shut the menu on click. Coordinates come from the trigger when
-	 * the content mounts; a top-layer element can't follow it, so outside scrolls
-	 * and resizes close the menu instead.
+	 * Dropdown on the native popover (top layer escapes clipping; light dismiss free).
+	 * `trigger` spreads `attrs` on its button; `children` gets `close`. A top-layer
+	 * element can't follow the trigger, so outside scrolls/resizes close the menu.
 	 */
 	let {
 		trigger,

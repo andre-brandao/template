@@ -10,10 +10,8 @@ export namespace Context {
   }
 
   /**
-   * The swappable-driver trio: `provide`/`provider` scope a port to a request, `use`
-   * falls back to `env()` for callers that bypass a target's per-request wrapper
-   * (chiefly tests). The fallback is cached so a stateful driver survives calls —
-   * a console driver warns once, a memory queue keeps its jobs.
+   * The swappable-driver trio: `provide`/`provider` scope a port to a request; `use`
+   * falls back to `env()` (chiefly tests), cached so a stateful driver survives calls.
    */
   export function port<P>(env: () => P) {
     const ctx = create<P>();

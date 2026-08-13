@@ -4,11 +4,8 @@ import { TemplateSdk } from "@template/sdk";
 import { app } from "@template/functions/api";
 
 /**
- * Not used directly by the dashboard anymore — it calls `@template/core` modules
- * directly instead of going through the HTTP API. Kept as an example of calling the
- * Hono app in-process (like `app.request()` in the functions test suite), for
- * templates that do want an API layer between the dashboard and core. Pass an `sk-`
- * API key to authenticate the call.
+ * Unused by the dashboard (it calls core directly); kept as an example of calling the
+ * Hono app in-process. Pass an `sk-` API key to authenticate.
  */
 export function api(token?: string) {
   const client = createClient({

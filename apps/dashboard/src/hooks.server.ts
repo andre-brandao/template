@@ -16,10 +16,8 @@ import { Email } from "@template/core/email";
 
 const log = Log.create({ namespace: "dashboard.hooks.server" });
 
-// Hyperdrive and R2 are only reachable through `event.platform`, per request — so the
-// Worker is the one target that has to build its providers inside the closure. A missing
-// binding throws rather than falling back to DATABASE_URL and local disk, which would be
-// a working-but-wrong deploy.
+// Bindings only exist on `event.platform`, per request. A missing one throws rather
+// than falling back to env — a working-but-wrong deploy.
 const worker: Handle = ({ event, resolve }) => {
   const cf = event.platform?.env;
   if (!cf?.Hyperdrive || !cf.Files || !cf.Jobs)

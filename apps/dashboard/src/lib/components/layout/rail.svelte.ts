@@ -1,16 +1,9 @@
 import { createContext } from "svelte";
 
 /**
- * The rail's collapsed state, plus the transient hover and focus that peek it open again.
- *
- * Created once in the root layout rather than in the Shell: each route group mounts its own
- * Shell, so state held in the component was rebuilt — and re-animated — every time a
- * navigation crossed a group boundary. Context rather than a module-level `$state` for the
- * usual reason: the server renders every request in one process, and a module would hand
- * one visitor's rail to the next.
- *
- * Seeded from a cookie, which is the whole point of the round trip — `localStorage` can only
- * be read after hydration, so a collapsed rail painted wide and then snapped shut.
+ * The rail's collapsed state, plus the transient hover/focus that peek it open. Lives in
+ * root-layout context: per-request (no SSR leak) and survives route-group Shell remounts.
+ * Seeded from a cookie so the first paint is already at the right width.
  */
 const [sidebar, set] = createContext<ReturnType<typeof create>>();
 
@@ -46,22 +39,15 @@ function create(init: boolean) {
       // Read back in `+layout.server.ts`, so the next full load paints at the right width.
       document.cookie = `rail=${tight ? "tight" : "wide"};path=/;max-age=31536000;samesite=lax`;
     },
-    /**
-     * The peek wiring, spread onto both halves of the hover target — the topbar's rail
-     * cell and the sidebar are one column, so they must open and shut as one.
-     */
+    /** Peek wiring, spread onto both halves of the hover target (topbar cell + sidebar). */
     attrs: {
       // A short intent delay so brushing past the rail on the way somewhere else doesn't open it.
       onpointerenter: () => {
         timer = setTimeout(() => (hover = true), 90);
       },
       /**
-       * The column is the topbar's left cell stacked on the sidebar, two elements that both
-       * start at the viewport's left edge and share a width — so "still in the column" is one
-       * horizontal test, and crossing from the menu up to the project picker doesn't read as
-       * leaving. It also rejects a phantom leave: a view transition hides the live DOM behind
-       * its snapshots, so mid-navigation the browser hit-tests the pointer onto <html> and
-       * reports it leaving a rail it never left.
+       * "Still in the column" is one horizontal test — both halves share the left edge and
+       * width. Also rejects the phantom leave a view transition fires mid-navigation.
        */
       onpointerleave: (e: PointerEvent & { currentTarget: HTMLElement }) => {
         const edge = e.currentTarget.getBoundingClientRect().right;
@@ -73,9 +59,8 @@ function create(init: boolean) {
         focused = true;
       },
       /**
-       * Kept apart from `hover` on purpose: clicking a link destroys it, which fires focusout
-       * with nothing to hand focus to. Folded together that would shut a rail the pointer is
-       * still resting on, and the next frame would open it again.
+       * Kept apart from `hover`: clicking a link fires focusout with no new target, and
+       * folding them together would shut a rail the pointer still rests on.
        */
       onfocusout: (e: FocusEvent & { currentTarget: HTMLElement }) => {
         focused = e.currentTarget.contains(e.relatedTarget as Node);

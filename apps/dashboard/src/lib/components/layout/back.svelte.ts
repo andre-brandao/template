@@ -1,8 +1,5 @@
-// The sidebar's "Back" link should return to wherever the user entered the section from,
-// not a fixed page. The section layout mounts once on entry and stays mounted while
-// navigating within it, so `afterNavigate` sees the crossing: the first navigation whose
-// origin lies outside `prefix` is where "Back" points. On a direct load or refresh there
-// is no origin (`nav.from` is null) and the link falls back — never a dead button.
+// "Back" points to wherever the user entered the section from: the first navigation
+// whose origin lies outside `prefix`. No origin (direct load) falls back — never a dead button.
 import { afterNavigate } from "$app/navigation";
 
 export function origin(prefix: string, fallback: string) {

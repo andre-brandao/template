@@ -3,11 +3,9 @@ import { page } from "$app/state";
 import type { z } from "zod";
 
 /**
- * Zod-declared search params. Reads go through `page.url`, which is reactive on
- * both server and client, so one path covers SSR and browser. Each field tries
- * `getAll` → `get` → `undefined`, so arrays, scalars, and `.default()` all work
- * without schema introspection; invalid values collapse to the default.
- * `update` merges into the query string; empty strings/arrays delete the key.
+ * Zod-declared search params, read reactively through `page.url`. Arrays, scalars and
+ * `.default()` all work; invalid values collapse to the default. `update` merges into
+ * the query string; empty strings/arrays delete the key.
  */
 export function query<S extends z.ZodObject>(schema: S) {
   const fields = schema.shape as Record<string, z.ZodType>;

@@ -8,10 +8,8 @@ import { console } from "./adapter/console";
 import { queue } from "./adapter/queue";
 
 /**
- * Outbound mail over a swappable driver, same shape as `Queue` and `Storage`: `send`
- * fills in the default sender and hands the message to whichever driver the target
- * provided. The `cloudflare` driver isn't in `fromEnv` — its binding only exists
- * per-request in a Worker, so those targets wire it directly.
+ * Outbound mail over a swappable driver. `cloudflare` isn't in `fromEnv` — its binding
+ * is per-request in a Worker, so those targets wire it directly.
  */
 export namespace Email {
   const log = Log.create({ namespace: "core.email" });
@@ -22,11 +20,7 @@ export namespace Email {
   export type Message = port.Message;
   export type Port = port.Port;
 
-  /**
-   * The drivers, re-exported so a target only imports `Email`. `queue` is bound to the
-   * deferred-send job here — handing `push` in keeps the adapter from importing `Email`
-   * back and closing a cycle.
-   */
+  /** Drivers, re-exported so a target only imports `Email`. `push` is handed in to avoid a cycle. */
   export const Providers = { cloudflare, console, queue: () => queue(job.push) };
 
   // Env fallback for callers that bypass a target's per-request wrapper (chiefly tests).
@@ -46,10 +40,7 @@ export namespace Email {
     }
   }
 
-  /**
-   * `EMAIL_DRIVER=console|queue`. `queue` defers delivery to the job worker, so don't
-   * set it in the process that runs jobs — the handler would push right back and loop.
-   */
+  /** `EMAIL_DRIVER=console|queue`. Don't set `queue` in the worker — the handler would push back and loop. */
   export function fromEnv(env: Record<string, string | undefined>): Port {
     const driver = env.EMAIL_DRIVER ?? "console";
     log.info("using email driver", { driver });

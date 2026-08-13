@@ -9,10 +9,8 @@ export type Config = {
 };
 
 /**
- * Laravel's `local` driver with `serve => true`: wraps a disk that can't sign — the
- * filesystem, the native R2 binding — so `temporaryUrl` still returns something. The
- * URL points back at the app rather than the backend, and the signature stands in for
- * the session, so the route handing over the bytes needs no auth of its own.
+ * Wraps a disk that can't sign (fs, native R2) so `temporaryUrl` still works. The URL
+ * points back at the app; the signature stands in for the session, so the route needs no auth.
  */
 export function serve(disk: Disk, opts: Config): Disk {
   return {
@@ -34,10 +32,7 @@ export function serve(disk: Disk, opts: Config): Disk {
   };
 }
 
-/**
- * The route's half of `serve` — whether these params were minted by us and are still
- * live. `secret` is the one behind `params.kid`, which `Key.secret` resolves.
- */
+/** The route's half of `serve`: were these params minted by us and still live? */
 export function check(params: { key: string; expires: number; sig: string }, secret: string) {
   return verify(secret, params.key, params.expires, params.sig);
 }

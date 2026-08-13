@@ -15,6 +15,10 @@
 - Rely on type inference when possible; avoid explicit type annotations or interfaces unless necessary for exports or clarity
 - Prefer functional array methods (flatMap, filter, map) over for loops; use type guards on filter to maintain type inference downstream
 
+### Comments
+
+- Keep comments simple and below 3 lines. State the non-obvious constraint; no essays, no cross-file narration.
+
 ### Naming
 
 Prefer single word names for variables and functions. Only use multiple words if necessary.

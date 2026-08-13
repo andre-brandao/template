@@ -1,5 +1,7 @@
+import { z } from "zod";
 import { Context } from "../../context";
 import { Log } from "../../util/log";
+import { Queue } from "../queue";
 import type * as port from "./port";
 import { cloudflare } from "./adapter/cloudflare";
 import { console } from "./adapter/console";
@@ -20,34 +22,18 @@ export namespace Email {
   export type Message = port.Message;
   export type Port = port.Port;
 
-  /** The drivers, re-exported so a target only imports `Email`. */
-  export const Providers = { cloudflare, console, queue };
-
-  const ctx = Context.create<Port>();
-  let fallback: Port | undefined;
-
-  export function provide<R>(port: Port, fn: () => R): R {
-    return ctx.provide(port, fn);
-  }
-
-  /** Curried form of `provide` for composition via `Context.withProviders`. */
-  export function provider(port: Port) {
-    return <R>(fn: () => R) => provide(port, fn);
-  }
-
   /**
-   * Same env fallback as `Queue.use()`, for callers that bypass a target's
-   * per-request wrapper (chiefly tests). Cached so the console driver warns once.
+   * The drivers, re-exported so a target only imports `Email`. `queue` is bound to the
+   * deferred-send job here — handing `push` in keeps the adapter from importing `Email`
+   * back and closing a cycle.
    */
-  export function use(): Port {
-    try {
-      return ctx.use();
-    } catch (err) {
-      if (!(err instanceof Context.NotFound)) throw err;
-      fallback ??= fromEnv(process.env);
-      return fallback;
-    }
-  }
+  export const Providers = { cloudflare, console, queue: () => queue(job.push) };
+
+  // Env fallback for callers that bypass a target's per-request wrapper (chiefly tests).
+  const ctx = Context.port(() => fromEnv(process.env));
+  export const provide = ctx.provide;
+  export const provider = ctx.provider;
+  export const use = ctx.use;
 
   export async function send(input: Omit<Message, "from"> & { from?: string }) {
     const from = input.from || EMAIL_FROM;
@@ -67,7 +53,30 @@ export namespace Email {
   export function fromEnv(env: Record<string, string | undefined>): Port {
     const driver = env.EMAIL_DRIVER ?? "console";
     log.info("using email driver", { driver });
-    if (driver === "queue") return queue();
+    if (driver === "queue") return queue(job.push);
     return console();
   }
+
+  /** The deferred send — its handler runs in whichever process holds a real driver. */
+  export const job = Queue.define(
+    "email.send",
+    z.object({
+      from: z.string().optional(),
+      to: z.union([z.string(), z.string().array()]),
+      subject: z.string(),
+      body: z.string(),
+      html: z.string().optional(),
+      // Mirrors `Attachment` — anything missing here is stripped by `parse` on push.
+      attachments: z
+        .object({
+          filename: z.string(),
+          content: z.string(),
+          contentType: z.string().optional(),
+          encoding: z.string().optional(),
+        })
+        .array()
+        .optional(),
+    }),
+    (input) => send(input),
+  );
 }

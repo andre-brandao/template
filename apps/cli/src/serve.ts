@@ -52,7 +52,7 @@ function usage() {
 
 const targets: Record<string, () => void | Promise<void>> = {
   api: () => {
-    const port = Number(process.env.PORT) || 3000;
+    const port = Number(process.env.API_PORT) || 3000;
     serveApp(apiApp, port);
     console.log(`API running at http://localhost:${port}`);
   },

@@ -13,7 +13,7 @@ Usage:
   template-cli logout                          Forget the saved tokens
   template-cli whoami                          Show the current user
 
-Env: API_URL, AUTH_URL, TEMPLATE_TOKEN, PORT, MCP_PORT, DATABASE_URL, AUTH_PERSIST
+Env: API_URL, AUTH_URL, TEMPLATE_TOKEN, PORT, API_PORT, MCP_PORT, DATABASE_URL, AUTH_PERSIST
 Note: "serve api", "serve mcp" and "serve auth" need a reachable DATABASE_URL (use "bun dev" for local pglite).`;
 
 const commands: Record<string, (rest: string[]) => unknown> = {

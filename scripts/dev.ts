@@ -34,7 +34,7 @@ const env = {
   QUEUE_DRIVER: process.env.QUEUE_DRIVER ?? "db",
 };
 
-const apiport = Number(process.env.PORT ?? 3000);
+const apiport = Number(process.env.API_PORT ?? 3000);
 const mcpport = Number(process.env.MCP_PORT ?? 3001);
 const webport = Number(process.env.WEB_PORT ?? 5173);
 
@@ -43,7 +43,7 @@ const servers = [
     name: "api",
     cwd: `${root}/packages/functions`,
     cmd: ["bun", "run", "dev"],
-    env: { PORT: String(apiport) },
+    env: { API_PORT: String(apiport) },
     color: paint.cyan,
   },
   {

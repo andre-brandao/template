@@ -3,13 +3,14 @@
 	import { Button } from '@template/ui';
 	import Params from './Params.svelte';
 	import Result from './Result.svelte';
+	import Snippets from './Snippets.svelte';
 	import Url from './Url.svelte';
 	import { token } from './token.svelte';
 	import { doc, send } from './api.remote';
 
-	type Op = Awaited<ReturnType<typeof doc>>[number];
+	type Op = Awaited<ReturnType<typeof doc>>['list'][number];
 
-	let { op }: { op: Op } = $props();
+	let { op, base }: { op: Op; base: string } = $props();
 
 	const auth = token();
 
@@ -55,7 +56,7 @@
 
 <!-- Above the form and sticky: Send keeps its place however tall the request grows. -->
 <div class="bar">
-	<Url method={op.method} path={op.path} {search} bind:values />
+	<Url method={op.method} {base} path={op.path} {search} bind:values />
 	<Button onclick={run} pending={busy} disabled={upload}>Send</Button>
 </div>
 
@@ -73,6 +74,18 @@
 		<textarea rows="10" spellcheck="false" bind:value={body}></textarea>
 	</label>
 {/if}
+
+<Snippets
+	input={{
+		method: op.method,
+		url,
+		base,
+		id: op.id,
+		token: auth.current,
+		body: op.mime === 'application/json' ? body : '',
+		values
+	}}
+/>
 
 {#if res}
 	<Result {res} />

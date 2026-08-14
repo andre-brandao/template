@@ -7,10 +7,10 @@
   "exports": {
     ".": "./src/api/index.ts",
     "./api": "./src/api/index.ts",
+    "./api/spec": "./src/api/spec.ts",
     "./auth": "./src/auth/index.ts",
     "./auth/*": "./src/auth/*.ts",
-    "./mcp": "./src/mcp/index.ts",
-    "./spec": "./src/api/spec.ts"
+    "./mcp": "./src/mcp/index.ts"
   },
   "scripts": {
     "dev": "bun run --hot src/api/target/bun.ts",

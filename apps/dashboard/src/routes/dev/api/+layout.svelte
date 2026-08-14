@@ -11,7 +11,7 @@
 
 	// Before the awaits below: context has to be set while the component initializes.
 	const token = createToken();
-	const ops = $derived(await doc());
+	const ops = $derived((await doc()).list);
 	const tags = $derived([...new Set(ops.map((one) => one.tag))]);
 	const keys = $derived(await getKeys());
 </script>

@@ -66,6 +66,12 @@
     // glob, so the wildcard lives in the patterns. apps/cli is flat files and
     // matches none of these, so it stays unzoned.
     "zones": [
+      // The /dev section is a local-only playground; its api inspector runs the Hono
+      // app in-process, so it reaches `functions` the way the server zone does.
+      {
+        "name": "dev",
+        "patterns": ["apps/*/src/routes/dev/**"],
+      },
       {
         "name": "app",
         "patterns": ["apps/*/src/routes/**"],
@@ -120,6 +126,12 @@
       {
         "from": "app",
         "allow": ["features", "server", "shared", "core", "ui"],
+      },
+      // The dev playground repeats app's allows and adds functions: its api
+      // inspector runs the Hono app in-process.
+      {
+        "from": "dev",
+        "allow": ["features", "server", "shared", "core", "ui", "functions"],
       },
       {
         "from": "features",

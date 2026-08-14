@@ -1,13 +1,13 @@
 <script lang="ts">
 	import { doc } from './api.remote';
 
-	const ops = $derived(await doc());
+	const spec = $derived(await doc());
 </script>
 
 <div class="intro">
 	<h1>API explorer</h1>
 	<p>
-		The {ops.length} operations the api serves, read from the live Hono routes rather than the
+		The {spec.list.length} operations <code>{spec.base}</code> serves, read from the live Hono routes rather than the
 		checked-in <code>packages/sdk/openapi.json</code>.
 	</p>
 	<p>

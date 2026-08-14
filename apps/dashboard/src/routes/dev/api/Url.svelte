@@ -4,10 +4,17 @@
 	// Bindable because the slots edit the bag in place — that is the whole job.
 	let {
 		method,
+		base,
 		path,
 		search,
 		values = $bindable({})
-	}: { method: string; path: string; search: string; values?: Record<string, string> } = $props();
+	}: {
+		method: string;
+		base: string;
+		path: string;
+		search: string;
+		values?: Record<string, string>;
+	} = $props();
 
 	// Literal chunks and `{param}` slots, so path params are typed where they land.
 	const parts = $derived(path.split(/(\{\w+\})/).filter(Boolean));
@@ -17,6 +24,7 @@
 <!-- Flex, so the newlines between these segments don't render as gaps in the path. -->
 <code>
 	<span class="verb"><Method {method} /></span>
+	<span class="base">{base}</span>
 	{#each parts as part, i (i)}
 		{@const name = slot(part)}
 		{#if name}
@@ -54,6 +62,7 @@
 		margin-right: 0.7em;
 	}
 
+	.base,
 	.query {
 		color: var(--muted);
 	}

@@ -3,7 +3,7 @@ import { error } from "@sveltejs/kit";
 import { dev } from "$app/environment";
 import { z } from "zod";
 import { Actor } from "@template/core/actor";
-import { call, ops } from "$lib/server/api";
+import { call, ops } from "./api";
 
 // Remote endpoints are routes of their own, so the section's `+layout.server` guard misses them.
 function gate() {

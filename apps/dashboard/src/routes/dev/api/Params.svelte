@@ -2,7 +2,7 @@
 	import { Input, Select } from '@template/ui';
 	import type { doc } from './api.remote';
 
-	type Param = Awaited<ReturnType<typeof doc>>[number]['params'][number];
+	type Param = Awaited<ReturnType<typeof doc>>['list'][number]['params'][number];
 
 	// Bindable because the form edits the bag in place — that is the whole job.
 	let { params, values = $bindable({}) }: { params: Param[]; values?: Record<string, string> } =

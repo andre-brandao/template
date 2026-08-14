@@ -1,12 +1,16 @@
 <script lang="ts">
-	import { Carta, Markdown as Viewer } from 'carta-md';
-	import DOMPurify from 'isomorphic-dompurify';
-	import 'carta-md/default.css';
+	import { parseMarkdown } from '@tanstack/markdown';
+	import Block from './render/Block.svelte';
+	import type { Components } from './render/types';
 	import './markdown.css';
 
-	let { value }: { value: string } = $props();
+	let { value, components }: { value: string; components?: Components } = $props();
 
-	const carta = new Carta({ sanitizer: DOMPurify.sanitize });
+	const doc = $derived(parseMarkdown(value));
 </script>
 
-<Viewer {carta} {value} />
+<div class="markdown-body">
+	{#each doc.children as node, i (i)}
+		<Block {node} {components} />
+	{/each}
+</div>

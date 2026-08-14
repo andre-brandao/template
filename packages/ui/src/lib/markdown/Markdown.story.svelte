@@ -8,20 +8,24 @@ Prose with **bold**, *italic*, \`code\` and a [link](https://svelte.dev).
 
 - one
 - two
+- [ ] a task
 
-> Sanitized through DOMPurify, so raw HTML never lands.
+> Raw HTML never renders: the parser escapes it and \`javascript:\` hrefs are dropped.
+
+| lang | size |
+| ---- | ---: |
+| ts   |  4.9 |
 
 \`\`\`ts
-const answer = 42;
+const answer: number = 42; // highlighted by @tanstack/highlight
 \`\`\`
 `;
 
 	export const story: Story = {
 		title: 'Markdown',
 		blurb:
-			'Read-only Carta viewer, coloured from the app tokens via `markdown.css`. It renders once and ignores later `value` changes — wrap it in `{#key value}` to follow edits, which is what this story does.',
+			'Renders the `@tanstack/markdown` AST as real Svelte elements — no `{@html}`, no sanitizer. Pass `components` to override `a`, `img` or `code`. It tracks `value`, so no `{#key}` wrapper is needed.',
 		of: Markdown,
-		remount: true,
 		props: { value: { type: 'textarea', value: sample } },
 		variants: [
 			{ label: 'sample document', props: { value: sample } },

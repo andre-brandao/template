@@ -1,0 +1,76 @@
+/* Presentation for @tanstack/highlight token output. Global so a scoped `:global(pre.tm-code)`
+   rule in a consumer can restyle the frame without knowing the token classes. */
+
+.tm-code {
+  --tm-comment: var(--dim);
+  --tm-key: light-dark(#8250df, #c08cf5);
+  --tm-str: light-dark(#0a7d55, #6dc39c);
+  --tm-num: light-dark(#a3672a, #c98a3f);
+  --tm-fn: light-dark(#2a5fa3, #6fa8dc);
+  --tm-type: light-dark(#8a5a00, #d1a95f);
+
+  margin: 0.8em 0;
+  padding: 0.8em 1em;
+  border-radius: var(--radius);
+  overflow-x: auto;
+  background: var(--surface-2);
+  font-family: var(--font-mono);
+  tab-size: 2;
+}
+
+.tm-code code {
+  font-family: inherit;
+}
+
+/* Unmapped token classes inherit the surrounding code colour on purpose. */
+.tm-code :is(.tm-comment, .tm-meta) {
+  color: var(--tm-comment);
+  font-style: italic;
+}
+
+.tm-code :is(.tm-keyword, .tm-command) {
+  color: var(--tm-key);
+}
+
+.tm-code :is(.tm-string, .tm-link) {
+  color: var(--tm-str);
+}
+
+.tm-code :is(.tm-number, .tm-literal) {
+  color: var(--tm-num);
+}
+
+.tm-code :is(.tm-function, .tm-selector) {
+  color: var(--tm-fn);
+}
+
+.tm-code :is(.tm-type, .tm-tag, .tm-attr, .tm-property) {
+  color: var(--tm-type);
+}
+
+.tm-code .tm-operator {
+  color: var(--muted);
+}
+
+.tm-code .tm-inserted {
+  color: var(--done);
+}
+
+.tm-code .tm-deleted {
+  color: var(--danger);
+}
+
+.tm-code-frame {
+  margin: 0.8em 0;
+}
+
+.tm-code-frame .tm-code {
+  margin: 0;
+}
+
+.tm-code-frame figcaption {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.78em;
+  padding-bottom: 0.4em;
+}

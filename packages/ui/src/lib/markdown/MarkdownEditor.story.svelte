@@ -5,22 +5,18 @@
 	export const story: Story = {
 		title: 'MarkdownEditor',
 		blurb:
-			'`value` is bindable and `upload` is required — the app hands in its own IO. Drop an image on the editor.',
+			'`value` is bindable and `upload` is required — the app hands in its own IO. Drop or paste an image: the preview shows a spinner while `upload` is in flight, then swaps in the URL it returns.',
 		of: MarkdownEditor
 	};
 </script>
 
 <script lang="ts">
-	let value = $state('Drop a png here, or use the attachment button.');
+	let value = $state('Drop a png here, or use the + button.');
 
-	// Stands in for the app's real uploader: keeps the file in the page as a data URL.
-	const upload = (file: File) =>
-		new Promise<string | null>((ok) => {
-			const reader = new FileReader();
-			reader.onload = () => ok(String(reader.result));
-			reader.onerror = () => ok(null);
-			reader.readAsDataURL(file);
-		});
+	// Stands in for the app's uploader, which returns a `/files/...` path. Slow on purpose so the
+	// pending state is visible; data: and blob: URLs would be stripped by the parser.
+	const upload = () =>
+		new Promise<string | null>((ok) => setTimeout(() => ok('/favicon.svg'), 1200));
 </script>
 
 <div class="editor"><MarkdownEditor bind:value {upload} /></div>

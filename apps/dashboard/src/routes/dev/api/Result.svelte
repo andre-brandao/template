@@ -1,7 +1,15 @@
 <script lang="ts">
+	import { Code } from '@template/ui';
 	import type { send } from './api.remote';
 
 	let { res }: { res: Awaited<ReturnType<typeof send>> } = $props();
+
+	const lang = $derived(res.headers['content-type']?.includes('json') ? 'json' : 'plaintext');
+	const headers = $derived(
+		Object.entries(res.headers)
+			.map(([name, value]) => `${name}: ${value}`)
+			.join('\n')
+	);
 </script>
 
 <section>
@@ -10,12 +18,10 @@
 		<span>{res.ms}ms</span>
 		<span>{res.headers['content-type'] ?? ''}</span>
 	</div>
-	<pre>{res.text}</pre>
+	<Code value={res.text} {lang} />
 	<details>
 		<summary>Response headers</summary>
-		<pre>{Object.entries(res.headers)
-				.map(([name, value]) => `${name}: ${value}`)
-				.join('\n')}</pre>
+		<Code value={headers} lang="http" />
 	</details>
 </section>
 
@@ -52,7 +58,7 @@
 		color: var(--danger);
 	}
 
-	pre {
+	section :global(pre.tm-code) {
 		margin: 0;
 		max-height: 30em;
 		overflow: auto;
@@ -60,7 +66,6 @@
 		border: 1px solid var(--border);
 		border-radius: var(--radius);
 		background: var(--surface);
-		font-family: var(--font-mono);
 		font-size: 0.78em;
 		line-height: 1.5;
 	}

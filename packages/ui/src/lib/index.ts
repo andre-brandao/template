@@ -9,10 +9,12 @@ export { default as Select } from "./input/Select.svelte";
 
 // markdown
 export { default as Markdown } from "./markdown/Markdown.svelte";
+export type { Components } from "./markdown/render/types";
 export { default as MarkdownEditor } from "./markdown/MarkdownEditor.svelte";
 
 // ui
 export { default as Card } from "./ui/Card.svelte";
+export { default as Code } from "./ui/Code.svelte";
 export { default as Drawer, type Side } from "./ui/Drawer.svelte";
 export { default as FormBoundary } from "./ui/FormBoundary.svelte";
 export { default as Modals } from "./ui/Modals.svelte";

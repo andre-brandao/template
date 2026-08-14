@@ -1,53 +1,4 @@
-/* Recolors carta-md's default (light) theme to match this app's dark UI. */
-
-.carta-theme__default {
-  --border-color: var(--border);
-  --selection-color: color-mix(in oklab, var(--accent) 30%, transparent);
-  --focus-outline: var(--accent);
-  --hover-color: var(--surface-2);
-  --caret-color: var(--ink);
-  --text-color: var(--muted);
-}
-
-.carta-theme__default.carta-editor {
-  background: var(--surface);
-  color: var(--ink);
-}
-
-.carta-theme__default .carta-toolbar {
-  background: var(--surface);
-}
-
-.carta-theme__default .carta-toolbar-left button.carta-active {
-  color: var(--ink);
-}
-
-.carta-theme__default .carta-icons-menu {
-  background: var(--surface-2);
-}
-
-.carta-theme__default .carta-input,
-.carta-theme__default .carta-renderer {
-  background: var(--surface);
-  color: var(--ink);
-  height: 280px;
-  scrollbar-width: thin;
-}
-
-.carta-theme__default .carta-input textarea {
-  color: var(--ink);
-  background: transparent;
-}
-
-.carta-theme__default .carta-icon-full:hover {
-  color: var(--ink);
-}
-
-.carta-drop-overlay {
-  --icon-color: var(--accent-ink);
-  --bg-color: var(--accent);
-  --border-color: color-mix(in oklab, var(--accent-ink) 55%, transparent);
-}
+/* Shared skin for rendered markdown. The renderer emits plain elements, so these are plain rules. */
 
 .markdown-body {
   color: var(--ink);
@@ -83,13 +34,6 @@
   border-radius: 4px;
 }
 
-.markdown-body pre {
-  padding: 0.8em 1em;
-  border-radius: var(--radius);
-  overflow-x: auto;
-  background: var(--surface-2) !important;
-}
-
 .markdown-body blockquote {
   border-left: 3px solid var(--border-bright);
   margin: 0.8em 0;
@@ -106,8 +50,53 @@
   padding-left: 1.4em;
 }
 
+.markdown-body li.task {
+  list-style: none;
+  margin-left: -1.4em;
+}
+
+.markdown-body li.task input {
+  margin-right: 0.4em;
+}
+
 .markdown-body hr {
   border: none;
   border-top: 1px solid var(--border);
   margin: 1.2em 0;
+}
+
+.markdown-body table {
+  border-collapse: collapse;
+  margin: 0.8em 0;
+  font-size: 0.95em;
+}
+
+.markdown-body :is(th, td) {
+  border: 1px solid var(--border);
+  padding: 0.35em 0.7em;
+  text-align: left;
+}
+
+.markdown-body th {
+  background: var(--surface-2);
+}
+
+.markdown-body .footnotes {
+  border-top: 1px solid var(--border);
+  margin-top: 1.6em;
+  color: var(--muted);
+  font-size: 0.9em;
+}
+
+.markdown-body .backrefs {
+  display: inline;
+}
+
+.markdown-body .sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }

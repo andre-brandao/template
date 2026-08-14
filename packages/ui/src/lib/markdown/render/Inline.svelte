@@ -1,3 +1,4 @@
+<!-- fallow-ignore-file complexity -- flat dispatch over the inline node union; see Block.svelte. -->
 <script lang="ts">
 	import type { InlineNode } from '@tanstack/markdown';
 	import type { Components } from './types';

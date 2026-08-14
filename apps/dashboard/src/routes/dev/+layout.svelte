@@ -1,4 +1,5 @@
 <script lang="ts">
+	import './dev.css';
 	import Braces from '@lucide/svelte/icons/braces';
 	import Component from '@lucide/svelte/icons/component';
 	import FlaskConical from '@lucide/svelte/icons/flask-conical';

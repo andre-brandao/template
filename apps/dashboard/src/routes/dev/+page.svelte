@@ -18,7 +18,7 @@
 			icon: Braces,
 			title: 'API explorer',
 			blurb: 'Browse the OpenAPI surface and fire requests at the api service.',
-			ready: false
+			ready: true
 		},
 		{
 			href: '/dev/mcp',

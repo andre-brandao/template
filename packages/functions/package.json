@@ -9,7 +9,8 @@
     "./api": "./src/api/index.ts",
     "./auth": "./src/auth/index.ts",
     "./auth/*": "./src/auth/*.ts",
-    "./mcp": "./src/mcp/index.ts"
+    "./mcp": "./src/mcp/index.ts",
+    "./spec": "./src/api/spec.ts"
   },
   "scripts": {
     "dev": "bun run --hot src/api/target/bun.ts",

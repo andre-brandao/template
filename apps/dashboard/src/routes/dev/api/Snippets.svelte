@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { toast } from '@template/ui';
+	import { Code, toast } from '@template/ui';
 	import { cli, curl, fetch as js, sdk } from './snippets';
 
 	let {
@@ -7,6 +7,7 @@
 	}: { input: Parameters<typeof curl>[0] } = $props();
 
 	const builders = { curl, fetch: js, sdk, cli };
+	const langs = { curl: 'shell', fetch: 'ts', sdk: 'ts', cli: 'shell' };
 	type Kind = keyof typeof builders;
 
 	let kind = $state<Kind>('curl');
@@ -29,7 +30,7 @@
 		</div>
 		<button class="copy" onclick={copy}>Copy</button>
 	</div>
-	<pre>{text}</pre>
+	<Code value={text} lang={langs[kind]} />
 </section>
 
 <style>
@@ -60,7 +61,7 @@
 		border-color: var(--border-bright);
 	}
 
-	pre {
+	section :global(pre.tm-code) {
 		margin: 0;
 		max-height: 22em;
 		overflow: auto;

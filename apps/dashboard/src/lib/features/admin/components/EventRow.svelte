@@ -1,6 +1,7 @@
 <script lang="ts">
 	import ChevronRight from '@lucide/svelte/icons/chevron-right';
 	import type { Event } from '@template/core/event';
+	import { Code } from '@template/ui';
 	import Avatar from '$lib/components/Avatar.svelte';
 	import { fmt } from '$lib/utils/fmt';
 
@@ -70,7 +71,7 @@
 			{#if empty}
 				<p class="none data">This entry carries no data.</p>
 			{:else}
-				<pre>{raw}</pre>
+				<Code value={raw} lang="json" />
 			{/if}
 		</div>
 	{/if}
@@ -204,16 +205,16 @@
 		padding: 0.9em;
 	}
 
-	pre {
+	li :global(pre.tm-code) {
 		margin: 0;
 		padding: 0.9em;
 		max-height: 22em;
 		overflow: auto;
-		font-family: var(--font-mono);
+		border-radius: 0;
+		background: none;
 		font-size: 0.8em;
 		line-height: 1.5;
 		color: var(--muted);
-		tab-size: 2;
 	}
 
 	@media (max-width: 70em) {

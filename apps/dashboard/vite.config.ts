@@ -59,10 +59,6 @@ const adapter = await (async () => {
 })();
 
 export default defineConfig({
-  // jsdom (via isomorphic-dompurify) is CJS that reads files relative to __dirname, so it
-  // cannot be inlined into ESM server chunks — keep it a runtime require. adapter-node
-  // externalizes it too because it's listed in this app's dependencies.
-  ssr: { external: ["isomorphic-dompurify"] },
   plugins: [
     tailwindcss(),
     sveltekit({

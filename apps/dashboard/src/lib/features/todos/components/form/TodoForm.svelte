@@ -116,9 +116,4 @@
 		background: var(--surface);
 		color: var(--ink);
 	}
-
-	:global(.carta-font-code) {
-		font-family: var(--font-mono, monospace);
-		font-size: 0.9em;
-	}
 </style>

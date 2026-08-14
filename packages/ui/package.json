@@ -37,9 +37,8 @@
     "typecheck": "bun run check"
   },
   "dependencies": {
-    "@cartamd/plugin-attachment": "^4.2.0",
-    "carta-md": "^4.11.2",
-    "isomorphic-dompurify": "^3.21.0"
+    "@tanstack/highlight": "0.0.10",
+    "@tanstack/markdown": "0.0.13"
   },
   "devDependencies": {
     "@happy-dom/global-registrator": "catalog:testing",

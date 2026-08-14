@@ -24,7 +24,6 @@
     "@template/sdk": "workspace:*",
     "@template/ui": "workspace:*",
     "d3-scale": "^4.0.2",
-    "isomorphic-dompurify": "^3.21.0",
     "sst": "catalog:",
     "zod": "catalog:"
   },

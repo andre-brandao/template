@@ -8,6 +8,7 @@ import * as select from "./input/Select.story.svelte";
 import * as markdown from "./markdown/Markdown.story.svelte";
 import * as editor from "./markdown/MarkdownEditor.story.svelte";
 import * as card from "./ui/Card.story.svelte";
+import * as code from "./ui/Code.story.svelte";
 import * as drawer from "./ui/Drawer.story.svelte";
 import * as boundary from "./ui/FormBoundary.story.svelte";
 import * as modal from "./ui/Modals.story.svelte";
@@ -65,6 +66,7 @@ export const stories = [
   { slug: "markdown", story: markdown.story, demo: markdown.default },
   { slug: "markdowneditor", story: editor.story, demo: editor.default },
   { slug: "card", story: card.story, demo: card.default },
+  { slug: "code", story: code.story, demo: code.default },
   { slug: "drawer", story: drawer.story, demo: drawer.default },
   { slug: "formboundary", story: boundary.story, demo: boundary.default },
   { slug: "modals", story: modal.story, demo: modal.default },

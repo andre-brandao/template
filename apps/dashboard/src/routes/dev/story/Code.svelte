@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { toast } from '@template/ui';
+	import { Code as Syntax, toast } from '@template/ui';
 
 	let { text, label = 'Usage' }: { text: string; label?: string } = $props();
 
@@ -14,7 +14,7 @@
 		<span>{label}</span>
 		<button onclick={copy}>Copy</button>
 	</div>
-	<pre>{text}</pre>
+	<Syntax value={text} lang="svelte" />
 </div>
 
 <style>
@@ -61,7 +61,7 @@
 		border-color: var(--border-bright);
 	}
 
-	pre {
+	.code :global(pre.tm-code) {
 		margin: 0;
 		flex: 1;
 		min-height: 0;

@@ -25,6 +25,16 @@
 		},
 		can: (grants, owned) => Permission.can(data.user?.role, grants, owned)
 	});
+
+	// TODO: use to reload app when new version comes out
+	// import { beforeNavigate } from '$app/navigation';
+
+	// beforeNavigate(({ willUnload, to }) => {
+	// 	if (updated.current && !willUnload && to?.url) {
+	// 		location.href = to.url.href;
+	// 	}
+	// });
+
 </script>
 
 <svelte:head><link rel="icon" href={favicon} /></svelte:head>

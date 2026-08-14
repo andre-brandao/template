@@ -1,6 +1,8 @@
 import tailwindcss from "@tailwindcss/vite";
 import { sveltekit } from "@sveltejs/kit/vite";
 import { defineConfig, type PluginOption } from "vite";
+import * as child_process from 'node:child_process';
+
 
 function cloudflaredPg(): PluginOption {
   return {
@@ -65,6 +67,9 @@ export default defineConfig({
   plugins: [
     tailwindcss(),
     sveltekit({
+      version: {
+        name: child_process.execSync('git rev-parse HEAD').toString().trim()
+      },
       compilerOptions: {
         // Force runes mode for the project, except for libraries. Can be removed in svelte 6.
         runes: ({ filename }) =>

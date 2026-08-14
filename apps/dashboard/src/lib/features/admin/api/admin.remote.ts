@@ -17,7 +17,7 @@ export const getFacets = remote
   .query();
 
 /** One round trip for the whole database screen: four independent reads, one await. */
-export const getStats = remote.query(async () => {
+export const getStats = remote.query(z.void(), async () => {
   const [tables, queue, counts, server] = await Promise.all([
     Admin.tables(),
     Admin.queue(),

@@ -30,6 +30,12 @@
 
 	const roles = Permission.roles.map((role) => ({ value: role, label: role }));
 
+	// Restoring an account needs no warning; taking one away does.
+	function ask() {
+		if (row.timeDeleted) return true;
+		return modal.confirm({ title: 'Disable account', action: 'Disable account', body: warn });
+	}
+
 	function copy() {
 		navigator.clipboard.writeText(row.email);
 		copied = true;
@@ -88,15 +94,7 @@
 				<!-- One form either way; the enhance gates the destructive direction on a confirm. -->
 				<form
 					{...toggle.enhance(async (form) => {
-						// Restoring an account needs no warning; taking one away does.
-						const ok =
-							!!row.timeDeleted ||
-							(await modal.confirm({
-								title: 'Disable account',
-								action: 'Disable account',
-								body: warn
-							}));
-						if (!ok) return;
+						if (!(await ask())) return;
 						await form.submit();
 						onchange();
 					})}

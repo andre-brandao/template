@@ -4,7 +4,7 @@ import { User } from "@template/core/user";
 import { Actor } from "@template/core/actor";
 import { remote } from "$lib/server/remote";
 
-export const getMe = remote.query(async () => {
+export const getMe = remote.query(z.void(), async () => {
   const user = await User.fromID(Actor.userID());
   if (!user) error(404, "User not found");
   return user;

@@ -6,7 +6,7 @@ import { remote } from "$lib/server/remote";
 import { key } from "$lib/server/files";
 
 /** Whatever is under the user's prefix, newest first — `Storage.Entry` straight through. */
-export const getFiles = remote.query(async () => {
+export const getFiles = remote.query(z.void(), async () => {
   const rows = await Storage.disk().list(`${Actor.userID()}/`);
   return rows.sort((a, b) => (b.lastModified?.getTime() ?? 0) - (a.lastModified?.getTime() ?? 0));
 });

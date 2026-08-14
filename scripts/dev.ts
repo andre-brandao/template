@@ -77,8 +77,8 @@ const servers = [
   },
 ] as const;
 
-function spawn(cmd: string[], cwd: string, out: IO = "inherit", err: IO = out, extra?: object) {
-  const child = Bun.spawn(cmd, {
+function spawn(cmd: readonly string[], cwd: string, out: IO = "inherit", err: IO = out, extra?: object) {
+  const child = Bun.spawn([...cmd], {
     cwd,
     env: extra ? { ...env, ...extra } : env,
     stdin: "inherit",

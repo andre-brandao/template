@@ -39,15 +39,15 @@ function create(init: boolean) {
       // Read back in `+layout.server.ts`, so the next full load paints at the right width.
       document.cookie = `rail=${tight ? "tight" : "wide"};path=/;max-age=31536000;samesite=lax`;
     },
-    /** Peek wiring, spread onto both halves of the hover target (topbar cell + sidebar). */
+    /** Peek wiring, spread onto the sidebar — the whole column, brand strip included. */
     attrs: {
       // A short intent delay so brushing past the rail on the way somewhere else doesn't open it.
       onpointerenter: () => {
         timer = setTimeout(() => (hover = true), 90);
       },
       /**
-       * "Still in the column" is one horizontal test — both halves share the left edge and
-       * width. Also rejects the phantom leave a view transition fires mid-navigation.
+       * "Still in the column" is one horizontal test against the panel's own right edge.
+       * Also rejects the phantom leave a view transition fires mid-navigation.
        */
       onpointerleave: (e: PointerEvent & { currentTarget: HTMLElement }) => {
         const edge = e.currentTarget.getBoundingClientRect().right;

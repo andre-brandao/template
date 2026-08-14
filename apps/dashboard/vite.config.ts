@@ -77,6 +77,15 @@ export default defineConfig({
       // flattens `KitConfig` fields like `adapter` and `experimental` directly onto this object.
       experimental: { remoteFunctions: true },
       adapter,
+      vitePlugin: {
+        inspector: {
+
+          toggleKeyCombo: 'control-shift',
+          holdMode: true,
+          showToggleButton: 'always',
+          toggleButtonPos: 'bottom-right',
+        },
+      },
     }),
     ...(process.env.SVELTE_ADAPTER === "cloudflare" ? [cloudflaredPg()] : []),
   ],

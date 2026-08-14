@@ -18,3 +18,5 @@ export { default as FormBoundary } from "./ui/FormBoundary.svelte";
 export { default as Modal } from "./ui/Modal.svelte";
 export { default as Pager } from "./ui/Pager.svelte";
 export { default as Spinner } from "./ui/Spinner.svelte";
+export { default as Toaster } from "./ui/Toaster.svelte";
+export { toast, type Kind, type Opts } from "./ui/toast.svelte";

@@ -1,16 +1,17 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import { dev } from '$app/environment';
+	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
+	import PanelLeft from '@lucide/svelte/icons/panel-left';
 	import type { User } from '@template/core/user';
 	import Feedback from '$lib/features/feedback/components/Feedback.svelte';
 	import Brand from './Brand.svelte';
 	import Breadcrumbs from './Breadcrumbs.svelte';
 	import Me from './Me.svelte';
-	import Rail from './Rail.svelte';
 
-	// `onmenu` is passed exactly where a sidebar exists to open, so it doubles as the
-	// signal to render the rail — the left cell that lines up with that sidebar.
+	// `onmenu` is passed exactly where a sidebar exists to open, so it doubles as the signal
+	// that the brand lives over there — this bar carries it only once that sidebar is gone.
 	let {
 		user,
 		onmenu,
@@ -25,16 +26,20 @@
 </script>
 
 <header>
-	{#if onmenu}<Rail {onmenu} {head} />{/if}
+	{#if onmenu}
+		<button class="menu" type="button" aria-label="Open menu" onclick={onmenu}>
+			<PanelLeft size={17} strokeWidth={1.75} />
+		</button>
+	{/if}
 
-	<div class="lead">
-		{#if !onmenu}<Brand word={!head} />{@render head?.(false)}{/if}
+	<div class="lead" class:tucked={!!onmenu}>
+		<Brand word={!head} />{@render head?.(false)}
 	</div>
 
 	{#if crumbs}<Breadcrumbs items={crumbs} />{/if}
 
 	{#if dev}
-		<span class="env" title="Not production — data here is throwaway">dev</span>
+		<a class="env" href={resolve('/dev')} title="Not production — data here is throwaway. Opens the dev tools.">dev</a>
 	{/if}
 
 	<!-- The right cluster, Cloudflare-style: utilities first, then the account. -->
@@ -45,6 +50,8 @@
 </header>
 
 <style>
+	/* The content column's ceiling. It stops at the sidebar rather than crossing it, so the
+	   divider beside it belongs to one element and cannot drift out of line. */
 	header {
 		position: sticky;
 		top: 0;
@@ -52,28 +59,49 @@
 		display: flex;
 		align-items: stretch;
 		gap: 1em;
-		/* Fixed, so a taller control in the rail can't grow the bar. */
+		/* Fixed, so a taller control in the bar can't grow it. */
 		height: var(--topbar);
-		padding-right: 1.25em;
+		padding-inline: 1.25em;
 		border-bottom: 1px solid var(--border);
 		background: var(--surface);
 	}
 
-	/* Tight against the divider so the toggle reads as the leading edge of the
-	   content pane rather than as another item in the bar. */
+	.menu {
+		display: none;
+		flex-shrink: 0;
+		align-self: center;
+		align-items: center;
+		padding: 0.4em;
+		border: none;
+		border-radius: var(--radius);
+		background: none;
+		color: var(--muted);
+		cursor: pointer;
+	}
+
+	.menu:hover {
+		background: var(--surface-2);
+		color: var(--ink);
+	}
+
 	.lead {
 		display: flex;
 		align-items: center;
 		gap: 0.55em;
 		min-width: 0;
-		padding-inline: 0.6em 1.25em;
+	}
+
+	/* The sidebar holds the mark and the switcher wherever there is one, so this bar shows
+	   them only on the phone, where the sidebar is off canvas. */
+	.tucked {
+		display: none;
 	}
 
 	/* Loud on purpose: the whole point is to catch the eye of someone who thinks
-	   they are looking at production. Sits outside `.lead` so it trails the project
-	   switcher instead of competing with it for the rail's width. */
+	   they are looking at production. Doubles as the way into /dev. */
 	.env {
 		flex-shrink: 0;
+		text-decoration: none;
 		align-self: center;
 		padding: 0.15em 0.5em;
 		font-family: var(--font-mono);
@@ -95,10 +123,9 @@
 	}
 
 	@media (max-width: 700px) {
-		/* Nothing leads once the rail itself is gone — `.lead` holds nothing, so it
-		   must not reserve its padding either. */
-		.lead {
-			padding-inline: 0;
+		.menu,
+		.tucked {
+			display: flex;
 		}
 	}
 </style>

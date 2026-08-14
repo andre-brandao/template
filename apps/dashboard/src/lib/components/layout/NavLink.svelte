@@ -2,7 +2,6 @@
      away, so collapsing reads as the same rail narrowing rather than a different menu. -->
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import type { Pathname } from '$app/types';
 	import { at, type Item } from './nav';
 
 	let { item, slim = false }: { item: Item; slim?: boolean } = $props();
@@ -13,7 +12,7 @@
 <a
 	class="navlink"
 	class:slim
-	href={resolve(item.href as Pathname)}
+	href={resolve(item.href as any)}
 	aria-current={at(item)}
 	title={slim ? item.label : undefined}
 >

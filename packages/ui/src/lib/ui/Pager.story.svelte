@@ -1,0 +1,55 @@
+<script module lang="ts">
+	import type { Story } from '../story';
+	import Pager from './Pager.svelte';
+
+	export const story: Story = {
+		title: 'Pager',
+		blurb: 'Renders nothing when there is only one page — the hiding is the point of the component.',
+		of: Pager
+	};
+</script>
+
+<script lang="ts">
+	let page = $state(1);
+	let size = $state(20);
+	let total = $state(137);
+</script>
+
+<div class="knobs">
+	<label class="field">
+		<span>pageSize</span>
+		<input type="number" min="1" bind:value={size} />
+	</label>
+	<label class="field">
+		<span>total</span>
+		<input type="number" min="0" bind:value={total} />
+	</label>
+</div>
+
+<Pager of={{ page, pageSize: size, total }} onchange={(next) => (page = next)} label="todos" />
+
+<p class="note">Set total below pageSize and the control disappears.</p>
+
+<style>
+	.knobs {
+		display: flex;
+		gap: 1em;
+		margin-bottom: 1em;
+	}
+
+	.knobs input {
+		width: 7em;
+		font: inherit;
+		padding: 0.4em 0.6em;
+		border: 1px solid var(--border);
+		border-radius: var(--radius);
+		background: var(--surface);
+		color: var(--ink);
+	}
+
+	.note {
+		margin-top: 1em;
+		color: var(--muted);
+		font-size: 0.85em;
+	}
+</style>

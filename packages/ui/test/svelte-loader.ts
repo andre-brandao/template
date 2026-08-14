@@ -21,6 +21,8 @@ for (const [spec, client] of Object.entries(browser)) {
   mock.module(spec, () => import(join(root, client)));
 }
 
+const ts = new Bun.Transpiler({ loader: "ts" });
+
 plugin({
   name: "test-svelte-loader",
   setup(builder) {
@@ -30,7 +32,12 @@ plugin({
       const mod = /\.svelte\.[cm]?[jt]s$/.test(file);
       const local = !file.includes("/node_modules/");
       const out = mod
-        ? compileModule(source, { filename: file, dev: false, generate: "client" })
+        ? // compileModule takes JS only, so a rune module written in TS is stripped first.
+          compileModule(ts.transformSync(source), {
+            filename: file,
+            dev: false,
+            generate: "client",
+          })
         : compile(source, {
             filename: file,
             generate: "client",
@@ -42,3 +49,9 @@ plugin({
     });
   },
 });
+
+// happy-dom ships no popover API, and `Toaster` mounts into the top layer. Stub enough of it
+// that the calls resolve; nothing under test depends on the layering itself.
+HTMLElement.prototype.showPopover ??= () => {};
+HTMLElement.prototype.hidePopover ??= () => {};
+HTMLElement.prototype.togglePopover ??= () => true;

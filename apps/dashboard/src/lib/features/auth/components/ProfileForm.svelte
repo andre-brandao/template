@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { User } from '@template/core/user';
-	import { Button, FormBoundary, Input } from '@template/ui';
+	import { Button, FormBoundary, Input, toast } from '@template/ui';
 	import AvatarUpload from '$lib/components/AvatarUpload.svelte';
 	import { getMe, rename } from '../api/profile.remote';
 
@@ -30,7 +30,12 @@
 		<p class="error">{issue.message}</p>
 	{/each}
 
-	<form {...rename}>
+	<form
+		{...rename.enhance(async (f) => {
+			await f.submit();
+			toast.success('Name saved');
+		})}
+	>
 		<label class="field name">
 			<span>Display name</span>
 			<div class="row">

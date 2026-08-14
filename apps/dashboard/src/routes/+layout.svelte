@@ -5,6 +5,7 @@
 	import { navigating } from '$app/state';
 	import PreLoadingIndicator from './PreLoadingIndicator.svelte';
 	import ViewTransitions from './ViewTransitions.svelte';
+	import { Toaster } from '@template/ui';
 	import { Permission } from '@template/core/permission';
 	import { createRail } from '$lib/components/layout/rail.svelte';
 	import { createUser } from '$lib/utils/context';
@@ -29,6 +30,7 @@
 <svelte:head><link rel="icon" href={favicon} /></svelte:head>
 
 <ViewTransitions />
+<Toaster />
 
 {#if navigating.complete}
 	<PreLoadingIndicator />

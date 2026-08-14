@@ -19,6 +19,10 @@
     ".": {
       "types": "./src/lib/index.ts",
       "svelte": "./src/lib/index.ts"
+    },
+    "./story": {
+      "types": "./src/lib/story.ts",
+      "svelte": "./src/lib/story.ts"
     }
   },
   "scripts": {

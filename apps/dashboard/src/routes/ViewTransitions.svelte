@@ -86,6 +86,24 @@
 		animation: none;
 	}
 
+	/* The sidebar holds still and the page slides beneath it. Groups are painted in document
+	   order by default, which puts `shell-main` on top of the column it slides across — these
+	   z-indexes are what stack the column back above it. `shell-nav` is nested inside the
+	   rail, so it has to clear the rail's own snapshot as well. */
+	:global(::view-transition-group(shell-rail)) {
+		z-index: 2;
+	}
+
+	:global(::view-transition-group(shell-nav)) {
+		z-index: 3;
+	}
+
+	:global(::view-transition-old(shell-rail)),
+	:global(::view-transition-new(shell-rail)) {
+		animation: none;
+		mix-blend-mode: normal;
+	}
+
 	:global(::view-transition-old(shell-header)) {
 		opacity: 0;
 		animation: none;

@@ -4,17 +4,26 @@
 	let {
 		accent,
 		interactive = false,
+		dense = false,
 		href,
+		as = 'div',
 		children
-	}: { accent?: string; interactive?: boolean; href?: string; children: Snippet } = $props();
+	}: {
+		accent?: string;
+		interactive?: boolean;
+		/** Row density — list rows sit tighter than a standalone card. */
+		dense?: boolean;
+		href?: string;
+		/** The element to render when it isn't a link, so a list row can stay an `li`. */
+		as?: 'div' | 'li';
+		children: Snippet;
+	} = $props();
 </script>
 
 <svelte:element
-	this={href ? 'a' : 'div'}
+	this={href ? 'a' : as}
 	{href}
-	class="card"
-	class:accent={!!accent}
-	class:interactive
+	class={['card', { accent: !!accent, interactive, dense }]}
 	style:--accent-rail={accent}
 >
 	{@render children()}
@@ -41,6 +50,14 @@
 	.card.accent {
 		padding-left: calc(1.1em - 2px);
 		border-left: 3px solid var(--accent-rail);
+	}
+
+	.card.dense {
+		padding: 0.8em 1em;
+	}
+
+	.card.dense.accent {
+		padding-left: calc(1em - 2px);
 	}
 
 	.card.interactive {

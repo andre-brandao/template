@@ -10,7 +10,7 @@ import * as editor from "./markdown/MarkdownEditor.story.svelte";
 import * as card from "./ui/Card.story.svelte";
 import * as drawer from "./ui/Drawer.story.svelte";
 import * as boundary from "./ui/FormBoundary.story.svelte";
-import * as modal from "./ui/Modal.story.svelte";
+import * as modal from "./ui/Modals.story.svelte";
 import * as pager from "./ui/Pager.story.svelte";
 import * as spinner from "./ui/Spinner.story.svelte";
 import * as toaster from "./ui/Toaster.story.svelte";
@@ -67,7 +67,7 @@ export const stories = [
   { slug: "card", story: card.story, demo: card.default },
   { slug: "drawer", story: drawer.story, demo: drawer.default },
   { slug: "formboundary", story: boundary.story, demo: boundary.default },
-  { slug: "modal", story: modal.story, demo: modal.default },
+  { slug: "modals", story: modal.story, demo: modal.default },
   { slug: "pager", story: pager.story, demo: pager.default },
   { slug: "spinner", story: spinner.story, demo: spinner.default },
   { slug: "toaster", story: toaster.story, demo: toaster.default },

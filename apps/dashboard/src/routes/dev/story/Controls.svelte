@@ -88,6 +88,12 @@
 		outline: none;
 	}
 
+	@media (max-width: 900px) {
+		aside {
+			width: 100%;
+		}
+	}
+
 	/* The shared `.field` stacks label over control; a checkbox reads better inline. */
 	.field:has(input[type='checkbox']) {
 		flex-direction: row;

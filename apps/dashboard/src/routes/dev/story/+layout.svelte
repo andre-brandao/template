@@ -9,9 +9,10 @@
 <div class="split">
 	<nav aria-label="Components">
 		{#each stories as entry (entry.slug)}
+			<!-- The search carries the open tab, so switching component keeps the view. -->
 			<a
 				class="navlink"
-				href={resolve('/dev/story/[name]', { name: entry.slug })}
+				href={resolve('/dev/story/[name]', { name: entry.slug }) + page.url.search}
 				aria-current={page.params.name === entry.slug ? 'page' : undefined}
 			>
 				{entry.story.title}
@@ -22,10 +23,14 @@
 </div>
 
 <style>
+	/* The screen fills what the shell leaves it and the stage scrolls inside, so the
+	   component list and the story header hold still between stories. */
 	.split {
 		display: flex;
-		align-items: flex-start;
+		align-items: stretch;
 		gap: 2em;
+		height: var(--fill);
+		min-height: 26em;
 	}
 
 	nav {
@@ -34,8 +39,8 @@
 		gap: 0.15em;
 		width: 12em;
 		flex-shrink: 0;
-		position: sticky;
-		top: calc(var(--topbar) + 1.75em);
+		overflow-y: auto;
+		scrollbar-gutter: stable;
 	}
 
 	.navlink {
@@ -45,18 +50,20 @@
 	.pane {
 		flex: 1;
 		min-width: 0;
+		min-height: 0;
 	}
 
 	@media (max-width: 900px) {
 		.split {
 			flex-direction: column;
+			height: auto;
 		}
 
 		nav {
-			position: static;
 			width: 100%;
 			flex-direction: row;
 			flex-wrap: wrap;
+			overflow: visible;
 		}
 	}
 </style>

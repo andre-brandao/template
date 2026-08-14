@@ -37,6 +37,20 @@ export type Story = {
   variants?: { label: string; props: Record<string, unknown> }[];
 };
 
+/** Story sources, keyed by lowercased basename — which is also the slug. */
+const src = Object.fromEntries(
+  Object.entries(
+    import.meta.glob("./**/*.story.svelte", {
+      query: "?raw",
+      import: "default",
+      eager: true,
+    }) as Record<string, string>,
+  ).map(([path, text]) => [
+    path.split("/").pop()!.replace(".story.svelte", "").toLowerCase(),
+    text,
+  ]),
+);
+
 /**
  * Written out by hand: the set of documented components is worth seeing in one place,
  * and a story that forgets its `story` export fails the build instead of vanishing.
@@ -57,6 +71,8 @@ export const stories = [
   { slug: "pager", story: pager.story, demo: pager.default },
   { slug: "spinner", story: spinner.story, demo: spinner.default },
   { slug: "toaster", story: toaster.story, demo: toaster.default },
-].sort((a, b) => a.story.title.localeCompare(b.story.title));
+]
+  .map((one) => ({ ...one, src: src[one.slug] ?? "" }))
+  .sort((a, b) => a.story.title.localeCompare(b.story.title));
 
 export type Entry = (typeof stories)[number];

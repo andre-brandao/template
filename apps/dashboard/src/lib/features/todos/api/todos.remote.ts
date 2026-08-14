@@ -47,94 +47,84 @@ export const getTodo = remote.query(Todo.Info.shape.id, async (id) => {
   return todo;
 });
 
-export const createTodo = remote
-  .core(Todo.create)
-  .with(
-    Todo.create.schema.extend({
-      tags: z
+export const createTodo = remote.form(
+  Todo.create.schema.extend({
+    tags: z
+      .string()
+      .optional()
+      .transform((s) =>
+        s
+          ? s
+              .split(",")
+              .map((tag) => tag.trim())
+              .filter(Boolean)
+          : undefined,
+      ),
+    body: blank,
+    stage: blank,
+    assignee: blank,
+    source: blank,
+    sourceID: blank,
+    startDate: day,
+    dueDate: day,
+  }),
+  Todo.create,
+);
+
+export const setStatus = remote.form(
+  z
+    .object({
+      id: Todo.Info.shape.id,
+      status: Todo.Status,
+      reason: z
         .string()
         .optional()
-        .transform((s) =>
-          s
-            ? s
-                .split(",")
-                .map((tag) => tag.trim())
-                .filter(Boolean)
-            : undefined,
-        ),
-      body: blank,
-      stage: blank,
-      assignee: blank,
-      source: blank,
-      sourceID: blank,
-      startDate: day,
-      dueDate: day,
-    }),
-  )
-  .form();
-
-export const setStatus = remote
-  .core(Todo.update)
-  .with(
-    z
-      .object({
-        id: Todo.Info.shape.id,
-        status: Todo.Status,
-        reason: z
-          .string()
-          .optional()
-          .transform((s) => s?.trim() || null),
-      })
-      .transform((input) => ({ id: input.id, status: input.status, reason: input.reason })),
-  )
-  .form();
+        .transform((s) => s?.trim() || null),
+    })
+    .transform((input) => ({ id: input.id, status: input.status, reason: input.reason })),
+  Todo.update,
+);
 
 /** The scheduling fields, edited together on the detail page. */
-export const planTodo = remote
-  .core(Todo.update)
-  .with(
-    z.object({
-      id: Todo.Info.shape.id,
-      stage: clearable,
-      assignee: clearable,
-      startDate: z
-        .string()
-        .optional()
-        .transform((s) => (s ? new Date(s).toISOString() : null)),
-      dueDate: z
-        .string()
-        .optional()
-        .transform((s) => (s ? new Date(s).toISOString() : null)),
-    }),
-  )
-  .form();
+export const planTodo = remote.form(
+  z.object({
+    id: Todo.Info.shape.id,
+    stage: clearable,
+    assignee: clearable,
+    startDate: z
+      .string()
+      .optional()
+      .transform((s) => (s ? new Date(s).toISOString() : null)),
+    dueDate: z
+      .string()
+      .optional()
+      .transform((s) => (s ? new Date(s).toISOString() : null)),
+  }),
+  Todo.update,
+);
 
-export const renameStage = remote
-  .core(Todo.rename)
-  .with(
-    z.object({
-      from: z.string().min(1),
-      to: z.string().min(1).max(64),
-      source: blank,
-      sourceID: blank,
-    }),
-  )
-  .form();
+export const renameStage = remote.form(
+  z.object({
+    from: z.string().min(1),
+    to: z.string().min(1).max(64),
+    source: blank,
+    sourceID: blank,
+  }),
+  Todo.rename,
+);
 
-export const updateTodo = remote
-  .core(Todo.update)
-  .with(
-    z.object({
-      id: Todo.Info.shape.id,
-      body: z
-        .string()
-        .optional()
-        .transform((s) => s || null),
-    }),
-  )
-  .form();
+export const updateTodo = remote.form(
+  z.object({
+    id: Todo.Info.shape.id,
+    body: z
+      .string()
+      .optional()
+      .transform((s) => s || null),
+  }),
+  Todo.update,
+);
 
-export const removeTodo = remote
-  .core(Todo.remove)
-  .with(z.object({ id: Todo.Info.shape.id }).transform((input) => input.id))
-  .form();
+export const removeTodo = remote.form(
+  z.object({ id: Todo.Info.shape.id }).transform((input) => input.id),
+  Todo.remove,
+);

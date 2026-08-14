@@ -14,31 +14,27 @@ export const getProject = remote.query(Project.Info.shape.id, async (id) => {
   return project;
 });
 
-export const createProject = remote
-  .core(Project.create)
-  .with(
-    Project.create.schema.extend({
-      description: z
-        .string()
-        .optional()
-        .transform((s) => s || undefined),
-    }),
-  )
-  .form();
+export const createProject = remote.form(
+  Project.create.schema.extend({
+    description: z
+      .string()
+      .optional()
+      .transform((s) => s || undefined),
+  }),
+  Project.create,
+);
 
-export const updateProject = remote
-  .core(Project.update)
-  .with(
-    z.object({
-      id: Project.Info.shape.id,
-      name: Project.Info.shape.name,
-      description: z
-        .string()
-        .optional()
-        .transform((s) => s || null),
-    }),
-  )
-  .form();
+export const updateProject = remote.form(
+  z.object({
+    id: Project.Info.shape.id,
+    name: Project.Info.shape.name,
+    description: z
+      .string()
+      .optional()
+      .transform((s) => s || null),
+  }),
+  Project.update,
+);
 
 // A command, not a form: it is only ever reached through `modal.confirm`, and the caller
 // navigates away to the list, which remounts its query.

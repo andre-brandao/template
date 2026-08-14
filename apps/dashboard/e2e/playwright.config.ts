@@ -1,3 +1,4 @@
+import { spawnSync } from "node:child_process";
 import { defineConfig, devices } from "@playwright/test";
 
 const ci = !!process.env.CI;
@@ -14,6 +15,17 @@ process.env.DATABASE_URL = url;
 // Same secret in the test process (mint seals the cookie) and the app server (hooks read it).
 const secret = process.env.SESSION_SECRET ?? "e2e-session-secret";
 process.env.SESSION_SECRET = secret;
+
+// Playwright's bundled chromium won't launch on NixOS; use the system one locally.
+// CI keeps the pinned browser; CHROME_PATH overrides.
+function browser() {
+  if (ci) return undefined;
+  if (process.env.CHROME_PATH) return process.env.CHROME_PATH;
+  const found = spawnSync("which", ["chromium"], { encoding: "utf8" });
+  return found.status === 0 ? found.stdout.trim() : undefined;
+}
+
+const chrome = browser();
 
 export default defineConfig({
   testDir: "./tests",
@@ -43,7 +55,13 @@ export default defineConfig({
     env: { SVELTE_ADAPTER: "node", DATABASE_URL: url, SESSION_SECRET: secret },
   },
   projects: [
-    { name: "chromium", use: { ...devices["Desktop Chrome"] } },
+    {
+      name: "chromium",
+      use: {
+        ...devices["Desktop Chrome"],
+        ...(chrome ? { launchOptions: { executablePath: chrome } } : {}),
+      },
+    },
     { name: "firefox", use: { ...devices["Desktop Firefox"] } },
     { name: "webkit", use: { ...devices["Desktop Safari"] } },
   ],

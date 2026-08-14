@@ -1,4 +1,4 @@
 import { Feedback } from "./feedback";
 import { remote } from "$lib/server/remote";
 
-export const send = remote(Feedback.create).form();
+export const send = remote.core(Feedback.create).form();

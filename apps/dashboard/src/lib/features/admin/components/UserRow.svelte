@@ -3,7 +3,7 @@
 	import Copy from '@lucide/svelte/icons/copy';
 	import RotateCcw from '@lucide/svelte/icons/rotate-ccw';
 	import Trash2 from '@lucide/svelte/icons/trash-2';
-	import { Button, FormBoundary, Modal, Select, Spinner } from '@template/ui';
+	import { FormBoundary, Select, Spinner, modal } from '@template/ui';
 	import { Permission } from '@template/core/permission';
 	import type { User } from '@template/core/user';
 	import Avatar from '$lib/components/Avatar.svelte';
@@ -19,23 +19,16 @@
 	// so offering the controls would only ever produce an error.
 	const self = $derived(row.id === me.current?.id);
 
-	let open = $state(false);
 	let copied = $state(false);
 
 	const assign = $derived(assignRole.for(row.id));
 	const toggle = $derived((row.timeDeleted ? enableUser : disableUser).for(row.id));
-	const issues = $derived([...(assign.fields.allIssues() ?? []), ...(toggle.fields.allIssues() ?? [])]);
+	const issues = $derived([
+		...(assign.fields.allIssues() ?? []),
+		...(toggle.fields.allIssues() ?? []),
+	]);
 
 	const roles = Permission.roles.map((role) => ({ value: role, label: role }));
-
-	// Closing on the way out puts any failure back on the row, where the issue list already is.
-	const enhance = $derived(
-		toggle.enhance(async (form) => {
-			await form.submit();
-			open = false;
-			onchange();
-		})
-	);
 
 	function copy() {
 		navigator.clipboard.writeText(row.email);
@@ -43,6 +36,11 @@
 		setTimeout(() => (copied = false), 1200);
 	}
 </script>
+
+{#snippet warn()}
+	<b>{row.name}</b> is turned away at login on their next request and drops out of every actor
+	lookup. Nothing they filed is deleted, and enabling the account again restores access.
+{/snippet}
 
 <li class:gone={!!row.timeDeleted}>
 	<Avatar name={row.name} image={row.image} />
@@ -87,40 +85,36 @@
 					/>
 				</form>
 
-				<!-- Restoring an account needs no warning; taking one away does. -->
-				{#if row.timeDeleted}
-					<form {...enhance}>
-						<input {...toggle.fields.id.as('hidden', row.id)} />
+				<!-- One form either way; the enhance gates the destructive direction on a confirm. -->
+				<form
+					{...toggle.enhance(async (form) => {
+						// Restoring an account needs no warning; taking one away does.
+						const ok =
+							!!row.timeDeleted ||
+							(await modal.confirm({
+								title: 'Disable account',
+								action: 'Disable account',
+								body: warn
+							}));
+						if (!ok) return;
+						await form.submit();
+						onchange();
+					})}
+				>
+					<input {...toggle.fields.id.as('hidden', row.id)} />
+					{#if row.timeDeleted}
 						<button class="back" type="submit" disabled={!!toggle.pending} title="Restore access">
 							{#if toggle.pending}<Spinner />{:else}<RotateCcw size={14} />{/if}
 							Enable
 						</button>
-					</form>
-				{:else}
-					<button class="drop" type="button" onclick={() => (open = true)} title="Disable user">
-						<Trash2 size={16} />
-					</button>
-				{/if}
+					{:else}
+						<button class="drop" type="submit" disabled={!!toggle.pending} title="Disable user">
+							<Trash2 size={16} />
+						</button>
+					{/if}
+				</form>
 			{/if}
 		</div>
-
-		<Modal bind:open>
-			<h2>Disable account</h2>
-
-			<p class="warn">
-				<b>{row.name}</b> is turned away at login on their next request and drops out of every actor
-				lookup. Nothing they filed is deleted, and enabling the account again restores access.
-			</p>
-
-			<form {...enhance}>
-				<input {...toggle.fields.id.as('hidden', row.id)} />
-
-				<div class="foot">
-					<Button variant="ghost" type="button" onclick={() => (open = false)}>Cancel</Button>
-					<Button variant="danger" type="submit" pending={!!toggle.pending}>Disable account</Button>
-				</div>
-			</form>
-		</Modal>
 	</FormBoundary>
 </li>
 
@@ -249,30 +243,6 @@
 	.back:disabled {
 		cursor: default;
 		opacity: 0.6;
-	}
-
-	h2 {
-		margin: 0 0 0.6em;
-		font-size: 1.1em;
-	}
-
-	.warn {
-		margin: 0 0 1.25em;
-		color: var(--muted);
-		font-size: 0.9em;
-		line-height: 1.55;
-	}
-
-	.warn b {
-		color: var(--ink);
-		font-weight: 600;
-	}
-
-	.foot {
-		display: flex;
-		justify-content: flex-end;
-		gap: 0.6em;
-		margin-top: 1.25em;
 	}
 
 	.error {

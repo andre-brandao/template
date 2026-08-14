@@ -1,9 +1,8 @@
-import { query } from "$app/server";
 import { error } from "@sveltejs/kit";
 import { z } from "zod";
 import { Todo } from "@template/core/todo";
 import { User } from "@template/core/user";
-import { auth, remote } from "$lib/server/remote";
+import { remote } from "$lib/server/remote";
 
 /** `<input type="date">` gives a bare day; core wants a full instant. */
 const day = z
@@ -22,7 +21,7 @@ const clearable = z
   .optional()
   .transform((s) => s || null);
 
-export const getTodos = query(
+export const getTodos = remote.query(
   z.object({
     status: Todo.Status.optional(),
     assignee: z.string().optional(),
@@ -32,25 +31,24 @@ export const getTodos = query(
     q: z.string().optional(),
   }),
   async (input) => {
-    auth();
     // One page feeds every view — the board and timeline group client-side.
     const { data } = await Todo.list({ ...input, search: input.q, pageSize: 100 });
     return data;
   },
 );
 
-export const getStages = remote(Todo.stages).query();
+export const getStages = remote.core(Todo.stages).query();
 
-export const getUsers = remote(User.list).query();
+export const getUsers = remote.core(User.list).query();
 
-export const getTodo = query(Todo.Info.shape.id, async (id) => {
-  auth();
+export const getTodo = remote.query(Todo.Info.shape.id, async (id) => {
   const todo = await Todo.fromID(id);
   if (!todo) error(404, "Todo not found");
   return todo;
 });
 
-export const createTodo = remote(Todo.create)
+export const createTodo = remote
+  .core(Todo.create)
   .with(
     Todo.create.schema.extend({
       tags: z
@@ -75,7 +73,8 @@ export const createTodo = remote(Todo.create)
   )
   .form();
 
-export const setStatus = remote(Todo.update)
+export const setStatus = remote
+  .core(Todo.update)
   .with(
     z
       .object({
@@ -91,7 +90,8 @@ export const setStatus = remote(Todo.update)
   .form();
 
 /** The scheduling fields, edited together on the detail page. */
-export const planTodo = remote(Todo.update)
+export const planTodo = remote
+  .core(Todo.update)
   .with(
     z.object({
       id: Todo.Info.shape.id,
@@ -109,7 +109,8 @@ export const planTodo = remote(Todo.update)
   )
   .form();
 
-export const renameStage = remote(Todo.rename)
+export const renameStage = remote
+  .core(Todo.rename)
   .with(
     z.object({
       from: z.string().min(1),
@@ -120,7 +121,8 @@ export const renameStage = remote(Todo.rename)
   )
   .form();
 
-export const updateTodo = remote(Todo.update)
+export const updateTodo = remote
+  .core(Todo.update)
   .with(
     z.object({
       id: Todo.Info.shape.id,
@@ -132,6 +134,7 @@ export const updateTodo = remote(Todo.update)
   )
   .form();
 
-export const removeTodo = remote(Todo.remove)
+export const removeTodo = remote
+  .core(Todo.remove)
   .with(z.object({ id: Todo.Info.shape.id }).transform((input) => input.id))
   .form();

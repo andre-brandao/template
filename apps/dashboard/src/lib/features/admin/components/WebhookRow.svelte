@@ -4,7 +4,7 @@
 	import EyeOff from '@lucide/svelte/icons/eye-off';
 	import Power from '@lucide/svelte/icons/power';
 	import Trash2 from '@lucide/svelte/icons/trash-2';
-	import { Button, FormBoundary, Modal } from '@template/ui';
+	import { Card, FormBoundary, modal } from '@template/ui';
 	import type { Webhook } from '@template/core/webhook';
 	import { fmt } from '$lib/utils/fmt';
 	import { disableWebhook, enableWebhook, removeWebhook } from '../api/admin.remote';
@@ -13,12 +13,13 @@
 
 	const f = fmt();
 	let shown = $state(false);
-	let open = $state(false);
 
 	const toggle = $derived((row.enabled ? disableWebhook : enableWebhook).for(row.id));
 	const drop = $derived(removeWebhook.for(row.id));
-	// Delete issues render inside the modal, which covers the row while it's open.
-	const issues = $derived(toggle.fields.allIssues() ?? []);
+	const issues = $derived([
+		...(toggle.fields.allIssues() ?? []),
+		...(drop.fields.allIssues() ?? [])
+	]);
 
 	const scope = $derived(row.types.length ? row.types.join(', ') : 'every event');
 
@@ -45,89 +46,82 @@
 	);
 </script>
 
-<li style:--rail={rail} class:gone={!row.enabled}>
-	<div class="meta">
-		<span class="url">{row.url}</span>
-		<span class="sub">{scope}</span>
-	</div>
+{#snippet warn()}
+	Deliveries to <b>{row.url}</b> stop at once, including any retries still in flight. Its signing
+	secret goes with it — a replacement subscription gets a new one.
+{/snippet}
 
-	<!-- Reveal and copy act on the secret, so they live in its field rather than the row. -->
-	<div class="secret" class:revealed={shown}>
-		<code>{shown ? row.secret : row.display}</code>
-		<button type="button" onclick={() => (shown = !shown)} title={shown ? 'Hide' : 'Reveal'}>
-			{#if shown}<EyeOff size={15} />{:else}<Eye size={15} />{/if}
-		</button>
-		<button
-			type="button"
-			onclick={() => navigator.clipboard.writeText(row.secret)}
-			title="Copy secret"
-		>
-			<Copy size={15} />
-		</button>
-	</div>
+<Card as="li" accent={rail} dense>
+	<div class={['row', { gone: !row.enabled }]}>
+		<div class="meta">
+			<span class="url">{row.url}</span>
+			<span class="sub">{scope}</span>
+		</div>
 
-	<FormBoundary>
-		{#each issues as issue (issue)}
-			<p class="error">{issue.message}</p>
-		{/each}
-
-		<div class="acts">
-			<button type="button" onclick={() => (open = true)} title="Delete webhook">
-				<Trash2 size={16} />
+		<!-- Reveal and copy act on the secret, so they live in its field rather than the row. -->
+		<div class="secret" class:revealed={shown}>
+			<code>{shown ? row.secret : row.display}</code>
+			<button type="button" onclick={() => (shown = !shown)} title={shown ? 'Hide' : 'Reveal'}>
+				{#if shown}<EyeOff size={15} />{:else}<Eye size={15} />{/if}
+			</button>
+			<button
+				type="button"
+				onclick={() => navigator.clipboard.writeText(row.secret)}
+				title="Copy secret"
+			>
+				<Copy size={15} />
 			</button>
 		</div>
 
-		<!-- The switch and what it produced, together — the status only means anything next to it. -->
-		<form class="power" {...toggle}>
-			<input {...toggle.fields.id.as('hidden', row.id)} />
-			<button
-				type="submit"
-				class:on={row.enabled}
-				disabled={!!toggle.pending}
-				aria-pressed={row.enabled}
-				title={row.enabled ? 'Disable' : 'Enable'}
-			>
-				<Power size={16} />
-				{row.enabled ? 'Enabled' : 'Disabled'}
-			</button>
-			<span class="status {badge.tone}">{badge.label}</span>
-		</form>
+		<FormBoundary>
+			{#each issues as issue (issue)}
+				<p class="error">{issue.message}</p>
+			{/each}
 
-		<Modal bind:open>
-			<h2>Delete webhook</h2>
+			<div class="acts">
+				<form
+					{...drop.enhance(async (form) => {
+						const ok = await modal.confirm({
+							title: 'Delete webhook',
+							action: 'Delete webhook',
+							body: warn
+						});
+						if (!ok) return;
+						await form.submit();
+					})}
+				>
+					<input {...drop.fields.id.as('hidden', row.id)} />
+					<button type="submit" disabled={!!drop.pending} title="Delete webhook">
+						<Trash2 size={16} />
+					</button>
+				</form>
+			</div>
 
-			<p class="warn">
-				Deliveries to <b>{row.url}</b> stop at once, including any retries still in flight. Its signing
-				secret goes with it — a replacement subscription gets a new one.
-			</p>
-
-			<form {...drop}>
-				<input {...drop.fields.id.as('hidden', row.id)} />
-
-				{#each drop.fields.allIssues() ?? [] as issue (issue)}
-					<p class="error">{issue.message}</p>
-				{/each}
-
-				<div class="foot">
-					<Button variant="ghost" type="button" onclick={() => (open = false)}>Cancel</Button>
-					<Button variant="danger" type="submit" pending={!!drop.pending}>Delete webhook</Button>
-				</div>
+			<!-- The switch and what it produced, together — the status only means anything next to it. -->
+			<form class="power" {...toggle}>
+				<input {...toggle.fields.id.as('hidden', row.id)} />
+				<button
+					type="submit"
+					class:on={row.enabled}
+					disabled={!!toggle.pending}
+					aria-pressed={row.enabled}
+					title={row.enabled ? 'Disable' : 'Enable'}
+				>
+					<Power size={16} />
+					{row.enabled ? 'Enabled' : 'Disabled'}
+				</button>
+				<span class="status {badge.tone}">{badge.label}</span>
 			</form>
-		</Modal>
-	</FormBoundary>
-</li>
+		</FormBoundary>
+	</div>
+</Card>
 
 <style>
-	li {
+	.row {
 		display: flex;
 		align-items: center;
 		gap: 1em;
 		flex-wrap: wrap;
-		padding: 0.8em 1em 0.8em calc(1em - 2px);
-		border: 1px solid var(--border);
-		border-left: 3px solid var(--rail);
-		border-radius: var(--radius);
-		background: var(--surface);
 	}
 
 	/* Disabled subscriptions stay legible but visibly inert — they're listed to be re-enabled. */
@@ -279,31 +273,6 @@
 	.power button:disabled {
 		cursor: default;
 		opacity: 0.6;
-	}
-
-	h2 {
-		margin: 0 0 0.6em;
-		font-size: 1.1em;
-	}
-
-	.warn {
-		margin: 0 0 1.25em;
-		color: var(--muted);
-		font-size: 0.9em;
-		line-height: 1.55;
-	}
-
-	.warn b {
-		color: var(--ink);
-		font-weight: 600;
-		overflow-wrap: anywhere;
-	}
-
-	.foot {
-		display: flex;
-		justify-content: flex-end;
-		gap: 0.6em;
-		margin-top: 1.25em;
 	}
 
 	.error {

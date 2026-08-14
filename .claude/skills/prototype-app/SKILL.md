@@ -51,7 +51,7 @@ This is the step after `/prototype`: the HTML mockups explored the UX; this make
 
    Rules:
    - Field names and shapes come from the prototype's data model (or PLAN.md when it exists) — the mock is the contract core will implement.
-   - Every function carries its zod schema via `Object.assign(fn, { schema })` — that is what `$lib/server/remote`'s `remote()` helper consumes, so mock and core functions are interchangeable.
+   - Every function carries its zod schema via `Object.assign(fn, { schema })` — that is what `$lib/server/remote`'s `remote.core()` helper consumes, so mock and core functions are interchangeable.
    - Module-level state: lives for the dev-server process, shared across tabs, resets on restart. That's the point — no persistence code.
    - Seed data must read like real usage, not placeholders.
 

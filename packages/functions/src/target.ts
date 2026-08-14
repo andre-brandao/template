@@ -16,7 +16,8 @@ export function worker(app: App, ...extra: Context.Provider<Res>[]) {
     fetch(request: Request, env: Env, ctx: ExecutionContext) {
       return Context.withProviders(
         () => app.fetch(request, env, ctx),
-        Database.provider(env.Hyperdrive.connectionString),
+        // Fresh pool per request: Workers forbid reusing a socket across them.
+        Database.provider(Database.create(env.Hyperdrive.connectionString)),
         ...extra,
       );
     },
@@ -29,24 +30,26 @@ export function lambda<E extends HonoEnv, S extends Schema, P extends string>(
   ...extra: Context.Provider<Promise<void>>[]
 ) {
   const aws = new Hono()
-    .use(providers(Database.provider(process.env.DATABASE_URL ?? Database.DEFAULT_URL), ...extra))
+    .use(providers(Database.provider(Database.create()), ...extra))
     .route("/", app);
   return process.env.SST_LIVE ? handle(aws) : streamHandle(aws);
 }
 
 /**
- * Bun dev server — db from env, released after each request: pglite allows only
- * one connection and other dev processes (dashboard, auth) need it back.
+ * Bun dev server — one pool for the process, unless PG_RELEASE=true cycles it per
+ * request: pglite allows a single connection and the other dev processes (dashboard,
+ * auth) need it back. `scripts/dev.ts` sets it for the pglite driver.
  */
 export function bun(app: App, port: number, ...extra: Context.Provider<Res>[]) {
-  const url = process.env.DATABASE_URL ?? Database.DEFAULT_URL;
+  const shared = process.env.PG_RELEASE === "true" ? undefined : Database.create();
   return {
     port,
     fetch: async (req: Request) => {
+      const db = shared ?? Database.create();
       try {
-        return await Context.withProviders(() => app.fetch(req), Database.provider(url), ...extra);
+        return await Context.withProviders(() => app.fetch(req), Database.provider(db), ...extra);
       } finally {
-        await Database.release(url);
+        if (!shared) await Database.release(db);
       }
     },
   };

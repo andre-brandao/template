@@ -3,11 +3,11 @@
 import { Database, sql } from "@template/core/drizzle";
 
 // Drops every table/type in the database so the next db:push rebuilds from scratch.
-const url = process.env.DATABASE_URL ?? Database.DEFAULT_URL;
+const db = Database.create();
 
-await Database.provide(url, () =>
+await Database.provide(db, () =>
   Database.use((tx) => tx.execute(sql`drop schema public cascade; create schema public;`)),
 );
-await Database.release(url);
+await Database.release(db);
 
 console.log("Reset completed");

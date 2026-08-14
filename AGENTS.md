@@ -3,6 +3,33 @@
 - Local `main` ref may not exist; use `dev` or `origin/dev` for diffs.
 - Prefer automation: execute requested actions without confirmation unless blocked by missing info or safety/irreversibility.
 
+## Stack
+
+Bun workspaces monorepo. Postgres via Drizzle, Hono services, SvelteKit dashboard.
+
+| Path                 | Package               | What                                                     |
+| -------------------- | --------------------- | -------------------------------------------------------- |
+| `packages/core`      | `@template/core`      | Domain logic, schema, migrations. A leaf.                |
+| `packages/functions` | `@template/functions` | Hono `api` 3000, `mcp` 3001, `auth` 3002, `queue` worker |
+| `apps/dashboard`     | `dashboard`           | SvelteKit 5173, calls core directly                      |
+| `apps/cli`           | `@template/cli`       | CLI over the SDK                                         |
+| `packages/ui`        | `@template/ui`        | Svelte components                                        |
+| `packages/sdk/ts`    | `@template/sdk`       | Generated, never hand-edit                               |
+| `scripts`            | —                     | dev, seed, feature scaffold                              |
+| `infra`              | —                     | SST 4, plus `infra/docker` compose                       |
+
+## Commands
+
+| Command             | What                                                       |
+| ------------------- | ---------------------------------------------------------- |
+| `bun dev`           | Whole stack. `DB=pglite` for in-process, `RESET=1` to wipe |
+| `bun run test`      | All packages. A bare `bun test` at the root is guarded     |
+| `bun run typecheck` | All packages                                               |
+| `bun run fmt`       | `oxfmt`, not Prettier                                      |
+| `bun run lint`      | `oxlint`, not ESLint                                       |
+
+DO NOT RUN commands like `bun run gen`, `bun run scripts/testing/webhook.ts` and `bun run db:generate` from `packages/core` agent, they should only be run mannually by the user.
+
 ## Style Guide
 
 ### General Principles

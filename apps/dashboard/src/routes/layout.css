@@ -34,6 +34,10 @@
      up as one column, and `--topbar` is fixed so its contents can't change its height. */
   --rail: 220px;
   --rail-tight: 60px;
+  /* A peeked column widens over the page instead of pushing it — the width grows while the
+     margin shrinks by the same amount on the same curve. Both halves use the pair. */
+  --peek: calc(var(--rail-tight) - var(--rail));
+  --slide: width 160ms ease, margin-right 160ms ease;
   --topbar: 60px;
   /* Sidebar strip and content footer share this so their top borders draw one line. */
   --footer: 52px;

@@ -3,12 +3,16 @@
 import { Actor } from "@template/core/actor";
 import { Database, sql } from "@template/core/drizzle";
 import { Project } from "@template/core/project";
+import { Queue } from "@template/core/queue";
 import { Todo } from "@template/core/todo";
 import { Auth } from "@template/core/user/auth";
 import { User } from "@template/core/user";
 import { Key } from "@template/core/key";
+import { boxed } from "./utils/box";
 
-const url = process.env.DATABASE_URL ?? Database.DEFAULT_URL;
+// Seeding writes hundreds of rows; the per-write core logs bury the two lines that matter.
+process.env.LOG_QUIET ??= "true";
+
 const email = process.env.SEED_EMAIL ?? "dev@example.com";
 const name = process.env.SEED_NAME ?? "Dev User";
 
@@ -118,7 +122,8 @@ function status(due: number) {
   return roll([[0.6, "backlog"]], "planned");
 }
 
-const result = await Database.provide(url, async () => {
+/** Writes the fixtures and returns the dev account's API key. Assumes its providers are set. */
+async function seed() {
   const userID = await Auth.provision({ provider: "email", accountId: email, email, name });
   // The dev account owns the instance: `/admin` is otherwise unreachable without hand-writing
   // the promotion SQL. The team below stay members, so both roles are represented locally.
@@ -178,8 +183,12 @@ const result = await Database.provide(url, async () => {
   });
 
   return key;
-});
+}
 
-console.log("Seed completed");
-console.log(`Email: ${email}`);
-console.log(`API key: ${result.key}`);
+// Fixtures publish events like any other write, so a queue port has to exist. Memory
+// discards the jobs: nobody wants 260 seeded todos POSTed at the target's webhooks.
+const result = await Database.provide(Database.create(), () =>
+  Queue.provide(Queue.Providers.memory(), seed),
+);
+
+console.log(boxed(["SEED COMPLETE", "", `Email:   ${email}`, `API key: ${result.key}`]));

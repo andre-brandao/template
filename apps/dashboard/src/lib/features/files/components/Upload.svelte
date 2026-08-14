@@ -14,5 +14,5 @@
 	}
 </script>
 
-<input type="file" multiple hidden onchange={pick} {@attach (el) => { picker = el; }} />
+<input type="file" name="files" multiple hidden onchange={pick} {@attach (el) => { picker = el; }} />
 <Button {pending} onclick={() => picker?.click()}>Upload</Button>

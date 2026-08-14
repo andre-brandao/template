@@ -7,6 +7,9 @@
 	let { row, onuser }: { row: Event.Info; onuser: (id: string) => void } = $props();
 
 	const f = fmt();
+	const id = $props.id();
+
+	let open = $state(false);
 
 	// `data` is free-form jsonb and every type carries a different shape, so it is shown
 	// verbatim rather than guessed at. Everything else about the entry is already a column.
@@ -16,54 +19,61 @@
 	// `actor:*` is what the who column already renders, so showing it again is noise.
 	const tags = $derived(row.tags.filter((tag) => !tag.startsWith('actor:')));
 
-	// The actor is a filter, not a disclosure — cancel the click so it doesn't also toggle
-	// the row it happens to sit inside.
-	function filter(event: MouseEvent, id: string) {
-		event.preventDefault();
-		event.stopPropagation();
-		onuser(id);
-	}
 </script>
 
-<li>
-	<details>
-		<summary>
-			<ChevronRight class="mark" size={14} strokeWidth={2} />
-			<span class="type">{row.type}</span>
+<li class:open>
+	<!-- The disclosure covers the whole head as a sibling layer rather than wrapping it, so the
+	     user filter stays a button of its own instead of nesting inside the toggle. -->
+	<div class="head">
+		<button
+			type="button"
+			class="toggle"
+			aria-expanded={open}
+			aria-controls={id}
+			onclick={() => (open = !open)}
+		>
+			<span class="sr-only">{open ? 'Hide' : 'Show'} data for {row.type}</span>
+		</button>
 
-			<span class="who">
-				{#if row.user}
-					<button type="button" onclick={(e) => filter(e, row.user!.id)} title="Filter to this user">
-						<Avatar name={row.user.name} image={row.user.image} size={20} />
-						{row.user.name}
-					</button>
-				{:else}
-					<!-- No user means a system or public actor; the tag on the row says which. -->
-					<span class="none">{row.tags.find((tag) => tag.startsWith('actor:')) ?? 'system'}</span>
-				{/if}
-			</span>
+		<ChevronRight class="mark" size={14} strokeWidth={2} />
+		<span class="type">{row.type}</span>
 
-			<span class="tags">
-				{#each tags as tag (tag)}
-					<span class="tag">{tag}</span>
-				{/each}
-			</span>
+		<span class="who">
+			{#if row.user}
+				<button type="button" onclick={() => onuser(row.user!.id)} title="Filter to this user">
+					<Avatar name={row.user.name} image={row.user.image} size={20} />
+					{row.user.name}
+				</button>
+			{:else}
+				<!-- No user means a system or public actor; the tag on the row says which. -->
+				<span class="none">{row.tags.find((tag) => tag.startsWith('actor:')) ?? 'system'}</span>
+			{/if}
+		</span>
 
-			<span class="ref">
-				{#if row.sourceID}{row.source} · {row.sourceID}{/if}
-			</span>
+		<span class="tags">
+			{#each tags as tag (tag)}
+				<span class="tag">{tag}</span>
+			{/each}
+		</span>
 
-			<time datetime={row.timeCreated} title={f.stamp(row.timeCreated)}>
-				{f.ago(row.timeCreated)}
-			</time>
-		</summary>
+		<span class="ref">
+			{#if row.sourceID}{row.source} · {row.sourceID}{/if}
+		</span>
 
-		{#if empty}
-			<p class="none data">This entry carries no data.</p>
-		{:else}
-			<pre>{raw}</pre>
-		{/if}
-	</details>
+		<time datetime={row.timeCreated} title={f.stamp(row.timeCreated)}>
+			{f.ago(row.timeCreated)}
+		</time>
+	</div>
+
+	{#if open}
+		<div {id}>
+			{#if empty}
+				<p class="none data">This entry carries no data.</p>
+			{:else}
+				<pre>{raw}</pre>
+			{/if}
+		</div>
+	{/if}
 </li>
 
 <style>
@@ -74,36 +84,51 @@
 		font-size: 0.88em;
 	}
 
-	summary {
+	.head {
+		position: relative;
 		display: grid;
 		grid-template-columns: auto 11em 11em minmax(0, 1fr) minmax(0, 1fr) auto;
 		align-items: center;
 		gap: 1em;
 		padding: 0.55em 0.9em;
-		cursor: pointer;
-		list-style: none;
 	}
 
-	summary::-webkit-details-marker {
-		display: none;
+	/* The cells sit above the toggle, so they pass clicks through to it; the ones that are
+	   themselves interactive or carry a tooltip opt back in. */
+	.head > :not(.toggle) {
+		position: relative;
+		pointer-events: none;
 	}
 
-	summary:hover {
-		background: var(--surface-2);
+	.toggle {
+		position: absolute;
+		inset: 0;
+		border: 0;
 		border-radius: var(--radius);
+		background: none;
+		cursor: pointer;
+	}
+
+	.toggle:hover {
+		background: var(--surface-2);
 	}
 
 	:global(.mark) {
+		position: relative;
+		pointer-events: none;
 		color: var(--dim);
 		transition: transform 120ms ease;
 	}
 
-	details[open] :global(.mark) {
+	.open :global(.mark) {
 		transform: rotate(90deg);
 	}
 
-	details[open] summary {
+	.open .head {
 		border-bottom: 1px solid var(--border);
+	}
+
+	.open .toggle {
 		border-radius: var(--radius) var(--radius) 0 0;
 	}
 
@@ -113,6 +138,11 @@
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
+	}
+
+	.who button,
+	time {
+		pointer-events: auto;
 	}
 
 	.who button {
@@ -187,7 +217,7 @@
 	}
 
 	@media (max-width: 70em) {
-		summary {
+		.head {
 			grid-template-columns: auto 11em 11em minmax(0, 1fr) auto;
 		}
 
@@ -197,7 +227,7 @@
 	}
 
 	@media (max-width: 55em) {
-		summary {
+		.head {
 			grid-template-columns: auto 1fr auto;
 		}
 

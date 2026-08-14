@@ -55,6 +55,19 @@ export namespace Examples {
     lastModified: "2026-06-07T00:00:00.000Z",
   } as const;
 
+  export const Webhook = {
+    id: Id("webhook"),
+    url: "https://example.com/hooks/template",
+    secret: "whsec_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+    display: "whsec_XXXX...XXXX",
+    types: ["todo.created"],
+    enabled: true,
+    failures: 0,
+    lastStatus: 200,
+    timeDelivered: "2026-06-07T00:00:00.000Z",
+    timeCreated: "2026-06-07T00:00:00.000Z",
+  } as const;
+
   export const Event = {
     id: Id("event"),
     userID: Id("user"),

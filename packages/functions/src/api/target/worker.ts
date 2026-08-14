@@ -14,7 +14,7 @@ export default {
   fetch(request: Request, env: QueueEnv, ctx: ExecutionContext) {
     return Context.withProviders(
       () => app.fetch(request, env, ctx),
-      Database.provider(env.Hyperdrive.connectionString),
+      Database.provider(Database.create(env.Hyperdrive.connectionString)),
       Storage.provider(Storage.Providers.r2(env.Files)),
       Queue.provider(Queue.Providers.cloudflare(env.Jobs)),
     );

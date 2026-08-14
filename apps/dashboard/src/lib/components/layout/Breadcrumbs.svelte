@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import type { Pathname } from '$app/types';
 
 	let { items }: { items: { href?: string; label: string }[] } = $props();
 </script>
@@ -10,7 +9,7 @@
 		{#each items as item, i (`${item.href ?? ''}:${item.label}`)}
 			<li>
 				{#if item.href && i < items.length - 1}
-					<a href={resolve(item.href as Pathname)}>{item.label}</a>
+					<a href={resolve(item.href as any)}>{item.label}</a>
 				{:else}
 					<span aria-current={i === items.length - 1 ? 'page' : undefined}>{item.label}</span>
 				{/if}

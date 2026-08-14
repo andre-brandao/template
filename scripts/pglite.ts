@@ -27,6 +27,9 @@ const port = pick();
 
 // db:push (drizzle-kit) and anything importing Database read this
 process.env.DATABASE_URL ??= `postgresql://postgres:password@${host}:${port}/postgres`;
+// Mutations push webhook jobs, and the `db` default needs a runner no test wires up.
+// Tests that care drive the queue themselves through `Queue.provide`.
+process.env.QUEUE_DRIVER ??= "memory";
 // The socket server accepts exactly one connection, so the pool must not grow.
 process.env.PG_MAX = "1";
 

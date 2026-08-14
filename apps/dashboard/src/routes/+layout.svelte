@@ -5,6 +5,7 @@
 	import { navigating } from '$app/state';
 	import PreLoadingIndicator from './PreLoadingIndicator.svelte';
 	import ViewTransitions from './ViewTransitions.svelte';
+	import { Modals, Toaster } from '@template/ui';
 	import { Permission } from '@template/core/permission';
 	import { createRail } from '$lib/components/layout/rail.svelte';
 	import { createUser } from '$lib/utils/context';
@@ -24,11 +25,23 @@
 		},
 		can: (grants, owned) => Permission.can(data.user?.role, grants, owned)
 	});
+
+	// TODO: use to reload app when new version comes out
+	// import { beforeNavigate } from '$app/navigation';
+
+	// beforeNavigate(({ willUnload, to }) => {
+	// 	if (updated.current && !willUnload && to?.url) {
+	// 		location.href = to.url.href;
+	// 	}
+	// });
+
 </script>
 
 <svelte:head><link rel="icon" href={favicon} /></svelte:head>
 
 <ViewTransitions />
+<Toaster />
+<Modals />
 
 {#if navigating.complete}
 	<PreLoadingIndicator />

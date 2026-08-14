@@ -10,6 +10,9 @@
 
 	let open = $state(false);
 	let body = $state('');
+	// The value is submitted by the hidden mirror below, so the textarea carries an id
+	// rather than a name — a second `body` field would post the value twice.
+	const id = $props.id();
 	const result = $derived(send.result as any);
 </script>
 
@@ -59,7 +62,11 @@
 
 				<label class="field">
 					<span>Details</span>
-					<textarea rows="6" placeholder="What happened? Steps, context, anything useful" bind:value={body}
+					<textarea
+						{id}
+						rows="6"
+						placeholder="What happened? Steps, context, anything useful"
+						bind:value={body}
 					></textarea>
 					<input {...send.fields.body.as('hidden', body)} />
 				</label>

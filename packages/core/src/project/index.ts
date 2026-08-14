@@ -40,11 +40,12 @@ export namespace Project {
           name: input.name,
           description: input.description ?? null,
         });
-        await Event.create({
+        await Event.publish({
           type: "project.created",
           source: "project",
           sourceID: id,
           data: { name: input.name },
+          state: found("Project", await fromID.force(id)),
         });
         return id;
       });
@@ -95,11 +96,12 @@ export namespace Project {
         .update(ProjectTable)
         .set({ ...patch, timeUpdated: new Date() })
         .where(eq(ProjectTable.id, id));
-      await Event.create({
+      await Event.publish({
         type: "project.updated",
         source: "project",
         sourceID: id,
         data: { name: patch.name ?? before.name },
+        state: { ...before, ...patch },
       });
     });
   });
@@ -114,11 +116,12 @@ export namespace Project {
 
     return Database.transaction(async (tx) => {
       await tx.update(ProjectTable).set({ timeDeleted: new Date() }).where(eq(ProjectTable.id, id));
-      await Event.create({
+      await Event.publish({
         type: "project.removed",
         source: "project",
         sourceID: id,
         data: { name: before.name },
+        state: before,
       });
     });
   });

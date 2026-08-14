@@ -43,6 +43,8 @@
 	<input
 		class="search"
 		type="search"
+		name="search"
+		autocomplete="off"
 		placeholder="Search todos…"
 		value={input}
 		oninput={(e) => onInput(e.currentTarget.value)}

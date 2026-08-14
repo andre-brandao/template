@@ -11,7 +11,7 @@ template-cli <command>
 ## Serve
 
 ```sh
-template-cli serve api         # Hono API on PORT (default 3000)
+template-cli serve api         # Hono API on API_PORT (default 3000)
 template-cli serve mcp         # MCP server on MCP_PORT (default 3001), at /mcp
 template-cli serve dashboard   # SvelteKit prod build on PORT (auto-builds if missing)
 ```

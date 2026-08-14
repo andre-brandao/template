@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Key } from '@template/core/key';
-	import { Button } from '@template/ui';
+	import { Button, Card } from '@template/ui';
 	import RevokeForm from '../RevokeForm.svelte';
 	import { fmt } from '$lib/utils/fmt';
 
@@ -13,12 +13,8 @@
 	const secret = $derived(key.key);
 	const text = $derived(shown && secret ? secret : key.display);
 	const toggle = $derived(shown ? 'Hide' : 'Reveal');
-	const used = $derived(
-		key.timeUsed ? `last used ${f.date(key.timeUsed)}` : 'never used'
-	);
-	const expires = $derived(
-		key.expiresAt ? `expires ${f.date(key.expiresAt)}` : 'never expires'
-	);
+	const used = $derived(key.timeUsed ? `last used ${f.date(key.timeUsed)}` : 'never used');
+	const expires = $derived(key.expiresAt ? `expires ${f.date(key.expiresAt)}` : 'never expires');
 
 	const soon = $derived(
 		!!key.expiresAt && new Date(key.expiresAt).getTime() - Date.now() < 7 * 86_400_000
@@ -28,50 +24,33 @@
 	const copy = () => secret && navigator.clipboard.writeText(secret);
 </script>
 
-<li style:--rail={rail}>
-	<div class="meta">
-		<span class="name">{key.name}</span>
-		<span class="used">{used} · {expires}</span>
-	</div>
+<Card as="li" accent={rail} interactive dense>
+	<div class="row">
+		<div class="meta">
+			<span class="name">{key.name}</span>
+			<span class="used">{used} · {expires}</span>
+		</div>
 
-	<div class="secret" class:revealed={shown}>
-		<code>{text}</code>
-	</div>
+		<div class="secret" class:revealed={shown}>
+			<code>{text}</code>
+		</div>
 
-	<div class="actions">
-		{#if secret}
-			<Button onclick={() => (shown = !shown)}>{toggle}</Button>
-			<Button onclick={copy}>Copy</Button>
-		{/if}
-		<RevokeForm id={key.id} />
+		<div class="actions">
+			{#if secret}
+				<Button onclick={() => (shown = !shown)}>{toggle}</Button>
+				<Button onclick={copy}>Copy</Button>
+			{/if}
+			<RevokeForm id={key.id} />
+		</div>
 	</div>
-</li>
+</Card>
 
 <style>
-	li {
-		position: relative;
+	.row {
 		display: flex;
 		align-items: center;
 		gap: 1em;
 		flex-wrap: wrap;
-		padding: 0.8em 1em 0.8em calc(1em - 2px);
-		border: 1px solid var(--border);
-		border-left: 3px solid var(--rail);
-		border-radius: var(--radius);
-		background: var(--surface);
-		box-shadow: var(--shadow-1);
-		transition:
-			border-color 0.15s ease,
-			box-shadow 0.15s ease,
-			transform 0.15s ease;
-	}
-
-	li:hover {
-		border-top-color: var(--border-bright);
-		border-right-color: var(--border-bright);
-		border-bottom-color: var(--border-bright);
-		box-shadow: var(--shadow-2);
-		transform: translateY(-1px);
 	}
 
 	.meta {

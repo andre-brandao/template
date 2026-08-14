@@ -7,6 +7,7 @@
 	import { user } from '$lib/utils/context';
 	import Footer from './Footer.svelte';
 	import Nav from './Nav.svelte';
+	import Rail from './Rail.svelte';
 	import { at, type Item } from './nav';
 	import { sidebar } from './rail.svelte';
 	import Topbar from './Topbar.svelte';
@@ -48,12 +49,11 @@
 	afterNavigate(() => (open = false));
 </script>
 
-<Topbar user={me.current} {head} crumbs={trail} onmenu={() => (open = true)} />
-
 <div class="body">
 	<!-- Collapsed, pointing at the rail peeks it open again and it shuts on the way out. Focus
 	     does the same, so tabbing into an icon-only rail still reads. -->
 	<aside class:tight={rail.shut} class:peek={rail.peek} {...rail.attrs}>
+		<Rail {head} slim={rail.shut} />
 		<div class="menu" data-shell-nav><Nav {back} {sections} slim={rail.shut} /></div>
 		<!-- Below the line, like the content footer across the divider — the two strips
 		     share --footer so their top borders draw one continuous rule. -->
@@ -69,9 +69,10 @@
 			</button>
 		</div>
 	</aside>
-	<!-- Footer inside the column so it starts where the rail ends; `main`'s flex
-	     pushes it to the viewport bottom when the page is short. -->
+	<!-- Header and footer both inside the column so they start where the sidebar ends;
+	     `main`'s flex pushes the footer to the viewport bottom when the page is short. -->
 	<div class="content">
+		<Topbar user={me.current} {head} crumbs={trail} onmenu={() => (open = true)} />
 		<main>{@render children()}</main>
 		<Footer />
 	</div>
@@ -103,37 +104,42 @@
 		view-transition-name: shell-nav;
 	}
 
+	/* Full height from the very top, so the one divider between the two columns is drawn by
+	   one element top to bottom — nothing above it to keep in line. */
 	aside {
 		display: flex;
 		flex-direction: column;
 		width: var(--rail);
 		flex-shrink: 0;
-		/* Pinned below the sticky topbar so the page scrolls under it; the fixed
-		   height leaves room for bottom-anchored items via margin-top: auto. */
 		position: sticky;
-		top: var(--topbar);
-		height: calc(100dvh - var(--topbar));
+		top: 0;
+		height: 100dvh;
 		border-right: 1px solid var(--border);
 		background: var(--surface);
-		/* Above `main`, below the topbar's 20, so a peek can cover the page. */
-		z-index: 10;
-		transition:
-			width 160ms ease,
-			margin-right 160ms ease;
+		/* Over the content header's 20, so a peek covers the bar as well as the page. */
+		z-index: 30;
+		transition: var(--slide);
+		/* Named so it becomes its own view-transition group. Without it the column lives in
+		   the root snapshot, which the page's group is painted over — and `shell-main` slides
+		   28px sideways, so every navigation dragged the page across the sidebar. */
+		view-transition-name: shell-rail;
 	}
 
 	.tight {
 		width: var(--rail-tight);
 	}
 
-	/* Peeking floats over the page rather than pushing it: the width grows while the margin
-	   shrinks by the same amount on the same curve, so the column left for the content never
-	   moves. Dropping `.tight` is what widens it — this only pays for the overlap. */
 	.peek {
-		margin-right: calc(var(--rail-tight) - var(--rail));
+		margin-right: var(--peek);
 		/* --shadow-2 falls downwards, which a full-height edge never shows. Same weight,
 		   turned to the side the panel actually hangs over. */
 		box-shadow: 10px 0 24px -14px light-dark(rgb(0 0 0 / 0.18), rgb(0 0 0 / 0.6));
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		aside {
+			transition: none;
+		}
 	}
 
 	.tight .menu {
@@ -195,12 +201,6 @@
 		margin: 0 auto;
 		padding: var(--pad-top) 1.25em var(--pad-bottom);
 		view-transition-name: shell-main;
-	}
-
-	@media (prefers-reduced-motion: reduce) {
-		aside {
-			transition: none;
-		}
 	}
 
 	@media (max-width: 700px) {

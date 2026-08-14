@@ -25,14 +25,21 @@ const worker: Handle = ({ event, resolve }) => {
 
   return Context.withProviders(
     () => resolve(event),
-    Database.provider(cf.Hyperdrive.connectionString),
+    // Fresh pool per request: Workers forbid reusing a socket across them.
+    Database.provider(Database.create(cf.Hyperdrive.connectionString)),
     Storage.provider(Storage.Providers.r2(cf.Files)),
     Queue.provider(Queue.Providers.cloudflare(cf.Jobs)),
   );
 };
 
 function fromEnv(): Handle {
-  const url = env.DATABASE_URL ?? Database.DEFAULT_URL;
+  // One pool for the process, built here rather than per request — a pool per request
+  // exhausts the server's connections and every query starts failing. PG_RELEASE marks a
+  // single-connection backend (pglite), where holding it idle locks out the api/auth processes.
+  const db = Database.create(
+    env.DATABASE_URL ?? Database.DEFAULT_URL,
+    env.PG_RELEASE === "true" ? { idle_timeout: 1 } : {},
+  );
   const disks = Storage.fromEnv(env);
   const q = Queue.fromEnv(env, Database.use);
   const email = Email.Providers.queue();
@@ -40,7 +47,7 @@ function fromEnv(): Handle {
   return ({ event, resolve }) =>
     Context.withProviders(
       () => resolve(event),
-      Database.provider(url),
+      Database.provider(db),
       Storage.provider(disks),
       Email.provider(email),
       // QUEUE_DRIVER=db needs the transaction runner, so it can't come from the env fallback.
@@ -58,10 +65,12 @@ const handleAuth: Handle = async ({ event, resolve }) => {
   event.locals.session = me;
   if (!me) return Actor.provide("public", {}, () => resolve(event));
 
-  // The role is read per request rather than sealed into the cookie, so a demotion takes
-  // effect immediately. A missing row means the cookie outlived its user.
   const row = await User.fromID(me.userID);
-  if (!row) return Actor.provide("public", {}, () => resolve(event));
+  if (!row) {
+    session.clear(event);
+    event.locals.session = null;
+    return Actor.provide("public", {}, () => resolve(event));
+  }
 
   return Actor.provide("user", { userID: me.userID, role: row.role }, () => resolve(event));
 };

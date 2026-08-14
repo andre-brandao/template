@@ -63,8 +63,18 @@ describe("event", () => {
 
     const events = (await Event.list({ source: "todo", sourceID: id })).data;
     const types = events.map((e) => e.type).sort();
+    // Each move also emits the public `todo.updated`, which is the only type webhooks see.
     expect(types).toEqual(
-      ["todo.assigned", "todo.created", "todo.removed", "todo.status", "todo.status"].sort(),
+      [
+        "todo.assigned",
+        "todo.created",
+        "todo.removed",
+        "todo.status",
+        "todo.status",
+        "todo.updated",
+        "todo.updated",
+        "todo.updated",
+      ].sort(),
     );
     expect(events.every((e) => e.tags.includes("work"))).toBe(true);
   });

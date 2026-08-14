@@ -15,7 +15,7 @@ export type Runner = <T>(fn: (tx: Tx) => Promise<T>) => Promise<T>;
 export function db(cfg: Config & { use: Runner }): Port {
   const use = cfg.use;
   const retries = cfg.retries ?? 3;
-  const backoff = (cfg.backoff ?? 0) * 1000;
+  const backoff = (cfg.backoff ?? 30) * 1000;
   const timeout = cfg.timeout ?? 60;
 
   return {

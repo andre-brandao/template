@@ -56,9 +56,16 @@
 			</button>
 		{/each}
 	</div>
-	<input type="date" value={range.start} max={range.end} onchange={move('start')} />
+	<input type="date" name="start" value={range.start} max={range.end} onchange={move('start')} />
 	<span class="arrow">→</span>
-	<input type="date" value={range.end} min={range.start} max={iso(Date.now())} onchange={move('end')} />
+	<input
+		type="date"
+		name="end"
+		value={range.end}
+		min={range.start}
+		max={iso(Date.now())}
+		onchange={move('end')}
+	/>
 </div>
 
 <style>

@@ -1,12 +1,8 @@
 #!/usr/bin/env bun
 
-// Stamps out a new CRUD feature modeled on the todo reference implementation:
-// core module (+schema, +test), API handler (wired into routes), identifier
-// prefix, dashboard remote functions and a minimal page.
-//
-// Usage: bun run scripts/feature.ts <name> [prefix]
-//   name    singular, lowercase, single word (e.g. invoice)
-//   prefix  id prefix, defaults to the first 3 letters (e.g. inv)
+// Stamps out a new CRUD feature modeled on the todo reference implementation: core
+// module, API handler, id prefix, dashboard remote functions and a minimal page.
+// Usage: bun run scripts/feature.ts <name> [prefix]  — e.g. `invoice inv`
 
 const name = process.argv[2] ?? "";
 const pascal = name.charAt(0).toUpperCase() + name.slice(1);

@@ -4,7 +4,6 @@
      full-width menu even while the rail beside it is collapsed. -->
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import type { Pathname } from '$app/types';
 	import ArrowLeft from '@lucide/svelte/icons/arrow-left';
 	import type { Item } from './nav';
 	import NavLink from './NavLink.svelte';
@@ -25,7 +24,7 @@
 	<a
 		class="back"
 		class:slim
-		href={resolve(back.href as Pathname)}
+		href={resolve(back.href as any)}
 		data-transition="back"
 		title={slim ? back.label : undefined}
 	>

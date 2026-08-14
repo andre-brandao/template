@@ -193,7 +193,7 @@ export namespace Todo {
           dueDate: date(input.dueDate),
           ...times(status, null),
         });
-        await Event.create({
+        await Event.publish({
           type: "todo.created",
           source: "todo",
           sourceID: id,
@@ -206,6 +206,7 @@ export namespace Todo {
             startDate: input.startDate ?? null,
             dueDate: input.dueDate ?? null,
           },
+          state: found("Todo", await fromID.force(id)),
         });
         return id;
       });
@@ -338,21 +339,38 @@ export namespace Todo {
     });
   }
 
-  /** Emits the status/assignee/field events a patch implies. */
+  /** Status and assignee moves, shaped like `diff` so the public update carries them too. */
+  function moves(before: Info, next: Patch) {
+    const prev = before.assignee?.id ?? null;
+    return {
+      ...(next.status !== undefined && next.status !== before.status
+        ? { status: { before: before.status, after: next.status } }
+        : {}),
+      ...(next.assignee !== undefined && next.assignee !== prev
+        ? { assignee: { before: prev, after: next.assignee } }
+        : {}),
+    };
+  }
+
+  /**
+   * Emits the status/assignee/field events a patch implies. The status and assignee rows
+   * stay internal; `todo.updated` is the one public event, so it reports those moves too.
+   */
   async function emit(id: string, before: Info, next: Patch) {
     const tags = next.tags ?? before.tags;
     await moved(id, before, next, tags);
     await assigned(id, before, next, tags);
 
-    const changed = diff(before, next);
-    if (Object.keys(changed).length)
-      await Event.create({
-        type: "todo.updated",
-        source: "todo",
-        sourceID: id,
-        tags,
-        data: changed,
-      });
+    const changed = { ...diff(before, next), ...moves(before, next) };
+    if (!Object.keys(changed).length) return;
+    await Event.publish({
+      type: "todo.updated",
+      source: "todo",
+      sourceID: id,
+      tags,
+      data: changed,
+      state: found("Todo", await fromID.force(id)),
+    });
   }
 
   export const update = fn(Patch.extend({ id: Info.shape.id }), async ({ id, ...patch }) => {
@@ -374,12 +392,13 @@ export namespace Todo {
 
     return Database.transaction(async (tx) => {
       await tx.update(TodoTable).set({ timeDeleted: new Date() }).where(eq(TodoTable.id, id));
-      await Event.create({
+      await Event.publish({
         type: "todo.removed",
         source: "todo",
         sourceID: id,
         tags: before.tags,
         data: { title: before.title, status: before.status, tags: before.tags },
+        state: before,
       });
     });
   });

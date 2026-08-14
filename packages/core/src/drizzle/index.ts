@@ -27,13 +27,21 @@ export namespace Database {
     effects: (() => void | Promise<void>)[];
   }>();
 
-  const DatabaseContext = Context.create<{ db: PostgresJsDatabase }>();
-  let cachedDb: PostgresJsDatabase | undefined;
-  const providedByUrl = new Map<string, PostgresJsDatabase>();
-  // Raw pg clients behind the provided dbs, so `release` can close them.
-  const clientsByUrl = new Map<string, ReturnType<typeof pg>>();
+  /** A connection pool and the drizzle instance over it. Build one with `create`. */
+  export type Client = { db: PostgresJsDatabase; sql: ReturnType<typeof pg> };
 
-  function createDb(url: string): { db: PostgresJsDatabase; sql: ReturnType<typeof pg> } {
+  const DatabaseContext = Context.create<Client>();
+  let fallback: Client | undefined;
+
+  /**
+   * Builds a pool. Long-lived processes create one at startup and `provide` it per
+   * request — a client per request leaks a pool per request. Workers are the exception:
+   * they forbid reusing a socket across requests, so they create one each time.
+   */
+  export function create(
+    url = process.env.DATABASE_URL ?? DEFAULT_URL,
+    opts: pg.Options<{}> = {},
+  ): Client {
     const sql = pg(url, {
       connect_timeout: 10,
       prepare: false,
@@ -46,23 +54,26 @@ export namespace Database {
         if (notice.severity === "DEBUG") return;
         log.info(notice.message ?? "notice", { severity: notice.severity, code: notice.code });
       },
+      ...opts,
     });
-    const db = drizzle({
-      client: sql,
-      logger:
-        process.env.DRIZZLE_LOG === "true"
-          ? {
-              logQuery(query, params) {
-                log.info("query", { query });
-                log.info("params", { params });
-              },
-            }
-          : undefined,
-    });
-    return { db, sql };
+    return {
+      sql,
+      db: drizzle({
+        client: sql,
+        logger:
+          process.env.DRIZZLE_LOG === "true"
+            ? {
+                logQuery(query, params) {
+                  log.info("query", { query });
+                  log.info("params", { params });
+                },
+              }
+            : undefined,
+      }),
+    };
   }
 
-  function client(): PostgresJsDatabase {
+  function db(): PostgresJsDatabase {
     try {
       return DatabaseContext.use().db;
     } catch (err) {
@@ -71,11 +82,8 @@ export namespace Database {
       }
 
       log.warn("no database context, falling back to env");
-      if (process.env.NODE_ENV === "test") {
-        cachedDb ??= createDb(process.env.DATABASE_URL ?? DEFAULT_URL).db;
-        return cachedDb;
-      }
-      return createDb(process.env.DATABASE_URL ?? DEFAULT_URL).db;
+      fallback ??= create();
+      return fallback.db;
     }
   }
 
@@ -95,39 +103,29 @@ export namespace Database {
     if (existing) {
       return callback(existing.tx);
     }
-    const db = client();
+    const tx = db();
     const effects: (() => void | Promise<void>)[] = [];
-    const result = await TransactionContext.provide({ tx: db, effects }, () => callback(db));
+    const result = await TransactionContext.provide({ tx, effects }, () => callback(tx));
     await Promise.all(effects.map((effect) => effect()));
     return result;
   }
 
-  /**
-   * Fresh client per call — Workers forbid reusing a socket across requests.
-   * `clientsByUrl` tracks it so `release()` can close it.
-   */
-  export function provide<T>(url: string, fn: () => T): T {
-    const made = createDb(url);
-    providedByUrl.set(url, made.db);
-    clientsByUrl.set(url, made.sql);
-    return DatabaseContext.provide({ db: made.db }, fn);
+  /** Scopes a client to `fn` — everything under it reads through that pool. */
+  export function provide<T>(client: Client, fn: () => T): T {
+    return DatabaseContext.provide(client, fn);
   }
 
   /** Curried form of `provide` for composition via `Context.withProviders`. */
-  export function provider(url: string) {
-    return <R>(fn: () => R) => provide(url, fn);
+  export function provider(client: Client) {
+    return <R>(fn: () => R) => DatabaseContext.provide(client, fn);
   }
 
   /**
-   * Closes and forgets the pooled client for `url` — lets pglite's single connection
-   * pass between dev processes. No-op if nothing is pooled.
+   * Closes the pool — lets pglite's single connection pass between dev processes.
+   * The client is spent afterwards; further queries throw.
    */
-  export async function release(url: string) {
-    const sql = clientsByUrl.get(url);
-    if (!sql) return;
-    providedByUrl.delete(url);
-    clientsByUrl.delete(url);
-    await sql.end({ timeout: 5 });
+  export function release(client: Client) {
+    return client.sql.end({ timeout: 5 });
   }
 
   export async function effect(effect: () => any | Promise<any>): Promise<void> {
@@ -149,7 +147,7 @@ export namespace Database {
     }
 
     const effects: (() => void | Promise<void>)[] = [];
-    const result = await client().transaction(
+    const result = await db().transaction(
       async (tx) => TransactionContext.provide({ tx, effects }, () => callback(tx)),
       config,
     );

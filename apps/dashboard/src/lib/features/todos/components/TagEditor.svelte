@@ -35,6 +35,8 @@
 		</span>
 	{/each}
 	<input
+		name="tag"
+		autocomplete="off"
 		bind:value={draft}
 		onkeydown={keydown}
 		onblur={commit}

@@ -1,5 +1,8 @@
 #!/usr/bin/env bun
 
+import { boxed } from "./utils/box";
+import { paint } from "./utils/color";
+
 const root = `${import.meta.dir}/..`;
 const decoder = new TextDecoder();
 const children = new Set<ReturnType<typeof Bun.spawn>>();
@@ -21,49 +24,67 @@ const env = {
   ...process.env,
   DATABASE_URL: url,
   PGPORT: String(pgport),
-  // pglite's socket server accepts exactly one connection; docker postgres pools.
+  // pglite's socket server accepts exactly one connection; docker postgres pools. The
+  // one connection also has to travel between processes, so bun targets close it per request.
   PG_MAX: process.env.PG_MAX ?? (driver === "pglite" ? "1" : "10"),
+  PG_RELEASE: process.env.PG_RELEASE ?? String(driver === "pglite"),
   AUTH_URL: process.env.AUTH_URL ?? `http://localhost:${authport}`,
   SESSION_SECRET: process.env.SESSION_SECRET ?? "dev-session-secret",
+  // `db` so pushes land in the job table for the queue worker; `sync` would run them inline.
+  QUEUE_DRIVER: process.env.QUEUE_DRIVER ?? "db",
 };
+
+const apiport = Number(process.env.API_PORT ?? 3000);
+const mcpport = Number(process.env.MCP_PORT ?? 3001);
+const webport = Number(process.env.WEB_PORT ?? 5173);
 
 const servers = [
   {
     name: "api",
     cwd: `${root}/packages/functions`,
     cmd: ["bun", "run", "dev"],
-    port: Number(process.env.PORT ?? 3000),
-    env: (port: number) => ({ PORT: String(port) }),
-    color: "\x1b[36m",
+    env: { API_PORT: String(apiport) },
+    color: paint.cyan,
   },
   {
     name: "mcp",
     cwd: `${root}/packages/functions`,
     cmd: ["bun", "run", "dev:mcp"],
-    port: Number(process.env.MCP_PORT ?? 3001),
-    env: (port: number) => ({ MCP_PORT: String(port) }),
-    color: "\x1b[35m",
+    env: { MCP_PORT: String(mcpport) },
+    color: paint.magenta,
   },
   {
     name: "auth",
     cwd: `${root}/packages/functions`,
     cmd: ["bun", "run", "dev:auth"],
-    port: authport,
-    env: (port: number) => ({ PORT: String(port) }),
-    color: "\x1b[34m",
+    env: { PORT: String(authport) },
+    color: paint.blue,
+  },
+  {
+    name: "queue",
+    cwd: `${root}/packages/functions`,
+    cmd: ["bun", "run", "dev:queue"],
+    env: {},
+    color: paint.red,
   },
   {
     name: "web",
     cwd: `${root}/apps/dashboard`,
     // strictPort so a clash is loud instead of silently drifting to another port
-    cmd: (port: number) => ["bun", "run", "dev", "--port", String(port), "--strictPort"],
-    port: Number(process.env.WEB_PORT ?? 5173),
-    color: "\x1b[33m",
+    cmd: ["bun", "--bun", "run", "dev", "--port", String(webport), "--strictPort"],
+    env: {},
+    color: paint.yellow,
   },
-];
+] as const;
 
-function spawn(cmd: string[], cwd: string, out: IO = "inherit", err: IO = out, extra?: object) {
-  const child = Bun.spawn(cmd, {
+function spawn(
+  cmd: readonly string[],
+  cwd: string,
+  out: IO = "inherit",
+  err: IO = out,
+  extra?: object,
+) {
+  const child = Bun.spawn([...cmd], {
     cwd,
     env: extra ? { ...env, ...extra } : env,
     stdin: "inherit",
@@ -110,7 +131,7 @@ async function pglite() {
   const out = db.stdout;
   if (!(out instanceof ReadableStream)) throw new Error("Database stdout unavailable");
   await new Promise<void>((resolve, reject) => {
-    void pipe(out, "\x1b[32mdb \x1b[0m │ ", resolve);
+    void pipe(out, `${paint.green("db ")} │ `, resolve);
     db.exited.then((code) => {
       if (code !== 0) reject(new Error(`Database exited with code ${code}`));
     });
@@ -157,12 +178,22 @@ if (code !== 0) {
 
 const separatorWidth = Math.max(...servers.map((server) => server.name.length));
 
-console.log(`Starting servers... ${servers.map((s) => `${s.name}=${s.port}`).join(" ")}`);
+console.log(
+  boxed([
+    "STACK RUNNING",
+    "",
+    `web    http://localhost:${webport}`,
+    `api    http://localhost:${apiport}`,
+    `mcp    http://localhost:${mcpport}/mcp`,
+    `auth   http://localhost:${authport}`,
+    "queue  worker, no http",
+  ]),
+);
+
 const exit = await Promise.race(
   servers.map((server) => {
-    const cmd = typeof server.cmd === "function" ? server.cmd(server.port) : server.cmd;
-    const child = spawn(cmd, server.cwd, "pipe", "pipe", server.env?.(server.port));
-    const tag = `${server.color}${server.name.padEnd(separatorWidth)}\x1b[0m │ `;
+    const child = spawn(server.cmd, server.cwd, "pipe", "pipe", server.env);
+    const tag = `${server.color(server.name.padEnd(separatorWidth))} │ `;
     for (const stream of [child.stdout, child.stderr]) {
       if (stream instanceof ReadableStream) void pipe(stream, tag);
     }

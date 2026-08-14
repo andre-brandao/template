@@ -16,7 +16,7 @@ process.on("SIGTERM", () => abort.abort());
 
 await Context.withProviders(
   () => Queue.work({ signal: abort.signal, run }),
-  Database.provider(process.env.DATABASE_URL ?? Database.DEFAULT_URL),
+  Database.provider(Database.create()),
   Storage.provider(Storage.fromEnv(process.env)),
   Email.provider(Email.fromEnv(process.env)),
   Queue.provider(Queue.Providers.db({ use: Database.use })),

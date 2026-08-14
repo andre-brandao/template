@@ -7,8 +7,8 @@
 	import ShieldOff from '@lucide/svelte/icons/shield-off';
 	import TriangleAlert from '@lucide/svelte/icons/triangle-alert';
 
-	// One entry per status the app actually produces: remote functions redirect rather than
-	// 401, core's `Actor.check` surfaces as 403, and anything unhandled lands on 500.
+	// One entry per status the app actually produces: the remote helper 401s an anonymous caller,
+	// core's `Actor.check` surfaces as 403, and anything unhandled lands on 500.
 	const copy: Record<number, { title: string; hint: string; icon: LucideIcon }> = {
 		401: { title: 'Not signed in', hint: 'Sign in and try that again.', icon: LogIn },
 		403: {

@@ -11,12 +11,14 @@ import * as ascii from "./markdown/MermaidAscii.story.svelte";
 import * as editor from "./markdown/MarkdownEditor.story.svelte";
 import * as card from "./card/Card.story.svelte";
 import * as code from "./code/Code.story.svelte";
+import * as combobox from "./combobox/Combobox.story.svelte";
 import * as drawer from "./drawer/Drawer.story.svelte";
 import * as boundary from "./boundary/FormBoundary.story.svelte";
 import * as modal from "./modal/Modals.story.svelte";
 import * as pager from "./pager/Pager.story.svelte";
 import * as spinner from "./spinner/Spinner.story.svelte";
 import * as toaster from "./toast/Toaster.story.svelte";
+import * as tooltip from "./tooltip/Tooltip.story.svelte";
 
 export type Control =
   | { type: "text"; value: string }
@@ -71,12 +73,14 @@ export const stories = [
   { slug: "mermaidascii", story: ascii.story, demo: ascii.default },
   { slug: "card", story: card.story, demo: card.default },
   { slug: "code", story: code.story, demo: code.default },
+  { slug: "combobox", story: combobox.story, demo: combobox.default },
   { slug: "drawer", story: drawer.story, demo: drawer.default },
   { slug: "formboundary", story: boundary.story, demo: boundary.default },
   { slug: "modals", story: modal.story, demo: modal.default },
   { slug: "pager", story: pager.story, demo: pager.default },
   { slug: "spinner", story: spinner.story, demo: spinner.default },
   { slug: "toaster", story: toaster.story, demo: toaster.default },
+  { slug: "tooltip", story: tooltip.story, demo: tooltip.default },
 ]
   .map((one) => ({ ...one, src: src[one.slug] ?? "" }))
   .sort((a, b) => a.story.title.localeCompare(b.story.title));

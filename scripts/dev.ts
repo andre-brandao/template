@@ -108,24 +108,34 @@ async function pipe(stream: ReadableStream<Uint8Array>, tag: string, ready?: () 
   }
 }
 
+// SIGTERM is advisory once a child installs its own handler, so escalate. One child
+// that ignores it would otherwise keep `stop` pending and leak the whole stack.
 async function stop() {
   await Promise.all(
     [...children].map(async (child) => {
       child.kill();
+      const timer = setTimeout(() => child.kill("SIGKILL"), 3000);
       await child.exited;
+      clearTimeout(timer);
     }),
   );
 }
 
-process.on("SIGINT", async () => {
+// A second Ctrl-C bails out instead of queueing another stop behind a stuck one.
+let stopping = false;
+async function bye() {
+  if (stopping) {
+    console.log(paint.red("\nForced exit — surviving children keep their ports and db pool."));
+    process.exit(1);
+  }
+  stopping = true;
+  console.log("\nStopping... press Ctrl-C again to force.");
   await stop();
   process.exit(0);
-});
+}
 
-process.on("SIGTERM", async () => {
-  await stop();
-  process.exit(0);
-});
+process.on("SIGINT", bye);
+process.on("SIGTERM", bye);
 
 // In-process postgres; dies with this script, so migrations run on every start.
 async function pglite() {

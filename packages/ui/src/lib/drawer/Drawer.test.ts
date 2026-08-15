@@ -71,4 +71,12 @@ describe("Drawer", () => {
     });
     expect(container.querySelector("dialog")?.classList.contains("left")).toBe(true);
   });
+
+  test("side bottom sets the sheet class", () => {
+    const { container } = render(Drawer, {
+      side: "bottom",
+      children: createRawSnippet(() => ({ render: () => `<p>Body</p>` })),
+    });
+    expect(container.querySelector("dialog")?.classList.contains("bottom")).toBe(true);
+  });
 });

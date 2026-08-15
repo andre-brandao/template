@@ -16,6 +16,8 @@ export { default as Mermaid } from "./markdown/Mermaid.svelte";
 
 export { default as Card } from "./card/Card.svelte";
 export { default as Code } from "./code/Code.svelte";
+// A family of parts, so it lands as a namespace: `<Combobox.Root>`, `<Combobox.Item>`.
+export * as Combobox from "./combobox";
 export { default as DataTable } from "./table/DataTable.svelte";
 export { features, type Features } from "./table/table";
 export { default as Drawer, type Side } from "./drawer/Drawer.svelte";
@@ -26,3 +28,4 @@ export { default as Pager } from "./pager/Pager.svelte";
 export { default as Spinner } from "./spinner/Spinner.svelte";
 export { default as Toaster } from "./toast/Toaster.svelte";
 export { toast, type Kind, type Opts } from "./toast/toast.svelte";
+export { default as Tooltip, type Place } from "./tooltip/Tooltip.svelte";

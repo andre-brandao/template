@@ -7,14 +7,14 @@ import * as rangepicker from "./input/RangePicker.story.svelte";
 import * as select from "./input/Select.story.svelte";
 import * as markdown from "./markdown/Markdown.story.svelte";
 import * as editor from "./markdown/MarkdownEditor.story.svelte";
-import * as card from "./ui/Card.story.svelte";
-import * as code from "./ui/Code.story.svelte";
-import * as drawer from "./ui/Drawer.story.svelte";
-import * as boundary from "./ui/FormBoundary.story.svelte";
-import * as modal from "./ui/Modals.story.svelte";
-import * as pager from "./ui/Pager.story.svelte";
-import * as spinner from "./ui/Spinner.story.svelte";
-import * as toaster from "./ui/Toaster.story.svelte";
+import * as card from "./card/Card.story.svelte";
+import * as code from "./code/Code.story.svelte";
+import * as drawer from "./drawer/Drawer.story.svelte";
+import * as boundary from "./boundary/FormBoundary.story.svelte";
+import * as modal from "./modal/Modals.story.svelte";
+import * as pager from "./pager/Pager.story.svelte";
+import * as spinner from "./spinner/Spinner.story.svelte";
+import * as toaster from "./toast/Toaster.story.svelte";
 
 export type Control =
   | { type: "text"; value: string }

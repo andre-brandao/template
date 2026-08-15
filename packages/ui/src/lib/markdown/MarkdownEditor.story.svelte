@@ -11,6 +11,9 @@
 </script>
 
 <script lang="ts">
+	// Imports the markup below needs — they sit in the story's module block, which is not shown.
+	// import { MarkdownEditor } from '@template/ui';
+
 	let value = $state('Drop a png here, or use the + button.');
 
 	// Stands in for the app's uploader, which returns a `/files/...` path. Slow on purpose so the

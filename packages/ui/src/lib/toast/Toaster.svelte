@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Button from '../input/Button.svelte';
-	import Spinner from './Spinner.svelte';
+	import Spinner from '../spinner/Spinner.svelte';
 	import { queue } from './toast.svelte';
 
 	const GAP = 12;

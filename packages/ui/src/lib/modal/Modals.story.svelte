@@ -3,6 +3,7 @@
 	import Modals from './Modals.svelte';
 	import Button from '../input/Button.svelte';
 	import { modal, type Ask } from './modal.svelte';
+	import Pager from '../pager/Pager.svelte';
 
 	export const story: Story = {
 		title: 'Modals',
@@ -13,7 +14,8 @@
 </script>
 
 <script lang="ts">
-	import Pager from './Pager.svelte';
+	// Imports the markup below needs — they sit in the story's module block, which is not shown.
+	// import { Modals, Button, Pager, modal, type Ask } from '@template/ui';
 
 	let said = $state('—');
 

@@ -12,6 +12,9 @@
 </script>
 
 <script lang="ts">
+	// Imports the markup below needs — they sit in the story's module block, which is not shown.
+	// import { Drawer, Button, type Side } from '@template/ui';
+
 	let open = $state(false);
 	let side = $state<Side>('right');
 	let closed = $state(0);

@@ -13,6 +13,9 @@
 </script>
 
 <script lang="ts">
+	// Imports the markup below needs — they sit in the story's module block, which is not shown.
+	// import { Toaster, Button, toast } from '@template/ui';
+
 	const wait = (ok: boolean) =>
 		new Promise<string>((done, fail) =>
 			setTimeout(() => (ok ? done('Uploaded') : fail(new Error('Nope'))), 1500)

@@ -10,6 +10,9 @@
 </script>
 
 <script lang="ts">
+	// Imports the markup below needs — they sit in the story's module block, which is not shown.
+	// import { RangePicker, last, valid } from '@template/ui';
+
 	let range = $state(last(30));
 	let fired = $state(0);
 </script>

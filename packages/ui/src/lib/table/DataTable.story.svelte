@@ -19,6 +19,12 @@
 </script>
 
 <script lang="ts">
+	// Imports the markup below needs — they sit in the story's module block, which is not shown.
+	// import { DataTable, features } from '@template/ui';
+	// import type { Row } from '@tanstack/svelte-table';
+	// type Crew = { name: string; craft: string; year: number | null };
+	// type Cell = Row<typeof features, Crew>;   // snippets only see module scope
+
 	import { createTable, renderSnippet } from '@tanstack/svelte-table';
 	import type { ColumnDef, ExpandedState, SortingState } from '@tanstack/svelte-table';
 

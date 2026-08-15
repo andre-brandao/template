@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Spinner from '../ui/Spinner.svelte';
+	import Spinner from '../spinner/Spinner.svelte';
 
 	let { src, alt, title }: { src: string; alt: string; title?: string } = $props();
 </script>

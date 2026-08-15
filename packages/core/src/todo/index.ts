@@ -7,6 +7,7 @@ import { Actor } from "../actor";
 import { Common } from "../common";
 import { Examples } from "../examples";
 import { Identifier } from "../identifier";
+import { order } from "../drizzle/order";
 import { Event } from "../event";
 import { UserTable } from "../user/user.sql";
 import { StatusValues, TodoTable } from "./todo.sql";
@@ -148,6 +149,19 @@ export namespace Todo {
     return changed;
   }
 
+  /**
+   * Pipeline rank, not the alphabetical order the text column would give — a status sort
+   * has to agree with the board columns and the picker.
+   */
+  const rank = sql.join(
+    [
+      sql`case`,
+      ...StatusValues.map((status, at) => sql`when ${TodoTable.status} = ${status} then ${at}`),
+      sql`end`,
+    ],
+    sql` `,
+  );
+
   /** The assignee columns worth joining — never the whole user row. */
   const assignee = { id: UserTable.id, name: UserTable.name, image: UserTable.image };
 
@@ -214,7 +228,15 @@ export namespace Todo {
   );
 
   export const list = fn(
-    Common.PaginatedInput.extend({
+    Common.Query([
+      "title",
+      "status",
+      "stage",
+      "assignee",
+      "startDate",
+      "dueDate",
+      "timeCreated",
+    ]).extend({
       status: Status.optional(),
       /** A user id, or "none" for unassigned. */
       assignee: z.string().optional(),
@@ -249,7 +271,12 @@ export namespace Todo {
             .from(TodoTable)
             .leftJoin(UserTable, eq(TodoTable.assignee, UserTable.id))
             .where(where)
-            .orderBy(desc(TodoTable.timeCreated))
+            .orderBy(
+              ...order(TodoTable, input.sort, desc(TodoTable.timeCreated), {
+                assignee: assignee.name,
+                status: rank,
+              }),
+            )
             .limit(limit)
             .offset(offset),
           tx.select({ total: count() }).from(TodoTable).where(where),

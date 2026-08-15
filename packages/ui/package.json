@@ -38,7 +38,8 @@
   },
   "dependencies": {
     "@tanstack/highlight": "0.0.10",
-    "@tanstack/markdown": "0.0.13"
+    "@tanstack/markdown": "0.0.13",
+    "@tanstack/svelte-table": "^9.1.2"
   },
   "devDependencies": {
     "@happy-dom/global-registrator": "catalog:testing",

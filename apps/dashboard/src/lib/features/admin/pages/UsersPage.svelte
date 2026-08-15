@@ -3,20 +3,24 @@
 	import Header from '$lib/components/Header.svelte';
 	import { debounce } from '$lib/utils/debounce';
 	import { getUsers } from '../api/admin.remote';
-	import UserRow from '../components/UserRow.svelte';
+	import UsersTable from '../components/UsersTable.svelte';
+	import { users } from '../sort';
 
 	let search = $state('');
 	let deleted = $state(false);
 	let at = $state(1);
+	// Local, not the URL: this page keeps every control in component state.
+	let keys = $state<ReturnType<typeof users.encode>>([]);
 
 	// `undefined` rather than empty/false so the query key stays stable while typing nothing.
 	const args = $derived({
 		search: search || undefined,
 		deleted: deleted || undefined,
 		page: at,
-		pageSize: 20
+		pageSize: 20,
+		sort: keys
 	});
-	const users = $derived(await getUsers(args));
+	const page = $derived(await getUsers(args));
 
 	// Typing resets to the first page — page 4 of the old result set means nothing here.
 	const commit = debounce((value: string) => {
@@ -55,18 +59,18 @@
 	</div>
 
 	<div class="scroll">
-		{#if users.data.length === 0}
-			<p class="empty">No users match.</p>
-		{:else}
-			<ul>
-				{#each users.data as row (row.id)}
-					<UserRow {row} onchange={() => getUsers(args).refresh()} />
-				{/each}
-			</ul>
-		{/if}
+		<UsersTable
+			rows={page.data}
+			sorting={users.decode(keys)}
+			onsort={(next) => {
+				keys = next;
+				at = 1;
+			}}
+			onchange={() => getUsers(args).refresh()}
+		/>
 	</div>
 
-	<Pager of={users} onchange={(page) => (at = page)} label="users" />
+	<Pager of={page} onchange={(next) => (at = next)} label="users" />
 </div>
 
 <style>
@@ -84,19 +88,6 @@
 		font-size: 0.9em;
 		color: var(--muted);
 		white-space: nowrap;
-	}
-
-	ul {
-		list-style: none;
-		margin: 0;
-		padding: 0;
-		display: flex;
-		flex-direction: column;
-		gap: 0.6em;
-	}
-
-	.empty {
-		color: var(--dim);
 	}
 
 </style>

@@ -15,6 +15,8 @@ export { default as MarkdownEditor } from "./markdown/MarkdownEditor.svelte";
 // ui
 export { default as Card } from "./ui/Card.svelte";
 export { default as Code } from "./ui/Code.svelte";
+export { default as DataTable } from "./ui/DataTable.svelte";
+export { features, type Features } from "./ui/table";
 export { default as Drawer, type Side } from "./ui/Drawer.svelte";
 export { default as FormBoundary } from "./ui/FormBoundary.svelte";
 export { default as Modals } from "./ui/Modals.svelte";

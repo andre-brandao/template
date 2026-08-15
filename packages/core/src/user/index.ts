@@ -10,6 +10,7 @@ import { Examples } from "../examples";
 import { Identifier } from "../identifier";
 import { Permission } from "../permission";
 import { UserTable } from "./user.sql";
+import { order } from "../drizzle/order";
 import { Patch } from "./prefs";
 import { ProviderIds, ProviderTable } from "./provider.sql";
 
@@ -180,7 +181,7 @@ export namespace User {
 
   /** Admin directory: paginated, carries the role, can surface disabled accounts. */
   export const page = fn(
-    Common.PaginatedInput.extend({
+    Common.Query(["name", "email", "role", "timeCreated"]).extend({
       search: z.string().optional(),
       /** Include disabled accounts, which are hidden by default like every other soft delete. */
       deleted: z.boolean().optional(),
@@ -203,7 +204,7 @@ export namespace User {
             .select()
             .from(UserTable)
             .where(where)
-            .orderBy(asc(UserTable.name))
+            .orderBy(...order(UserTable, input.sort, asc(UserTable.name)))
             .limit(limit)
             .offset(offset),
           tx.select({ total: count() }).from(UserTable).where(where),

@@ -5,7 +5,8 @@
 	import { debounce } from '$lib/utils/debounce';
 	import { query } from '$lib/utils/params';
 	import { getEvents, getFacets } from '../api/admin.remote';
-	import EventRow from '../components/EventRow.svelte';
+	import LogsTable from '../components/LogsTable.svelte';
+	import { events } from '../sort';
 
 	// Filters live in the URL so a narrowed log can be linked, reloaded and stepped back
 	// through — the same treatment insights gives its date range.
@@ -15,7 +16,8 @@
 			type: z.string().default(''),
 			source: z.string().default(''),
 			user: z.string().default(''),
-			page: z.coerce.number().int().min(1).default(1)
+			page: z.coerce.number().int().min(1).default(1),
+			sort: events.schema
 		})
 	);
 
@@ -25,9 +27,10 @@
 		source: params.source || undefined,
 		userID: params.user || undefined,
 		page: params.page,
-		pageSize: 50
+		pageSize: 50,
+		sort: params.sort
 	});
-	const events = $derived(await getEvents(args));
+	const log = $derived(await getEvents(args));
 	const filtered = $derived(!!(params.q || params.type || params.source || params.user));
 
 	// The facet lists are only ever read by the two selects, so they ride along with them
@@ -84,18 +87,15 @@
 	{/if}
 
 	<div class="scroll">
-		{#if events.data.length === 0}
-			<p class="empty">Nothing recorded{filtered ? ' for these filters' : ' yet'}.</p>
-		{:else}
-			<ul>
-				{#each events.data as row (row.id)}
-					<EventRow {row} onuser={(user) => pick({ user })} />
-				{/each}
-			</ul>
-		{/if}
+		<LogsTable
+			rows={log.data}
+			sorting={events.decode(params.sort)}
+			onsort={(sort) => pick({ sort })}
+			onuser={(user) => pick({ user })}
+		/>
 	</div>
 
-	<Pager of={events} onchange={(page) => params.update({ page })} />
+	<Pager of={log} onchange={(page) => params.update({ page })} />
 </div>
 
 <style>
@@ -120,19 +120,6 @@
 		font: inherit;
 		color: var(--accent);
 		cursor: pointer;
-	}
-
-	ul {
-		list-style: none;
-		margin: 0;
-		padding: 0;
-		display: flex;
-		flex-direction: column;
-		gap: 0.35em;
-	}
-
-	.empty {
-		color: var(--dim);
 	}
 
 </style>

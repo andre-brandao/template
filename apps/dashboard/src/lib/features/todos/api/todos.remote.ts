@@ -29,6 +29,7 @@ export const getTodos = remote.query(
     source: z.string().optional(),
     sourceID: z.string().optional(),
     q: z.string().optional(),
+    sort: Todo.list.schema.shape.sort,
   }),
   async (input) => {
     // One page feeds every view — the board and timeline group client-side.

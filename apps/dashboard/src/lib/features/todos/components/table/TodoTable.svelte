@@ -1,129 +1,151 @@
 <script lang="ts">
+	import { z } from 'zod';
+	import { createTable, renderSnippet } from '@tanstack/svelte-table';
+	import type { ColumnDef, Row } from '@tanstack/svelte-table';
+	import { Button, DataTable, features } from '@template/ui';
 	import type { Todo } from '@template/core/todo';
-	import TableRow from './TableRow.svelte';
-	import { STATUSES } from '../../status';
+	import { query } from '$lib/utils/params';
+	import { peek } from '$lib/utils/peek';
+	import { fmt } from '$lib/utils/fmt';
+	import StatusPicker from '../StatusPicker.svelte';
+	import TagList from '../TagList.svelte';
+	import { late } from '../../status';
+	import { removeTodo } from '../../api/todos.remote';
+	import { sort } from '../../sort';
 
 	let { todos }: { todos: Todo.Info[] } = $props();
 
-	type Key = 'title' | 'stage' | 'assignee' | 'due' | 'status';
+	const f = fmt();
 
-	let key = $state<Key | null>(null);
-	let asc = $state(true);
+	const params = query(z.object({ sort: sort.schema }));
 
-	const value = (todo: Todo.Info, k: Key) => {
-		if (k === 'title') return todo.title.toLowerCase();
-		if (k === 'stage') return todo.stage?.toLowerCase() ?? null;
-		if (k === 'assignee') return todo.assignee?.name.toLowerCase() ?? null;
-		if (k === 'due') return todo.dueDate;
-		return STATUSES.indexOf(todo.status);
-	};
+	// `params.update` navigates, and `page.url` only lands once that navigation — and the
+	// `getTodos` it re-runs — has resolved. Reading sorting back off the URL would hand the
+	// next click a pre-click value, and TanStack replaces rather than appends when the state
+	// it is given is empty. Local state leads; the URL follows.
+	let sorting = $state(sort.decode(params.sort));
 
-	const sorted = $derived.by(() => {
-		const k = key;
-		if (!k) return todos;
-		return todos.toSorted((a, b) => {
-			const x = value(a, k);
-			const y = value(b, k);
-			if (x === y) return 0;
-			if (x === null) return 1;
-			if (y === null) return -1;
-			return (x < y ? -1 : 1) * (asc ? 1 : -1);
-		});
+	// Back and forward move the URL without passing through the toggle.
+	$effect(() => {
+		sorting = sort.decode(params.sort);
 	});
 
-	function sort(next: Key) {
-		asc = key === next ? !asc : true;
-		key = next;
-	}
+	// Cells render through snippets rather than a row component, so the column definition is
+	// the single place a column's header, sort key and markup are declared together.
+	type Cell = Row<typeof features, Todo.Info>;
 
-	const dir = $derived(asc ? 'ascending' : 'descending');
-	const arrow = $derived(asc ? '↑' : '↓');
+	const cols: ColumnDef<typeof features, Todo.Info>[] = [
+		{
+			id: 'title',
+			header: 'Title',
+			// An accessor is what makes a column sortable (`getCanSort` requires one); the
+			// ordering itself happens in Postgres, so nothing reads these values.
+			accessorFn: (todo) => todo.title,
+			cell: ({ row }) => renderSnippet(title, row)
+		},
+		{ id: 'stage', header: 'Stage', accessorFn: (todo) => todo.stage, cell: ({ row }) => renderSnippet(stage, row) },
+		{
+			id: 'assignee',
+			header: 'Assignee',
+			accessorFn: (todo) => todo.assignee?.name,
+			cell: ({ row }) => renderSnippet(who, row)
+		},
+		{ id: 'dueDate', header: 'Due', accessorFn: (todo) => todo.dueDate, cell: ({ row }) => renderSnippet(due, row) },
+		{ id: 'tags', header: 'Tags', enableSorting: false, cell: ({ row }) => renderSnippet(tags, row) },
+		{
+			id: 'status',
+			header: 'Status',
+			accessorFn: (todo) => todo.status,
+			cell: ({ row }) => renderSnippet(status, row)
+		},
+		{ id: 'actions', header: '', enableSorting: false, cell: ({ row }) => renderSnippet(actions, row) }
+	];
+
+	const table = createTable({
+		features,
+		columns: cols,
+		get data() {
+			return todos;
+		},
+		getRowId: (todo) => todo.id,
+		state: {
+			get sorting() {
+				return sorting;
+			}
+		},
+		// The URL keeps a sorted table linkable and re-runs `getTodos` with the new keys.
+		// Shift-click appends, up to core's cap of 3.
+		onSortingChange: (next) => {
+			sorting = typeof next === 'function' ? next(sorting) : next;
+			params.update({ sort: sort.encode(sorting) });
+		},
+		manualSorting: true,
+		maxMultiSortColCount: 3
+	});
 </script>
 
-{#snippet head(k: Key, text: string)}
-	<th aria-sort={key === k ? dir : undefined}>
-		<button type="button" onclick={() => sort(k)}>
-			{text}<span class="arrow">{key === k ? arrow : ''}</span>
-		</button>
-	</th>
+{#snippet title(row: Cell)}
+	<a class="title" href="/todos/{row.original.id}" onclick={peek({ selected: row.original.id })}>
+		{row.original.title}
+	</a>
 {/snippet}
 
-<div class="table-wrap">
-	<table>
-		<thead>
-			<tr>
-				{@render head('title', 'Title')}
-				{@render head('stage', 'Stage')}
-				{@render head('assignee', 'Assignee')}
-				{@render head('due', 'Due')}
-				<th>Tags</th>
-				{@render head('status', 'Status')}
-				<th></th>
-			</tr>
-		</thead>
-		<tbody>
-			{#each sorted as todo (todo.id)}
-				<TableRow {todo} />
-			{/each}
-			{#if todos.length === 0}
-				<tr><td colspan="7" class="empty">No tasks yet</td></tr>
-			{/if}
-		</tbody>
-	</table>
-</div>
+{#snippet stage(row: Cell)}
+	<span class="dim">{row.original.stage ?? '—'}</span>
+{/snippet}
+
+{#snippet who(row: Cell)}
+	<span class="dim">{row.original.assignee?.name ?? 'Unassigned'}</span>
+{/snippet}
+
+{#snippet due(row: Cell)}
+	<span class="dim" class:late={late(row.original)}>
+		{row.original.dueDate ? f.date(row.original.dueDate) : '—'}
+	</span>
+{/snippet}
+
+{#snippet tags(row: Cell)}
+	<TagList tags={row.original.tags} />
+{/snippet}
+
+{#snippet status(row: Cell)}
+	<StatusPicker todo={row.original} compact />
+{/snippet}
+
+{#snippet actions(row: Cell)}
+	{@const remove = removeTodo.for(row.original.id)}
+	<form class="acts" {...remove}>
+		<input {...remove.fields.id.as('hidden', row.original.id)} />
+		<Button variant="ghost" type="submit" pending={!!remove.pending}>Delete</Button>
+	</form>
+{/snippet}
+
+<DataTable {table} empty="No tasks yet" />
 
 <style>
-	.table-wrap {
-		overflow: auto;
-		scrollbar-width: thin;
-		max-height: 65vh;
-		border: 1px solid var(--border);
-		border-radius: 8px;
-	}
-
-	table {
-		width: 100%;
-		border-collapse: collapse;
-		font-size: 0.92em;
-	}
-
-	thead th {
-		position: sticky;
-		top: 0;
-		z-index: 1;
-		text-align: left;
-		font-family: var(--font-mono);
-		font-size: 0.72em;
-		text-transform: uppercase;
-		letter-spacing: 0.04em;
+	.dim {
 		color: var(--muted);
-		background: var(--surface-2);
-		padding: 0.6em 0.9em;
-		border-bottom: 1px solid var(--border);
+		font-family: var(--font-mono);
+		font-size: 0.8em;
+		white-space: nowrap;
 	}
 
-	thead button {
-		all: unset;
-		cursor: pointer;
+	.dim.late {
+		color: var(--danger);
 	}
 
-	thead button:hover {
+	.acts {
+		display: flex;
+		gap: 0.4em;
+		justify-content: flex-end;
+	}
+
+	.title {
 		color: var(--ink);
+		text-decoration: none;
 	}
 
-	.arrow {
-		display: inline-block;
-		width: 1em;
-		text-align: center;
-	}
-
-	th[aria-sort] button {
-		color: var(--ink);
-	}
-
-	.empty {
-		text-align: center;
-		color: var(--dim);
-		padding: 1.5em;
+	.title:hover {
+		color: var(--accent);
 	}
 </style>

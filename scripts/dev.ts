@@ -38,32 +38,34 @@ const apiport = Number(process.env.API_PORT ?? 3000);
 const mcpport = Number(process.env.MCP_PORT ?? 3001);
 const webport = Number(process.env.WEB_PORT ?? 5173);
 
+// The file, not the package script: `bun run <script>` forks a grandchild, and `stop`
+// only ever sees the wrapper — the orphan then keeps its port and database pool for good.
 const servers = [
   {
     name: "api",
     cwd: `${root}/packages/functions`,
-    cmd: ["bun", "run", "dev"],
+    cmd: ["bun", "run", "--hot", "src/api/target/bun.ts"],
     env: { API_PORT: String(apiport) },
     color: paint.cyan,
   },
   {
     name: "mcp",
     cwd: `${root}/packages/functions`,
-    cmd: ["bun", "run", "dev:mcp"],
+    cmd: ["bun", "run", "--hot", "src/mcp/target/bun.ts"],
     env: { MCP_PORT: String(mcpport) },
     color: paint.magenta,
   },
   {
     name: "auth",
     cwd: `${root}/packages/functions`,
-    cmd: ["bun", "run", "dev:auth"],
+    cmd: ["bun", "run", "--hot", "src/auth/target/bun.ts"],
     env: { PORT: String(authport) },
     color: paint.blue,
   },
   {
     name: "queue",
     cwd: `${root}/packages/functions`,
-    cmd: ["bun", "run", "dev:queue"],
+    cmd: ["bun", "run", "--hot", "src/queue/target/bun.ts"],
     env: {},
     color: paint.red,
   },

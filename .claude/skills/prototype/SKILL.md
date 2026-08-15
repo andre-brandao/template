@@ -18,6 +18,8 @@ Once the prototype is validated, the `prototype-app` skill can build the feature
 
 Both documents are served by the viewer: `bun prototype` (from repo root) renders every `docs/prototype/*/PROTOTYPE.md` at `http://localhost:4400/<feature>/`, with iframes embedded, `mermaid` fences drawn, and frontmatter feeding the index page.
 
+The dashboard serves the same docs at `/dev/prototype/<feature>` while `bun dev` runs — every `.md` in the folder as a tab, mockups live in their iframes, diagrams through the app's own renderer.
+
 ## Prototype workflow
 
 1. **Name the directory.** Kebab-case the feature name: `docs/prototype/<feature>/`. If the directory already exists, update its contents in place instead of duplicating.

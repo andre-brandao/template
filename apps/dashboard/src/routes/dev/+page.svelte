@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Braces from '@lucide/svelte/icons/braces';
 	import Component from '@lucide/svelte/icons/component';
+	import FileCode from '@lucide/svelte/icons/file-code';
 	import Plug from '@lucide/svelte/icons/plug';
 	import { Card } from '@template/ui';
 	import { stories } from '@template/ui/story';
@@ -18,6 +19,13 @@
 			icon: Braces,
 			title: 'API explorer',
 			blurb: 'Browse the OpenAPI surface and fire requests at the api service.',
+			ready: true
+		},
+		{
+			href: '/dev/prototype',
+			icon: FileCode,
+			title: 'Prototypes',
+			blurb: 'Read the docs under docs/prototype/ with their mockups live in iframes.',
 			ready: true
 		},
 		{

@@ -30,18 +30,7 @@ export namespace TodoApi {
         },
       }),
       authRequired,
-      validator(
-        "query",
-        PaginatedQuery.extend({
-          status: Todo.Status.optional(),
-          assignee: z.string().optional(),
-          stage: z.string().optional(),
-          source: z.string().optional(),
-          sourceID: z.string().optional(),
-          createdBy: z.string().optional(),
-          search: z.string().optional(),
-        }),
-      ),
+      validator("query", PaginatedQuery(Todo.list.schema)),
       async (c) => {
         const todos = await Todo.list(c.req.valid("query"));
         return c.json(todos, 200);
@@ -89,7 +78,7 @@ export namespace TodoApi {
         },
       }),
       authRequired,
-      validator("param", z.object({ id: z.string() })),
+      validator("param", z.object({ id: Todo.Info.shape.id })),
       async (c) => {
         const todo = found("Todo", await Todo.fromID(c.req.valid("param").id));
         return c.json(todo, 200);

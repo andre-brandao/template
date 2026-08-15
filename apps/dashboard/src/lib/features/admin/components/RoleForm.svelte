@@ -4,7 +4,7 @@
 	import type { User } from '@template/core/user';
 	import { assignRole } from '../api/admin.remote';
 
-	let { row, self, onchange }: { row: User.Row; self: boolean; onchange: () => void } = $props();
+	let { row, self, onchange }: { row: User.Info; self: boolean; onchange: () => void } = $props();
 
 	const assign = $derived(assignRole.for(row.id));
 	const roles = Permission.roles.map((role) => ({ value: role, label: role }));

@@ -32,18 +32,26 @@ export namespace Webhook {
   export const Info = z
     .object({
       id: z.string().meta({ description: Common.IdDescription, example: Examples.Webhook.id }),
-      url: z.url().max(2000),
+      url: z.url().max(2000).meta({ description: "Where deliveries are POSTed." }),
       secret: z.string().meta({ description: "Signing secret. Handed back in full to admins." }),
       display: z.string().meta({ description: "Masked secret, safe to show in a list." }),
       types: z
         .enum(Types)
         .array()
         .meta({ description: "Event types to receive. Empty means every public type." }),
-      enabled: z.boolean(),
+      enabled: z.boolean().meta({
+        description: "Turns itself off after too many failures. Re-enabling clears the count.",
+      }),
       failures: z.number().meta({ description: "Consecutive failed deliveries." }),
-      lastStatus: z.number().nullable(),
-      timeDelivered: z.iso.datetime().nullable(),
-      timeCreated: z.iso.datetime(),
+      lastStatus: z
+        .number()
+        .nullable()
+        .meta({ description: "HTTP status of the last attempt. Null if it never answered." }),
+      timeDelivered: z.iso
+        .datetime()
+        .nullable()
+        .meta({ description: "When a delivery last succeeded." }),
+      timeCreated: z.iso.datetime().meta({ description: "When the subscription was created." }),
     })
     .meta({
       ref: "Webhook",

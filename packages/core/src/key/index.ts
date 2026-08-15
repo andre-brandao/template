@@ -16,7 +16,7 @@ export namespace Key {
   export const Info = z
     .object({
       id: z.string().meta({ description: Common.IdDescription, example: Examples.Key.id }),
-      name: z.string().min(1).max(255),
+      name: z.string().min(1).max(255).meta({ description: "Label shown in the key list." }),
       key: z.string().meta({ description: "The secret. Handed back in full so it can be copied." }),
       display: z.string().meta({ description: "Masked secret, safe to show in a list." }),
       timeUsed: z.iso

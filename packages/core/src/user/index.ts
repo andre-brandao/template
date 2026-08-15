@@ -11,20 +11,32 @@ import { Identifier } from "../identifier";
 import { Permission } from "../permission";
 import { UserTable } from "./user.sql";
 import { order } from "../drizzle/order";
-import { Patch } from "./prefs";
+import { Patch, Prefs } from "./prefs";
 import { ProviderIds, ProviderTable } from "./provider.sql";
 
 export namespace User {
   export const Info = z
     .object({
       id: z.string().meta({ description: Common.IdDescription, example: Examples.User.id }),
-      name: z.string().min(1),
-      email: z.string().email(),
-      emailVerified: z.boolean().optional(),
-      image: z.string().nullable(),
+      name: z.string().min(1).meta({ description: "Display name." }),
+      email: z.string().email().meta({ description: "Login address. Unique across accounts." }),
+      emailVerified: z
+        .boolean()
+        .optional()
+        .meta({ description: "Whether the address has been confirmed." }),
+      image: z.string().nullable().meta({ description: "Avatar URL, or null for none." }),
       // Read-only through `update`, which picks its fields explicitly. `assign` is the
       // only way to change one, and it wants `user: ["assign"]`.
-      role: z.enum(Permission.roles),
+      role: z.enum(Permission.roles).meta({
+        description: "Decides everything the account may do. Only `user:assign` can change it.",
+      }),
+      prefs: Prefs.meta({
+        description: "Display preferences. Every key has a default, so this is always complete.",
+      }),
+      timeDeleted: z.iso
+        .datetime()
+        .nullable()
+        .meta({ description: "When the account was disabled. Null while it is active." }),
     })
     .meta({
       ref: "User",
@@ -99,7 +111,7 @@ export namespace User {
         .select()
         .from(UserTable)
         .where(and(eq(UserTable.id, id), isNull(UserTable.timeDeleted)))
-        .then((rows) => rows.at(0) ?? null),
+        .then((rows) => (rows[0] ? serialize(rows[0]) : null)),
     ),
   );
 
@@ -126,7 +138,7 @@ export namespace User {
         .select()
         .from(UserTable)
         .where(eq(UserTable.email, email))
-        .then((rows) => rows.at(0) ?? null),
+        .then((rows) => (rows[0] ? serialize(rows[0]) : null)),
     ),
   );
 
@@ -153,10 +165,6 @@ export namespace User {
         .where(eq(UserTable.id, Actor.userID())),
     ),
   );
-
-  /** The admin view of a user: the public shape plus whether the account is disabled. */
-  export const Row = Info.extend({ timeDeleted: z.iso.datetime().nullable() });
-  export type Row = z.infer<typeof Row>;
 
   /** Reads past the disabled filter `fromID` applies — the admin screens act on those rows. */
   const target = (id: string) =>
@@ -209,22 +217,7 @@ export namespace User {
             .offset(offset),
           tx.select({ total: count() }).from(UserTable).where(where),
         ] as const);
-        return {
-          data: rows.map(
-            (row): Row => ({
-              id: row.id,
-              name: row.name,
-              email: row.email,
-              emailVerified: row.emailVerified,
-              image: row.image,
-              role: row.role,
-              timeDeleted: row.timeDeleted?.toISOString() ?? null,
-            }),
-          ),
-          page,
-          pageSize,
-          total: totalRows[0]?.total ?? 0,
-        };
+        return { data: rows.map(serialize), page, pageSize, total: totalRows[0]?.total ?? 0 };
       });
     },
   );
@@ -288,4 +281,17 @@ export namespace User {
       });
     });
   });
+
+  function serialize(row: typeof UserTable.$inferSelect): Info {
+    return {
+      id: row.id,
+      name: row.name,
+      email: row.email,
+      emailVerified: row.emailVerified,
+      image: row.image,
+      role: row.role,
+      prefs: row.prefs,
+      timeDeleted: row.timeDeleted?.toISOString() ?? null,
+    };
+  }
 }

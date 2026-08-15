@@ -23,7 +23,5 @@ export const load: LayoutServerLoad = async (event) => {
   // paints in the right theme rather than defaulting to `system` for one navigation.
   theme.write(event, user.prefs.theme);
 
-  // Parsing rather than spreading: the row carries columns (prefs, timestamps) the
-  // client has no business with, and `Info` strips everything it doesn't declare.
-  return { user: User.Info.parse(user), prefs: user.prefs, feedback, rail };
+  return { user, prefs: user.prefs, feedback, rail };
 };

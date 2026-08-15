@@ -17,16 +17,14 @@ The format and length of IDs may change over time.`;
 
   export type Paginated = z.infer<typeof Paginated>;
 
-  /** Input schema for a paginated `fn()` — page/pageSize are optional, defaulted via `Common.page()`. */
-  export const PaginatedInput = Paginated.partial();
-
   /**
-   * Input for a paginated, sortable list — the counterpart to `Common.Page`. Sort keys are
-   * per-namespace and applied in priority order; a leading `-` means descending.
+   * Input for a paginated, sortable list — the counterpart to `Common.Page`. Page and
+   * pageSize are optional here, defaulted via `Common.page()`. Sort keys are per-namespace
+   * and applied in priority order; a leading `-` means descending.
    */
   export function Query<K extends string>(keys: readonly [K, ...K[]]) {
     const signed = keys.flatMap((k) => [k, `-${k}`]) as [K | `-${K}`, ...(K | `-${K}`)[]];
-    return PaginatedInput.extend({
+    return Paginated.partial().extend({
       sort: z
         .enum(signed)
         .array()

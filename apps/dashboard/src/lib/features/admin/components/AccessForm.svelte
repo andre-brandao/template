@@ -6,7 +6,7 @@
 	import { fmt } from '$lib/utils/fmt';
 	import { disableUser, enableUser } from '../api/admin.remote';
 
-	let { row, self, onchange }: { row: User.Row; self: boolean; onchange: () => void } = $props();
+	let { row, self, onchange }: { row: User.Info; self: boolean; onchange: () => void } = $props();
 
 	const f = fmt();
 	const toggle = $derived((row.timeDeleted ? enableUser : disableUser).for(row.id));

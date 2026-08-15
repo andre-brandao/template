@@ -22,27 +22,55 @@ export namespace Todo {
 
   /** Joined in — every list row wants the name, and a left join is cheap. */
   export const Assignee = z
-    .object({ id: z.string(), name: z.string(), image: z.string().nullable() })
-    .nullable();
+    .object({
+      id: z.string(),
+      name: z.string(),
+      image: z.string().nullable() })
+    .nullable().meta({
+      description: "The user responsible, joined in. Null when unassigned.",
+    });
   export type Assignee = z.infer<typeof Assignee>;
 
   export const Info = z
     .object({
       id: z.string().meta({ description: Common.IdDescription, example: Examples.Todo.id }),
-      createdBy: z.string(),
+      createdBy: z.string().meta({ description: "Id of the user who created it." }),
       assignee: Assignee,
-      source: z.string().max(64).nullable(),
-      sourceID: z.string().nullable(),
-      stage: z.string().max(64).nullable(),
-      title: z.string().min(0).max(2000),
-      body: z.string().max(20000).nullable(),
-      status: Status,
-      reason: z.string().max(200).nullable(),
-      tags: Tag.array().max(20),
-      startDate: z.iso.datetime().nullable(),
-      dueDate: z.iso.datetime().nullable(),
-      timeStarted: z.iso.datetime().nullable(),
-      timeDone: z.iso.datetime().nullable(),
+      source: z
+        .string()
+        .max(64)
+        .nullable()
+        .meta({ description: "Kind of entity that owns it, like `project`." }),
+      sourceID: z
+        .string()
+        .nullable()
+        .meta({ description: "Id of the owning entity, paired with `source`." }),
+      stage: z
+        .string()
+        .max(64)
+        .nullable()
+        .meta({ description: "Pipeline stage, a free-text label. Null when unstaged." }),
+      title: z.string().min(0).max(2000).meta({ description: "One-line summary." }),
+      body: z.string().max(20000).nullable().meta({ description: "The long form, markdown." }),
+      status: Status.meta({ description: "Where it sits in the pipeline." }),
+      reason: z
+        .string()
+        .max(200)
+        .nullable()
+        .meta({ description: "Why it last moved status. The next transition clears it." }),
+      tags: Tag.array()
+        .max(20)
+        .meta({ description: "Free-form labels, trimmed and deduplicated on write." }),
+      startDate: z.iso.datetime().nullable().meta({ description: "When work is meant to start." }),
+      dueDate: z.iso.datetime().nullable().meta({ description: "When it is meant to be done." }),
+      timeStarted: z.iso
+        .datetime()
+        .nullable()
+        .meta({ description: "When it first went `active`. Stamped once." }),
+      timeDone: z.iso
+        .datetime()
+        .nullable()
+        .meta({ description: "When it went `done`. Null while it is unfinished." }),
     })
     .meta({
       ref: "Todo",
@@ -179,7 +207,7 @@ export namespace Todo {
       body: Info.shape.body.optional(),
       tags: Info.shape.tags.optional(),
       stage: Info.shape.stage.optional(),
-      assignee: z.string().nullable().optional(),
+      assignee: Patch.shape.assignee,
       source: Info.shape.source.optional(),
       sourceID: Info.shape.sourceID.optional(),
       status: Status.optional(),
@@ -241,10 +269,10 @@ export namespace Todo {
       /** A user id, or "none" for unassigned. */
       assignee: z.string().optional(),
       /** A stage name, or "none" for todos without one. */
-      stage: z.string().optional(),
-      source: z.string().optional(),
-      sourceID: z.string().optional(),
-      createdBy: z.string().optional(),
+      stage: Info.shape.stage.unwrap().optional(),
+      source: Info.shape.source.unwrap().optional(),
+      sourceID: Info.shape.sourceID.unwrap().optional(),
+      createdBy: Info.shape.createdBy.optional(),
       search: z.string().optional(),
     }),
     (input) => {
@@ -288,7 +316,10 @@ export namespace Todo {
 
   /** Stage list aggregated from the todos wearing each label — no second table to drift. */
   export const stages = fn(
-    z.object({ source: z.string().optional(), sourceID: z.string().optional() }),
+    z.object({
+      source: Info.shape.source.unwrap().optional(),
+      sourceID: Info.shape.sourceID.unwrap().optional(),
+    }),
     (input) =>
       Database.use((tx) =>
         tx
@@ -318,10 +349,10 @@ export namespace Todo {
   /** Renames a stage across every todo wearing it — the only stage edit there is. */
   export const rename = fn(
     z.object({
-      from: z.string().min(1),
-      to: z.string().min(1).max(64),
-      source: z.string().optional(),
-      sourceID: z.string().optional(),
+      from: Info.shape.stage.unwrap().min(1),
+      to: Info.shape.stage.unwrap().min(1),
+      source: Info.shape.source.unwrap().optional(),
+      sourceID: Info.shape.sourceID.unwrap().optional(),
     }),
     (input) =>
       Database.use((tx) =>

@@ -77,6 +77,7 @@ import { Actor } from "../actor";
 import { Common } from "../common";
 import { Examples } from "../examples";
 import { Identifier } from "../identifier";
+import { order } from "../drizzle/order";
 import { ${pascal}Table } from "./${name}.sql";
 
 export namespace ${pascal} {
@@ -101,25 +102,31 @@ export namespace ${pascal} {
     return id;
   });
 
-  export const list = fn(Common.PaginatedInput.extend({ q: z.string().optional() }), (input) => {
-    const { page, pageSize, limit, offset } = Common.page(input);
-    const conditions = [eq(${pascal}Table.userID, Actor.userID()), isNull(${pascal}Table.timeDeleted)];
-    if (input.q) conditions.push(ilike(${pascal}Table.title, \`%\${input.q}%\`));
-    const where = and(...conditions);
-    return Database.use(async (tx) => {
-      const [rows, totals] = await Promise.all([
-        tx
-          .select()
-          .from(${pascal}Table)
-          .where(where)
-          .orderBy(desc(${pascal}Table.timeCreated))
-          .limit(limit)
-          .offset(offset),
-        tx.select({ total: count() }).from(${pascal}Table).where(where),
-      ] as const);
-      return { data: rows.map(serialize), page, pageSize, total: totals[0]?.total ?? 0 };
-    });
-  });
+  export const list = fn(
+    Common.Query(["title", "timeCreated"]).extend({ search: z.string().optional() }),
+    (input) => {
+      const { page, pageSize, limit, offset } = Common.page(input);
+      const conditions = [
+        eq(${pascal}Table.userID, Actor.userID()),
+        isNull(${pascal}Table.timeDeleted),
+      ];
+      if (input.search) conditions.push(ilike(${pascal}Table.title, \`%\${input.search}%\`));
+      const where = and(...conditions);
+      return Database.use(async (tx) => {
+        const [rows, totals] = await Promise.all([
+          tx
+            .select()
+            .from(${pascal}Table)
+            .where(where)
+            .orderBy(...order(${pascal}Table, input.sort, desc(${pascal}Table.timeCreated)))
+            .limit(limit)
+            .offset(offset),
+          tx.select({ total: count() }).from(${pascal}Table).where(where),
+        ] as const);
+        return { data: rows.map(serialize), page, pageSize, total: totals[0]?.total ?? 0 };
+      });
+    },
+  );
 
   export const fromID = fn(Info.shape.id, (id) =>
     Database.use((tx) =>
@@ -240,7 +247,7 @@ export namespace ${pascal}Api {
         },
       }),
       authRequired,
-      validator("query", PaginatedQuery.extend({ q: z.string().optional() })),
+      validator("query", PaginatedQuery(${pascal}.list.schema)),
       async (c) => c.json(await ${pascal}.list(c.req.valid("query")), 200),
     )
     .get(
@@ -351,7 +358,7 @@ export function ${name}(server: McpServer) {
       title: "List ${plural}",
       description: "List the current user's ${plural}. Paginated.",
       inputSchema: {
-        q: z.string().optional(),
+        search: z.string().optional(),
         page: z.number().min(1).optional(),
         pageSize: z.number().min(1).max(100).optional(),
       },
@@ -424,7 +431,7 @@ function auth() {
   if (Actor.use().type !== "user") redirect(303, "/login");
 }
 
-export const get${pascal}s = query(z.object({ q: z.string().optional() }), async (input) => {
+export const get${pascal}s = query(z.object({ search: z.string().optional() }), async (input) => {
   auth();
   const { data } = await ${pascal}.list(input);
   return data;

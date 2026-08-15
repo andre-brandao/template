@@ -17,14 +17,14 @@
 		onsort,
 		onchange
 	}: {
-		rows: User.Row[];
+		rows: User.Info[];
 		sorting: ReturnType<typeof users.decode>;
 		onsort: (next: ReturnType<typeof users.encode>) => void;
 		onchange: () => void;
 	} = $props();
 
 	const me = user();
-	const self = (row: User.Row) => row.id === me.current?.id;
+	const self = (row: User.Info) => row.id === me.current?.id;
 
 	// One id rather than a flag per row: only one address is ever freshly copied.
 	let copied = $state<string | null>(null);
@@ -35,11 +35,11 @@
 		setTimeout(() => (copied = null), 1200);
 	}
 
-	type Cell = Row<typeof features, User.Row>;
+	type Cell = Row<typeof features, User.Info>;
 
 	// The two form-heavy cells stay components: each owns a confirm snippet and its own form
 	// boundary, neither of which a snippet in this file could hold per row.
-	const cols: ColumnDef<typeof features, User.Row>[] = [
+	const cols: ColumnDef<typeof features, User.Info>[] = [
 		{ id: 'name', header: 'Name', accessorFn: (one) => one.name, cell: ({ row }) => renderSnippet(name, row) },
 		{ id: 'email', header: 'Email', accessorFn: (one) => one.email, cell: ({ row }) => renderSnippet(mail, row) },
 		{

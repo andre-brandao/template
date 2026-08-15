@@ -29,7 +29,7 @@ export namespace ProjectApi {
         },
       }),
       authRequired,
-      validator("query", PaginatedQuery.extend({ search: z.string().optional() })),
+      validator("query", PaginatedQuery(Project.list.schema)),
       async (c) => {
         const projects = await Project.list(c.req.valid("query"));
         return c.json(projects, 200);
@@ -53,7 +53,7 @@ export namespace ProjectApi {
         },
       }),
       authRequired,
-      validator("param", z.object({ id: z.string() })),
+      validator("param", z.object({ id: Project.Info.shape.id })),
       async (c) => {
         const project = found("Project", await Project.fromID(c.req.valid("param").id));
         return c.json(project, 200);
@@ -99,7 +99,7 @@ export namespace ProjectApi {
         },
       }),
       authRequired,
-      validator("param", z.object({ id: z.string() })),
+      validator("param", z.object({ id: Project.Info.shape.id })),
       validator("json", Project.update.schema.omit({ id: true })),
       async (c) => {
         const { id } = c.req.valid("param");

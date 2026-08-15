@@ -104,6 +104,33 @@ Both documents are served by the viewer: `bun prototype` (from repo root) render
 
 5. **Finish.** List the created files, summarize any open questions raised in the spec, and point at the viewer (`bun prototype` → `http://localhost:4400/<feature>/`) so the user can review. The prototype now waits for their feedback: iterate on it as they react, and only move to PLAN.md once they've validated the prototype and asked for the plan. Do not create app code, migrations, or tests.
 
+## Diagrams
+
+Diagram fences are rendered by [`beautiful-mermaid`](https://npmjs.com/package/beautiful-mermaid), which
+implements a subset of Mermaid. Stick to these six.
+
+| Fence header          | Use it for                                                      |
+| --------------------- | --------------------------------------------------------------- |
+| `flowchart` / `graph` | Branching flows, wizards, decision points (`TD`/`LR`/`BT`/`RL`) |
+| `stateDiagram-v2`     | Lifecycles and state machines                                   |
+| `sequenceDiagram`     | Message/call order between actors or services                   |
+| `classDiagram`        | Type shapes and their relationships                             |
+| `erDiagram`           | The **Data model** section — entities and fields                |
+| `xychart-beta`        | Bar/line charts for volumes, growth, sizing                     |
+
+`linkStyle` works in flowcharts and state diagrams for per-edge colour and stroke width.
+
+**Not available** — do not reach for these, they will not draw: `gantt`, `journey`, `pie`,
+`mindmap`, `timeline`, `quadrantChart`, `gitGraph`, `sankey-beta`, `block-beta`, `kanban`,
+`requirementDiagram`, `C4Context`, `architecture-beta`, `packet-beta`, `radar-beta`, `treemap-beta`.
+For a roadmap or timeline, use a table; for a journey, a `flowchart` with one node per step.
+
+The `bun prototype` viewer still loads full Mermaid from a CDN, so an unsupported fence may draw
+there while rendering as plain source everywhere else. Do not rely on it — author for the six.
+
+Colours come from the surrounding page's CSS variables, so diagrams follow the light/dark toggle —
+never hardcode colours in a fence.
+
 ## Plan workflow (later step, on request)
 
 1. **Only on an explicit ask, for a validated prototype.** The plan implements what the prototype shows, so the prototype must exist and the user must have reviewed it — if it doesn't exist, say so and offer to prototype first; if it exists but the user hasn't looked at it yet, confirm they're happy with the prototype before planning. Read `docs/prototype/<feature>/PROTOTYPE.md` in full; unresolved `> [!NOTE]` questions in it are prompts to ask the user now, not decisions to make silently.

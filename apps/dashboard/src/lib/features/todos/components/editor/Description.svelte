@@ -14,6 +14,7 @@
 		onsaved: () => Promise<void>;
 	} = $props();
 
+
 	let editing = $state(false);
 	let body = $state('');
 

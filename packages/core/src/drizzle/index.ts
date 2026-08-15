@@ -165,7 +165,7 @@ export namespace Database {
     cause?: string;
   }> {
     try {
-      await Database.use((tx) => tx.execute(sql`SELECT 1`));
+      await Database.use((tx) => tx.execute(sql`SELECT 1`, "objects"));
       return { status: "ok", message: "ok" };
     } catch (err) {
       const e = err instanceof Error ? err : new Error(String(err));

@@ -12,6 +12,7 @@ export { default as Select, type Option } from "./input/Select.svelte";
 export { default as Markdown } from "./markdown/Markdown.svelte";
 export { default as MarkdownEditor } from "./markdown/MarkdownEditor.svelte";
 export type { Components } from "./markdown/render/types";
+export { default as Mermaid } from "./markdown/Mermaid.svelte";
 
 export { default as Card } from "./card/Card.svelte";
 export { default as Code } from "./code/Code.svelte";

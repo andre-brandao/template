@@ -26,15 +26,17 @@ async function ensure() {
   const client = Database.create(`${base}/postgres`);
   await Database.provide(client, () =>
     Database.use(async (tx) => {
-      const rows = await tx.execute(sql`select 1 from pg_database where datname = ${db}`);
-      // @ts-expect-error it works
-      if (rows.length === 0) await tx.execute(sql.raw(`create database "${db}"`));
+      const rows = await tx.execute(
+        sql`select 1 from pg_database where datname = ${db}`,
+        "objects",
+      );
+      if (rows.length === 0) await tx.execute(sql.raw(`create database "${db}"`), "objects");
     }),
   );
   await Database.release(client);
 }
 
-const run = (q: ReturnType<typeof sql.raw>) => Database.use((tx) => tx.execute(q));
+const run = (q: ReturnType<typeof sql.raw>) => Database.use((tx) => tx.execute(q, "objects"));
 
 function statements() {
   return readdirSync(dir, { withFileTypes: true })

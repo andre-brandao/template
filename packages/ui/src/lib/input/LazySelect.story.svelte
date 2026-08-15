@@ -3,6 +3,17 @@
 	import LazySelect from './LazySelect.svelte';
 	import type { Option } from './Select.svelte';
 
+	export const story: Story = {
+		title: 'LazySelect',
+		blurb: 'Fetches its options once, on first hover or focus. Point at the control below.',
+		of: LazySelect
+	};
+</script>
+
+<script lang="ts">
+	// Imports the markup below needs — they sit in the story's module block, which is not shown.
+	// import { LazySelect, type Option } from '@template/ui';
+
 	const statics = [{ value: '', label: 'Any project' }];
 
 	// Deliberately slow, so the hover-then-fill is visible.
@@ -18,12 +29,6 @@
 				800
 			)
 		);
-
-	export const story: Story = {
-		title: 'LazySelect',
-		blurb: 'Fetches its options once, on first hover or focus. Point at the control below.',
-		of: LazySelect
-	};
 </script>
 
 <label class="field">

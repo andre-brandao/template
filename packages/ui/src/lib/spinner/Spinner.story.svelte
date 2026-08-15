@@ -9,6 +9,11 @@
 	};
 </script>
 
+<script lang="ts">
+	// Imports the markup below needs — they sit in the story's module block, which is not shown.
+	// import { Spinner } from '@template/ui';
+</script>
+
 <p class="sizes">
 	<Spinner />
 	<span class="big"><Spinner /></span>

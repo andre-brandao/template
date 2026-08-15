@@ -1,6 +1,7 @@
 import { z } from "zod";
-import { and, asc, count, eq, ilike, isNull, or, sql } from "drizzle-orm";
+import { and, asc, eq, ilike, isNull, sql } from "drizzle-orm";
 import { fn } from "../util/fn";
+import { iso } from "../util/fmt";
 import { Database } from "../drizzle";
 import { Actor } from "../actor";
 import { Common } from "../common";
@@ -10,20 +11,32 @@ import { Examples } from "../examples";
 import { Identifier } from "../identifier";
 import { Permission } from "../permission";
 import { UserTable } from "./user.sql";
-import { Patch } from "./prefs";
+import { Patch, Prefs } from "./prefs";
 import { ProviderIds, ProviderTable } from "./provider.sql";
 
 export namespace User {
   export const Info = z
     .object({
       id: z.string().meta({ description: Common.IdDescription, example: Examples.User.id }),
-      name: z.string().min(1),
-      email: z.string().email(),
-      emailVerified: z.boolean().optional(),
-      image: z.string().nullable(),
+      name: z.string().min(1).meta({ description: "Display name." }),
+      email: z.string().email().meta({ description: "Login address. Unique across accounts." }),
+      emailVerified: z
+        .boolean()
+        .optional()
+        .meta({ description: "Whether the address has been confirmed." }),
+      image: z.string().nullable().meta({ description: "Avatar URL, or null for none." }),
       // Read-only through `update`, which picks its fields explicitly. `assign` is the
       // only way to change one, and it wants `user: ["assign"]`.
-      role: z.enum(Permission.roles),
+      role: z.enum(Permission.roles).meta({
+        description: "Decides everything the account may do. Only `user:assign` can change it.",
+      }),
+      prefs: Prefs.meta({
+        description: "Display preferences. Every key has a default, so this is always complete.",
+      }),
+      timeDeleted: z.iso
+        .datetime()
+        .nullable()
+        .meta({ description: "When the account was disabled. Null while it is active." }),
     })
     .meta({
       ref: "User",
@@ -60,7 +73,7 @@ export namespace User {
           id,
           accountId: row?.accountId ?? null,
           connected: Boolean(row),
-          timeCreated: row?.timeCreated.toISOString() ?? null,
+          timeCreated: iso(row?.timeCreated),
         };
       });
     }),
@@ -74,17 +87,19 @@ export namespace User {
       image: Info.shape.image.optional(),
     }),
     async (input) => {
-      const id = Identifier.create("user");
-      await Database.use((tx) =>
-        tx.insert(UserTable).values({
-          id,
-          name: input.name,
-          email: input.email,
-          emailVerified: input.emailVerified ?? false,
-          image: input.image ?? null,
-        }),
+      return Database.use((tx) =>
+        tx
+          .insert(UserTable)
+          .values({
+            id: Identifier.create("user"),
+            name: input.name,
+            email: input.email,
+            emailVerified: input.emailVerified ?? false,
+            image: input.image ?? null,
+          })
+          .returning()
+          .then((rows) => serialize(rows[0]!)),
       );
-      return id;
     },
   );
 
@@ -98,7 +113,7 @@ export namespace User {
         .select()
         .from(UserTable)
         .where(and(eq(UserTable.id, id), isNull(UserTable.timeDeleted)))
-        .then((rows) => rows.at(0) ?? null),
+        .then((rows) => (rows[0] ? serialize(rows[0]) : null)),
     ),
   );
 
@@ -125,7 +140,7 @@ export namespace User {
         .select()
         .from(UserTable)
         .where(eq(UserTable.email, email))
-        .then((rows) => rows.at(0) ?? null),
+        .then((rows) => (rows[0] ? serialize(rows[0]) : null)),
     ),
   );
 
@@ -153,10 +168,6 @@ export namespace User {
     ),
   );
 
-  /** The admin view of a user: the public shape plus whether the account is disabled. */
-  export const Row = Info.extend({ timeDeleted: z.iso.datetime().nullable() });
-  export type Row = z.infer<typeof Row>;
-
   /** Reads past the disabled filter `fromID` applies — the admin screens act on those rows. */
   const target = (id: string) =>
     Database.use((tx) =>
@@ -177,56 +188,6 @@ export namespace User {
         "You cannot change your own account here",
       );
   }
-
-  /** Admin directory: paginated, carries the role, can surface disabled accounts. */
-  export const page = fn(
-    Common.PaginatedInput.extend({
-      search: z.string().optional(),
-      /** Include disabled accounts, which are hidden by default like every other soft delete. */
-      deleted: z.boolean().optional(),
-    }),
-    (input) => {
-      Actor.check({ admin: ["read"] });
-      const { page, pageSize, limit, offset } = Common.page(input);
-      const where = and(
-        input.deleted ? undefined : isNull(UserTable.timeDeleted),
-        input.search
-          ? or(
-              ilike(UserTable.name, `%${input.search}%`),
-              ilike(UserTable.email, `%${input.search}%`),
-            )
-          : undefined,
-      );
-      return Database.use(async (tx) => {
-        const [rows, totalRows] = await Promise.all([
-          tx
-            .select()
-            .from(UserTable)
-            .where(where)
-            .orderBy(asc(UserTable.name))
-            .limit(limit)
-            .offset(offset),
-          tx.select({ total: count() }).from(UserTable).where(where),
-        ] as const);
-        return {
-          data: rows.map(
-            (row): Row => ({
-              id: row.id,
-              name: row.name,
-              email: row.email,
-              emailVerified: row.emailVerified,
-              image: row.image,
-              role: row.role,
-              timeDeleted: row.timeDeleted?.toISOString() ?? null,
-            }),
-          ),
-          page,
-          pageSize,
-          total: totalRows[0]?.total ?? 0,
-        };
-      });
-    },
-  );
 
   export const assign = fn(
     z.object({ id: Info.shape.id, role: Info.shape.role }),
@@ -287,4 +248,17 @@ export namespace User {
       });
     });
   });
+
+  export function serialize(row: typeof UserTable.$inferSelect): Info {
+    return {
+      id: row.id,
+      name: row.name,
+      email: row.email,
+      emailVerified: row.emailVerified,
+      image: row.image,
+      role: row.role,
+      prefs: row.prefs,
+      timeDeleted: iso(row.timeDeleted),
+    };
+  }
 }

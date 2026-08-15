@@ -27,20 +27,20 @@ describe("todo", () => {
   });
 
   test("GET /todo/:id", async () => {
-    const id = await Todo.create({ title: "Fetch me" });
+    const { id } = await Todo.create({ title: "Fetch me" });
     const response = await validateOpenAPIRoute("get", "/todo/:id", { id });
     expect(response.id).toBe(id);
   });
 
   test("PATCH /todo/:id", async () => {
-    const id = await Todo.create({ title: "Mark done" });
+    const { id } = await Todo.create({ title: "Mark done" });
     const response = await validateOpenAPIRoute("patch", "/todo/:id", { id }, { status: "active" });
     expect(response.status).toBe("active");
     expect(response.timeStarted).not.toBeNull();
   });
 
   test("DELETE /todo/:id", async () => {
-    const id = await Todo.create({ title: "Temporary" });
+    const { id } = await Todo.create({ title: "Temporary" });
     await validateOpenAPIRoute("delete", "/todo/:id", { id });
     const deleted = await Todo.fromID(id);
     expect(deleted).toBeNull();

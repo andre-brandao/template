@@ -54,10 +54,7 @@ export function todo(server: McpServer) {
         'Create a todo. Attach it to an entity with source/sourceID (e.g. source "project"), and give it a stage, assignee and planned dates to place it on the timeline.',
       inputSchema: Todo.create.schema.shape,
     },
-    async (input) => {
-      const id = await Todo.create(input);
-      return text(await Todo.fromID(id));
-    },
+    async (input) => text(await Todo.create(input)),
   );
 
   server.registerTool(
@@ -117,9 +114,6 @@ export function todo(server: McpServer) {
       description: "Create a project to hang todos off.",
       inputSchema: Project.create.schema.shape,
     },
-    async (input) => {
-      const id = await Project.create(input);
-      return text(await Project.fromID(id));
-    },
+    async (input) => text(await Project.create(input)),
   );
 }

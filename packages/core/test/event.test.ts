@@ -41,21 +41,21 @@ describe("event", () => {
   });
 
   withTestUser("a pinned read shows every actor, not just the caller", async ({ userID }) => {
-    const id = await Todo.create({ title: "Shared", source: "test", sourceID: "shared" });
+    const { id } = await Todo.create({ title: "Shared", source: "test", sourceID: "shared" });
     const mate = await Actor.provide("system", {}, () =>
       User.create({ name: "Mate", email: testEmail() }),
     );
-    await Actor.provide("user", { userID: mate, role: "member" }, () =>
+    await Actor.provide("user", { userID: mate.id, role: "member" }, () =>
       Todo.update({ id, status: "active" }),
     );
 
     const events = (await Event.list({ source: "todo", sourceID: id })).data;
-    expect(events.map((e) => e.userID)).toContain(mate);
+    expect(events.map((e) => e.userID)).toContain(mate.id);
     expect(events.map((e) => e.userID)).toContain(userID);
   });
 
   withTestUser("todo mutations emit the expected event trail", async ({ userID }) => {
-    const id = await Todo.create({ title: "Ship it", tags: ["work"] });
+    const { id } = await Todo.create({ title: "Ship it", tags: ["work"] });
     await Todo.update({ id, status: "active" });
     await Todo.update({ id, assignee: userID });
     await Todo.update({ id, status: "done" });

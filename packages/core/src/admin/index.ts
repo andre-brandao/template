@@ -1,15 +1,59 @@
 import { z } from "zod";
-import { count, isNotNull, isNull, sql, type SQL } from "drizzle-orm";
+import { and, asc, count, ilike, isNotNull, isNull, or, sql, type SQL } from "drizzle-orm";
 import { fn } from "../util/fn";
+import { iso } from "../util/fmt";
 import { Actor } from "../actor";
+import { Common } from "../common";
 import { Database } from "../drizzle";
+import { order } from "../drizzle/order";
 import { ProjectTable } from "../project/project.sql";
 import { JobTable } from "../lib/queue/queue.sql";
 import { TodoTable } from "../todo/todo.sql";
+import { User } from "../user";
 import { UserTable } from "../user/user.sql";
 
-/** Read-only operational stats for the back office — live queries only, nothing stored. */
+/** The back office: the account directory, plus read-only stats queried live. */
 export namespace Admin {
+  /** Every account, paginated. Carries the role, and can surface disabled ones. */
+  export const users = fn(
+    Common.Query(["name", "email", "role", "timeCreated"]).extend({
+      search: z.string().optional(),
+      /** Include disabled accounts, which are hidden by default like every other soft delete. */
+      deleted: z.boolean().optional(),
+    }),
+    (input) => {
+      Actor.check({ admin: ["read"] });
+      const { page, pageSize, limit, offset } = Common.page(input);
+      const where = and(
+        input.deleted ? undefined : isNull(UserTable.timeDeleted),
+        input.search
+          ? or(
+              ilike(UserTable.name, `%${input.search}%`),
+              ilike(UserTable.email, `%${input.search}%`),
+            )
+          : undefined,
+      );
+      return Database.use(async (tx) => {
+        const [rows, totalRows] = await Promise.all([
+          tx
+            .select()
+            .from(UserTable)
+            .where(where)
+            .orderBy(...order(UserTable, input.sort, asc(UserTable.name)))
+            .limit(limit)
+            .offset(offset),
+          tx.select({ total: count() }).from(UserTable).where(where),
+        ] as const);
+        return {
+          data: rows.map(User.serialize),
+          page,
+          pageSize,
+          total: totalRows[0]?.total ?? 0,
+        };
+      });
+    },
+  );
+
   /** Catalog query the builder can't express; the union `tx` type forces the cast. */
   const raw = (query: SQL) => Database.use((tx): Promise<any[]> => (tx as any).execute(query));
 
@@ -76,7 +120,7 @@ export namespace Admin {
         pending,
         running,
         failed,
-        oldest: oldest ? new Date(oldest).toISOString() : null,
+        oldest: iso(oldest),
       };
     });
   });
@@ -118,7 +162,7 @@ export namespace Admin {
       version: row?.version ?? "unknown",
       connections: Number(row?.connections ?? 0),
       max: Number(row?.max ?? 0),
-      started: row?.started ? new Date(row.started).toISOString() : null,
+      started: iso(row?.started),
     };
   });
 }

@@ -16,13 +16,13 @@ export function seed(uid: string, titles: string[], name = "E2E") {
   return Database.provide(db, () =>
     Queue.provide(Queue.Providers.memory(), () =>
       Actor.provide("user", { userID: uid, role: "member" }, async () => {
-        const project = await Project.create({ name: `${name} ${uid.slice(-6)}` });
+        const { id } = await Project.create({ name: `${name} ${uid.slice(-6)}` });
         await Promise.all(
           titles.map((title, i) =>
             Todo.create({
               title,
               source: "project",
-              sourceID: project,
+              sourceID: id,
               assignee: uid,
               stage: i % 2 === 0 ? "Sprint 1" : "Sprint 2",
               startDate: day(i),
@@ -30,7 +30,7 @@ export function seed(uid: string, titles: string[], name = "E2E") {
             }),
           ),
         );
-        return project;
+        return id;
       }),
     ),
   );

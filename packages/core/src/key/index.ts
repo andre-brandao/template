@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { and, desc, eq, gt, isNull, or } from "drizzle-orm";
 import { fn } from "../util/fn";
+import { iso } from "../util/fmt";
 import { found } from "../error";
 import { Actor } from "../actor";
 import { Common } from "../common";
@@ -8,15 +9,14 @@ import { Database } from "../drizzle";
 import { Examples } from "../examples";
 import { Identifier } from "../identifier";
 import { memo } from "../util/memo";
+import { token } from "../util/token";
 import { KeyTable } from "./key.sql";
-
-const CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
 export namespace Key {
   export const Info = z
     .object({
       id: z.string().meta({ description: Common.IdDescription, example: Examples.Key.id }),
-      name: z.string().min(1).max(255),
+      name: z.string().min(1).max(255).meta({ description: "Label shown in the key list." }),
       key: z.string().meta({ description: "The secret. Handed back in full so it can be copied." }),
       display: z.string().meta({ description: "Masked secret, safe to show in a list." }),
       timeUsed: z.iso
@@ -53,7 +53,7 @@ export namespace Key {
             id: Identifier.create("key"),
             userID: input.userID,
             name: input.name,
-            key: token(),
+            key: token("sk-"),
             expiresAt: input.expiresAt ?? null,
           })
           .returning()
@@ -103,7 +103,7 @@ export namespace Key {
           id: Identifier.create("key"),
           userID: null,
           name: "url-signing",
-          key: token(),
+          key: token("sk-"),
           type: "signing",
         })
         .returning()
@@ -175,20 +175,14 @@ export namespace Key {
     return or(isNull(KeyTable.expiresAt), gt(KeyTable.expiresAt, new Date()));
   }
 
-  function token() {
-    const bytes = new Uint32Array(64);
-    crypto.getRandomValues(bytes);
-    return "sk-" + Array.from(bytes, (n) => CHARS[n % CHARS.length]!).join("");
-  }
-
   function serialize(row: typeof KeyTable.$inferSelect, current?: string): Info {
     return {
       id: row.id,
       name: row.name,
       key: row.key,
       display: `${row.key.slice(0, 7)}...${row.key.slice(-4)}`,
-      timeUsed: row.timeUsed?.toISOString() ?? null,
-      expiresAt: row.expiresAt?.toISOString() ?? null,
+      timeUsed: iso(row.timeUsed),
+      expiresAt: iso(row.expiresAt),
       current: row.key === current,
     };
   }

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
-	import Spinner from '../ui/Spinner.svelte';
+	import Spinner from '../spinner/Spinner.svelte';
 
 	let {
 		variant = 'primary',

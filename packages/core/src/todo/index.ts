@@ -7,9 +7,12 @@ import { Actor } from "../actor";
 import { Common } from "../common";
 import { Examples } from "../examples";
 import { Identifier } from "../identifier";
+import { order } from "../drizzle/order";
+import { date, iso, trim } from "../util/fmt";
+import { clean, Tags } from "../util/tag";
 import { Event } from "../event";
 import { UserTable } from "../user/user.sql";
-import { StatusValues, TodoTable } from "./todo.sql";
+import { rank, StatusValues, TodoTable } from "./todo.sql";
 
 export { Insights } from "./insights";
 
@@ -17,31 +20,57 @@ export namespace Todo {
   export const Status = z.enum(StatusValues);
   export type Status = z.infer<typeof Status>;
 
-  const Tag = z.string().trim().min(1).max(64);
-
   /** Joined in — every list row wants the name, and a left join is cheap. */
   export const Assignee = z
-    .object({ id: z.string(), name: z.string(), image: z.string().nullable() })
-    .nullable();
+    .object({
+      id: z.string(),
+      name: z.string(),
+      image: z.string().nullable(),
+    })
+    .nullable()
+    .meta({
+      description: "The user responsible, joined in. Null when unassigned.",
+    });
   export type Assignee = z.infer<typeof Assignee>;
 
   export const Info = z
     .object({
       id: z.string().meta({ description: Common.IdDescription, example: Examples.Todo.id }),
-      createdBy: z.string(),
+      createdBy: z.string().meta({ description: "Id of the user who created it." }),
       assignee: Assignee,
-      source: z.string().max(64).nullable(),
-      sourceID: z.string().nullable(),
-      stage: z.string().max(64).nullable(),
-      title: z.string().min(0).max(2000),
-      body: z.string().max(20000).nullable(),
-      status: Status,
-      reason: z.string().max(200).nullable(),
-      tags: Tag.array().max(20),
-      startDate: z.iso.datetime().nullable(),
-      dueDate: z.iso.datetime().nullable(),
-      timeStarted: z.iso.datetime().nullable(),
-      timeDone: z.iso.datetime().nullable(),
+      source: z
+        .string()
+        .max(64)
+        .nullable()
+        .meta({ description: "Kind of entity that owns it, like `project`." }),
+      sourceID: z
+        .string()
+        .nullable()
+        .meta({ description: "Id of the owning entity, paired with `source`." }),
+      stage: z
+        .string()
+        .max(64)
+        .nullable()
+        .meta({ description: "Pipeline stage, a free-text label. Null when unstaged." }),
+      title: z.string().min(0).max(2000).meta({ description: "One-line summary." }),
+      body: z.string().max(20000).nullable().meta({ description: "The long form, markdown." }),
+      status: Status.meta({ description: "Where it sits in the pipeline." }),
+      reason: z
+        .string()
+        .max(200)
+        .nullable()
+        .meta({ description: "Why it last moved status. The next transition clears it." }),
+      tags: Tags.meta({ description: "Free-form labels, trimmed and deduplicated on write." }),
+      startDate: z.iso.datetime().nullable().meta({ description: "When work is meant to start." }),
+      dueDate: z.iso.datetime().nullable().meta({ description: "When it is meant to be done." }),
+      timeStarted: z.iso
+        .datetime()
+        .nullable()
+        .meta({ description: "When it first went `active`. Stamped once." }),
+      timeDone: z.iso
+        .datetime()
+        .nullable()
+        .meta({ description: "When it went `done`. Null while it is unfinished." }),
     })
     .meta({
       ref: "Todo",
@@ -64,16 +93,6 @@ export namespace Todo {
     });
   export type Stage = z.infer<typeof Stage>;
 
-  function clean(tags?: string[]) {
-    return [...new Set((tags ?? []).map((tag) => tag.trim()).filter(Boolean))];
-  }
-
-  const trim = (value?: string | null) => value?.trim() || null;
-
-  const date = (value?: string | null) => (value ? new Date(value) : null);
-
-  const iso = (value: Date | string | null) => (value ? new Date(value).toISOString() : null);
-
   const Patch = Info.pick({
     title: true,
     body: true,
@@ -88,6 +107,260 @@ export namespace Todo {
     .extend({ assignee: z.string().nullable() })
     .partial();
   type Patch = z.infer<typeof Patch>;
+
+  /** The assignee columns worth joining — never the whole user row. */
+  const assignee = { id: UserTable.id, name: UserTable.name, image: UserTable.image };
+
+  export const create = fn(
+    z.object({
+      title: Info.shape.title,
+      body: Info.shape.body.optional(),
+      tags: Info.shape.tags.optional(),
+      stage: Info.shape.stage.optional(),
+      assignee: Patch.shape.assignee,
+      source: Info.shape.source.optional(),
+      sourceID: Info.shape.sourceID.optional(),
+      status: Status.optional(),
+      startDate: Info.shape.startDate.optional(),
+      dueDate: Info.shape.dueDate.optional(),
+    }),
+    async (input) => {
+      Actor.check({ todo: ["create"] });
+      const id = Identifier.create("todo");
+      const tags = clean(input.tags);
+      const status = input.status ?? "backlog";
+      const stage = trim(input.stage);
+      return Database.transaction(async (tx) => {
+        await tx.insert(TodoTable).values({
+          id,
+          createdBy: Actor.userID(),
+          assignee: input.assignee ?? null,
+          source: input.source ?? null,
+          sourceID: input.sourceID ?? null,
+          stage,
+          title: input.title,
+          body: input.body ?? null,
+          status,
+          tags,
+          startDate: date(input.startDate),
+          dueDate: date(input.dueDate),
+          ...times(status, null),
+        });
+        const todo = found("Todo", await fromID.force(id));
+        await Event.publish({
+          type: "todo.created",
+          source: "todo",
+          sourceID: id,
+          tags,
+          data: {
+            title: input.title,
+            status,
+            stage,
+            assignee: input.assignee ?? null,
+            startDate: input.startDate ?? null,
+            dueDate: input.dueDate ?? null,
+          },
+          state: todo,
+        });
+        return todo;
+      });
+    },
+  );
+
+  export const list = fn(
+    Common.Query([
+      "title",
+      "status",
+      "stage",
+      "assignee",
+      "startDate",
+      "dueDate",
+      "timeCreated",
+    ]).extend({
+      status: Status.optional(),
+      /** A user id, or "none" for unassigned. */
+      assignee: z.string().optional(),
+      /** A stage name, or "none" for todos without one. */
+      stage: Info.shape.stage.unwrap().optional(),
+      source: Info.shape.source.unwrap().optional(),
+      sourceID: Info.shape.sourceID.unwrap().optional(),
+      createdBy: Info.shape.createdBy.optional(),
+      search: z.string().optional(),
+    }),
+    (input) => {
+      Actor.check({ todo: ["read"] });
+      const { page, pageSize, limit, offset } = Common.page(input);
+      const conditions = [isNull(TodoTable.timeDeleted)];
+      if (input.source) conditions.push(eq(TodoTable.source, input.source));
+      if (input.sourceID) conditions.push(eq(TodoTable.sourceID, input.sourceID));
+      if (input.status) conditions.push(eq(TodoTable.status, input.status));
+      if (input.createdBy) conditions.push(eq(TodoTable.createdBy, input.createdBy));
+      if (input.assignee)
+        conditions.push(
+          input.assignee === "none"
+            ? isNull(TodoTable.assignee)
+            : eq(TodoTable.assignee, input.assignee),
+        );
+      if (input.stage)
+        conditions.push(
+          input.stage === "none" ? isNull(TodoTable.stage) : eq(TodoTable.stage, input.stage),
+        );
+      if (input.search) conditions.push(ilike(TodoTable.title, `%${input.search}%`));
+      const where = and(...conditions);
+      return Database.use(async (tx) => {
+        const [rows, totalRows] = await Promise.all([
+          tx
+            .select({ todo: TodoTable, user: assignee })
+            .from(TodoTable)
+            .leftJoin(UserTable, eq(TodoTable.assignee, UserTable.id))
+            .where(where)
+            .orderBy(
+              ...order(TodoTable, input.sort, desc(TodoTable.timeCreated), {
+                assignee: assignee.name,
+                status: rank,
+              }),
+            )
+            .limit(limit)
+            .offset(offset),
+          tx.select({ total: count() }).from(TodoTable).where(where),
+        ] as const);
+        return { data: rows.map(serialize), page, pageSize, total: totalRows[0]?.total ?? 0 };
+      });
+    },
+  );
+
+  /** Stage list aggregated from the todos wearing each label — no second table to drift. */
+  export const stages = fn(
+    z.object({
+      source: Info.shape.source.unwrap().optional(),
+      sourceID: Info.shape.sourceID.unwrap().optional(),
+    }),
+    (input) => {
+      Actor.check({ todo: ["read"] });
+      return Database.use((tx) =>
+        tx
+          .select({
+            name: TodoTable.stage,
+            total: count(),
+            done: sql<number>`cast(count(*) filter (where ${TodoTable.status} = 'done') as int)`,
+            start: min(TodoTable.startDate),
+            end: max(TodoTable.dueDate),
+          })
+          .from(TodoTable)
+          .where(
+            and(
+              isNull(TodoTable.timeDeleted),
+              input.source ? eq(TodoTable.source, input.source) : undefined,
+              input.sourceID ? eq(TodoTable.sourceID, input.sourceID) : undefined,
+              isNotNull(TodoTable.stage),
+            ),
+          )
+          .groupBy(TodoTable.stage)
+          .orderBy(sql`min(${TodoTable.startDate}) asc nulls last`, asc(TodoTable.stage))
+          .then((rows) =>
+            rows.map((row) => ({
+              name: row.name ?? "",
+              total: row.total,
+              done: row.done,
+              start: iso(row.start),
+              end: iso(row.end),
+            })),
+          ),
+      );
+    },
+  );
+
+  /** Renames a stage across every todo wearing it — the only stage edit there is. */
+  export const rename = fn(
+    z.object({
+      from: Info.shape.stage.unwrap().min(1),
+      to: Info.shape.stage.unwrap().min(1),
+      source: Info.shape.source.unwrap().optional(),
+      sourceID: Info.shape.sourceID.unwrap().optional(),
+    }),
+    (input) => {
+      Actor.check({ todo: ["update"] });
+      return Database.use((tx) =>
+        tx
+          .update(TodoTable)
+          .set({ stage: input.to.trim(), timeUpdated: new Date() })
+          .where(
+            and(
+              isNull(TodoTable.timeDeleted),
+              input.source ? eq(TodoTable.source, input.source) : undefined,
+              input.sourceID ? eq(TodoTable.sourceID, input.sourceID) : undefined,
+              eq(TodoTable.stage, input.from),
+            ),
+          ),
+      );
+    },
+  );
+
+  export const fromID = fn(Info.shape.id, (id) => {
+    Actor.check({ todo: ["read"] });
+    return Database.use((tx) =>
+      tx
+        .select({ todo: TodoTable, user: assignee })
+        .from(TodoTable)
+        .leftJoin(UserTable, eq(TodoTable.assignee, UserTable.id))
+        .where(and(eq(TodoTable.id, id), isNull(TodoTable.timeDeleted)))
+        .then((rows) => (rows[0] ? serialize(rows[0]) : null)),
+    );
+  });
+
+  export const update = fn(Patch.extend({ id: Info.shape.id }), async ({ id, ...patch }) => {
+    const before = found("Todo", await fromID.force(id));
+    Actor.check({ todo: ["update"] }, before.createdBy);
+    const next = {
+      ...patch,
+      ...(patch.tags !== undefined ? { tags: clean(patch.tags) } : {}),
+      ...(patch.stage !== undefined ? { stage: trim(patch.stage) } : {}),
+    };
+
+    return Database.transaction(async (tx) => {
+      await tx.update(TodoTable).set(fields(next, before)).where(eq(TodoTable.id, id));
+      await emit(id, before, next);
+    });
+  });
+
+  export const remove = fn(Info.shape.id, async (id) => {
+    const before = found("Todo", await fromID.force(id));
+    Actor.check({ todo: ["delete"] }, before.createdBy);
+
+    return Database.transaction(async (tx) => {
+      await tx.update(TodoTable).set({ timeDeleted: new Date() }).where(eq(TodoTable.id, id));
+      await Event.publish({
+        type: "todo.removed",
+        source: "todo",
+        sourceID: id,
+        tags: before.tags,
+        data: { title: before.title, status: before.status, tags: before.tags },
+        state: before,
+      });
+    });
+  });
+
+  function serialize(row: { todo: typeof TodoTable.$inferSelect; user: Assignee }): Info {
+    return {
+      id: row.todo.id,
+      createdBy: row.todo.createdBy,
+      assignee: row.user,
+      source: row.todo.source,
+      sourceID: row.todo.sourceID,
+      stage: row.todo.stage,
+      title: row.todo.title,
+      body: row.todo.body,
+      status: row.todo.status,
+      reason: row.todo.reason,
+      tags: row.todo.tags,
+      startDate: iso(row.todo.startDate),
+      dueDate: iso(row.todo.dueDate),
+      timeStarted: iso(row.todo.timeStarted),
+      timeDone: iso(row.todo.timeDone),
+    };
+  }
+
+  // === UTILS ===
 
   /**
    * Span moves with status: `active` stamps the start (once), `done` stamps the end,
@@ -148,174 +421,6 @@ export namespace Todo {
     return changed;
   }
 
-  /** The assignee columns worth joining — never the whole user row. */
-  const assignee = { id: UserTable.id, name: UserTable.name, image: UserTable.image };
-
-  /** Live rows, optionally narrowed to the entity that owns them. */
-  function scope(input: { source?: string; sourceID?: string }) {
-    const out = [isNull(TodoTable.timeDeleted)];
-    if (input.source) out.push(eq(TodoTable.source, input.source));
-    if (input.sourceID) out.push(eq(TodoTable.sourceID, input.sourceID));
-    return out;
-  }
-
-  export const create = fn(
-    z.object({
-      title: Info.shape.title,
-      body: Info.shape.body.optional(),
-      tags: Info.shape.tags.optional(),
-      stage: Info.shape.stage.optional(),
-      assignee: z.string().nullable().optional(),
-      source: Info.shape.source.optional(),
-      sourceID: Info.shape.sourceID.optional(),
-      status: Status.optional(),
-      startDate: Info.shape.startDate.optional(),
-      dueDate: Info.shape.dueDate.optional(),
-    }),
-    async (input) => {
-      const id = Identifier.create("todo");
-      const tags = clean(input.tags);
-      const status = input.status ?? "backlog";
-      const stage = trim(input.stage);
-      return Database.transaction(async (tx) => {
-        await tx.insert(TodoTable).values({
-          id,
-          createdBy: Actor.userID(),
-          assignee: input.assignee ?? null,
-          source: input.source ?? null,
-          sourceID: input.sourceID ?? null,
-          stage,
-          title: input.title,
-          body: input.body ?? null,
-          status,
-          tags,
-          startDate: date(input.startDate),
-          dueDate: date(input.dueDate),
-          ...times(status, null),
-        });
-        await Event.publish({
-          type: "todo.created",
-          source: "todo",
-          sourceID: id,
-          tags,
-          data: {
-            title: input.title,
-            status,
-            stage,
-            assignee: input.assignee ?? null,
-            startDate: input.startDate ?? null,
-            dueDate: input.dueDate ?? null,
-          },
-          state: found("Todo", await fromID.force(id)),
-        });
-        return id;
-      });
-    },
-  );
-
-  export const list = fn(
-    Common.PaginatedInput.extend({
-      status: Status.optional(),
-      /** A user id, or "none" for unassigned. */
-      assignee: z.string().optional(),
-      /** A stage name, or "none" for todos without one. */
-      stage: z.string().optional(),
-      source: z.string().optional(),
-      sourceID: z.string().optional(),
-      createdBy: z.string().optional(),
-      search: z.string().optional(),
-    }),
-    (input) => {
-      const { page, pageSize, limit, offset } = Common.page(input);
-      const conditions = scope(input);
-      if (input.status) conditions.push(eq(TodoTable.status, input.status));
-      if (input.createdBy) conditions.push(eq(TodoTable.createdBy, input.createdBy));
-      if (input.assignee)
-        conditions.push(
-          input.assignee === "none"
-            ? isNull(TodoTable.assignee)
-            : eq(TodoTable.assignee, input.assignee),
-        );
-      if (input.stage)
-        conditions.push(
-          input.stage === "none" ? isNull(TodoTable.stage) : eq(TodoTable.stage, input.stage),
-        );
-      if (input.search) conditions.push(ilike(TodoTable.title, `%${input.search}%`));
-      const where = and(...conditions);
-      return Database.use(async (tx) => {
-        const [rows, totalRows] = await Promise.all([
-          tx
-            .select({ todo: TodoTable, user: assignee })
-            .from(TodoTable)
-            .leftJoin(UserTable, eq(TodoTable.assignee, UserTable.id))
-            .where(where)
-            .orderBy(desc(TodoTable.timeCreated))
-            .limit(limit)
-            .offset(offset),
-          tx.select({ total: count() }).from(TodoTable).where(where),
-        ] as const);
-        return { data: rows.map(serialize), page, pageSize, total: totalRows[0]?.total ?? 0 };
-      });
-    },
-  );
-
-  /** Stage list aggregated from the todos wearing each label — no second table to drift. */
-  export const stages = fn(
-    z.object({ source: z.string().optional(), sourceID: z.string().optional() }),
-    (input) =>
-      Database.use((tx) =>
-        tx
-          .select({
-            name: TodoTable.stage,
-            total: count(),
-            done: sql<number>`cast(count(*) filter (where ${TodoTable.status} = 'done') as int)`,
-            start: min(TodoTable.startDate),
-            end: max(TodoTable.dueDate),
-          })
-          .from(TodoTable)
-          .where(and(...scope(input), isNotNull(TodoTable.stage)))
-          .groupBy(TodoTable.stage)
-          .orderBy(sql`min(${TodoTable.startDate}) asc nulls last`, asc(TodoTable.stage))
-          .then((rows) =>
-            rows.map((row) => ({
-              name: row.name ?? "",
-              total: row.total,
-              done: row.done,
-              start: iso(row.start),
-              end: iso(row.end),
-            })),
-          ),
-      ),
-  );
-
-  /** Renames a stage across every todo wearing it — the only stage edit there is. */
-  export const rename = fn(
-    z.object({
-      from: z.string().min(1),
-      to: z.string().min(1).max(64),
-      source: z.string().optional(),
-      sourceID: z.string().optional(),
-    }),
-    (input) =>
-      Database.use((tx) =>
-        tx
-          .update(TodoTable)
-          .set({ stage: input.to.trim(), timeUpdated: new Date() })
-          .where(and(...scope(input), eq(TodoTable.stage, input.from))),
-      ),
-  );
-
-  export const fromID = fn(Info.shape.id, (id) =>
-    Database.use((tx) =>
-      tx
-        .select({ todo: TodoTable, user: assignee })
-        .from(TodoTable)
-        .leftJoin(UserTable, eq(TodoTable.assignee, UserTable.id))
-        .where(and(eq(TodoTable.id, id), isNull(TodoTable.timeDeleted)))
-        .then((rows) => (rows[0] ? serialize(rows[0]) : null)),
-    ),
-  );
-
   async function moved(id: string, before: Info, next: Patch, tags: string[]) {
     if (next.status === undefined || next.status === before.status) return;
     await Event.create({
@@ -371,55 +476,5 @@ export namespace Todo {
       data: changed,
       state: found("Todo", await fromID.force(id)),
     });
-  }
-
-  export const update = fn(Patch.extend({ id: Info.shape.id }), async ({ id, ...patch }) => {
-    const before = found("Todo", await fromID.force(id));
-    const next = {
-      ...patch,
-      ...(patch.tags !== undefined ? { tags: clean(patch.tags) } : {}),
-      ...(patch.stage !== undefined ? { stage: trim(patch.stage) } : {}),
-    };
-
-    return Database.transaction(async (tx) => {
-      await tx.update(TodoTable).set(fields(next, before)).where(eq(TodoTable.id, id));
-      await emit(id, before, next);
-    });
-  });
-
-  export const remove = fn(Info.shape.id, async (id) => {
-    const before = found("Todo", await fromID.force(id));
-
-    return Database.transaction(async (tx) => {
-      await tx.update(TodoTable).set({ timeDeleted: new Date() }).where(eq(TodoTable.id, id));
-      await Event.publish({
-        type: "todo.removed",
-        source: "todo",
-        sourceID: id,
-        tags: before.tags,
-        data: { title: before.title, status: before.status, tags: before.tags },
-        state: before,
-      });
-    });
-  });
-
-  function serialize(row: { todo: typeof TodoTable.$inferSelect; user: Assignee }): Info {
-    return {
-      id: row.todo.id,
-      createdBy: row.todo.createdBy,
-      assignee: row.user,
-      source: row.todo.source,
-      sourceID: row.todo.sourceID,
-      stage: row.todo.stage,
-      title: row.todo.title,
-      body: row.todo.body,
-      status: row.todo.status,
-      reason: row.todo.reason,
-      tags: row.todo.tags,
-      startDate: iso(row.todo.startDate),
-      dueDate: iso(row.todo.dueDate),
-      timeStarted: iso(row.todo.timeStarted),
-      timeDone: iso(row.todo.timeDone),
-    };
   }
 }

@@ -9,11 +9,22 @@ export function Result<T extends z.ZodType>(schema: T) {
   return resolver(schema);
 }
 
-/** Query params shared by every paginated list route. Extend with route-specific filters. */
-export const PaginatedQuery = z.object({
-  page: z.coerce.number().min(1).optional(),
-  pageSize: z.coerce.number().min(1).max(100).optional(),
-});
+const num = (v: unknown) => (typeof v === "string" ? Number(v) : v);
+
+const arr = (v: unknown) => (typeof v === "string" ? [v] : v);
+
+/**
+ * A core list schema as the query string hands it over: numbers arrive as text, and a
+ * single `?sort=` arrives unwrapped rather than as a one-element array. Only the encoding
+ * is patched here — the constraints, defaults and docs stay core's.
+ */
+export function PaginatedQuery<T extends z.ZodObject<any>>(schema: T) {
+  return schema.extend({
+    page: z.preprocess(num, schema.shape.page),
+    pageSize: z.preprocess(num, schema.shape.pageSize),
+    sort: z.preprocess(arr, schema.shape.sort),
+  });
+}
 
 /** OpenAPI 200 response for a paginated list route — wraps `Common.Page(item)` so handlers don't repeat it. */
 export function PaginatedResponse<T extends z.ZodType>(
@@ -77,6 +88,7 @@ export const validator = function <S extends z.ZodType, Target extends keyof Val
         code: ErrorCodes.Validation.INVALID_PARAMETER,
         message: firstIssue.message,
         param: fieldPath,
+        // One entry per failing field, so a client can mark up a whole form from one response.
         details: {
           issues: issues.map((issue) => ({
             path: issue.path?.map(String).join("."),
@@ -102,7 +114,13 @@ export const ErrorResponses = {
         example: {
           type: "validation",
           code: "invalid_parameter",
-          message: "The request was invalid",
+          message: "Invalid input: expected string, received undefined",
+          param: "email",
+          details: {
+            issues: [
+              { path: "email", message: "Invalid input: expected string, received undefined" },
+            ],
+          },
         },
       },
     },

@@ -1,4 +1,5 @@
 import { Identifier } from "./identifier";
+import { DEFAULTS } from "./user/prefs";
 
 export namespace Examples {
   export const Id = (prefix: keyof typeof Identifier.prefixes) =>
@@ -11,6 +12,8 @@ export namespace Examples {
     emailVerified: true,
     image: null,
     role: "member",
+    prefs: DEFAULTS,
+    timeDeleted: null,
   } as const;
 
   export const Project = {

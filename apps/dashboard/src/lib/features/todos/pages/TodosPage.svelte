@@ -2,6 +2,7 @@
 	import { z } from 'zod';
 	import { page } from '$app/state';
 	import { query } from '$lib/utils/params';
+	import { sort } from '../sort';
 	import Header from '$lib/components/Header.svelte';
 	import { Button, Drawer } from '@template/ui';
 	import { getTodos } from '../api/todos.remote';
@@ -23,7 +24,8 @@
 			assignee: z.string().default(''),
 			stage: z.string().default(''),
 			view: z.enum(['list', 'board', 'table', 'timeline']).default('table'),
-			group: z.enum(['status', 'stage', 'assignee']).default('status')
+			group: z.enum(['status', 'stage', 'assignee']).default('status'),
+			sort: sort.schema
 		})
 	);
 
@@ -35,7 +37,8 @@
 			status: params.status === 'all' ? undefined : params.status,
 			assignee: params.assignee || undefined,
 			stage: params.stage || undefined,
-			q: params.q || undefined
+			q: params.q || undefined,
+			sort: params.sort
 		})
 	);
 

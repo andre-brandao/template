@@ -14,7 +14,7 @@ export function mint(
 ) {
   return Database.provide(db, async () => {
     const email = opts.email ?? `e2e-${crypto.randomUUID()}@example.com`;
-    const userID = await User.create({ name: opts.name ?? "E2E User", email });
+    const { id: userID } = await User.create({ name: opts.name ?? "E2E User", email });
     // Signup makes everyone a member and the app reads the role off the row, so anything
     // else has to be written there — the cookie only carries who, never what they hold.
     if (role !== "member")

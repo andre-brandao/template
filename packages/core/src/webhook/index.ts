@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { and, arrayContains, desc, eq, inArray, isNull, or, sql } from "drizzle-orm";
 import { fn } from "../util/fn";
+import { iso } from "../util/fmt";
 import { found } from "../error";
 import { Actor } from "../actor";
 import { Common } from "../common";
@@ -10,10 +11,9 @@ import { Identifier } from "../identifier";
 import { Queue } from "../lib/queue";
 import { Log } from "../util/log";
 import { sign } from "../util/sign";
+import { token } from "../util/token";
 import { Types } from "./types";
 import { WebhookTable } from "./webhook.sql";
-
-const CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
 /** Consecutive failed POSTs before a subscription turns itself off. One dead event costs 4. */
 const LIMIT = 20;
@@ -32,18 +32,26 @@ export namespace Webhook {
   export const Info = z
     .object({
       id: z.string().meta({ description: Common.IdDescription, example: Examples.Webhook.id }),
-      url: z.url().max(2000),
+      url: z.url().max(2000).meta({ description: "Where deliveries are POSTed." }),
       secret: z.string().meta({ description: "Signing secret. Handed back in full to admins." }),
       display: z.string().meta({ description: "Masked secret, safe to show in a list." }),
       types: z
         .enum(Types)
         .array()
         .meta({ description: "Event types to receive. Empty means every public type." }),
-      enabled: z.boolean(),
+      enabled: z.boolean().meta({
+        description: "Turns itself off after too many failures. Re-enabling clears the count.",
+      }),
       failures: z.number().meta({ description: "Consecutive failed deliveries." }),
-      lastStatus: z.number().nullable(),
-      timeDelivered: z.iso.datetime().nullable(),
-      timeCreated: z.iso.datetime(),
+      lastStatus: z
+        .number()
+        .nullable()
+        .meta({ description: "HTTP status of the last attempt. Null if it never answered." }),
+      timeDelivered: z.iso
+        .datetime()
+        .nullable()
+        .meta({ description: "When a delivery last succeeded." }),
+      timeCreated: z.iso.datetime().meta({ description: "When the subscription was created." }),
     })
     .meta({
       ref: "Webhook",
@@ -65,7 +73,7 @@ export namespace Webhook {
             id: Identifier.create("webhook"),
             createdBy: Actor.userID(),
             url: input.url,
-            secret: token(),
+            secret: token("whsec_"),
             types: input.types ?? [],
           })
           .returning()
@@ -215,12 +223,6 @@ export namespace Webhook {
     return row.id;
   }
 
-  function token() {
-    const bytes = new Uint32Array(64);
-    crypto.getRandomValues(bytes);
-    return "whsec_" + Array.from(bytes, (n) => CHARS[n % CHARS.length]!).join("");
-  }
-
   function serialize(row: typeof WebhookTable.$inferSelect): Info {
     return {
       id: row.id,
@@ -231,7 +233,7 @@ export namespace Webhook {
       enabled: row.enabled,
       failures: row.failures,
       lastStatus: row.lastStatus,
-      timeDelivered: row.timeDelivered?.toISOString() ?? null,
+      timeDelivered: iso(row.timeDelivered),
       timeCreated: row.timeCreated.toISOString(),
     };
   }

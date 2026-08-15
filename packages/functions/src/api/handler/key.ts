@@ -81,6 +81,7 @@ export namespace KeyApi {
             content: { "application/json": { schema: Result(z.literal("ok")) } },
             description: "Revoked.",
           },
+          400: ErrorResponses[400],
           401: ErrorResponses[401],
           404: ErrorResponses[404],
           500: ErrorResponses[500],

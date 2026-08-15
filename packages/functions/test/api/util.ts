@@ -23,7 +23,7 @@ export function setupApiTest() {
     console.error = mock();
 
     const email = `test-${crypto.randomUUID()}@example.com`;
-    userID = await User.create({ name: "Test User", email });
+    userID = (await User.create({ name: "Test User", email })).id;
     token = (await Key.create({ userID, name: "test" })).key;
   });
 

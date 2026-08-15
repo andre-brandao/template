@@ -7,6 +7,7 @@ import { Actor } from "../actor";
 import { Common } from "../common";
 import { Examples } from "../examples";
 import { Identifier } from "../identifier";
+import { order } from "../drizzle/order";
 import { Event } from "../event";
 import { ProjectTable } from "./project.sql";
 
@@ -14,10 +15,10 @@ export namespace Project {
   export const Info = z
     .object({
       id: z.string().meta({ description: Common.IdDescription, example: Examples.Project.id }),
-      createdBy: z.string(),
-      name: z.string().min(1).max(200),
-      description: z.string().max(2000).nullable(),
-      image: z.string().nullable(),
+      createdBy: z.string().meta({ description: "Id of the user who created it." }),
+      name: z.string().min(1).max(200).meta({ description: "Display name." }),
+      description: z.string().max(2000).nullable().meta({ description: "What it is for." }),
+      image: z.string().nullable().meta({ description: "Cover image URL, or null for none." }),
     })
     .meta({
       ref: "Project",
@@ -40,20 +41,21 @@ export namespace Project {
           name: input.name,
           description: input.description ?? null,
         });
+        const project = found("Project", await fromID.force(id));
         await Event.publish({
           type: "project.created",
           source: "project",
           sourceID: id,
           data: { name: input.name },
-          state: found("Project", await fromID.force(id)),
+          state: project,
         });
-        return id;
+        return project;
       });
     },
   );
 
   export const list = fn(
-    Common.PaginatedInput.extend({ search: z.string().optional() }),
+    Common.Query(["name", "timeCreated"]).extend({ search: z.string().optional() }),
     (input) => {
       Actor.check({ project: ["read"] });
       const { page, pageSize, limit, offset } = Common.page(input);
@@ -66,7 +68,7 @@ export namespace Project {
             .select()
             .from(ProjectTable)
             .where(where)
-            .orderBy(asc(ProjectTable.name))
+            .orderBy(...order(ProjectTable, input.sort, asc(ProjectTable.name)))
             .limit(limit)
             .offset(offset),
           tx.select({ total: count() }).from(ProjectTable).where(where),
@@ -82,6 +84,9 @@ export namespace Project {
       tx
         .select()
         .from(ProjectTable)
+        // Overlap with todo/index.ts is the shared CRUD order, not shared logic: it spans
+        // the fromID/update boundary and extracts to nothing.
+        // fallow-ignore-next-line code-duplication
         .where(and(eq(ProjectTable.id, id), isNull(ProjectTable.timeDeleted)))
         .then((rows) => (rows[0] ? serialize(rows[0]) : null)),
     );

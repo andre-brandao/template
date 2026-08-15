@@ -19,6 +19,7 @@
     "@lucide/svelte": "^1.31.0",
     "@openauthjs/openauth": "catalog:",
     "@tanstack/charts": "0.9.0",
+    "@tanstack/svelte-table": "^9.1.2",
     "@template/core": "workspace:*",
     "@template/functions": "workspace:*",
     "@template/sdk": "workspace:*",

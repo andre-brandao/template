@@ -24,12 +24,13 @@ export namespace ProjectApi {
         description: "List projects, optionally filtered by name. Paginated.",
         responses: {
           200: PaginatedResponse(Project.Info, "A page of projects.", Examples.Project),
+          400: ErrorResponses[400],
           401: ErrorResponses[401],
           500: ErrorResponses[500],
         },
       }),
       authRequired,
-      validator("query", PaginatedQuery.extend({ search: z.string().optional() })),
+      validator("query", PaginatedQuery(Project.list.schema)),
       async (c) => {
         const projects = await Project.list(c.req.valid("query"));
         return c.json(projects, 200);
@@ -47,13 +48,14 @@ export namespace ProjectApi {
             },
             description: "The project.",
           },
+          400: ErrorResponses[400],
           401: ErrorResponses[401],
           404: ErrorResponses[404],
           500: ErrorResponses[500],
         },
       }),
       authRequired,
-      validator("param", z.object({ id: z.string() })),
+      validator("param", z.object({ id: Project.Info.shape.id })),
       async (c) => {
         const project = found("Project", await Project.fromID(c.req.valid("param").id));
         return c.json(project, 200);
@@ -66,7 +68,9 @@ export namespace ProjectApi {
         summary: "Create project",
         responses: {
           200: {
-            content: { "application/json": { schema: Result(Project.Info) } },
+            content: {
+              "application/json": { schema: Result(Project.Info), example: Examples.Project },
+            },
             description: "The created project.",
           },
           400: ErrorResponses[400],
@@ -76,11 +80,7 @@ export namespace ProjectApi {
       }),
       authRequired,
       validator("json", Project.create.schema),
-      async (c) => {
-        const id = await Project.create(c.req.valid("json"));
-        const project = await Project.fromID(id);
-        return c.json(project, 200);
-      },
+      async (c) => c.json(await Project.create(c.req.valid("json")), 200),
     )
     .patch(
       "/:id",
@@ -89,7 +89,9 @@ export namespace ProjectApi {
         summary: "Update project",
         responses: {
           200: {
-            content: { "application/json": { schema: Result(Project.Info) } },
+            content: {
+              "application/json": { schema: Result(Project.Info), example: Examples.Project },
+            },
             description: "The updated project.",
           },
           400: ErrorResponses[400],
@@ -99,7 +101,7 @@ export namespace ProjectApi {
         },
       }),
       authRequired,
-      validator("param", z.object({ id: z.string() })),
+      validator("param", z.object({ id: Project.Info.shape.id })),
       validator("json", Project.update.schema.omit({ id: true })),
       async (c) => {
         const { id } = c.req.valid("param");
@@ -118,6 +120,7 @@ export namespace ProjectApi {
             content: { "application/json": { schema: Result(z.literal("ok")) } },
             description: "Deleted.",
           },
+          400: ErrorResponses[400],
           401: ErrorResponses[401],
           404: ErrorResponses[404],
           500: ErrorResponses[500],

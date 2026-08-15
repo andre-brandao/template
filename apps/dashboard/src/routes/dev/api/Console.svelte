@@ -2,7 +2,9 @@
 	import { untrack } from 'svelte';
 	import { Button } from '@template/ui';
 	import Params from './Params.svelte';
+	import Responses from './Responses.svelte';
 	import Result from './Result.svelte';
+	import Schema from './Schema.svelte';
 	import Snippets from './Snippets.svelte';
 	import Url from './Url.svelte';
 	import { token } from './token.svelte';
@@ -54,42 +56,65 @@
 	{#if op.description}<p class="desc">{op.description}</p>{/if}
 </header>
 
-<!-- Above the form and sticky: Send keeps its place however tall the request grows. -->
-<div class="bar">
-	<Url method={op.method} {base} path={op.path} {search} bind:values />
-	<Button onclick={run} pending={busy} disabled={upload}>Send</Button>
+<!-- The console you drive on the left, the reference that never moves on the right. -->
+<div class="panes">
+	<section class="console" aria-label="Try it">
+		<!-- Sticky within the card: Send keeps its place however tall the request grows. -->
+		<div class="bar">
+			<Url method={op.method} {base} path={op.path} {search} bind:values />
+			<Button onclick={run} pending={busy} disabled={upload}>Send</Button>
+		</div>
+
+		{#if upload}
+			<p class="note">
+				Takes <code>multipart/form-data</code>. Upload a file from the files screen instead.
+			</p>
+		{/if}
+
+		<Params params={query} bind:values />
+
+		{#if op.mime === 'application/json'}
+			<label class="field body">
+				<span>body</span>
+				<textarea rows="10" spellcheck="false" bind:value={body}></textarea>
+			</label>
+		{/if}
+
+		<!-- Always rendered, so the arriving response fills a slot instead of growing the card. -->
+		<div class="out">
+			{#if res}
+				<Result {res} />
+			{:else}
+				<p class="idle">Send the request to see the response here.</p>
+			{/if}
+		</div>
+	</section>
+
+	<!-- Scrolls itself rather than the page, so a 15-field schema doesn't bury the console. -->
+	<aside class="docs">
+		<!-- First: it mirrors the request you just built, so it belongs next to the console. -->
+		<Snippets
+			input={{
+				method: op.method,
+				url,
+				base,
+				id: op.id,
+				token: auth.current,
+				body: op.mime === 'application/json' ? body : '',
+				values
+			}}
+		/>
+
+		{#if op.fields.length}
+			<details class="schema" open>
+				<summary>body schema <code>{op.mime}</code></summary>
+				<Schema fields={op.fields} />
+			</details>
+		{/if}
+
+		<Responses responses={op.responses} />
+	</aside>
 </div>
-
-{#if upload}
-	<p class="note">
-		Takes <code>multipart/form-data</code>. Upload a file from the files screen instead.
-	</p>
-{/if}
-
-<Params params={query} bind:values />
-
-{#if op.mime === 'application/json'}
-	<label class="field body">
-		<span>body</span>
-		<textarea rows="10" spellcheck="false" bind:value={body}></textarea>
-	</label>
-{/if}
-
-<Snippets
-	input={{
-		method: op.method,
-		url,
-		base,
-		id: op.id,
-		token: auth.current,
-		body: op.mime === 'application/json' ? body : '',
-		values
-	}}
-/>
-
-{#if res}
-	<Result {res} />
-{/if}
 
 <style>
 	header {
@@ -108,6 +133,31 @@
 		font-size: 0.85em;
 	}
 
+	/* Golden ratio: the console keeps the wider side, since its params grid and body editor
+	   need it most. Below the breakpoint the two stack and the page scrolls as before. */
+	.panes {
+		display: grid;
+		grid-template-columns: 1.618fr 1fr;
+		align-items: start;
+		gap: 2em;
+	}
+
+	/* Without this the tracks size to their content's minimum, so a long url in the bar widens
+	   the whole column and re-flows the params grid as you type. */
+	.console,
+	.docs {
+		min-width: 0;
+	}
+
+	/* The card is the boundary the docs beside it don't cross: everything inside is yours to
+	   drive, and hitting Send only ever changes what is in here. */
+	.console {
+		padding: 0 1.1em 1.1em;
+		border: 1px solid var(--border);
+		border-radius: var(--radius);
+		background: var(--surface-2);
+	}
+
 	.bar {
 		display: flex;
 		align-items: center;
@@ -115,13 +165,79 @@
 		position: sticky;
 		top: var(--topbar);
 		z-index: 1;
-		margin-bottom: 1.2em;
-		padding: 0.7em 0;
-		background: var(--bg);
+		/* Full-bleed across the card's padding, so scrolled content passes behind it. */
+		margin: 0 -1.1em 1.2em;
+		padding: 0.9em 1.1em;
+		border-bottom: 1px solid var(--border);
+		border-radius: var(--radius) var(--radius) 0 0;
+		background: var(--surface-2);
+	}
+
+	.out {
+		margin-top: 1.2em;
+		padding-top: 1em;
+		border-top: 1px solid var(--border);
+		/* Reserved: the result drops into a slot that is already this tall, so nothing shifts. */
+		min-height: 11em;
+	}
+
+	.out :global(section) {
+		margin-top: 0;
+	}
+
+	.idle {
+		margin: 0;
+		color: var(--dim);
+		font-size: 0.82em;
+	}
+
+	.docs {
+		position: sticky;
+		top: calc(var(--topbar) + 1em);
+		max-height: calc(100vh - var(--topbar) - 3em);
+		overflow-y: auto;
+		scrollbar-gutter: stable;
+	}
+
+	.docs :global(> section:first-child) {
+		margin-top: 0;
+	}
+
+	@media (max-width: 1100px) {
+		.panes {
+			grid-template-columns: 1fr;
+		}
+
+		.docs {
+			position: static;
+			max-height: none;
+			overflow-y: visible;
+		}
 	}
 
 	.body {
 		margin-bottom: 1.2em;
+	}
+
+	.schema {
+		margin-bottom: 1.2em;
+		padding-bottom: 0.6em;
+		border-bottom: 1px solid var(--border);
+	}
+
+	.schema summary {
+		cursor: pointer;
+		margin-bottom: 0.4em;
+		font-family: var(--font-mono);
+		font-size: 0.72em;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		color: var(--dim);
+	}
+
+	.schema summary code {
+		text-transform: none;
+		letter-spacing: 0;
 	}
 
 	textarea {

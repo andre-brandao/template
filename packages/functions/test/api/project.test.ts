@@ -20,19 +20,19 @@ describe("project", () => {
   });
 
   test("GET /project/:id", async () => {
-    const id = await Project.create({ name: "Fetch me" });
+    const { id } = await Project.create({ name: "Fetch me" });
     const response = await validateOpenAPIRoute("get", "/project/:id", { id });
     expect(response.id).toBe(id);
   });
 
   test("PATCH /project/:id", async () => {
-    const id = await Project.create({ name: "Old" });
+    const { id } = await Project.create({ name: "Old" });
     const response = await validateOpenAPIRoute("patch", "/project/:id", { id }, { name: "New" });
     expect(response.name).toBe("New");
   });
 
   test("DELETE /project/:id", async () => {
-    const id = await Project.create({ name: "Temporary" });
+    const { id } = await Project.create({ name: "Temporary" });
     await validateOpenAPIRoute("delete", "/project/:id", { id });
     expect(await Project.fromID(id)).toBeNull();
   });

@@ -110,7 +110,7 @@ describe("file", () => {
     await upload(pngFile("private.png"));
 
     const otherEmail = `test-${crypto.randomUUID()}@example.com`;
-    const otherUserID = await User.create({ name: "Other User", email: otherEmail });
+    const { id: otherUserID } = await User.create({ name: "Other User", email: otherEmail });
     const otherToken = (await Key.create({ userID: otherUserID, name: "other" })).key;
     const headers = { authorization: `Bearer ${otherToken}` };
 

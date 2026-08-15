@@ -108,7 +108,7 @@ describe("key", () => {
   });
 
   withTestUser("a key belonging to another user is not listable or removable", async () => {
-    const otherID = await User.create({ name: "Other", email: testEmail() });
+    const { id: otherID } = await User.create({ name: "Other", email: testEmail() });
     const key = await Key.create({ userID: otherID, name: "theirs" });
 
     expect(await Key.list(undefined)).toBeEmpty();

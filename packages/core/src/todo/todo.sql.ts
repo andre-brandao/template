@@ -1,3 +1,4 @@
+import { sql } from "drizzle-orm";
 import { index, pgTable as table, text } from "drizzle-orm/pg-core";
 import { id, timestamp, timestamps, ulid } from "../drizzle/types";
 
@@ -35,4 +36,17 @@ export const TodoTable = table(
     index("todo_assignee").on(table.assignee, table.status),
     index("todo_stage").on(table.source, table.sourceID, table.stage),
   ],
+);
+
+/**
+ * Pipeline rank, not the alphabetical order the text column would give — a status sort
+ * has to agree with the board columns and the picker.
+ */
+export const rank = sql.join(
+  [
+    sql`case`,
+    ...StatusValues.map((status, at) => sql`when ${TodoTable.status} = ${status} then ${at}`),
+    sql`end`,
+  ],
+  sql` `,
 );

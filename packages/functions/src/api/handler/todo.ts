@@ -25,23 +25,13 @@ export namespace TodoApi {
           "List todos, optionally narrowed by status, assignee, stage or owning entity. Paginated.",
         responses: {
           200: PaginatedResponse(Todo.Info, "A page of todos.", Examples.Todo),
+          400: ErrorResponses[400],
           401: ErrorResponses[401],
           500: ErrorResponses[500],
         },
       }),
       authRequired,
-      validator(
-        "query",
-        PaginatedQuery.extend({
-          status: Todo.Status.optional(),
-          assignee: z.string().optional(),
-          stage: z.string().optional(),
-          source: z.string().optional(),
-          sourceID: z.string().optional(),
-          createdBy: z.string().optional(),
-          search: z.string().optional(),
-        }),
-      ),
+      validator("query", PaginatedQuery(Todo.list.schema)),
       async (c) => {
         const todos = await Todo.list(c.req.valid("query"));
         return c.json(todos, 200);
@@ -59,6 +49,7 @@ export namespace TodoApi {
             content: { "application/json": { schema: Result(z.array(Todo.Stage)) } },
             description: "The stages in use.",
           },
+          400: ErrorResponses[400],
           401: ErrorResponses[401],
           500: ErrorResponses[500],
         },
@@ -83,13 +74,14 @@ export namespace TodoApi {
             content: { "application/json": { schema: Result(Todo.Info), example: Examples.Todo } },
             description: "The todo.",
           },
+          400: ErrorResponses[400],
           401: ErrorResponses[401],
           404: ErrorResponses[404],
           500: ErrorResponses[500],
         },
       }),
       authRequired,
-      validator("param", z.object({ id: z.string() })),
+      validator("param", z.object({ id: Todo.Info.shape.id })),
       async (c) => {
         const todo = found("Todo", await Todo.fromID(c.req.valid("param").id));
         return c.json(todo, 200);
@@ -102,7 +94,7 @@ export namespace TodoApi {
         summary: "Create todo",
         responses: {
           200: {
-            content: { "application/json": { schema: Result(Todo.Info) } },
+            content: { "application/json": { schema: Result(Todo.Info), example: Examples.Todo } },
             description: "The created todo.",
           },
           400: ErrorResponses[400],
@@ -112,11 +104,7 @@ export namespace TodoApi {
       }),
       authRequired,
       validator("json", Todo.create.schema),
-      async (c) => {
-        const id = await Todo.create(c.req.valid("json"));
-        const todo = await Todo.fromID(id);
-        return c.json(todo, 200);
-      },
+      async (c) => c.json(await Todo.create(c.req.valid("json")), 200),
     )
     .patch(
       "/:id",
@@ -125,7 +113,7 @@ export namespace TodoApi {
         summary: "Update todo",
         responses: {
           200: {
-            content: { "application/json": { schema: Result(Todo.Info) } },
+            content: { "application/json": { schema: Result(Todo.Info), example: Examples.Todo } },
             description: "The updated todo.",
           },
           400: ErrorResponses[400],
@@ -154,6 +142,7 @@ export namespace TodoApi {
             content: { "application/json": { schema: Result(z.literal("ok")) } },
             description: "Deleted.",
           },
+          400: ErrorResponses[400],
           401: ErrorResponses[401],
           404: ErrorResponses[404],
           500: ErrorResponses[500],

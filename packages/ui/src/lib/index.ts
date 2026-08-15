@@ -1,25 +1,27 @@
-// Reexport your entry components here
+// input and markdown group a family; everything else is one folder per component,
+// holding its story, tests and css.
 
 // input
 export { default as Button } from "./input/Button.svelte";
 export { default as Input } from "./input/Input.svelte";
 export { default as LazySelect } from "./input/LazySelect.svelte";
 export { default as RangePicker, last, valid, type Range } from "./input/RangePicker.svelte";
-export { default as Select } from "./input/Select.svelte";
+export { default as Select, type Option } from "./input/Select.svelte";
 
 // markdown
 export { default as Markdown } from "./markdown/Markdown.svelte";
-export type { Components } from "./markdown/render/types";
 export { default as MarkdownEditor } from "./markdown/MarkdownEditor.svelte";
+export type { Components } from "./markdown/render/types";
 
-// ui
-export { default as Card } from "./ui/Card.svelte";
-export { default as Code } from "./ui/Code.svelte";
-export { default as Drawer, type Side } from "./ui/Drawer.svelte";
-export { default as FormBoundary } from "./ui/FormBoundary.svelte";
-export { default as Modals } from "./ui/Modals.svelte";
-export { default as Pager } from "./ui/Pager.svelte";
-export { default as Spinner } from "./ui/Spinner.svelte";
-export { default as Toaster } from "./ui/Toaster.svelte";
-export { modal, type Ask } from "./ui/modal.svelte";
-export { toast, type Kind, type Opts } from "./ui/toast.svelte";
+export { default as Card } from "./card/Card.svelte";
+export { default as Code } from "./code/Code.svelte";
+export { default as DataTable } from "./table/DataTable.svelte";
+export { features, type Features } from "./table/table";
+export { default as Drawer, type Side } from "./drawer/Drawer.svelte";
+export { default as FormBoundary } from "./boundary/FormBoundary.svelte";
+export { default as Modals } from "./modal/Modals.svelte";
+export { modal, type Ask } from "./modal/modal.svelte";
+export { default as Pager } from "./pager/Pager.svelte";
+export { default as Spinner } from "./spinner/Spinner.svelte";
+export { default as Toaster } from "./toast/Toaster.svelte";
+export { toast, type Kind, type Opts } from "./toast/toast.svelte";

@@ -6,7 +6,9 @@ import { Actor } from "../actor";
 import { Common } from "../common";
 import { Examples } from "../examples";
 import { Identifier } from "../identifier";
+import { clean, Tags } from "../util/tag";
 import { UserTable } from "../user/user.sql";
+import { order } from "../drizzle/order";
 import { Webhook } from "../webhook";
 import { EventTable } from "./event.sql";
 
@@ -14,22 +16,36 @@ export namespace Event {
   export const Info = z
     .object({
       id: z.string().meta({ description: Common.IdDescription, example: Examples.Event.id }),
-      userID: z.string().nullable(),
+      userID: z
+        .string()
+        .nullable()
+        .meta({ description: "Who caused it. Null for system and public actors." }),
       user: z
         .object({
           id: z.string(),
           name: z.string(),
           image: z.string().nullable(),
         })
-        .nullable(),
+        .nullable()
+        .meta({ description: "That user, joined in so a log row can name them." }),
       type: z.string().min(1).max(128).meta({
+        description: "What happened, like `todo.created`.",
         example: Examples.Event.type,
       }),
-      source: z.string().min(1).max(64).nullable(),
-      sourceID: z.string().nullable(),
-      tags: z.string().array().max(20),
-      data: z.record(z.string(), z.unknown()),
-      timeCreated: z.iso.datetime(),
+      source: z
+        .string()
+        .min(1)
+        .max(64)
+        .nullable()
+        .meta({ description: "Kind of entity it happened to, like `todo`." }),
+      sourceID: z.string().nullable().meta({ description: "Id of that entity." }),
+      tags: Tags.meta({
+        description: "Filter labels. Always carries the actor kind, like `actor:user`.",
+      }),
+      data: z
+        .record(z.string(), z.unknown())
+        .meta({ description: "Type-specific payload. For updates, the before/after diff." }),
+      timeCreated: z.iso.datetime().meta({ description: "When it was recorded." }),
     })
     .meta({
       ref: "Event",
@@ -64,7 +80,7 @@ export namespace Event {
           type: input.type,
           source: input.source,
           sourceID: input.sourceID,
-          tags: [...new Set([who.tag, ...(input.tags ?? [])])],
+          tags: clean([who.tag, ...(input.tags ?? [])]),
           data: input.data ?? {},
         }),
       );
@@ -104,64 +120,66 @@ export namespace Event {
     },
   );
 
-  /** Every filter is a column, so the shapes come from `Info` rather than being restated. */
-  const Filter = z
-    .object({
-      type: Info.shape.type,
-      source: Info.shape.source.unwrap(),
-      sourceID: Info.shape.sourceID.unwrap(),
-      userID: Info.shape.userID.unwrap(),
-      tags: Info.shape.tags,
-      search: z.string(),
-    })
-    .partial();
+  export const list = fn(
+    Common.Query(["type", "source", "user", "timeCreated"]).extend({
+      type: Info.shape.type.optional(),
+      source: Info.shape.source.unwrap().optional(),
+      sourceID: Info.shape.sourceID.unwrap().optional(),
+      userID: Info.shape.userID.unwrap().optional(),
+      tags: Info.shape.tags.optional(),
+      search: z.string().optional(),
+    }),
+    (input) => {
+      if (!input.sourceID) Actor.check({ admin: ["read"] });
 
-  export const list = fn(Common.PaginatedInput.extend(Filter.shape), (input) => {
-    if (!input.sourceID) Actor.check({ admin: ["read"] });
+      const { page, pageSize, limit, offset } = Common.page(input);
 
-    const { page, pageSize, limit, offset } = Common.page(input);
+      const conditions: SQL[] = [];
+      if (input.source) conditions.push(eq(EventTable.source, input.source));
+      if (input.sourceID) conditions.push(eq(EventTable.sourceID, input.sourceID));
+      if (input.type) conditions.push(eq(EventTable.type, input.type));
+      if (input.userID) conditions.push(eq(EventTable.userID, input.userID));
+      if (input.tags?.length) conditions.push(arrayOverlaps(EventTable.tags, input.tags));
+      // The log's one search box covers both columns a reader has in hand: the event name
+      // and the id of the row it happened to.
+      if (input.search)
+        conditions.push(
+          or(
+            ilike(EventTable.type, `%${input.search}%`),
+            ilike(EventTable.sourceID, `%${input.search}%`),
+          ) as SQL,
+        );
 
-    const conditions: SQL[] = [];
-    if (input.source) conditions.push(eq(EventTable.source, input.source));
-    if (input.sourceID) conditions.push(eq(EventTable.sourceID, input.sourceID));
-    if (input.type) conditions.push(eq(EventTable.type, input.type));
-    if (input.userID) conditions.push(eq(EventTable.userID, input.userID));
-    if (input.tags?.length) conditions.push(arrayOverlaps(EventTable.tags, input.tags));
-    // The log's one search box covers both columns a reader has in hand: the event name
-    // and the id of the row it happened to.
-    if (input.search)
-      conditions.push(
-        or(
-          ilike(EventTable.type, `%${input.search}%`),
-          ilike(EventTable.sourceID, `%${input.search}%`),
-        ) as SQL,
-      );
+      const where = and(...conditions);
 
-    const where = and(...conditions);
-
-    return Database.use(async (tx) => {
-      const [rows, totalRows] = await Promise.all([
-        tx
-          .select({
-            event: EventTable,
-            user: { id: UserTable.id, name: UserTable.name, image: UserTable.image },
-          })
-          .from(EventTable)
-          .leftJoin(UserTable, eq(UserTable.id, EventTable.userID))
-          .where(where)
-          .orderBy(desc(EventTable.timeCreated))
-          .limit(limit)
-          .offset(offset),
-        tx.select({ total: count() }).from(EventTable).where(where),
-      ] as const);
-      return {
-        data: rows.map((row) => serialize(row.event, row.user)),
-        page,
-        pageSize,
-        total: totalRows[0]?.total ?? 0,
-      };
-    });
-  });
+      return Database.use(async (tx) => {
+        const [rows, totalRows] = await Promise.all([
+          tx
+            .select({
+              event: EventTable,
+              user: { id: UserTable.id, name: UserTable.name, image: UserTable.image },
+            })
+            .from(EventTable)
+            .leftJoin(UserTable, eq(UserTable.id, EventTable.userID))
+            .where(where)
+            .orderBy(
+              ...order(EventTable, input.sort, desc(EventTable.timeCreated), {
+                user: UserTable.name,
+              }),
+            )
+            .limit(limit)
+            .offset(offset),
+          tx.select({ total: count() }).from(EventTable).where(where),
+        ] as const);
+        return {
+          data: rows.map((row) => serialize(row.event, row.user)),
+          page,
+          pageSize,
+          total: totalRows[0]?.total ?? 0,
+        };
+      });
+    },
+  );
 
   /** The values the log filters offer, taken from what has actually been recorded. */
   export const facets = fn(z.void(), () => {

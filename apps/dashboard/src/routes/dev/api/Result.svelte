@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { Code } from '@template/ui';
+	import Status from './Status.svelte';
 	import type { send } from './api.remote';
 
 	let { res }: { res: Awaited<ReturnType<typeof send>> } = $props();
@@ -14,7 +15,7 @@
 
 <section>
 	<div class="status">
-		<span class="pill" data-kind={Math.floor(res.status / 100)}>{res.status || 'failed'}</span>
+		<Status status={res.status} />
 		<span>{res.ms}ms</span>
 		<span>{res.headers['content-type'] ?? ''}</span>
 	</div>
@@ -38,24 +39,6 @@
 		font-family: var(--font-mono);
 		font-size: 0.75em;
 		color: var(--dim);
-	}
-
-	.pill {
-		padding: 0.15em 0.5em;
-		border: 1px solid var(--border);
-		border-radius: var(--radius);
-		color: var(--muted);
-	}
-
-	.pill[data-kind='2'] {
-		border-color: color-mix(in srgb, var(--done) 45%, transparent);
-		color: var(--done);
-	}
-
-	.pill[data-kind='4'],
-	.pill[data-kind='5'] {
-		border-color: color-mix(in srgb, var(--danger) 45%, transparent);
-		color: var(--danger);
 	}
 
 	section :global(pre.tm-code) {

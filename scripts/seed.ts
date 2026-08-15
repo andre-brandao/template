@@ -142,7 +142,9 @@ async function seed() {
     const list = await Todo.list({ page: 1, pageSize: 100 });
     if (list.total > 0) return;
 
-    const ids = await Promise.all(projects.map((project) => Project.create({ name: project })));
+    const ids = await Promise.all(
+      projects.map((project) => Project.create({ name: project }).then((row) => row.id)),
+    );
 
     await Promise.all(
       Array.from({ length: count }, async () => {
@@ -156,7 +158,7 @@ async function seed() {
         const started = state === "backlog" || state === "planned" ? null : new Date(start);
         const done = state === "done" ? new Date(rand(start, Math.min(due, now))) : null;
 
-        const id = await Todo.create({
+        const { id } = await Todo.create({
           title: title(),
           status: state,
           source: "project",

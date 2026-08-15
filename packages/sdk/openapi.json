@@ -23,14 +23,17 @@
           },
           "name": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "description": "Display name."
           },
           "email": {
             "type": "string",
             "format": "email",
-            "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+            "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+            "description": "Login address. Unique across accounts."
           },
           "emailVerified": {
+            "description": "Whether the address has been confirmed.",
             "type": "boolean"
           },
           "image": {
@@ -41,17 +44,82 @@
               {
                 "type": "null"
               }
-            ]
+            ],
+            "description": "Avatar URL, or null for none."
+          },
+          "role": {
+            "type": "string",
+            "enum": ["admin", "member"],
+            "description": "Decides everything the account may do. Only `user:assign` can change it."
+          },
+          "prefs": {
+            "type": "object",
+            "properties": {
+              "theme": {
+                "default": "system",
+                "type": "string",
+                "enum": ["system", "light", "dark"]
+              },
+              "locale": {
+                "default": "en",
+                "type": "string",
+                "enum": ["en", "pt-BR", "es", "fr", "de"]
+              },
+              "zone": {
+                "default": null,
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "date": {
+                "default": "system",
+                "type": "string",
+                "enum": ["system", "mdy", "dmy", "ymd"]
+              },
+              "time": {
+                "default": "system",
+                "type": "string",
+                "enum": ["system", "h12", "h24"]
+              }
+            },
+            "description": "Display preferences. Every key has a default, so this is always complete."
+          },
+          "timeDeleted": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "When the account was disabled. Null while it is active."
           }
         },
-        "required": ["id", "name", "email", "image"],
+        "required": ["id", "name", "email", "image", "role", "prefs", "timeDeleted"],
         "description": "A user account.",
         "example": {
           "id": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX",
           "name": "John Doe",
           "email": "john@example.com",
           "emailVerified": true,
-          "image": null
+          "image": null,
+          "role": "member",
+          "prefs": {
+            "theme": "system",
+            "locale": "en",
+            "zone": null,
+            "date": "system",
+            "time": "system"
+          },
+          "timeDeleted": null
         }
       },
       "ErrorResponse": {
@@ -86,7 +154,28 @@
             "type": "string"
           },
           "details": {
-            "description": "Additional error context information"
+            "description": "Additional error context information",
+            "type": "object",
+            "properties": {
+              "issues": {
+                "description": "Every field that failed. `param` names the first of them.",
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "path": {
+                      "description": "Dotted path to the field, like `user.email`.",
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "What was wrong with it."
+                    }
+                  },
+                  "required": ["message"]
+                }
+              }
+            }
           }
         },
         "required": ["type", "code", "message"],
@@ -103,7 +192,8 @@
           "name": {
             "type": "string",
             "minLength": 1,
-            "maxLength": 255
+            "maxLength": 255,
+            "description": "Label shown in the key list."
           },
           "key": {
             "type": "string",
@@ -165,7 +255,8 @@
             "example": "tod_XXXXXXXXXXXXXXXXXXXXXXXXX"
           },
           "createdBy": {
-            "type": "string"
+            "type": "string",
+            "description": "Id of the user who created it."
           },
           "assignee": {
             "anyOf": [
@@ -194,7 +285,8 @@
               {
                 "type": "null"
               }
-            ]
+            ],
+            "description": "The user responsible, joined in. Null when unassigned."
           },
           "source": {
             "anyOf": [
@@ -205,7 +297,8 @@
               {
                 "type": "null"
               }
-            ]
+            ],
+            "description": "Kind of entity that owns it, like `project`."
           },
           "sourceID": {
             "anyOf": [
@@ -215,7 +308,8 @@
               {
                 "type": "null"
               }
-            ]
+            ],
+            "description": "Id of the owning entity, paired with `source`."
           },
           "stage": {
             "anyOf": [
@@ -226,12 +320,14 @@
               {
                 "type": "null"
               }
-            ]
+            ],
+            "description": "Pipeline stage, a free-text label. Null when unstaged."
           },
           "title": {
             "type": "string",
             "minLength": 0,
-            "maxLength": 2000
+            "maxLength": 2000,
+            "description": "One-line summary."
           },
           "body": {
             "anyOf": [
@@ -242,11 +338,13 @@
               {
                 "type": "null"
               }
-            ]
+            ],
+            "description": "The long form, markdown."
           },
           "status": {
             "type": "string",
-            "enum": ["backlog", "planned", "active", "blocked", "done"]
+            "enum": ["backlog", "planned", "active", "blocked", "done"],
+            "description": "Where it sits in the pipeline."
           },
           "reason": {
             "anyOf": [
@@ -257,7 +355,8 @@
               {
                 "type": "null"
               }
-            ]
+            ],
+            "description": "Why it last moved status. The next transition clears it."
           },
           "tags": {
             "maxItems": 20,
@@ -266,7 +365,8 @@
               "type": "string",
               "minLength": 1,
               "maxLength": 64
-            }
+            },
+            "description": "Free-form labels, trimmed and deduplicated on write."
           },
           "startDate": {
             "anyOf": [
@@ -278,7 +378,8 @@
               {
                 "type": "null"
               }
-            ]
+            ],
+            "description": "When work is meant to start."
           },
           "dueDate": {
             "anyOf": [
@@ -290,7 +391,8 @@
               {
                 "type": "null"
               }
-            ]
+            ],
+            "description": "When it is meant to be done."
           },
           "timeStarted": {
             "anyOf": [
@@ -302,7 +404,8 @@
               {
                 "type": "null"
               }
-            ]
+            ],
+            "description": "When it first went `active`. Stamped once."
           },
           "timeDone": {
             "anyOf": [
@@ -314,7 +417,8 @@
               {
                 "type": "null"
               }
-            ]
+            ],
+            "description": "When it went `done`. Null while it is unfinished."
           }
         },
         "required": [
@@ -406,12 +510,14 @@
             "example": "prj_XXXXXXXXXXXXXXXXXXXXXXXXX"
           },
           "createdBy": {
-            "type": "string"
+            "type": "string",
+            "description": "Id of the user who created it."
           },
           "name": {
             "type": "string",
             "minLength": 1,
-            "maxLength": 200
+            "maxLength": 200,
+            "description": "Display name."
           },
           "description": {
             "anyOf": [
@@ -422,16 +528,29 @@
               {
                 "type": "null"
               }
-            ]
+            ],
+            "description": "What it is for."
+          },
+          "image": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Cover image URL, or null for none."
           }
         },
-        "required": ["id", "createdBy", "name", "description"],
+        "required": ["id", "createdBy", "name", "description", "image"],
         "description": "A container for todos. Todos point at it through source/sourceID.",
         "example": {
           "id": "prj_XXXXXXXXXXXXXXXXXXXXXXXXX",
           "createdBy": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX",
           "name": "Quarterly close",
-          "description": null
+          "description": null,
+          "image": null
         }
       },
       "FileMeta": {
@@ -530,7 +649,16 @@
                   "name": "John Doe",
                   "email": "john@example.com",
                   "emailVerified": true,
-                  "image": null
+                  "image": null,
+                  "role": "member",
+                  "prefs": {
+                    "theme": "system",
+                    "locale": "en",
+                    "zone": null,
+                    "date": "system",
+                    "time": "system"
+                  },
+                  "timeDeleted": null
                 }
               }
             },
@@ -666,7 +794,16 @@
                 "example": {
                   "type": "validation",
                   "code": "invalid_parameter",
-                  "message": "The request was invalid"
+                  "message": "Invalid input: expected string, received undefined",
+                  "param": "email",
+                  "details": {
+                    "issues": [
+                      {
+                        "path": "email",
+                        "message": "Invalid input: expected string, received undefined"
+                      }
+                    ]
+                  }
                 }
               }
             },
@@ -713,7 +850,8 @@
                   "name": {
                     "type": "string",
                     "minLength": 1,
-                    "maxLength": 255
+                    "maxLength": 255,
+                    "description": "Label shown in the key list."
                   },
                   "expiresInDays": {
                     "type": "integer",
@@ -745,6 +883,30 @@
               }
             },
             "description": "Revoked."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "validation",
+                  "code": "invalid_parameter",
+                  "message": "Invalid input: expected string, received undefined",
+                  "param": "email",
+                  "details": {
+                    "issues": [
+                      {
+                        "path": "email",
+                        "message": "Invalid input: expected string, received undefined"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "description": "Bad Request"
           },
           "401": {
             "content": {
@@ -871,6 +1033,30 @@
             },
             "description": "A page of todos."
           },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "validation",
+                  "code": "invalid_parameter",
+                  "message": "Invalid input: expected string, received undefined",
+                  "param": "email",
+                  "details": {
+                    "issues": [
+                      {
+                        "path": "email",
+                        "message": "Invalid input: expected string, received undefined"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
           "401": {
             "content": {
               "application/json": {
@@ -907,18 +1093,53 @@
             "in": "query",
             "name": "page",
             "schema": {
+              "default": 1,
+              "example": 1,
               "type": "number",
               "minimum": 1
-            }
+            },
+            "description": "Page number for pagination."
           },
           {
             "in": "query",
             "name": "pageSize",
             "schema": {
+              "default": 20,
+              "example": 10,
               "type": "number",
               "minimum": 1,
               "maximum": 100
-            }
+            },
+            "description": "Number of entities per page."
+          },
+          {
+            "in": "query",
+            "name": "sort",
+            "schema": {
+              "example": ["-dueDate"],
+              "maxItems": 3,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "title",
+                  "-title",
+                  "status",
+                  "-status",
+                  "stage",
+                  "-stage",
+                  "assignee",
+                  "-assignee",
+                  "startDate",
+                  "-startDate",
+                  "dueDate",
+                  "-dueDate",
+                  "timeCreated",
+                  "-timeCreated"
+                ]
+              }
+            },
+            "description": "Sort keys in priority order. Prefix with `-` for descending."
           },
           {
             "in": "query",
@@ -939,14 +1160,16 @@
             "in": "query",
             "name": "stage",
             "schema": {
-              "type": "string"
+              "type": "string",
+              "maxLength": 64
             }
           },
           {
             "in": "query",
             "name": "source",
             "schema": {
-              "type": "string"
+              "type": "string",
+              "maxLength": 64
             }
           },
           {
@@ -961,7 +1184,8 @@
             "name": "createdBy",
             "schema": {
               "type": "string"
-            }
+            },
+            "description": "Id of the user who created it."
           },
           {
             "in": "query",
@@ -982,6 +1206,27 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Todo"
+                },
+                "example": {
+                  "id": "tod_XXXXXXXXXXXXXXXXXXXXXXXXX",
+                  "createdBy": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX",
+                  "assignee": {
+                    "id": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX",
+                    "name": "John Doe",
+                    "image": null
+                  },
+                  "source": "project",
+                  "sourceID": "prj_XXXXXXXXXXXXXXXXXXXXXXXXX",
+                  "stage": "Sprint 1",
+                  "title": "Write the quarterly report",
+                  "body": null,
+                  "status": "active",
+                  "reason": null,
+                  "tags": [],
+                  "startDate": "2026-06-07T00:00:00.000Z",
+                  "dueDate": "2026-06-14T00:00:00.000Z",
+                  "timeStarted": "2026-06-07T09:12:00.000Z",
+                  "timeDone": null
                 }
               }
             },
@@ -996,7 +1241,16 @@
                 "example": {
                   "type": "validation",
                   "code": "invalid_parameter",
-                  "message": "The request was invalid"
+                  "message": "Invalid input: expected string, received undefined",
+                  "param": "email",
+                  "details": {
+                    "issues": [
+                      {
+                        "path": "email",
+                        "message": "Invalid input: expected string, received undefined"
+                      }
+                    ]
+                  }
                 }
               }
             },
@@ -1043,7 +1297,8 @@
                   "title": {
                     "type": "string",
                     "minLength": 0,
-                    "maxLength": 2000
+                    "maxLength": 2000,
+                    "description": "One-line summary."
                   },
                   "body": {
                     "anyOf": [
@@ -1054,7 +1309,8 @@
                       {
                         "type": "null"
                       }
-                    ]
+                    ],
+                    "description": "The long form, markdown."
                   },
                   "tags": {
                     "maxItems": 20,
@@ -1063,7 +1319,8 @@
                       "type": "string",
                       "minLength": 1,
                       "maxLength": 64
-                    }
+                    },
+                    "description": "Free-form labels, trimmed and deduplicated on write."
                   },
                   "stage": {
                     "anyOf": [
@@ -1074,7 +1331,8 @@
                       {
                         "type": "null"
                       }
-                    ]
+                    ],
+                    "description": "Pipeline stage, a free-text label. Null when unstaged."
                   },
                   "assignee": {
                     "anyOf": [
@@ -1095,7 +1353,8 @@
                       {
                         "type": "null"
                       }
-                    ]
+                    ],
+                    "description": "Kind of entity that owns it, like `project`."
                   },
                   "sourceID": {
                     "anyOf": [
@@ -1105,7 +1364,8 @@
                       {
                         "type": "null"
                       }
-                    ]
+                    ],
+                    "description": "Id of the owning entity, paired with `source`."
                   },
                   "status": {
                     "type": "string",
@@ -1121,7 +1381,8 @@
                       {
                         "type": "null"
                       }
-                    ]
+                    ],
+                    "description": "When work is meant to start."
                   },
                   "dueDate": {
                     "anyOf": [
@@ -1133,7 +1394,8 @@
                       {
                         "type": "null"
                       }
-                    ]
+                    ],
+                    "description": "When it is meant to be done."
                   }
                 },
                 "required": ["title"]
@@ -1162,6 +1424,30 @@
               }
             },
             "description": "The stages in use."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "validation",
+                  "code": "invalid_parameter",
+                  "message": "Invalid input: expected string, received undefined",
+                  "param": "email",
+                  "details": {
+                    "issues": [
+                      {
+                        "path": "email",
+                        "message": "Invalid input: expected string, received undefined"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "description": "Bad Request"
           },
           "401": {
             "content": {
@@ -1249,6 +1535,30 @@
             },
             "description": "The todo."
           },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "validation",
+                  "code": "invalid_parameter",
+                  "message": "Invalid input: expected string, received undefined",
+                  "param": "email",
+                  "details": {
+                    "issues": [
+                      {
+                        "path": "email",
+                        "message": "Invalid input: expected string, received undefined"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
           "401": {
             "content": {
               "application/json": {
@@ -1300,9 +1610,11 @@
             "in": "path",
             "name": "id",
             "schema": {
-              "type": "string"
+              "type": "string",
+              "example": "tod_XXXXXXXXXXXXXXXXXXXXXXXXX"
             },
-            "required": true
+            "required": true,
+            "description": "Unique object identifier.\nThe format and length of IDs may change over time."
           }
         ]
       },
@@ -1316,6 +1628,27 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Todo"
+                },
+                "example": {
+                  "id": "tod_XXXXXXXXXXXXXXXXXXXXXXXXX",
+                  "createdBy": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX",
+                  "assignee": {
+                    "id": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX",
+                    "name": "John Doe",
+                    "image": null
+                  },
+                  "source": "project",
+                  "sourceID": "prj_XXXXXXXXXXXXXXXXXXXXXXXXX",
+                  "stage": "Sprint 1",
+                  "title": "Write the quarterly report",
+                  "body": null,
+                  "status": "active",
+                  "reason": null,
+                  "tags": [],
+                  "startDate": "2026-06-07T00:00:00.000Z",
+                  "dueDate": "2026-06-14T00:00:00.000Z",
+                  "timeStarted": "2026-06-07T09:12:00.000Z",
+                  "timeDone": null
                 }
               }
             },
@@ -1330,7 +1663,16 @@
                 "example": {
                   "type": "validation",
                   "code": "invalid_parameter",
-                  "message": "The request was invalid"
+                  "message": "Invalid input: expected string, received undefined",
+                  "param": "email",
+                  "details": {
+                    "issues": [
+                      {
+                        "path": "email",
+                        "message": "Invalid input: expected string, received undefined"
+                      }
+                    ]
+                  }
                 }
               }
             },
@@ -1402,7 +1744,8 @@
                   "title": {
                     "type": "string",
                     "minLength": 0,
-                    "maxLength": 2000
+                    "maxLength": 2000,
+                    "description": "One-line summary."
                   },
                   "body": {
                     "anyOf": [
@@ -1413,7 +1756,8 @@
                       {
                         "type": "null"
                       }
-                    ]
+                    ],
+                    "description": "The long form, markdown."
                   },
                   "tags": {
                     "maxItems": 20,
@@ -1422,7 +1766,8 @@
                       "type": "string",
                       "minLength": 1,
                       "maxLength": 64
-                    }
+                    },
+                    "description": "Free-form labels, trimmed and deduplicated on write."
                   },
                   "stage": {
                     "anyOf": [
@@ -1433,11 +1778,13 @@
                       {
                         "type": "null"
                       }
-                    ]
+                    ],
+                    "description": "Pipeline stage, a free-text label. Null when unstaged."
                   },
                   "status": {
                     "type": "string",
-                    "enum": ["backlog", "planned", "active", "blocked", "done"]
+                    "enum": ["backlog", "planned", "active", "blocked", "done"],
+                    "description": "Where it sits in the pipeline."
                   },
                   "reason": {
                     "anyOf": [
@@ -1448,7 +1795,8 @@
                       {
                         "type": "null"
                       }
-                    ]
+                    ],
+                    "description": "Why it last moved status. The next transition clears it."
                   },
                   "startDate": {
                     "anyOf": [
@@ -1460,7 +1808,8 @@
                       {
                         "type": "null"
                       }
-                    ]
+                    ],
+                    "description": "When work is meant to start."
                   },
                   "dueDate": {
                     "anyOf": [
@@ -1472,7 +1821,8 @@
                       {
                         "type": "null"
                       }
-                    ]
+                    ],
+                    "description": "When it is meant to be done."
                   },
                   "assignee": {
                     "anyOf": [
@@ -1505,6 +1855,30 @@
               }
             },
             "description": "Deleted."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "validation",
+                  "code": "invalid_parameter",
+                  "message": "Invalid input: expected string, received undefined",
+                  "param": "email",
+                  "details": {
+                    "issues": [
+                      {
+                        "path": "email",
+                        "message": "Invalid input: expected string, received undefined"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "description": "Bad Request"
           },
           "401": {
             "content": {
@@ -1605,7 +1979,8 @@
                       "id": "prj_XXXXXXXXXXXXXXXXXXXXXXXXX",
                       "createdBy": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX",
                       "name": "Quarterly close",
-                      "description": null
+                      "description": null,
+                      "image": null
                     }
                   ],
                   "page": 1,
@@ -1615,6 +1990,30 @@
               }
             },
             "description": "A page of projects."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "validation",
+                  "code": "invalid_parameter",
+                  "message": "Invalid input: expected string, received undefined",
+                  "param": "email",
+                  "details": {
+                    "issues": [
+                      {
+                        "path": "email",
+                        "message": "Invalid input: expected string, received undefined"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "description": "Bad Request"
           },
           "401": {
             "content": {
@@ -1652,18 +2051,38 @@
             "in": "query",
             "name": "page",
             "schema": {
+              "default": 1,
+              "example": 1,
               "type": "number",
               "minimum": 1
-            }
+            },
+            "description": "Page number for pagination."
           },
           {
             "in": "query",
             "name": "pageSize",
             "schema": {
+              "default": 20,
+              "example": 10,
               "type": "number",
               "minimum": 1,
               "maximum": 100
-            }
+            },
+            "description": "Number of entities per page."
+          },
+          {
+            "in": "query",
+            "name": "sort",
+            "schema": {
+              "example": ["-dueDate"],
+              "maxItems": 3,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["name", "-name", "timeCreated", "-timeCreated"]
+              }
+            },
+            "description": "Sort keys in priority order. Prefix with `-` for descending."
           },
           {
             "in": "query",
@@ -1684,6 +2103,13 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Project"
+                },
+                "example": {
+                  "id": "prj_XXXXXXXXXXXXXXXXXXXXXXXXX",
+                  "createdBy": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX",
+                  "name": "Quarterly close",
+                  "description": null,
+                  "image": null
                 }
               }
             },
@@ -1698,7 +2124,16 @@
                 "example": {
                   "type": "validation",
                   "code": "invalid_parameter",
-                  "message": "The request was invalid"
+                  "message": "Invalid input: expected string, received undefined",
+                  "param": "email",
+                  "details": {
+                    "issues": [
+                      {
+                        "path": "email",
+                        "message": "Invalid input: expected string, received undefined"
+                      }
+                    ]
+                  }
                 }
               }
             },
@@ -1745,7 +2180,8 @@
                   "name": {
                     "type": "string",
                     "minLength": 1,
-                    "maxLength": 200
+                    "maxLength": 200,
+                    "description": "Display name."
                   },
                   "description": {
                     "anyOf": [
@@ -1756,7 +2192,8 @@
                       {
                         "type": "null"
                       }
-                    ]
+                    ],
+                    "description": "What it is for."
                   }
                 },
                 "required": ["name"]
@@ -1782,83 +2219,12 @@
                   "id": "prj_XXXXXXXXXXXXXXXXXXXXXXXXX",
                   "createdBy": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX",
                   "name": "Quarterly close",
-                  "description": null
+                  "description": null,
+                  "image": null
                 }
               }
             },
             "description": "The project."
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "authentication",
-                  "code": "unauthorized",
-                  "message": "Authentication required"
-                }
-              }
-            },
-            "description": "Unauthorized"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "not_found",
-                  "code": "resource_not_found",
-                  "message": "The requested resource could not be found"
-                }
-              }
-            },
-            "description": "Not Found"
-          },
-          "500": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "internal",
-                  "code": "internal_error",
-                  "message": "Internal server error"
-                }
-              }
-            },
-            "description": "Internal Server Error"
-          }
-        },
-        "parameters": [
-          {
-            "in": "path",
-            "name": "id",
-            "schema": {
-              "type": "string"
-            },
-            "required": true
-          }
-        ]
-      },
-      "patch": {
-        "operationId": "patchProjectById",
-        "tags": ["Project"],
-        "summary": "Update project",
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Project"
-                }
-              }
-            },
-            "description": "The updated project."
           },
           "400": {
             "content": {
@@ -1869,7 +2235,16 @@
                 "example": {
                   "type": "validation",
                   "code": "invalid_parameter",
-                  "message": "The request was invalid"
+                  "message": "Invalid input: expected string, received undefined",
+                  "param": "email",
+                  "details": {
+                    "issues": [
+                      {
+                        "path": "email",
+                        "message": "Invalid input: expected string, received undefined"
+                      }
+                    ]
+                  }
                 }
               }
             },
@@ -1926,9 +2301,116 @@
             "in": "path",
             "name": "id",
             "schema": {
-              "type": "string"
+              "type": "string",
+              "example": "prj_XXXXXXXXXXXXXXXXXXXXXXXXX"
             },
-            "required": true
+            "required": true,
+            "description": "Unique object identifier.\nThe format and length of IDs may change over time."
+          }
+        ]
+      },
+      "patch": {
+        "operationId": "patchProjectById",
+        "tags": ["Project"],
+        "summary": "Update project",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Project"
+                },
+                "example": {
+                  "id": "prj_XXXXXXXXXXXXXXXXXXXXXXXXX",
+                  "createdBy": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX",
+                  "name": "Quarterly close",
+                  "description": null,
+                  "image": null
+                }
+              }
+            },
+            "description": "The updated project."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "validation",
+                  "code": "invalid_parameter",
+                  "message": "Invalid input: expected string, received undefined",
+                  "param": "email",
+                  "details": {
+                    "issues": [
+                      {
+                        "path": "email",
+                        "message": "Invalid input: expected string, received undefined"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "authentication",
+                  "code": "unauthorized",
+                  "message": "Authentication required"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "not_found",
+                  "code": "resource_not_found",
+                  "message": "The requested resource could not be found"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "internal",
+                  "code": "internal_error",
+                  "message": "Internal server error"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string",
+              "example": "prj_XXXXXXXXXXXXXXXXXXXXXXXXX"
+            },
+            "required": true,
+            "description": "Unique object identifier.\nThe format and length of IDs may change over time."
           }
         ],
         "requestBody": {
@@ -1941,7 +2423,8 @@
                   "name": {
                     "type": "string",
                     "minLength": 1,
-                    "maxLength": 200
+                    "maxLength": 200,
+                    "description": "Display name."
                   },
                   "description": {
                     "anyOf": [
@@ -1952,7 +2435,19 @@
                       {
                         "type": "null"
                       }
-                    ]
+                    ],
+                    "description": "What it is for."
+                  },
+                  "image": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "Cover image URL, or null for none."
                   }
                 }
               }
@@ -1975,6 +2470,30 @@
               }
             },
             "description": "Deleted."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "validation",
+                  "code": "invalid_parameter",
+                  "message": "Invalid input: expected string, received undefined",
+                  "param": "email",
+                  "details": {
+                    "issues": [
+                      {
+                        "path": "email",
+                        "message": "Invalid input: expected string, received undefined"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "description": "Bad Request"
           },
           "401": {
             "content": {
@@ -2082,7 +2601,16 @@
                 "example": {
                   "type": "validation",
                   "code": "invalid_parameter",
-                  "message": "The request was invalid"
+                  "message": "Invalid input: expected string, received undefined",
+                  "param": "email",
+                  "details": {
+                    "issues": [
+                      {
+                        "path": "email",
+                        "message": "Invalid input: expected string, received undefined"
+                      }
+                    ]
+                  }
                 }
               }
             },
@@ -2189,6 +2717,30 @@
           "200": {
             "description": "The raw file bytes."
           },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "validation",
+                  "code": "invalid_parameter",
+                  "message": "Invalid input: expected string, received undefined",
+                  "param": "email",
+                  "details": {
+                    "issues": [
+                      {
+                        "path": "email",
+                        "message": "Invalid input: expected string, received undefined"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
           "403": {
             "content": {
               "application/json": {
@@ -2284,6 +2836,30 @@
           "302": {
             "description": "Redirect to a presigned storage URL."
           },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "validation",
+                  "code": "invalid_parameter",
+                  "message": "Invalid input: expected string, received undefined",
+                  "param": "email",
+                  "details": {
+                    "issues": [
+                      {
+                        "path": "email",
+                        "message": "Invalid input: expected string, received undefined"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
           "401": {
             "content": {
               "application/json": {
@@ -2354,6 +2930,11 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/FileMeta"
+                },
+                "example": {
+                  "key": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX/screenshot.png",
+                  "size": 102400,
+                  "lastModified": "2026-06-07T00:00:00.000Z"
                 }
               }
             },
@@ -2368,7 +2949,16 @@
                 "example": {
                   "type": "validation",
                   "code": "invalid_parameter",
-                  "message": "The request was invalid"
+                  "message": "Invalid input: expected string, received undefined",
+                  "param": "email",
+                  "details": {
+                    "issues": [
+                      {
+                        "path": "email",
+                        "message": "Invalid input: expected string, received undefined"
+                      }
+                    ]
+                  }
                 }
               }
             },
@@ -2464,6 +3054,30 @@
               }
             },
             "description": "Deleted."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "validation",
+                  "code": "invalid_parameter",
+                  "message": "Invalid input: expected string, received undefined",
+                  "param": "email",
+                  "details": {
+                    "issues": [
+                      {
+                        "path": "email",
+                        "message": "Invalid input: expected string, received undefined"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "description": "Bad Request"
           },
           "401": {
             "content": {

@@ -10,6 +10,9 @@
 </script>
 
 <script lang="ts">
+	// Imports the markup below needs — they sit in the story's module block, which is not shown.
+	// import { Pager } from '@template/ui';
+
 	let page = $state(1);
 	let size = $state(20);
 	let total = $state(137);

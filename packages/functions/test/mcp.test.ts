@@ -20,7 +20,7 @@ async function connect() {
 describe("mcp", () => {
   beforeAll(async () => {
     console.log = mock();
-    const userID = await User.create({
+    const { id: userID } = await User.create({
       name: "Test User",
       email: `test-${crypto.randomUUID()}@example.com`,
     });

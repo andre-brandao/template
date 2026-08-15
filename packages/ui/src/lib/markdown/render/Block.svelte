@@ -2,7 +2,7 @@
 <script lang="ts">
 	import type { BlockNode, InlineNode } from '@tanstack/markdown';
 	import type { Components } from './types';
-	import Code from '../../ui/Code.svelte';
+	import Code from '../../code/Code.svelte';
 	import Self from './Block.svelte';
 	import Footnotes from './Footnotes.svelte';
 	import Inline from './Inline.svelte';

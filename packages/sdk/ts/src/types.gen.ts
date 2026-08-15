@@ -13,10 +13,40 @@ export type User = {
    * The format and length of IDs may change over time.
    */
   id: string;
+  /**
+   * Display name.
+   */
   name: string;
+  /**
+   * Login address. Unique across accounts.
+   */
   email: string;
+  /**
+   * Whether the address has been confirmed.
+   */
   emailVerified?: boolean;
+  /**
+   * Avatar URL, or null for none.
+   */
   image: string | null;
+  /**
+   * Decides everything the account may do. Only `user:assign` can change it.
+   */
+  role: "admin" | "member";
+  /**
+   * Display preferences. Every key has a default, so this is always complete.
+   */
+  prefs: {
+    theme?: "system" | "light" | "dark";
+    locale?: "en" | "pt-BR" | "es" | "fr" | "de";
+    zone?: string | null;
+    date?: "system" | "mdy" | "dmy" | "ymd";
+    time?: "system" | "h12" | "h24";
+  };
+  /**
+   * When the account was disabled. Null while it is active.
+   */
+  timeDeleted: string | null;
 };
 
 /**
@@ -42,7 +72,21 @@ export type ErrorResponse = {
   /**
    * Additional error context information
    */
-  details?: unknown;
+  details?: {
+    /**
+     * Every field that failed. `param` names the first of them.
+     */
+    issues?: Array<{
+      /**
+       * Dotted path to the field, like `user.email`.
+       */
+      path?: string;
+      /**
+       * What was wrong with it.
+       */
+      message: string;
+    }>;
+  };
 };
 
 /**
@@ -54,6 +98,9 @@ export type Key = {
    * The format and length of IDs may change over time.
    */
   id: string;
+  /**
+   * Label shown in the key list.
+   */
   name: string;
   /**
    * The secret. Handed back in full so it can be copied.
@@ -86,23 +133,65 @@ export type Todo = {
    * The format and length of IDs may change over time.
    */
   id: string;
+  /**
+   * Id of the user who created it.
+   */
   createdBy: string;
+  /**
+   * The user responsible, joined in. Null when unassigned.
+   */
   assignee: {
     id: string;
     name: string;
     image: string | null;
   } | null;
+  /**
+   * Kind of entity that owns it, like `project`.
+   */
   source: string | null;
+  /**
+   * Id of the owning entity, paired with `source`.
+   */
   sourceID: string | null;
+  /**
+   * Pipeline stage, a free-text label. Null when unstaged.
+   */
   stage: string | null;
+  /**
+   * One-line summary.
+   */
   title: string;
+  /**
+   * The long form, markdown.
+   */
   body: string | null;
+  /**
+   * Where it sits in the pipeline.
+   */
   status: "backlog" | "planned" | "active" | "blocked" | "done";
+  /**
+   * Why it last moved status. The next transition clears it.
+   */
   reason: string | null;
+  /**
+   * Free-form labels, trimmed and deduplicated on write.
+   */
   tags: Array<string>;
+  /**
+   * When work is meant to start.
+   */
   startDate: string | null;
+  /**
+   * When it is meant to be done.
+   */
   dueDate: string | null;
+  /**
+   * When it first went `active`. Stamped once.
+   */
   timeStarted: string | null;
+  /**
+   * When it went `done`. Null while it is unfinished.
+   */
   timeDone: string | null;
 };
 
@@ -126,9 +215,22 @@ export type Project = {
    * The format and length of IDs may change over time.
    */
   id: string;
+  /**
+   * Id of the user who created it.
+   */
   createdBy: string;
+  /**
+   * Display name.
+   */
   name: string;
+  /**
+   * What it is for.
+   */
   description: string | null;
+  /**
+   * Cover image URL, or null for none.
+   */
+  image: string | null;
 };
 
 /**
@@ -210,6 +312,9 @@ export type GetKeyResponse = GetKeyResponses[keyof GetKeyResponses];
 
 export type PostKeyData = {
   body: {
+    /**
+     * Label shown in the key list.
+     */
     name: string;
     expiresInDays?: number;
   };
@@ -255,6 +360,10 @@ export type DeleteKeyByIdData = {
 
 export type DeleteKeyByIdErrors = {
   /**
+   * Bad Request
+   */
+  400: ErrorResponse;
+  /**
    * Unauthorized
    */
   401: ErrorResponse;
@@ -283,13 +392,41 @@ export type GetTodoData = {
   body?: never;
   path?: never;
   query?: {
+    /**
+     * Page number for pagination.
+     */
     page?: number;
+    /**
+     * Number of entities per page.
+     */
     pageSize?: number;
+    /**
+     * Sort keys in priority order. Prefix with `-` for descending.
+     */
+    sort?: Array<
+      | "title"
+      | "-title"
+      | "status"
+      | "-status"
+      | "stage"
+      | "-stage"
+      | "assignee"
+      | "-assignee"
+      | "startDate"
+      | "-startDate"
+      | "dueDate"
+      | "-dueDate"
+      | "timeCreated"
+      | "-timeCreated"
+    >;
     status?: "backlog" | "planned" | "active" | "blocked" | "done";
     assignee?: string;
     stage?: string;
     source?: string;
     sourceID?: string;
+    /**
+     * Id of the user who created it.
+     */
     createdBy?: string;
     search?: string;
   };
@@ -297,6 +434,10 @@ export type GetTodoData = {
 };
 
 export type GetTodoErrors = {
+  /**
+   * Bad Request
+   */
+  400: ErrorResponse;
   /**
    * Unauthorized
    */
@@ -334,15 +475,39 @@ export type GetTodoResponse = GetTodoResponses[keyof GetTodoResponses];
 
 export type PostTodoData = {
   body: {
+    /**
+     * One-line summary.
+     */
     title: string;
+    /**
+     * The long form, markdown.
+     */
     body?: string | null;
+    /**
+     * Free-form labels, trimmed and deduplicated on write.
+     */
     tags?: Array<string>;
+    /**
+     * Pipeline stage, a free-text label. Null when unstaged.
+     */
     stage?: string | null;
     assignee?: string | null;
+    /**
+     * Kind of entity that owns it, like `project`.
+     */
     source?: string | null;
+    /**
+     * Id of the owning entity, paired with `source`.
+     */
     sourceID?: string | null;
     status?: "backlog" | "planned" | "active" | "blocked" | "done";
+    /**
+     * When work is meant to start.
+     */
     startDate?: string | null;
+    /**
+     * When it is meant to be done.
+     */
     dueDate?: string | null;
   };
   path?: never;
@@ -388,6 +553,10 @@ export type GetTodoStageData = {
 
 export type GetTodoStageErrors = {
   /**
+   * Bad Request
+   */
+  400: ErrorResponse;
+  /**
    * Unauthorized
    */
   401: ErrorResponse;
@@ -419,6 +588,10 @@ export type DeleteTodoByIdData = {
 
 export type DeleteTodoByIdErrors = {
   /**
+   * Bad Request
+   */
+  400: ErrorResponse;
+  /**
    * Unauthorized
    */
   401: ErrorResponse;
@@ -446,6 +619,10 @@ export type DeleteTodoByIdResponse = DeleteTodoByIdResponses[keyof DeleteTodoByI
 export type GetTodoByIdData = {
   body?: never;
   path: {
+    /**
+     * Unique object identifier.
+     * The format and length of IDs may change over time.
+     */
     id: string;
   };
   query?: never;
@@ -453,6 +630,10 @@ export type GetTodoByIdData = {
 };
 
 export type GetTodoByIdErrors = {
+  /**
+   * Bad Request
+   */
+  400: ErrorResponse;
   /**
    * Unauthorized
    */
@@ -480,13 +661,37 @@ export type GetTodoByIdResponse = GetTodoByIdResponses[keyof GetTodoByIdResponse
 
 export type PatchTodoByIdData = {
   body: {
+    /**
+     * One-line summary.
+     */
     title?: string;
+    /**
+     * The long form, markdown.
+     */
     body?: string | null;
+    /**
+     * Free-form labels, trimmed and deduplicated on write.
+     */
     tags?: Array<string>;
+    /**
+     * Pipeline stage, a free-text label. Null when unstaged.
+     */
     stage?: string | null;
+    /**
+     * Where it sits in the pipeline.
+     */
     status?: "backlog" | "planned" | "active" | "blocked" | "done";
+    /**
+     * Why it last moved status. The next transition clears it.
+     */
     reason?: string | null;
+    /**
+     * When work is meant to start.
+     */
     startDate?: string | null;
+    /**
+     * When it is meant to be done.
+     */
     dueDate?: string | null;
     assignee?: string | null;
   };
@@ -531,14 +736,28 @@ export type GetProjectData = {
   body?: never;
   path?: never;
   query?: {
+    /**
+     * Page number for pagination.
+     */
     page?: number;
+    /**
+     * Number of entities per page.
+     */
     pageSize?: number;
+    /**
+     * Sort keys in priority order. Prefix with `-` for descending.
+     */
+    sort?: Array<"name" | "-name" | "timeCreated" | "-timeCreated">;
     search?: string;
   };
   url: "/project";
 };
 
 export type GetProjectErrors = {
+  /**
+   * Bad Request
+   */
+  400: ErrorResponse;
   /**
    * Unauthorized
    */
@@ -576,7 +795,13 @@ export type GetProjectResponse = GetProjectResponses[keyof GetProjectResponses];
 
 export type PostProjectData = {
   body: {
+    /**
+     * Display name.
+     */
     name: string;
+    /**
+     * What it is for.
+     */
     description?: string | null;
   };
   path?: never;
@@ -621,6 +846,10 @@ export type DeleteProjectByIdData = {
 
 export type DeleteProjectByIdErrors = {
   /**
+   * Bad Request
+   */
+  400: ErrorResponse;
+  /**
    * Unauthorized
    */
   401: ErrorResponse;
@@ -649,6 +878,10 @@ export type DeleteProjectByIdResponse =
 export type GetProjectByIdData = {
   body?: never;
   path: {
+    /**
+     * Unique object identifier.
+     * The format and length of IDs may change over time.
+     */
     id: string;
   };
   query?: never;
@@ -656,6 +889,10 @@ export type GetProjectByIdData = {
 };
 
 export type GetProjectByIdErrors = {
+  /**
+   * Bad Request
+   */
+  400: ErrorResponse;
   /**
    * Unauthorized
    */
@@ -683,10 +920,24 @@ export type GetProjectByIdResponse = GetProjectByIdResponses[keyof GetProjectByI
 
 export type PatchProjectByIdData = {
   body: {
+    /**
+     * Display name.
+     */
     name?: string;
+    /**
+     * What it is for.
+     */
     description?: string | null;
+    /**
+     * Cover image URL, or null for none.
+     */
+    image?: string | null;
   };
   path: {
+    /**
+     * Unique object identifier.
+     * The format and length of IDs may change over time.
+     */
     id: string;
   };
   query?: never;
@@ -801,6 +1052,10 @@ export type GetFileSignedData = {
 
 export type GetFileSignedErrors = {
   /**
+   * Bad Request
+   */
+  400: ErrorResponse;
+  /**
    * Forbidden
    */
   403: ErrorResponse;
@@ -833,6 +1088,10 @@ export type GetFileByNameContentData = {
 };
 
 export type GetFileByNameContentErrors = {
+  /**
+   * Bad Request
+   */
+  400: ErrorResponse;
   /**
    * Unauthorized
    */
@@ -867,6 +1126,10 @@ export type DeleteFileByNameData = {
 };
 
 export type DeleteFileByNameErrors = {
+  /**
+   * Bad Request
+   */
+  400: ErrorResponse;
   /**
    * Unauthorized
    */

@@ -2,7 +2,7 @@
 <script lang="ts">
 	import type { BlockNode, InlineNode } from '@tanstack/markdown';
 	import type { Components } from './types';
-	import Code from '../../code/Code.svelte';
+	import Fence from '../Fence.svelte';
 	import Self from './Block.svelte';
 	import Footnotes from './Footnotes.svelte';
 	import Inline from './Inline.svelte';
@@ -35,7 +35,7 @@
 		{@render inlines(node.children)}
 	</svelte:element>
 {:else if node.type === 'code'}
-	{@const C = components?.code ?? Code}
+	{@const C = components?.code ?? Fence}
 	<C value={node.value} lang={node.lang} title={node.title} />
 {:else if node.type === 'list'}
 	<svelte:element

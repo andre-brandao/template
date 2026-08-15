@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { and, arrayContains, desc, eq, inArray, isNull, or, sql } from "drizzle-orm";
 import { fn } from "../util/fn";
+import { iso } from "../util/fmt";
 import { found } from "../error";
 import { Actor } from "../actor";
 import { Common } from "../common";
@@ -232,7 +233,7 @@ export namespace Webhook {
       enabled: row.enabled,
       failures: row.failures,
       lastStatus: row.lastStatus,
-      timeDelivered: row.timeDelivered?.toISOString() ?? null,
+      timeDelivered: iso(row.timeDelivered),
       timeCreated: row.timeCreated.toISOString(),
     };
   }

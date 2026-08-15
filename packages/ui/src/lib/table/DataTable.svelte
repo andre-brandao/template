@@ -1,3 +1,4 @@
+<!-- fallow-ignore-file complexity -- header sort controls and the expand drawer are each one guard over a table primitive; branches are table features, not logic. -->
 <script lang="ts" generics="TData extends RowData">
 	import { FlexRender } from '@tanstack/svelte-table';
 	import type { Row, RowData, Table } from '@tanstack/svelte-table';
@@ -27,6 +28,7 @@
 
 	// Priority numbers only mean something once a second key is in play.
 	const multi = $derived((table.atoms.sorting?.get()?.length ?? 0) > 1);
+
 </script>
 
 <div class="wrap">

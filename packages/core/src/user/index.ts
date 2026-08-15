@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { and, asc, eq, ilike, isNull, sql } from "drizzle-orm";
 import { fn } from "../util/fn";
+import { iso } from "../util/fmt";
 import { Database } from "../drizzle";
 import { Actor } from "../actor";
 import { Common } from "../common";
@@ -72,7 +73,7 @@ export namespace User {
           id,
           accountId: row?.accountId ?? null,
           connected: Boolean(row),
-          timeCreated: row?.timeCreated.toISOString() ?? null,
+          timeCreated: iso(row?.timeCreated),
         };
       });
     }),
@@ -257,7 +258,7 @@ export namespace User {
       image: row.image,
       role: row.role,
       prefs: row.prefs,
-      timeDeleted: row.timeDeleted?.toISOString() ?? null,
+      timeDeleted: iso(row.timeDeleted),
     };
   }
 }

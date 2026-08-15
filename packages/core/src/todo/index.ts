@@ -8,17 +8,17 @@ import { Common } from "../common";
 import { Examples } from "../examples";
 import { Identifier } from "../identifier";
 import { order } from "../drizzle/order";
+import { date, iso, trim } from "../util/fmt";
+import { clean, Tags } from "../util/tag";
 import { Event } from "../event";
 import { UserTable } from "../user/user.sql";
-import { StatusValues, TodoTable } from "./todo.sql";
+import { rank, StatusValues, TodoTable } from "./todo.sql";
 
 export { Insights } from "./insights";
 
 export namespace Todo {
   export const Status = z.enum(StatusValues);
   export type Status = z.infer<typeof Status>;
-
-  const Tag = z.string().trim().min(1).max(64);
 
   /** Joined in — every list row wants the name, and a left join is cheap. */
   export const Assignee = z
@@ -60,9 +60,7 @@ export namespace Todo {
         .max(200)
         .nullable()
         .meta({ description: "Why it last moved status. The next transition clears it." }),
-      tags: Tag.array()
-        .max(20)
-        .meta({ description: "Free-form labels, trimmed and deduplicated on write." }),
+      tags: Tags.meta({ description: "Free-form labels, trimmed and deduplicated on write." }),
       startDate: z.iso.datetime().nullable().meta({ description: "When work is meant to start." }),
       dueDate: z.iso.datetime().nullable().meta({ description: "When it is meant to be done." }),
       timeStarted: z.iso
@@ -95,16 +93,6 @@ export namespace Todo {
     });
   export type Stage = z.infer<typeof Stage>;
 
-  function clean(tags?: string[]) {
-    return [...new Set((tags ?? []).map((tag) => tag.trim()).filter(Boolean))];
-  }
-
-  const trim = (value?: string | null) => value?.trim() || null;
-
-  const date = (value?: string | null) => (value ? new Date(value) : null);
-
-  const iso = (value: Date | string | null) => (value ? new Date(value).toISOString() : null);
-
   const Patch = Info.pick({
     title: true,
     body: true,
@@ -120,88 +108,8 @@ export namespace Todo {
     .partial();
   type Patch = z.infer<typeof Patch>;
 
-  /**
-   * Span moves with status: `active` stamps the start (once), `done` stamps the end,
-   * falling back to backlog/planned clears both.
-   */
-  function times(status: Status, started: string | null) {
-    const now = new Date();
-    if (status === "active") return { timeStarted: date(started) ?? now, timeDone: null };
-    if (status === "done") return { timeDone: now };
-    if (status === "blocked") return { timeDone: null };
-    return { timeStarted: null, timeDone: null };
-  }
-
-  /** The columns a patch copies through untouched. */
-  function plain(patch: Patch) {
-    return {
-      ...(patch.title !== undefined ? { title: patch.title } : {}),
-      ...(patch.body !== undefined ? { body: patch.body } : {}),
-      ...(patch.tags !== undefined ? { tags: patch.tags } : {}),
-      ...(patch.stage !== undefined ? { stage: patch.stage } : {}),
-      ...(patch.assignee !== undefined ? { assignee: patch.assignee } : {}),
-      ...(patch.reason !== undefined ? { reason: patch.reason } : {}),
-    };
-  }
-
-  function fields(patch: Patch, before: Info) {
-    return {
-      ...plain(patch),
-      ...(patch.startDate !== undefined ? { startDate: date(patch.startDate) } : {}),
-      ...(patch.dueDate !== undefined ? { dueDate: date(patch.dueDate) } : {}),
-      // A transition drops the old reason unless this patch carries a new one.
-      ...(patch.status !== undefined
-        ? {
-            status: patch.status,
-            reason: patch.reason ?? null,
-            ...times(patch.status, before.timeStarted),
-          }
-        : {}),
-      timeUpdated: new Date(),
-    };
-  }
-
-  /** The fields the activity log reports when they change. */
-  const LOGGED = ["title", "body", "tags", "stage", "startDate", "dueDate"] as const;
-
-  /** Tags compare by content; everything else by value. */
-  function same(key: (typeof LOGGED)[number], before: Info, patch: Patch) {
-    if (key === "tags") return patch.tags!.join(" ") === before.tags.join(" ");
-    return patch[key] === before[key];
-  }
-
-  function diff(before: Info, patch: Patch) {
-    const changed: Record<string, { before: unknown; after: unknown }> = {};
-    for (const key of LOGGED) {
-      if (patch[key] === undefined || same(key, before, patch)) continue;
-      changed[key] = { before: before[key], after: patch[key] };
-    }
-    return changed;
-  }
-
-  /**
-   * Pipeline rank, not the alphabetical order the text column would give — a status sort
-   * has to agree with the board columns and the picker.
-   */
-  const rank = sql.join(
-    [
-      sql`case`,
-      ...StatusValues.map((status, at) => sql`when ${TodoTable.status} = ${status} then ${at}`),
-      sql`end`,
-    ],
-    sql` `,
-  );
-
   /** The assignee columns worth joining — never the whole user row. */
   const assignee = { id: UserTable.id, name: UserTable.name, image: UserTable.image };
-
-  /** Live rows, optionally narrowed to the entity that owns them. */
-  function scope(input: { source?: string; sourceID?: string }) {
-    const out = [isNull(TodoTable.timeDeleted)];
-    if (input.source) out.push(eq(TodoTable.source, input.source));
-    if (input.sourceID) out.push(eq(TodoTable.sourceID, input.sourceID));
-    return out;
-  }
 
   export const create = fn(
     z.object({
@@ -282,7 +190,9 @@ export namespace Todo {
     (input) => {
       Actor.check({ todo: ["read"] });
       const { page, pageSize, limit, offset } = Common.page(input);
-      const conditions = scope(input);
+      const conditions = [isNull(TodoTable.timeDeleted)];
+      if (input.source) conditions.push(eq(TodoTable.source, input.source));
+      if (input.sourceID) conditions.push(eq(TodoTable.sourceID, input.sourceID));
       if (input.status) conditions.push(eq(TodoTable.status, input.status));
       if (input.createdBy) conditions.push(eq(TodoTable.createdBy, input.createdBy));
       if (input.assignee)
@@ -337,7 +247,14 @@ export namespace Todo {
             end: max(TodoTable.dueDate),
           })
           .from(TodoTable)
-          .where(and(...scope(input), isNotNull(TodoTable.stage)))
+          .where(
+            and(
+              isNull(TodoTable.timeDeleted),
+              input.source ? eq(TodoTable.source, input.source) : undefined,
+              input.sourceID ? eq(TodoTable.sourceID, input.sourceID) : undefined,
+              isNotNull(TodoTable.stage),
+            ),
+          )
           .groupBy(TodoTable.stage)
           .orderBy(sql`min(${TodoTable.startDate}) asc nulls last`, asc(TodoTable.stage))
           .then((rows) =>
@@ -367,7 +284,14 @@ export namespace Todo {
         tx
           .update(TodoTable)
           .set({ stage: input.to.trim(), timeUpdated: new Date() })
-          .where(and(...scope(input), eq(TodoTable.stage, input.from))),
+          .where(
+            and(
+              isNull(TodoTable.timeDeleted),
+              input.source ? eq(TodoTable.source, input.source) : undefined,
+              input.sourceID ? eq(TodoTable.sourceID, input.sourceID) : undefined,
+              eq(TodoTable.stage, input.from),
+            ),
+          ),
       );
     },
   );
@@ -383,6 +307,119 @@ export namespace Todo {
         .then((rows) => (rows[0] ? serialize(rows[0]) : null)),
     );
   });
+
+  export const update = fn(Patch.extend({ id: Info.shape.id }), async ({ id, ...patch }) => {
+    const before = found("Todo", await fromID.force(id));
+    Actor.check({ todo: ["update"] }, before.createdBy);
+    const next = {
+      ...patch,
+      ...(patch.tags !== undefined ? { tags: clean(patch.tags) } : {}),
+      ...(patch.stage !== undefined ? { stage: trim(patch.stage) } : {}),
+    };
+
+    return Database.transaction(async (tx) => {
+      await tx.update(TodoTable).set(fields(next, before)).where(eq(TodoTable.id, id));
+      await emit(id, before, next);
+    });
+  });
+
+  export const remove = fn(Info.shape.id, async (id) => {
+    const before = found("Todo", await fromID.force(id));
+    Actor.check({ todo: ["delete"] }, before.createdBy);
+
+    return Database.transaction(async (tx) => {
+      await tx.update(TodoTable).set({ timeDeleted: new Date() }).where(eq(TodoTable.id, id));
+      await Event.publish({
+        type: "todo.removed",
+        source: "todo",
+        sourceID: id,
+        tags: before.tags,
+        data: { title: before.title, status: before.status, tags: before.tags },
+        state: before,
+      });
+    });
+  });
+
+  function serialize(row: { todo: typeof TodoTable.$inferSelect; user: Assignee }): Info {
+    return {
+      id: row.todo.id,
+      createdBy: row.todo.createdBy,
+      assignee: row.user,
+      source: row.todo.source,
+      sourceID: row.todo.sourceID,
+      stage: row.todo.stage,
+      title: row.todo.title,
+      body: row.todo.body,
+      status: row.todo.status,
+      reason: row.todo.reason,
+      tags: row.todo.tags,
+      startDate: iso(row.todo.startDate),
+      dueDate: iso(row.todo.dueDate),
+      timeStarted: iso(row.todo.timeStarted),
+      timeDone: iso(row.todo.timeDone),
+    };
+  }
+
+  // === UTILS ===
+
+  /**
+   * Span moves with status: `active` stamps the start (once), `done` stamps the end,
+   * falling back to backlog/planned clears both.
+   */
+  function times(status: Status, started: string | null) {
+    const now = new Date();
+    if (status === "active") return { timeStarted: date(started) ?? now, timeDone: null };
+    if (status === "done") return { timeDone: now };
+    if (status === "blocked") return { timeDone: null };
+    return { timeStarted: null, timeDone: null };
+  }
+
+  /** The columns a patch copies through untouched. */
+  function plain(patch: Patch) {
+    return {
+      ...(patch.title !== undefined ? { title: patch.title } : {}),
+      ...(patch.body !== undefined ? { body: patch.body } : {}),
+      ...(patch.tags !== undefined ? { tags: patch.tags } : {}),
+      ...(patch.stage !== undefined ? { stage: patch.stage } : {}),
+      ...(patch.assignee !== undefined ? { assignee: patch.assignee } : {}),
+      ...(patch.reason !== undefined ? { reason: patch.reason } : {}),
+    };
+  }
+
+  function fields(patch: Patch, before: Info) {
+    return {
+      ...plain(patch),
+      ...(patch.startDate !== undefined ? { startDate: date(patch.startDate) } : {}),
+      ...(patch.dueDate !== undefined ? { dueDate: date(patch.dueDate) } : {}),
+      // A transition drops the old reason unless this patch carries a new one.
+      ...(patch.status !== undefined
+        ? {
+            status: patch.status,
+            reason: patch.reason ?? null,
+            ...times(patch.status, before.timeStarted),
+          }
+        : {}),
+      timeUpdated: new Date(),
+    };
+  }
+
+  /** The fields the activity log reports when they change. */
+  const LOGGED = ["title", "body", "tags", "stage", "startDate", "dueDate"] as const;
+
+  /** Tags compare by content; everything else by value. */
+  function same(key: (typeof LOGGED)[number], before: Info, patch: Patch) {
+    if (key === "tags") return patch.tags!.join(" ") === before.tags.join(" ");
+    return patch[key] === before[key];
+  }
+
+  function diff(before: Info, patch: Patch) {
+    const changed: Record<string, { before: unknown; after: unknown }> = {};
+    for (const key of LOGGED) {
+      if (patch[key] === undefined || same(key, before, patch)) continue;
+      changed[key] = { before: before[key], after: patch[key] };
+    }
+    return changed;
+  }
 
   async function moved(id: string, before: Info, next: Patch, tags: string[]) {
     if (next.status === undefined || next.status === before.status) return;
@@ -439,57 +476,5 @@ export namespace Todo {
       data: changed,
       state: found("Todo", await fromID.force(id)),
     });
-  }
-
-  export const update = fn(Patch.extend({ id: Info.shape.id }), async ({ id, ...patch }) => {
-    const before = found("Todo", await fromID.force(id));
-    Actor.check({ todo: ["update"] }, before.createdBy);
-    const next = {
-      ...patch,
-      ...(patch.tags !== undefined ? { tags: clean(patch.tags) } : {}),
-      ...(patch.stage !== undefined ? { stage: trim(patch.stage) } : {}),
-    };
-
-    return Database.transaction(async (tx) => {
-      await tx.update(TodoTable).set(fields(next, before)).where(eq(TodoTable.id, id));
-      await emit(id, before, next);
-    });
-  });
-
-  export const remove = fn(Info.shape.id, async (id) => {
-    const before = found("Todo", await fromID.force(id));
-    Actor.check({ todo: ["delete"] }, before.createdBy);
-
-    return Database.transaction(async (tx) => {
-      await tx.update(TodoTable).set({ timeDeleted: new Date() }).where(eq(TodoTable.id, id));
-      await Event.publish({
-        type: "todo.removed",
-        source: "todo",
-        sourceID: id,
-        tags: before.tags,
-        data: { title: before.title, status: before.status, tags: before.tags },
-        state: before,
-      });
-    });
-  });
-
-  function serialize(row: { todo: typeof TodoTable.$inferSelect; user: Assignee }): Info {
-    return {
-      id: row.todo.id,
-      createdBy: row.todo.createdBy,
-      assignee: row.user,
-      source: row.todo.source,
-      sourceID: row.todo.sourceID,
-      stage: row.todo.stage,
-      title: row.todo.title,
-      body: row.todo.body,
-      status: row.todo.status,
-      reason: row.todo.reason,
-      tags: row.todo.tags,
-      startDate: iso(row.todo.startDate),
-      dueDate: iso(row.todo.dueDate),
-      timeStarted: iso(row.todo.timeStarted),
-      timeDone: iso(row.todo.timeDone),
-    };
   }
 }

@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { and, asc, count, ilike, isNotNull, isNull, or, sql, type SQL } from "drizzle-orm";
 import { fn } from "../util/fn";
+import { iso } from "../util/fmt";
 import { Actor } from "../actor";
 import { Common } from "../common";
 import { Database } from "../drizzle";
@@ -119,7 +120,7 @@ export namespace Admin {
         pending,
         running,
         failed,
-        oldest: oldest ? new Date(oldest).toISOString() : null,
+        oldest: iso(oldest),
       };
     });
   });
@@ -161,7 +162,7 @@ export namespace Admin {
       version: row?.version ?? "unknown",
       connections: Number(row?.connections ?? 0),
       max: Number(row?.max ?? 0),
-      started: row?.started ? new Date(row.started).toISOString() : null,
+      started: iso(row?.started),
     };
   });
 }

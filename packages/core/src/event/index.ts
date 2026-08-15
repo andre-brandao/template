@@ -6,6 +6,7 @@ import { Actor } from "../actor";
 import { Common } from "../common";
 import { Examples } from "../examples";
 import { Identifier } from "../identifier";
+import { clean, Tags } from "../util/tag";
 import { UserTable } from "../user/user.sql";
 import { order } from "../drizzle/order";
 import { Webhook } from "../webhook";
@@ -38,11 +39,9 @@ export namespace Event {
         .nullable()
         .meta({ description: "Kind of entity it happened to, like `todo`." }),
       sourceID: z.string().nullable().meta({ description: "Id of that entity." }),
-      tags: z
-        .string()
-        .array()
-        .max(20)
-        .meta({ description: "Filter labels. Always carries the actor kind, like `actor:user`." }),
+      tags: Tags.meta({
+        description: "Filter labels. Always carries the actor kind, like `actor:user`.",
+      }),
       data: z
         .record(z.string(), z.unknown())
         .meta({ description: "Type-specific payload. For updates, the before/after diff." }),
@@ -81,7 +80,7 @@ export namespace Event {
           type: input.type,
           source: input.source,
           sourceID: input.sourceID,
-          tags: [...new Set([who.tag, ...(input.tags ?? [])])],
+          tags: clean([who.tag, ...(input.tags ?? [])]),
           data: input.data ?? {},
         }),
       );

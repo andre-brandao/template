@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { and, desc, eq, gt, isNull, or } from "drizzle-orm";
 import { fn } from "../util/fn";
+import { iso } from "../util/fmt";
 import { found } from "../error";
 import { Actor } from "../actor";
 import { Common } from "../common";
@@ -180,8 +181,8 @@ export namespace Key {
       name: row.name,
       key: row.key,
       display: `${row.key.slice(0, 7)}...${row.key.slice(-4)}`,
-      timeUsed: row.timeUsed?.toISOString() ?? null,
-      expiresAt: row.expiresAt?.toISOString() ?? null,
+      timeUsed: iso(row.timeUsed),
+      expiresAt: iso(row.expiresAt),
       current: row.key === current,
     };
   }

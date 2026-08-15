@@ -48,7 +48,7 @@ describe("admin users", () => {
     "page paginates, searches and carries the role",
     async () => {
       const one = await mate();
-      const found = await User.page({ search: one.email });
+      const found = await Admin.users({ search: one.email });
       expect(found.total).toBe(1);
       expect(found.data[0]?.role).toBe("member");
       expect(found.data[0]?.timeDeleted).toBeNull();
@@ -73,8 +73,8 @@ describe("admin users", () => {
       await User.remove(one.id);
 
       expect(await User.fromID(one.id)).toBeNull();
-      expect((await User.page({ search: one.email })).total).toBe(0);
-      expect((await User.page({ search: one.email, deleted: true })).total).toBe(1);
+      expect((await Admin.users({ search: one.email })).total).toBe(0);
+      expect((await Admin.users({ search: one.email, deleted: true })).total).toBe(1);
       await expect(
         Auth.provision({ provider: "email", accountId: one.email, email: one.email }),
       ).rejects.toThrow(/disabled/);
@@ -96,7 +96,7 @@ describe("admin users", () => {
 
   withTestUser("a member holds none of it", async () => {
     const one = await mate();
-    expect(() => User.page({})).toThrow(/admin:read/);
+    expect(() => Admin.users({})).toThrow(/admin:read/);
     await expect(User.assign({ id: one.id, role: "admin" })).rejects.toThrow(/user:assign/);
     await expect(User.remove(one.id)).rejects.toThrow(/user:delete/);
   });

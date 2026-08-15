@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { and, asc, count, eq, ilike, isNull, or, sql } from "drizzle-orm";
+import { and, asc, eq, ilike, isNull, sql } from "drizzle-orm";
 import { fn } from "../util/fn";
 import { Database } from "../drizzle";
 import { Actor } from "../actor";
@@ -10,7 +10,6 @@ import { Examples } from "../examples";
 import { Identifier } from "../identifier";
 import { Permission } from "../permission";
 import { UserTable } from "./user.sql";
-import { order } from "../drizzle/order";
 import { Patch, Prefs } from "./prefs";
 import { ProviderIds, ProviderTable } from "./provider.sql";
 
@@ -187,41 +186,6 @@ export namespace User {
       );
   }
 
-  /** Admin directory: paginated, carries the role, can surface disabled accounts. */
-  export const page = fn(
-    Common.Query(["name", "email", "role", "timeCreated"]).extend({
-      search: z.string().optional(),
-      /** Include disabled accounts, which are hidden by default like every other soft delete. */
-      deleted: z.boolean().optional(),
-    }),
-    (input) => {
-      Actor.check({ admin: ["read"] });
-      const { page, pageSize, limit, offset } = Common.page(input);
-      const where = and(
-        input.deleted ? undefined : isNull(UserTable.timeDeleted),
-        input.search
-          ? or(
-              ilike(UserTable.name, `%${input.search}%`),
-              ilike(UserTable.email, `%${input.search}%`),
-            )
-          : undefined,
-      );
-      return Database.use(async (tx) => {
-        const [rows, totalRows] = await Promise.all([
-          tx
-            .select()
-            .from(UserTable)
-            .where(where)
-            .orderBy(...order(UserTable, input.sort, asc(UserTable.name)))
-            .limit(limit)
-            .offset(offset),
-          tx.select({ total: count() }).from(UserTable).where(where),
-        ] as const);
-        return { data: rows.map(serialize), page, pageSize, total: totalRows[0]?.total ?? 0 };
-      });
-    },
-  );
-
   export const assign = fn(
     z.object({ id: Info.shape.id, role: Info.shape.role }),
     async (input) => {
@@ -282,7 +246,7 @@ export namespace User {
     });
   });
 
-  function serialize(row: typeof UserTable.$inferSelect): Info {
+  export function serialize(row: typeof UserTable.$inferSelect): Info {
     return {
       id: row.id,
       name: row.name,

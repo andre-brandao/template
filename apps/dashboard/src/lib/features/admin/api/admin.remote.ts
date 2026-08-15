@@ -5,7 +5,7 @@ import { User } from "@template/core/user";
 import { Webhook } from "@template/core/webhook";
 import { remote } from "$lib/server/remote";
 
-export const getUsers = remote.core(User.page).query();
+export const getUsers = remote.core(Admin.users).query();
 
 // Unpinned from any `sourceID`, so core requires `admin: ["read"]` on the way through.
 export const getEvents = remote.core(Event.list).query();

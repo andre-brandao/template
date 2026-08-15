@@ -1,5 +1,6 @@
 import { describe, expect } from "bun:test";
 import { Actor } from "../src/actor";
+import { Admin } from "../src/admin";
 import { Todo } from "../src/todo";
 import { User } from "../src/user";
 import { Event } from "../src/event";
@@ -117,8 +118,8 @@ describe("order across namespaces", () => {
       await mint("Yara Zt");
       await mint("Abe Aa");
 
-      const asc = await User.page({ sort: ["name"], pageSize: 100 });
-      const desc = await User.page({ sort: ["-name"], pageSize: 100 });
+      const asc = await Admin.users({ sort: ["name"], pageSize: 100 });
+      const desc = await Admin.users({ sort: ["-name"], pageSize: 100 });
       const names = asc.data.map((one) => one.name);
       expect(names).toEqual([...names].sort((a, b) => a.localeCompare(b)));
       expect(desc.data[0]?.name).toBe(names[names.length - 1]);

@@ -143,6 +143,7 @@ export namespace FileApi {
           "Serves the bytes for a `temporaryUrl` minted by a disk that can't presign (fs, R2 binding). The signature stands in for the session, so no token is needed.",
         responses: {
           200: { description: "The raw file bytes." },
+          400: ErrorResponses[400],
           403: ErrorResponses[403],
           404: ErrorResponses[404],
           500: ErrorResponses[500],
@@ -184,6 +185,7 @@ export namespace FileApi {
         responses: {
           200: { description: "The raw file bytes." },
           302: { description: "Redirect to a presigned storage URL." },
+          400: ErrorResponses[400],
           401: ErrorResponses[401],
           404: ErrorResponses[404],
           500: ErrorResponses[500],
@@ -211,7 +213,7 @@ export namespace FileApi {
         description: "Moves the object to a new key under the same prefix.",
         responses: {
           200: {
-            content: { "application/json": { schema: Result(Meta) } },
+            content: { "application/json": { schema: Result(Meta), example: Examples.File } },
             description: "The renamed file.",
           },
           400: ErrorResponses[400],
@@ -241,6 +243,7 @@ export namespace FileApi {
             content: { "application/json": { schema: Result(z.literal("ok")) } },
             description: "Deleted.",
           },
+          400: ErrorResponses[400],
           401: ErrorResponses[401],
           500: ErrorResponses[500],
         },

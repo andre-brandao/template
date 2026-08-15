@@ -154,7 +154,28 @@
             "type": "string"
           },
           "details": {
-            "description": "Additional error context information"
+            "description": "Additional error context information",
+            "type": "object",
+            "properties": {
+              "issues": {
+                "description": "Every field that failed. `param` names the first of them.",
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "path": {
+                      "description": "Dotted path to the field, like `user.email`.",
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "What was wrong with it."
+                    }
+                  },
+                  "required": ["message"]
+                }
+              }
+            }
           }
         },
         "required": ["type", "code", "message"],
@@ -773,7 +794,16 @@
                 "example": {
                   "type": "validation",
                   "code": "invalid_parameter",
-                  "message": "The request was invalid"
+                  "message": "Invalid input: expected string, received undefined",
+                  "param": "email",
+                  "details": {
+                    "issues": [
+                      {
+                        "path": "email",
+                        "message": "Invalid input: expected string, received undefined"
+                      }
+                    ]
+                  }
                 }
               }
             },
@@ -853,6 +883,30 @@
               }
             },
             "description": "Revoked."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "validation",
+                  "code": "invalid_parameter",
+                  "message": "Invalid input: expected string, received undefined",
+                  "param": "email",
+                  "details": {
+                    "issues": [
+                      {
+                        "path": "email",
+                        "message": "Invalid input: expected string, received undefined"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "description": "Bad Request"
           },
           "401": {
             "content": {
@@ -978,6 +1032,30 @@
               }
             },
             "description": "A page of todos."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "validation",
+                  "code": "invalid_parameter",
+                  "message": "Invalid input: expected string, received undefined",
+                  "param": "email",
+                  "details": {
+                    "issues": [
+                      {
+                        "path": "email",
+                        "message": "Invalid input: expected string, received undefined"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "description": "Bad Request"
           },
           "401": {
             "content": {
@@ -1128,6 +1206,27 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Todo"
+                },
+                "example": {
+                  "id": "tod_XXXXXXXXXXXXXXXXXXXXXXXXX",
+                  "createdBy": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX",
+                  "assignee": {
+                    "id": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX",
+                    "name": "John Doe",
+                    "image": null
+                  },
+                  "source": "project",
+                  "sourceID": "prj_XXXXXXXXXXXXXXXXXXXXXXXXX",
+                  "stage": "Sprint 1",
+                  "title": "Write the quarterly report",
+                  "body": null,
+                  "status": "active",
+                  "reason": null,
+                  "tags": [],
+                  "startDate": "2026-06-07T00:00:00.000Z",
+                  "dueDate": "2026-06-14T00:00:00.000Z",
+                  "timeStarted": "2026-06-07T09:12:00.000Z",
+                  "timeDone": null
                 }
               }
             },
@@ -1142,7 +1241,16 @@
                 "example": {
                   "type": "validation",
                   "code": "invalid_parameter",
-                  "message": "The request was invalid"
+                  "message": "Invalid input: expected string, received undefined",
+                  "param": "email",
+                  "details": {
+                    "issues": [
+                      {
+                        "path": "email",
+                        "message": "Invalid input: expected string, received undefined"
+                      }
+                    ]
+                  }
                 }
               }
             },
@@ -1317,6 +1425,30 @@
             },
             "description": "The stages in use."
           },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "validation",
+                  "code": "invalid_parameter",
+                  "message": "Invalid input: expected string, received undefined",
+                  "param": "email",
+                  "details": {
+                    "issues": [
+                      {
+                        "path": "email",
+                        "message": "Invalid input: expected string, received undefined"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
           "401": {
             "content": {
               "application/json": {
@@ -1403,6 +1535,30 @@
             },
             "description": "The todo."
           },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "validation",
+                  "code": "invalid_parameter",
+                  "message": "Invalid input: expected string, received undefined",
+                  "param": "email",
+                  "details": {
+                    "issues": [
+                      {
+                        "path": "email",
+                        "message": "Invalid input: expected string, received undefined"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
           "401": {
             "content": {
               "application/json": {
@@ -1472,6 +1628,27 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Todo"
+                },
+                "example": {
+                  "id": "tod_XXXXXXXXXXXXXXXXXXXXXXXXX",
+                  "createdBy": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX",
+                  "assignee": {
+                    "id": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX",
+                    "name": "John Doe",
+                    "image": null
+                  },
+                  "source": "project",
+                  "sourceID": "prj_XXXXXXXXXXXXXXXXXXXXXXXXX",
+                  "stage": "Sprint 1",
+                  "title": "Write the quarterly report",
+                  "body": null,
+                  "status": "active",
+                  "reason": null,
+                  "tags": [],
+                  "startDate": "2026-06-07T00:00:00.000Z",
+                  "dueDate": "2026-06-14T00:00:00.000Z",
+                  "timeStarted": "2026-06-07T09:12:00.000Z",
+                  "timeDone": null
                 }
               }
             },
@@ -1486,7 +1663,16 @@
                 "example": {
                   "type": "validation",
                   "code": "invalid_parameter",
-                  "message": "The request was invalid"
+                  "message": "Invalid input: expected string, received undefined",
+                  "param": "email",
+                  "details": {
+                    "issues": [
+                      {
+                        "path": "email",
+                        "message": "Invalid input: expected string, received undefined"
+                      }
+                    ]
+                  }
                 }
               }
             },
@@ -1670,6 +1856,30 @@
             },
             "description": "Deleted."
           },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "validation",
+                  "code": "invalid_parameter",
+                  "message": "Invalid input: expected string, received undefined",
+                  "param": "email",
+                  "details": {
+                    "issues": [
+                      {
+                        "path": "email",
+                        "message": "Invalid input: expected string, received undefined"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
           "401": {
             "content": {
               "application/json": {
@@ -1781,6 +1991,30 @@
             },
             "description": "A page of projects."
           },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "validation",
+                  "code": "invalid_parameter",
+                  "message": "Invalid input: expected string, received undefined",
+                  "param": "email",
+                  "details": {
+                    "issues": [
+                      {
+                        "path": "email",
+                        "message": "Invalid input: expected string, received undefined"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
           "401": {
             "content": {
               "application/json": {
@@ -1869,6 +2103,13 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Project"
+                },
+                "example": {
+                  "id": "prj_XXXXXXXXXXXXXXXXXXXXXXXXX",
+                  "createdBy": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX",
+                  "name": "Quarterly close",
+                  "description": null,
+                  "image": null
                 }
               }
             },
@@ -1883,7 +2124,16 @@
                 "example": {
                   "type": "validation",
                   "code": "invalid_parameter",
-                  "message": "The request was invalid"
+                  "message": "Invalid input: expected string, received undefined",
+                  "param": "email",
+                  "details": {
+                    "issues": [
+                      {
+                        "path": "email",
+                        "message": "Invalid input: expected string, received undefined"
+                      }
+                    ]
+                  }
                 }
               }
             },
@@ -1976,6 +2226,30 @@
             },
             "description": "The project."
           },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "validation",
+                  "code": "invalid_parameter",
+                  "message": "Invalid input: expected string, received undefined",
+                  "param": "email",
+                  "details": {
+                    "issues": [
+                      {
+                        "path": "email",
+                        "message": "Invalid input: expected string, received undefined"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
           "401": {
             "content": {
               "application/json": {
@@ -2045,6 +2319,13 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Project"
+                },
+                "example": {
+                  "id": "prj_XXXXXXXXXXXXXXXXXXXXXXXXX",
+                  "createdBy": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX",
+                  "name": "Quarterly close",
+                  "description": null,
+                  "image": null
                 }
               }
             },
@@ -2059,7 +2340,16 @@
                 "example": {
                   "type": "validation",
                   "code": "invalid_parameter",
-                  "message": "The request was invalid"
+                  "message": "Invalid input: expected string, received undefined",
+                  "param": "email",
+                  "details": {
+                    "issues": [
+                      {
+                        "path": "email",
+                        "message": "Invalid input: expected string, received undefined"
+                      }
+                    ]
+                  }
                 }
               }
             },
@@ -2181,6 +2471,30 @@
             },
             "description": "Deleted."
           },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "validation",
+                  "code": "invalid_parameter",
+                  "message": "Invalid input: expected string, received undefined",
+                  "param": "email",
+                  "details": {
+                    "issues": [
+                      {
+                        "path": "email",
+                        "message": "Invalid input: expected string, received undefined"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
           "401": {
             "content": {
               "application/json": {
@@ -2287,7 +2601,16 @@
                 "example": {
                   "type": "validation",
                   "code": "invalid_parameter",
-                  "message": "The request was invalid"
+                  "message": "Invalid input: expected string, received undefined",
+                  "param": "email",
+                  "details": {
+                    "issues": [
+                      {
+                        "path": "email",
+                        "message": "Invalid input: expected string, received undefined"
+                      }
+                    ]
+                  }
                 }
               }
             },
@@ -2394,6 +2717,30 @@
           "200": {
             "description": "The raw file bytes."
           },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "validation",
+                  "code": "invalid_parameter",
+                  "message": "Invalid input: expected string, received undefined",
+                  "param": "email",
+                  "details": {
+                    "issues": [
+                      {
+                        "path": "email",
+                        "message": "Invalid input: expected string, received undefined"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
           "403": {
             "content": {
               "application/json": {
@@ -2489,6 +2836,30 @@
           "302": {
             "description": "Redirect to a presigned storage URL."
           },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "validation",
+                  "code": "invalid_parameter",
+                  "message": "Invalid input: expected string, received undefined",
+                  "param": "email",
+                  "details": {
+                    "issues": [
+                      {
+                        "path": "email",
+                        "message": "Invalid input: expected string, received undefined"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
           "401": {
             "content": {
               "application/json": {
@@ -2559,6 +2930,11 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/FileMeta"
+                },
+                "example": {
+                  "key": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX/screenshot.png",
+                  "size": 102400,
+                  "lastModified": "2026-06-07T00:00:00.000Z"
                 }
               }
             },
@@ -2573,7 +2949,16 @@
                 "example": {
                   "type": "validation",
                   "code": "invalid_parameter",
-                  "message": "The request was invalid"
+                  "message": "Invalid input: expected string, received undefined",
+                  "param": "email",
+                  "details": {
+                    "issues": [
+                      {
+                        "path": "email",
+                        "message": "Invalid input: expected string, received undefined"
+                      }
+                    ]
+                  }
                 }
               }
             },
@@ -2669,6 +3054,30 @@
               }
             },
             "description": "Deleted."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "validation",
+                  "code": "invalid_parameter",
+                  "message": "Invalid input: expected string, received undefined",
+                  "param": "email",
+                  "details": {
+                    "issues": [
+                      {
+                        "path": "email",
+                        "message": "Invalid input: expected string, received undefined"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "description": "Bad Request"
           },
           "401": {
             "content": {

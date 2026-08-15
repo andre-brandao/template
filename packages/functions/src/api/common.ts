@@ -88,6 +88,7 @@ export const validator = function <S extends z.ZodType, Target extends keyof Val
         code: ErrorCodes.Validation.INVALID_PARAMETER,
         message: firstIssue.message,
         param: fieldPath,
+        // One entry per failing field, so a client can mark up a whole form from one response.
         details: {
           issues: issues.map((issue) => ({
             path: issue.path?.map(String).join("."),
@@ -113,7 +114,13 @@ export const ErrorResponses = {
         example: {
           type: "validation",
           code: "invalid_parameter",
-          message: "The request was invalid",
+          message: "Invalid input: expected string, received undefined",
+          param: "email",
+          details: {
+            issues: [
+              { path: "email", message: "Invalid input: expected string, received undefined" },
+            ],
+          },
         },
       },
     },

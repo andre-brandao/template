@@ -25,6 +25,7 @@ export namespace TodoApi {
           "List todos, optionally narrowed by status, assignee, stage or owning entity. Paginated.",
         responses: {
           200: PaginatedResponse(Todo.Info, "A page of todos.", Examples.Todo),
+          400: ErrorResponses[400],
           401: ErrorResponses[401],
           500: ErrorResponses[500],
         },
@@ -48,6 +49,7 @@ export namespace TodoApi {
             content: { "application/json": { schema: Result(z.array(Todo.Stage)) } },
             description: "The stages in use.",
           },
+          400: ErrorResponses[400],
           401: ErrorResponses[401],
           500: ErrorResponses[500],
         },
@@ -72,6 +74,7 @@ export namespace TodoApi {
             content: { "application/json": { schema: Result(Todo.Info), example: Examples.Todo } },
             description: "The todo.",
           },
+          400: ErrorResponses[400],
           401: ErrorResponses[401],
           404: ErrorResponses[404],
           500: ErrorResponses[500],
@@ -91,7 +94,7 @@ export namespace TodoApi {
         summary: "Create todo",
         responses: {
           200: {
-            content: { "application/json": { schema: Result(Todo.Info) } },
+            content: { "application/json": { schema: Result(Todo.Info), example: Examples.Todo } },
             description: "The created todo.",
           },
           400: ErrorResponses[400],
@@ -114,7 +117,7 @@ export namespace TodoApi {
         summary: "Update todo",
         responses: {
           200: {
-            content: { "application/json": { schema: Result(Todo.Info) } },
+            content: { "application/json": { schema: Result(Todo.Info), example: Examples.Todo } },
             description: "The updated todo.",
           },
           400: ErrorResponses[400],
@@ -143,6 +146,7 @@ export namespace TodoApi {
             content: { "application/json": { schema: Result(z.literal("ok")) } },
             description: "Deleted.",
           },
+          400: ErrorResponses[400],
           401: ErrorResponses[401],
           404: ErrorResponses[404],
           500: ErrorResponses[500],

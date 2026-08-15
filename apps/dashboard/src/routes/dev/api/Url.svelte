@@ -56,6 +56,13 @@
 		font-size: 0.8em;
 		overflow-x: auto;
 		white-space: nowrap;
+		/* Hidden, not just thin: a scrollbar appearing as the url grows would change the bar's
+		   height, which is the shift this whole row is pinned against. */
+		scrollbar-width: none;
+	}
+
+	code::-webkit-scrollbar {
+		display: none;
 	}
 
 	.verb {

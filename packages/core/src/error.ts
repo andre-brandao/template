@@ -26,9 +26,25 @@ export const ErrorResponse = z
         description: "The parameter that caused the error (if applicable)",
         examples: ["email", "user_id"],
       }),
-    details: z.any().optional().meta({
-      description: "Additional error context information",
-    }),
+    details: z
+      .object({
+        issues: z
+          .array(
+            z.object({
+              path: z
+                .string()
+                .optional()
+                .meta({ description: "Dotted path to the field, like `user.email`." }),
+              message: z.string().meta({ description: "What was wrong with it." }),
+            }),
+          )
+          .optional()
+          .meta({
+            description: "Every field that failed. `param` names the first of them.",
+          }),
+      })
+      .optional()
+      .meta({ description: "Additional error context information" }),
   })
   .meta({ ref: "ErrorResponse" });
 

@@ -72,7 +72,21 @@ export type ErrorResponse = {
   /**
    * Additional error context information
    */
-  details?: unknown;
+  details?: {
+    /**
+     * Every field that failed. `param` names the first of them.
+     */
+    issues?: Array<{
+      /**
+       * Dotted path to the field, like `user.email`.
+       */
+      path?: string;
+      /**
+       * What was wrong with it.
+       */
+      message: string;
+    }>;
+  };
 };
 
 /**
@@ -346,6 +360,10 @@ export type DeleteKeyByIdData = {
 
 export type DeleteKeyByIdErrors = {
   /**
+   * Bad Request
+   */
+  400: ErrorResponse;
+  /**
    * Unauthorized
    */
   401: ErrorResponse;
@@ -416,6 +434,10 @@ export type GetTodoData = {
 };
 
 export type GetTodoErrors = {
+  /**
+   * Bad Request
+   */
+  400: ErrorResponse;
   /**
    * Unauthorized
    */
@@ -531,6 +553,10 @@ export type GetTodoStageData = {
 
 export type GetTodoStageErrors = {
   /**
+   * Bad Request
+   */
+  400: ErrorResponse;
+  /**
    * Unauthorized
    */
   401: ErrorResponse;
@@ -561,6 +587,10 @@ export type DeleteTodoByIdData = {
 };
 
 export type DeleteTodoByIdErrors = {
+  /**
+   * Bad Request
+   */
+  400: ErrorResponse;
   /**
    * Unauthorized
    */
@@ -600,6 +630,10 @@ export type GetTodoByIdData = {
 };
 
 export type GetTodoByIdErrors = {
+  /**
+   * Bad Request
+   */
+  400: ErrorResponse;
   /**
    * Unauthorized
    */
@@ -721,6 +755,10 @@ export type GetProjectData = {
 
 export type GetProjectErrors = {
   /**
+   * Bad Request
+   */
+  400: ErrorResponse;
+  /**
    * Unauthorized
    */
   401: ErrorResponse;
@@ -808,6 +846,10 @@ export type DeleteProjectByIdData = {
 
 export type DeleteProjectByIdErrors = {
   /**
+   * Bad Request
+   */
+  400: ErrorResponse;
+  /**
    * Unauthorized
    */
   401: ErrorResponse;
@@ -847,6 +889,10 @@ export type GetProjectByIdData = {
 };
 
 export type GetProjectByIdErrors = {
+  /**
+   * Bad Request
+   */
+  400: ErrorResponse;
   /**
    * Unauthorized
    */
@@ -1006,6 +1052,10 @@ export type GetFileSignedData = {
 
 export type GetFileSignedErrors = {
   /**
+   * Bad Request
+   */
+  400: ErrorResponse;
+  /**
    * Forbidden
    */
   403: ErrorResponse;
@@ -1038,6 +1088,10 @@ export type GetFileByNameContentData = {
 };
 
 export type GetFileByNameContentErrors = {
+  /**
+   * Bad Request
+   */
+  400: ErrorResponse;
   /**
    * Unauthorized
    */
@@ -1072,6 +1126,10 @@ export type DeleteFileByNameData = {
 };
 
 export type DeleteFileByNameErrors = {
+  /**
+   * Bad Request
+   */
+  400: ErrorResponse;
   /**
    * Unauthorized
    */

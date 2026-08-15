@@ -24,6 +24,7 @@ export namespace ProjectApi {
         description: "List projects, optionally filtered by name. Paginated.",
         responses: {
           200: PaginatedResponse(Project.Info, "A page of projects.", Examples.Project),
+          400: ErrorResponses[400],
           401: ErrorResponses[401],
           500: ErrorResponses[500],
         },
@@ -47,6 +48,7 @@ export namespace ProjectApi {
             },
             description: "The project.",
           },
+          400: ErrorResponses[400],
           401: ErrorResponses[401],
           404: ErrorResponses[404],
           500: ErrorResponses[500],
@@ -66,7 +68,9 @@ export namespace ProjectApi {
         summary: "Create project",
         responses: {
           200: {
-            content: { "application/json": { schema: Result(Project.Info) } },
+            content: {
+              "application/json": { schema: Result(Project.Info), example: Examples.Project },
+            },
             description: "The created project.",
           },
           400: ErrorResponses[400],
@@ -89,7 +93,9 @@ export namespace ProjectApi {
         summary: "Update project",
         responses: {
           200: {
-            content: { "application/json": { schema: Result(Project.Info) } },
+            content: {
+              "application/json": { schema: Result(Project.Info), example: Examples.Project },
+            },
             description: "The updated project.",
           },
           400: ErrorResponses[400],
@@ -118,6 +124,7 @@ export namespace ProjectApi {
             content: { "application/json": { schema: Result(z.literal("ok")) } },
             description: "Deleted.",
           },
+          400: ErrorResponses[400],
           401: ErrorResponses[401],
           404: ErrorResponses[404],
           500: ErrorResponses[500],

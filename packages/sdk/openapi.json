@@ -23,14 +23,17 @@
           },
           "name": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "description": "Display name."
           },
           "email": {
             "type": "string",
             "format": "email",
-            "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+            "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+            "description": "Login address. Unique across accounts."
           },
           "emailVerified": {
+            "description": "Whether the address has been confirmed.",
             "type": "boolean"
           },
           "image": {
@@ -41,17 +44,82 @@
               {
                 "type": "null"
               }
-            ]
+            ],
+            "description": "Avatar URL, or null for none."
+          },
+          "role": {
+            "type": "string",
+            "enum": ["admin", "member"],
+            "description": "Decides everything the account may do. Only `user:assign` can change it."
+          },
+          "prefs": {
+            "type": "object",
+            "properties": {
+              "theme": {
+                "default": "system",
+                "type": "string",
+                "enum": ["system", "light", "dark"]
+              },
+              "locale": {
+                "default": "en",
+                "type": "string",
+                "enum": ["en", "pt-BR", "es", "fr", "de"]
+              },
+              "zone": {
+                "default": null,
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "date": {
+                "default": "system",
+                "type": "string",
+                "enum": ["system", "mdy", "dmy", "ymd"]
+              },
+              "time": {
+                "default": "system",
+                "type": "string",
+                "enum": ["system", "h12", "h24"]
+              }
+            },
+            "description": "Display preferences. Every key has a default, so this is always complete."
+          },
+          "timeDeleted": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "When the account was disabled. Null while it is active."
           }
         },
-        "required": ["id", "name", "email", "image"],
+        "required": ["id", "name", "email", "image", "role", "prefs", "timeDeleted"],
         "description": "A user account.",
         "example": {
           "id": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX",
           "name": "John Doe",
           "email": "john@example.com",
           "emailVerified": true,
-          "image": null
+          "image": null,
+          "role": "member",
+          "prefs": {
+            "theme": "system",
+            "locale": "en",
+            "zone": null,
+            "date": "system",
+            "time": "system"
+          },
+          "timeDeleted": null
         }
       },
       "ErrorResponse": {
@@ -103,7 +171,8 @@
           "name": {
             "type": "string",
             "minLength": 1,
-            "maxLength": 255
+            "maxLength": 255,
+            "description": "Label shown in the key list."
           },
           "key": {
             "type": "string",
@@ -165,7 +234,8 @@
             "example": "tod_XXXXXXXXXXXXXXXXXXXXXXXXX"
           },
           "createdBy": {
-            "type": "string"
+            "type": "string",
+            "description": "Id of the user who created it."
           },
           "assignee": {
             "anyOf": [
@@ -194,7 +264,8 @@
               {
                 "type": "null"
               }
-            ]
+            ],
+            "description": "The user responsible, joined in. Null when unassigned."
           },
           "source": {
             "anyOf": [
@@ -205,7 +276,8 @@
               {
                 "type": "null"
               }
-            ]
+            ],
+            "description": "Kind of entity that owns it, like `project`."
           },
           "sourceID": {
             "anyOf": [
@@ -215,7 +287,8 @@
               {
                 "type": "null"
               }
-            ]
+            ],
+            "description": "Id of the owning entity, paired with `source`."
           },
           "stage": {
             "anyOf": [
@@ -226,12 +299,14 @@
               {
                 "type": "null"
               }
-            ]
+            ],
+            "description": "Pipeline stage, a free-text label. Null when unstaged."
           },
           "title": {
             "type": "string",
             "minLength": 0,
-            "maxLength": 2000
+            "maxLength": 2000,
+            "description": "One-line summary."
           },
           "body": {
             "anyOf": [
@@ -242,11 +317,13 @@
               {
                 "type": "null"
               }
-            ]
+            ],
+            "description": "The long form, markdown."
           },
           "status": {
             "type": "string",
-            "enum": ["backlog", "planned", "active", "blocked", "done"]
+            "enum": ["backlog", "planned", "active", "blocked", "done"],
+            "description": "Where it sits in the pipeline."
           },
           "reason": {
             "anyOf": [
@@ -257,7 +334,8 @@
               {
                 "type": "null"
               }
-            ]
+            ],
+            "description": "Why it last moved status. The next transition clears it."
           },
           "tags": {
             "maxItems": 20,
@@ -266,7 +344,8 @@
               "type": "string",
               "minLength": 1,
               "maxLength": 64
-            }
+            },
+            "description": "Free-form labels, trimmed and deduplicated on write."
           },
           "startDate": {
             "anyOf": [
@@ -278,7 +357,8 @@
               {
                 "type": "null"
               }
-            ]
+            ],
+            "description": "When work is meant to start."
           },
           "dueDate": {
             "anyOf": [
@@ -290,7 +370,8 @@
               {
                 "type": "null"
               }
-            ]
+            ],
+            "description": "When it is meant to be done."
           },
           "timeStarted": {
             "anyOf": [
@@ -302,7 +383,8 @@
               {
                 "type": "null"
               }
-            ]
+            ],
+            "description": "When it first went `active`. Stamped once."
           },
           "timeDone": {
             "anyOf": [
@@ -314,7 +396,8 @@
               {
                 "type": "null"
               }
-            ]
+            ],
+            "description": "When it went `done`. Null while it is unfinished."
           }
         },
         "required": [
@@ -406,12 +489,14 @@
             "example": "prj_XXXXXXXXXXXXXXXXXXXXXXXXX"
           },
           "createdBy": {
-            "type": "string"
+            "type": "string",
+            "description": "Id of the user who created it."
           },
           "name": {
             "type": "string",
             "minLength": 1,
-            "maxLength": 200
+            "maxLength": 200,
+            "description": "Display name."
           },
           "description": {
             "anyOf": [
@@ -422,16 +507,29 @@
               {
                 "type": "null"
               }
-            ]
+            ],
+            "description": "What it is for."
+          },
+          "image": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Cover image URL, or null for none."
           }
         },
-        "required": ["id", "createdBy", "name", "description"],
+        "required": ["id", "createdBy", "name", "description", "image"],
         "description": "A container for todos. Todos point at it through source/sourceID.",
         "example": {
           "id": "prj_XXXXXXXXXXXXXXXXXXXXXXXXX",
           "createdBy": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX",
           "name": "Quarterly close",
-          "description": null
+          "description": null,
+          "image": null
         }
       },
       "FileMeta": {
@@ -530,7 +628,16 @@
                   "name": "John Doe",
                   "email": "john@example.com",
                   "emailVerified": true,
-                  "image": null
+                  "image": null,
+                  "role": "member",
+                  "prefs": {
+                    "theme": "system",
+                    "locale": "en",
+                    "zone": null,
+                    "date": "system",
+                    "time": "system"
+                  },
+                  "timeDeleted": null
                 }
               }
             },
@@ -713,7 +820,8 @@
                   "name": {
                     "type": "string",
                     "minLength": 1,
-                    "maxLength": 255
+                    "maxLength": 255,
+                    "description": "Label shown in the key list."
                   },
                   "expiresInDays": {
                     "type": "integer",
@@ -907,18 +1015,53 @@
             "in": "query",
             "name": "page",
             "schema": {
+              "default": 1,
+              "example": 1,
               "type": "number",
               "minimum": 1
-            }
+            },
+            "description": "Page number for pagination."
           },
           {
             "in": "query",
             "name": "pageSize",
             "schema": {
+              "default": 20,
+              "example": 10,
               "type": "number",
               "minimum": 1,
               "maximum": 100
-            }
+            },
+            "description": "Number of entities per page."
+          },
+          {
+            "in": "query",
+            "name": "sort",
+            "schema": {
+              "example": ["-dueDate"],
+              "maxItems": 3,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "title",
+                  "-title",
+                  "status",
+                  "-status",
+                  "stage",
+                  "-stage",
+                  "assignee",
+                  "-assignee",
+                  "startDate",
+                  "-startDate",
+                  "dueDate",
+                  "-dueDate",
+                  "timeCreated",
+                  "-timeCreated"
+                ]
+              }
+            },
+            "description": "Sort keys in priority order. Prefix with `-` for descending."
           },
           {
             "in": "query",
@@ -939,14 +1082,16 @@
             "in": "query",
             "name": "stage",
             "schema": {
-              "type": "string"
+              "type": "string",
+              "maxLength": 64
             }
           },
           {
             "in": "query",
             "name": "source",
             "schema": {
-              "type": "string"
+              "type": "string",
+              "maxLength": 64
             }
           },
           {
@@ -961,7 +1106,8 @@
             "name": "createdBy",
             "schema": {
               "type": "string"
-            }
+            },
+            "description": "Id of the user who created it."
           },
           {
             "in": "query",
@@ -1043,7 +1189,8 @@
                   "title": {
                     "type": "string",
                     "minLength": 0,
-                    "maxLength": 2000
+                    "maxLength": 2000,
+                    "description": "One-line summary."
                   },
                   "body": {
                     "anyOf": [
@@ -1054,7 +1201,8 @@
                       {
                         "type": "null"
                       }
-                    ]
+                    ],
+                    "description": "The long form, markdown."
                   },
                   "tags": {
                     "maxItems": 20,
@@ -1063,7 +1211,8 @@
                       "type": "string",
                       "minLength": 1,
                       "maxLength": 64
-                    }
+                    },
+                    "description": "Free-form labels, trimmed and deduplicated on write."
                   },
                   "stage": {
                     "anyOf": [
@@ -1074,7 +1223,8 @@
                       {
                         "type": "null"
                       }
-                    ]
+                    ],
+                    "description": "Pipeline stage, a free-text label. Null when unstaged."
                   },
                   "assignee": {
                     "anyOf": [
@@ -1095,7 +1245,8 @@
                       {
                         "type": "null"
                       }
-                    ]
+                    ],
+                    "description": "Kind of entity that owns it, like `project`."
                   },
                   "sourceID": {
                     "anyOf": [
@@ -1105,7 +1256,8 @@
                       {
                         "type": "null"
                       }
-                    ]
+                    ],
+                    "description": "Id of the owning entity, paired with `source`."
                   },
                   "status": {
                     "type": "string",
@@ -1121,7 +1273,8 @@
                       {
                         "type": "null"
                       }
-                    ]
+                    ],
+                    "description": "When work is meant to start."
                   },
                   "dueDate": {
                     "anyOf": [
@@ -1133,7 +1286,8 @@
                       {
                         "type": "null"
                       }
-                    ]
+                    ],
+                    "description": "When it is meant to be done."
                   }
                 },
                 "required": ["title"]
@@ -1300,9 +1454,11 @@
             "in": "path",
             "name": "id",
             "schema": {
-              "type": "string"
+              "type": "string",
+              "example": "tod_XXXXXXXXXXXXXXXXXXXXXXXXX"
             },
-            "required": true
+            "required": true,
+            "description": "Unique object identifier.\nThe format and length of IDs may change over time."
           }
         ]
       },
@@ -1402,7 +1558,8 @@
                   "title": {
                     "type": "string",
                     "minLength": 0,
-                    "maxLength": 2000
+                    "maxLength": 2000,
+                    "description": "One-line summary."
                   },
                   "body": {
                     "anyOf": [
@@ -1413,7 +1570,8 @@
                       {
                         "type": "null"
                       }
-                    ]
+                    ],
+                    "description": "The long form, markdown."
                   },
                   "tags": {
                     "maxItems": 20,
@@ -1422,7 +1580,8 @@
                       "type": "string",
                       "minLength": 1,
                       "maxLength": 64
-                    }
+                    },
+                    "description": "Free-form labels, trimmed and deduplicated on write."
                   },
                   "stage": {
                     "anyOf": [
@@ -1433,11 +1592,13 @@
                       {
                         "type": "null"
                       }
-                    ]
+                    ],
+                    "description": "Pipeline stage, a free-text label. Null when unstaged."
                   },
                   "status": {
                     "type": "string",
-                    "enum": ["backlog", "planned", "active", "blocked", "done"]
+                    "enum": ["backlog", "planned", "active", "blocked", "done"],
+                    "description": "Where it sits in the pipeline."
                   },
                   "reason": {
                     "anyOf": [
@@ -1448,7 +1609,8 @@
                       {
                         "type": "null"
                       }
-                    ]
+                    ],
+                    "description": "Why it last moved status. The next transition clears it."
                   },
                   "startDate": {
                     "anyOf": [
@@ -1460,7 +1622,8 @@
                       {
                         "type": "null"
                       }
-                    ]
+                    ],
+                    "description": "When work is meant to start."
                   },
                   "dueDate": {
                     "anyOf": [
@@ -1472,7 +1635,8 @@
                       {
                         "type": "null"
                       }
-                    ]
+                    ],
+                    "description": "When it is meant to be done."
                   },
                   "assignee": {
                     "anyOf": [
@@ -1605,7 +1769,8 @@
                       "id": "prj_XXXXXXXXXXXXXXXXXXXXXXXXX",
                       "createdBy": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX",
                       "name": "Quarterly close",
-                      "description": null
+                      "description": null,
+                      "image": null
                     }
                   ],
                   "page": 1,
@@ -1652,18 +1817,38 @@
             "in": "query",
             "name": "page",
             "schema": {
+              "default": 1,
+              "example": 1,
               "type": "number",
               "minimum": 1
-            }
+            },
+            "description": "Page number for pagination."
           },
           {
             "in": "query",
             "name": "pageSize",
             "schema": {
+              "default": 20,
+              "example": 10,
               "type": "number",
               "minimum": 1,
               "maximum": 100
-            }
+            },
+            "description": "Number of entities per page."
+          },
+          {
+            "in": "query",
+            "name": "sort",
+            "schema": {
+              "example": ["-dueDate"],
+              "maxItems": 3,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["name", "-name", "timeCreated", "-timeCreated"]
+              }
+            },
+            "description": "Sort keys in priority order. Prefix with `-` for descending."
           },
           {
             "in": "query",
@@ -1745,7 +1930,8 @@
                   "name": {
                     "type": "string",
                     "minLength": 1,
-                    "maxLength": 200
+                    "maxLength": 200,
+                    "description": "Display name."
                   },
                   "description": {
                     "anyOf": [
@@ -1756,7 +1942,8 @@
                       {
                         "type": "null"
                       }
-                    ]
+                    ],
+                    "description": "What it is for."
                   }
                 },
                 "required": ["name"]
@@ -1782,7 +1969,8 @@
                   "id": "prj_XXXXXXXXXXXXXXXXXXXXXXXXX",
                   "createdBy": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX",
                   "name": "Quarterly close",
-                  "description": null
+                  "description": null,
+                  "image": null
                 }
               }
             },
@@ -1839,9 +2027,11 @@
             "in": "path",
             "name": "id",
             "schema": {
-              "type": "string"
+              "type": "string",
+              "example": "prj_XXXXXXXXXXXXXXXXXXXXXXXXX"
             },
-            "required": true
+            "required": true,
+            "description": "Unique object identifier.\nThe format and length of IDs may change over time."
           }
         ]
       },
@@ -1926,9 +2116,11 @@
             "in": "path",
             "name": "id",
             "schema": {
-              "type": "string"
+              "type": "string",
+              "example": "prj_XXXXXXXXXXXXXXXXXXXXXXXXX"
             },
-            "required": true
+            "required": true,
+            "description": "Unique object identifier.\nThe format and length of IDs may change over time."
           }
         ],
         "requestBody": {
@@ -1941,7 +2133,8 @@
                   "name": {
                     "type": "string",
                     "minLength": 1,
-                    "maxLength": 200
+                    "maxLength": 200,
+                    "description": "Display name."
                   },
                   "description": {
                     "anyOf": [
@@ -1952,7 +2145,19 @@
                       {
                         "type": "null"
                       }
-                    ]
+                    ],
+                    "description": "What it is for."
+                  },
+                  "image": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "Cover image URL, or null for none."
                   }
                 }
               }

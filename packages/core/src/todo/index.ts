@@ -25,8 +25,10 @@ export namespace Todo {
     .object({
       id: z.string(),
       name: z.string(),
-      image: z.string().nullable() })
-    .nullable().meta({
+      image: z.string().nullable(),
+    })
+    .nullable()
+    .meta({
       description: "The user responsible, joined in. Null when unassigned.",
     });
   export type Assignee = z.infer<typeof Assignee>;

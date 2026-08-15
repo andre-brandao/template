@@ -209,6 +209,22 @@ export class TemplateSdk extends HeyApiClient {
     parameters?: {
       page?: number;
       pageSize?: number;
+      sort?: Array<
+        | "title"
+        | "-title"
+        | "status"
+        | "-status"
+        | "stage"
+        | "-stage"
+        | "assignee"
+        | "-assignee"
+        | "startDate"
+        | "-startDate"
+        | "dueDate"
+        | "-dueDate"
+        | "timeCreated"
+        | "-timeCreated"
+      >;
       status?: "backlog" | "planned" | "active" | "blocked" | "done";
       assignee?: string;
       stage?: string;
@@ -226,6 +242,7 @@ export class TemplateSdk extends HeyApiClient {
           args: [
             { in: "query", key: "page" },
             { in: "query", key: "pageSize" },
+            { in: "query", key: "sort" },
             { in: "query", key: "status" },
             { in: "query", key: "assignee" },
             { in: "query", key: "stage" },
@@ -437,6 +454,7 @@ export class TemplateSdk extends HeyApiClient {
     parameters?: {
       page?: number;
       pageSize?: number;
+      sort?: Array<"name" | "-name" | "timeCreated" | "-timeCreated">;
       search?: string;
     },
     options?: Options<never, ThrowOnError>,
@@ -448,6 +466,7 @@ export class TemplateSdk extends HeyApiClient {
           args: [
             { in: "query", key: "page" },
             { in: "query", key: "pageSize" },
+            { in: "query", key: "sort" },
             { in: "query", key: "search" },
           ],
         },
@@ -555,6 +574,7 @@ export class TemplateSdk extends HeyApiClient {
       id: string;
       name?: string;
       description?: string | null;
+      image?: string | null;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<PatchProjectByIdResponses, PatchProjectByIdErrors, ThrowOnError> {
@@ -566,6 +586,7 @@ export class TemplateSdk extends HeyApiClient {
             { in: "path", key: "id" },
             { in: "body", key: "name" },
             { in: "body", key: "description" },
+            { in: "body", key: "image" },
           ],
         },
       ],

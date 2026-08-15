@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Drawer } from '@template/ui';
+	import { Drawer, Empty } from '@template/ui';
 	import type { Storage } from '@template/core/storage';
 	import Header from '$lib/components/Header.svelte';
 	import { getFiles } from '../api/files.remote';
@@ -76,7 +76,7 @@
 			/>
 		{/each}
 		{#if files.length === 0}
-			<p class="empty">No files yet — drop one here</p>
+			<Empty>No files yet — drop one here</Empty>
 		{/if}
 	</div>
 
@@ -113,12 +113,6 @@
 		display: flex;
 		flex-direction: column;
 		gap: 0.6em;
-	}
-
-	.empty {
-		color: var(--dim);
-		font-size: 0.85em;
-		margin: 0.5em 0.2em;
 	}
 
 	.overlay {

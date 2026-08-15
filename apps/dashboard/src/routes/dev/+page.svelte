@@ -3,7 +3,7 @@
 	import Component from '@lucide/svelte/icons/component';
 	import FileCode from '@lucide/svelte/icons/file-code';
 	import Plug from '@lucide/svelte/icons/plug';
-	import { Card } from '@template/ui';
+	import { Badge, Card } from '@template/ui';
 	import { stories } from '@template/ui/story';
 
 	const tools = [
@@ -49,7 +49,7 @@
 		<Card href={tool.href} interactive accent={tool.ready ? 'var(--accent)' : 'var(--dim)'}>
 			<h2><tool.icon size={17} strokeWidth={1.75} />{tool.title}</h2>
 			<p>{tool.blurb}</p>
-			{#if !tool.ready}<span class="soon">placeholder</span>{/if}
+			{#if !tool.ready}<span class="soon"><Badge>placeholder</Badge></span>{/if}
 		</Card>
 	{/each}
 </div>
@@ -90,13 +90,5 @@
 	.soon {
 		display: inline-block;
 		margin-top: 0.7em;
-		padding: 0.1em 0.45em;
-		border: 1px solid var(--border);
-		border-radius: var(--radius);
-		font-family: var(--font-mono);
-		font-size: 0.65em;
-		letter-spacing: 0.08em;
-		text-transform: uppercase;
-		color: var(--dim);
 	}
 </style>

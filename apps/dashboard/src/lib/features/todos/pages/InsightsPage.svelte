@@ -2,7 +2,7 @@
 	import { z } from 'zod';
 	import { query } from '$lib/utils/params';
 	import Header from '$lib/components/Header.svelte';
-	import { RangePicker, last, valid, type Range } from '@template/ui';
+	import { RangePicker, Skeleton, last, valid, type Range } from '@template/ui';
 	import { debounce } from '$lib/utils/debounce';
 	import StatsSection from '../components/insights/StatsSection.svelte';
 	import ActivitySection from '../components/insights/ActivitySection.svelte';
@@ -10,7 +10,6 @@
 	import DueSection from '../components/insights/DueSection.svelte';
 	import StatusSection from '../components/insights/StatusSection.svelte';
 	import LoadSection from '../components/insights/LoadSection.svelte';
-	import Skeleton from '../components/insights/Skeleton.svelte';
 	import Source from '$lib/features/events/components/Source.svelte';
 
 	let { source, sourceID }: { source?: string; sourceID?: string } = $props();
@@ -43,34 +42,34 @@
 	<div class="span">
 		<svelte:boundary>
 			<StatsSection {range} />
-			{#snippet pending()}<Skeleton height="88px" />{/snippet}
+			{#snippet pending()}<Skeleton h="88px" />{/snippet}
 		</svelte:boundary>
 	</div>
 
 	<svelte:boundary>
 		<ActivitySection {range} />
-		{#snippet pending()}<Skeleton height="382px" />{/snippet}
+		{#snippet pending()}<Skeleton h="382px" />{/snippet}
 	</svelte:boundary>
 
 	<svelte:boundary>
 		<StatusSection {range} />
-		{#snippet pending()}<Skeleton height="382px" />{/snippet}
+		{#snippet pending()}<Skeleton h="382px" />{/snippet}
 	</svelte:boundary>
 
 	<svelte:boundary>
 		<CalendarSection {range} />
-		{#snippet pending()}<Skeleton height="276px" />{/snippet}
+		{#snippet pending()}<Skeleton h="276px" />{/snippet}
 	</svelte:boundary>
 
 	<svelte:boundary>
 		<DueSection {scope} />
-		{#snippet pending()}<Skeleton height="276px" />{/snippet}
+		{#snippet pending()}<Skeleton h="276px" />{/snippet}
 	</svelte:boundary>
 
 	<div class="span">
 		<svelte:boundary>
 			<LoadSection {range} />
-			{#snippet pending()}<Skeleton height="264px" />{/snippet}
+			{#snippet pending()}<Skeleton h="264px" />{/snippet}
 		</svelte:boundary>
 	</div>
 </div>

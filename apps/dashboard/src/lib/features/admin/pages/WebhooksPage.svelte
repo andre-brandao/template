@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Button, Drawer } from '@template/ui';
+	import { Button, Drawer, Empty } from '@template/ui';
 	import Header from '$lib/components/Header.svelte';
 	import { getWebhooks } from '../api/admin.remote';
 	import WebhookForm from '../components/WebhookForm.svelte';
@@ -26,7 +26,7 @@
 </Drawer>
 
 {#if hooks.length === 0}
-	<p class="empty">No webhooks yet.</p>
+	<Empty>No webhooks yet.</Empty>
 {:else}
 	<ul>
 		{#each hooks as row (row.id)}
@@ -48,9 +48,5 @@
 		display: flex;
 		flex-direction: column;
 		gap: 0.6em;
-	}
-
-	.empty {
-		color: var(--dim);
 	}
 </style>

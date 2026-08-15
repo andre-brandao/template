@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Todo } from '@template/core/todo';
+	import { Empty } from '@template/ui';
 	import TodoCard from '../card/TodoCard.svelte';
 
 	let { todos }: { todos: Todo.Info[] } = $props();
@@ -10,7 +11,7 @@
 		<TodoCard {todo} />
 	{/each}
 	{#if todos.length === 0}
-		<p class="empty">No tasks match this filter</p>
+		<Empty>No tasks match this filter</Empty>
 	{/if}
 </div>
 
@@ -23,11 +24,5 @@
 		overflow-y: auto;
 		scrollbar-width: thin;
 		padding-right: 0.25em;
-	}
-
-	.empty {
-		color: var(--dim);
-		font-size: 0.85em;
-		margin: 0.5em 0.2em;
 	}
 </style>

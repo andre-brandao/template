@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Insights } from '@template/core/todo';
+	import { Empty } from '@template/ui';
 	import { getStatus } from '../../api/insights.remote';
 	import Section from './Section.svelte';
 	import StatusChart from './StatusChart.svelte';
@@ -13,13 +14,9 @@
 	{#if status.total > 0}
 		<StatusChart rows={status.rows} />
 	{:else}
-		<p class="empty">No tasks in this range</p>
+		<Empty>No tasks in this range</Empty>
 	{/if}
 </Section>
 
 <style>
-	.empty {
-		color: var(--dim);
-		margin: 0;
-	}
 </style>

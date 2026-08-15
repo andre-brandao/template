@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { Combobox, Tooltip } from '@template/ui';
-	import Avatar from '$lib/components/Avatar.svelte';
+	import { Avatar, Combobox, Tooltip } from '@template/ui';
 	import { getProjects } from '../api/projects.remote';
 
 	let { id, tight = false }: { id: string; tight?: boolean } = $props();
@@ -20,10 +19,10 @@
 				<Tooltip tip={label} side="right">
 					<!-- Collapsed the avatar is all that is left, and Avatar falls back to an
 					     initial when there is no image. -->
-					<Avatar name={label} image={current?.image ?? null} size={16} />
+					<Avatar name={label} image={current?.image} size={16} />
 				</Tooltip>
 			{:else}
-				<Avatar name={label} image={current?.image ?? null} size={16} />
+				<Avatar name={label} image={current?.image} size={16} />
 				<span class="name">{label}</span>
 			{/if}
 		</Combobox.Trigger>

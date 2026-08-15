@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Todo } from '@template/core/todo';
+	import { Empty } from '@template/ui';
 	import TodoCard from '../card/TodoCard.svelte';
 	import { group, type By } from '../../group';
 
@@ -21,13 +22,13 @@
 					<TodoCard {todo} />
 				{/each}
 				{#if column.items.length === 0}
-					<p class="empty">No tasks</p>
+					<Empty>No tasks</Empty>
 				{/if}
 			</div>
 		</div>
 	{/each}
 	{#if columns.length === 0}
-		<p class="empty">No tasks match this filter</p>
+		<Empty>No tasks match this filter</Empty>
 	{/if}
 </div>
 
@@ -90,11 +91,5 @@
 		min-height: 0;
 		overflow-y: auto;
 		scrollbar-width: thin;
-	}
-
-	.empty {
-		color: var(--dim);
-		font-size: 0.85em;
-		margin: 0.5em 0.2em;
 	}
 </style>

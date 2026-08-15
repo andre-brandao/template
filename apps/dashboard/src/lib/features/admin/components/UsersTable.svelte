@@ -3,9 +3,8 @@
 	import Copy from '@lucide/svelte/icons/copy';
 	import { createTable, renderComponent, renderSnippet } from '@tanstack/svelte-table';
 	import type { ColumnDef, Row } from '@tanstack/svelte-table';
-	import { DataTable, features } from '@template/ui';
+	import { Avatar, DataTable, features } from '@template/ui';
 	import type { User } from '@template/core/user';
-	import Avatar from '$lib/components/Avatar.svelte';
 	import { user } from '$lib/utils/context';
 	import RoleForm from './RoleForm.svelte';
 	import AccessForm from './AccessForm.svelte';

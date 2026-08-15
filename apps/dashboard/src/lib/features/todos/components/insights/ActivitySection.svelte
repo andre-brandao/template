@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Insights } from '@template/core/todo';
+	import { Empty } from '@template/ui';
 	import { getActivity } from '../../api/insights.remote';
 	import Section from './Section.svelte';
 	import ActivityChart from './ActivityChart.svelte';
@@ -13,13 +14,9 @@
 	{#if activity.active}
 		<ActivityChart series={activity.series} />
 	{:else}
-		<p class="empty">No activity in this range</p>
+		<Empty>No activity in this range</Empty>
 	{/if}
 </Section>
 
 <style>
-	.empty {
-		color: var(--dim);
-		margin: 0;
-	}
 </style>

@@ -8,7 +8,7 @@
 	import { page } from '$app/state';
 	import { resolve } from '$app/paths';
 	import type { User } from '@template/core/user';
-	import Avatar from '../Avatar.svelte';
+	import { Avatar } from '@template/ui';
 	import Can from '../Can.svelte';
 	import Menu from '../Menu.svelte';
 

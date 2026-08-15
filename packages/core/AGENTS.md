@@ -29,6 +29,13 @@
   Consumers import through the directory via `@template/core/<module>`.
 - SQL schemas live next to the module they belong to (`user/user.sql.ts`,
   `user/provider.sql.ts`, `user/session.sql.ts`, `todo/todo.sql.ts`).
+- Inside a file, order for a reader asking what the module does, not how:
+  schemas and their inferred types, shared constants, exported operations in
+  lifecycle order (`create`, `list`, `fromID`, `update`, `remove`), then
+  `serialize`, then a `// === UTILS ===` marker with the private helpers below
+  it (see `todo/index.ts`). Nothing above the marker is a helper, nothing below
+  it is exported. Only `function` declarations hoist, so a value another schema
+  derives from — like `Patch` — stays above its use.
 - **Documentation**: Use OpenAPI annotations with Zod schemas
 - **Database**: Use Drizzle ORM via `Database.use()` for shared db/tx access and `Database.transaction()` when you need an explicit transaction
 - **Validation**: Use `fn()` utility for input validation and schema definition

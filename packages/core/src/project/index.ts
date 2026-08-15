@@ -84,6 +84,9 @@ export namespace Project {
       tx
         .select()
         .from(ProjectTable)
+        // Overlap with todo/index.ts is the shared CRUD order, not shared logic: it spans
+        // the fromID/update boundary and extracts to nothing.
+        // fallow-ignore-next-line code-duplication
         .where(and(eq(ProjectTable.id, id), isNull(ProjectTable.timeDeleted)))
         .then((rows) => (rows[0] ? serialize(rows[0]) : null)),
     );

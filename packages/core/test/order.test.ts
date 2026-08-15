@@ -115,14 +115,16 @@ describe("order across namespaces", () => {
   withTestUser(
     "sorts the admin user directory by name and email",
     async () => {
-      await mint("Yara Zt");
-      await mint("Abe Aa");
+      // The directory is global, so scope the read to this test's own users: every other
+      // test mints one, and past a page of them the assertion reads a truncated page.
+      const tag = Identifier.create("user");
+      await mint(`Yara Zt ${tag}`);
+      await mint(`Abe Aa ${tag}`);
 
-      const asc = await Admin.users({ sort: ["name"], pageSize: 100 });
-      const desc = await Admin.users({ sort: ["-name"], pageSize: 100 });
-      const names = asc.data.map((one) => one.name);
-      expect(names).toEqual([...names].sort((a, b) => a.localeCompare(b)));
-      expect(desc.data[0]?.name).toBe(names[names.length - 1]);
+      const asc = await Admin.users({ search: tag, sort: ["name"] });
+      const desc = await Admin.users({ search: tag, sort: ["-name"] });
+      expect(asc.data.map((one) => one.name)).toEqual([`Abe Aa ${tag}`, `Yara Zt ${tag}`]);
+      expect(desc.data.map((one) => one.name)).toEqual([`Yara Zt ${tag}`, `Abe Aa ${tag}`]);
     },
     "admin",
   );

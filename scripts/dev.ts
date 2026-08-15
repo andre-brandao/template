@@ -38,6 +38,9 @@ const apiport = Number(process.env.API_PORT ?? 3000);
 const mcpport = Number(process.env.MCP_PORT ?? 3001);
 const webport = Number(process.env.WEB_PORT ?? 5173);
 
+// docker's postgres is a container, not a child, so its port never leaks here
+const ports = [webport, apiport, mcpport, authport, ...(driver === "pglite" ? [pgport] : [])];
+
 // The file, not the package script: `bun run <script>` forks a grandchild, and `stop`
 // only ever sees the wrapper — the orphan then keeps its port and database pool for good.
 const servers = [
@@ -126,6 +129,10 @@ let stopping = false;
 async function bye() {
   if (stopping) {
     console.log(paint.red("\nForced exit — surviving children keep their ports and db pool."));
+    const pids = [...children].map((child) => child.pid);
+    if (pids.length) console.log(`  kill -9 ${pids.join(" ")}`);
+    // web forks vite through its package script, so a grandchild can outlive the pids above
+    console.log(`  lsof -ti ${ports.map((port) => `:${port}`).join(" ")} | xargs -r kill -9`);
     process.exit(1);
   }
   stopping = true;

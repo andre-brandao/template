@@ -6,13 +6,7 @@
 		title: 'Skeleton',
 		blurb:
 			'Holds the space a suspending boundary will fill, in the shape of what is coming — so nothing jumps when it lands. Pair `round` with the avatar size it stands in for. The pulse stops under `prefers-reduced-motion`.',
-		of: Skeleton,
-		base: { h: '2em' },
-		props: {
-			h: { type: 'text', value: '2em' },
-			w: { type: 'text', value: '' },
-			round: { type: 'bool', value: false }
-		}
+		of: Skeleton
 	};
 </script>
 

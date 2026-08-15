@@ -6,7 +6,9 @@ import { createRawSnippet } from "svelte";
 
 import Empty from "./Empty.svelte";
 
-const children = createRawSnippet(() => ({ render: () => `<span>No tasks match this filter</span>` }));
+const children = createRawSnippet(() => ({
+  render: () => `<span>No tasks match this filter</span>`,
+}));
 
 describe("Empty", () => {
   test("renders the message", () => {

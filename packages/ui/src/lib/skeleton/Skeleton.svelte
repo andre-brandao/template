@@ -19,6 +19,7 @@
 		display: block;
 		flex: 1;
 		min-width: 0;
+		border: 1px solid var(--border, #333);
 		border-radius: var(--radius, 8px);
 		background: var(--surface-2, #eee);
 		animation: pulse 1.2s ease-in-out infinite;

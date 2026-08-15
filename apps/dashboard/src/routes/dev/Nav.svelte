@@ -43,6 +43,7 @@
 				class="navlink"
 				href={one.href}
 				aria-current={one.active ? 'page' : undefined}
+				data-transition="pane"
 				onclick={() => (open = false)}>{@render face(one)}</a
 			>
 		{/each}
@@ -215,6 +216,48 @@
 			position: relative;
 			/* The dropdown hangs outside the list, which tall mode otherwise scrolls. */
 			overflow: visible;
+		}
+	}
+
+	/* Sibling screens share this list, so only the pane should move. Gated on the scope the
+	   list's own links declare — ungated, the list would vanish when leaving /dev entirely. */
+	:global(html[data-scope='pane']) .pane {
+		view-transition-name: pane;
+	}
+
+	:global(::view-transition-old(pane)),
+	:global(::view-transition-new(pane)) {
+		animation-duration: 200ms;
+		animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+		animation-fill-mode: both;
+		mix-blend-mode: normal;
+	}
+
+	:global(::view-transition-old(pane)) {
+		animation-name: out;
+	}
+
+	:global(::view-transition-new(pane)) {
+		animation-name: in;
+	}
+
+	@keyframes out {
+		to {
+			opacity: 0;
+		}
+	}
+
+	@keyframes in {
+		from {
+			opacity: 0;
+			transform: translateY(6px);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		:global(::view-transition-old(pane)),
+		:global(::view-transition-new(pane)) {
+			animation: none;
 		}
 	}
 </style>

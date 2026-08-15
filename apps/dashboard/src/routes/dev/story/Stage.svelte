@@ -250,4 +250,47 @@
 			overflow: visible;
 		}
 	}
+
+	/* Named only while the swap it owns is running: an unconditional name would make this
+	   its own group on every navigation, including ones where it exists on one side only. */
+	:global(html[data-swap~='tab']) .panel {
+		view-transition-name: stage;
+	}
+
+	:global(::view-transition-old(stage)),
+	:global(::view-transition-new(stage)) {
+		animation-duration: 200ms;
+		animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+		animation-fill-mode: both;
+		mix-blend-mode: normal;
+	}
+
+	:global(::view-transition-old(stage)) {
+		animation-name: out;
+	}
+
+	:global(::view-transition-new(stage)) {
+		animation-name: in;
+	}
+
+	@keyframes out {
+		to {
+			opacity: 0;
+			transform: translateY(-4px);
+		}
+	}
+
+	@keyframes in {
+		from {
+			opacity: 0;
+			transform: translateY(6px);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		:global(::view-transition-old(stage)),
+		:global(::view-transition-new(stage)) {
+			animation: none;
+		}
+	}
 </style>

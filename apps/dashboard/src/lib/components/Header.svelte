@@ -25,6 +25,18 @@
 		view-transition-name: shell-header;
 	}
 
+	/* Held still across a navigation: the outgoing copy is dropped rather than cross-faded,
+	   so a header that is the same on both sides never flickers. */
+	:global(::view-transition-old(shell-header)) {
+		opacity: 0;
+		animation: none;
+	}
+
+	:global(::view-transition-new(shell-header)) {
+		animation: none;
+		mix-blend-mode: normal;
+	}
+
 	.head {
 		display: flex;
 		align-items: center;

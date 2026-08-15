@@ -8,53 +8,57 @@
 	import Footer from './Footer.svelte';
 	import Nav from './Nav.svelte';
 	import Rail from './Rail.svelte';
-	import { at, type Item } from './nav';
+	import { at, type Nav as Config } from './nav';
+	import { origin } from './back.svelte';
 	import { sidebar } from './rail.svelte';
 	import Topbar from './Topbar.svelte';
 
-	type Crumb = { href?: string; label: string };
-
-	let {
-		back,
-		sections,
-		crumbs = [{ href: '/', label: 'Home' }],
-		head,
-		children
-	}: {
-		back?: { href: string; label: string };
-		sections: { title?: string; items: Item[]; bottom?: boolean }[];
-		crumbs?: Crumb[];
-		head?: Snippet<[boolean]>;
-		children: Snippet;
-	} = $props();
+	let { nav, children }: { nav: Config; children: Snippet } = $props();
 
 	const me = user();
 	const rail = sidebar();
 	let open = $state(false);
 
+	// One tracker for the whole app: the section moves under it as `nav` changes.
+	const from = origin(
+		() => nav.root,
+		() => nav.fallback
+	);
+	const back = $derived(
+		nav.back ? { label: nav.back.label, href: nav.back.href ?? from.href } : undefined
+	);
+
+	const items = $derived([...nav.sections.top, ...(nav.sections.bottom ?? [])]);
 	const current = $derived(
-		sections
+		items
 			.flatMap((section) => section.items)
 			.filter((item) => at(item))
 			.sort((a, b) => b.href.length - a.href.length)[0]
 	);
 	const trail = $derived.by(() => {
-		const items = crumbs.slice();
-		if (current && items.at(-1)?.href !== current.href)
-			items.push({ href: current.href, label: current.label });
-		if (current && current.href !== page.url.pathname) items.push({ label: 'Details' });
-		return items;
+		const crumbs = (nav.crumbs ?? [{ href: '/', label: 'Home' }]).slice();
+		if (current && crumbs.at(-1)?.href !== current.href)
+			crumbs.push({ href: current.href, label: current.label });
+		if (current && current.href !== page.url.pathname) crumbs.push({ label: 'Details' });
+		return crumbs;
 	});
 
 	afterNavigate(() => (open = false));
 </script>
 
+
+{#snippet crest(tight: boolean)}
+	{#if nav.head}<nav.head {tight} />{/if}
+{/snippet}
+
 <div class="body">
 	<!-- Collapsed, pointing at the rail peeks it open again and it shuts on the way out. Focus
 	     does the same, so tabbing into an icon-only rail still reads. -->
 	<aside class:tight={rail.shut} class:peek={rail.peek} {...rail.attrs}>
-		<Rail {head} slim={rail.shut} />
-		<div class="menu" data-shell-nav><Nav {back} {sections} slim={rail.shut} /></div>
+		<!-- Passed only where the section has one: Rail and Topbar both read its absence to
+		     decide whether the brand carries the wordmark. -->
+		<Rail head={nav.head && crest} slim={rail.shut} />
+		<div class="menu"><Nav {back} sections={nav.sections} slim={rail.shut} /></div>
 		<!-- Below the line, like the content footer across the divider — the two strips
 		     share --footer so their top borders draw one continuous rule. -->
 		<div class="strip">
@@ -72,7 +76,7 @@
 	<!-- Header and footer both inside the column so they start where the sidebar ends;
 	     `main`'s flex pushes the footer to the viewport bottom when the page is short. -->
 	<div class="content">
-		<Topbar user={me.current} {head} crumbs={trail} onmenu={() => (open = true)} />
+		<Topbar user={me.current} head={nav.head && crest} crumbs={trail} onmenu={() => (open = true)} />
 		<main>{@render children()}</main>
 		<Footer />
 	</div>
@@ -80,7 +84,7 @@
 
 <!-- Same menu, off canvas — the sidebar is too narrow to keep on a phone. -->
 <Drawer bind:open side="left">
-	<div class="sheet"><Nav {back} {sections} /></div>
+	<div class="sheet"><Nav {back} sections={nav.sections} /></div>
 </Drawer>
 
 <style>
@@ -206,6 +210,103 @@
 	@media (max-width: 700px) {
 		aside {
 			display: none;
+		}
+	}
+
+	/* The page slides; the rail and its menu are painted over it and hold still. Groups are
+	   painted in document order by default, which puts `shell-main` on top of the column it
+	   slides across — these z-indexes stack the column back above it. */
+	:global(::view-transition-group(shell-rail)) {
+		z-index: 2;
+	}
+
+	:global(::view-transition-group(shell-nav)) {
+		z-index: 3;
+	}
+
+	:global(::view-transition-old(shell-rail)),
+	:global(::view-transition-new(shell-rail)) {
+		animation: none;
+		mix-blend-mode: normal;
+	}
+
+	/* A plain cross-fade: identical menus fade to nothing visible, so only a change of
+	   section reads. Nothing to suppress now that the shell itself never remounts. */
+	:global(::view-transition-old(shell-nav)),
+	:global(::view-transition-new(shell-nav)) {
+		animation-duration: 160ms;
+		mix-blend-mode: normal;
+	}
+
+	:global(::view-transition-old(shell-main)),
+	:global(::view-transition-new(shell-main)) {
+		--shift: 28px;
+		animation-duration: 220ms;
+		animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+		animation-fill-mode: both;
+		mix-blend-mode: normal;
+	}
+
+	:global(html[data-transition='forward']::view-transition-old(shell-main)) {
+		animation-name: oldleft;
+	}
+
+	:global(html[data-transition='forward']::view-transition-new(shell-main)) {
+		animation-name: newright;
+	}
+
+	:global(html[data-transition='back']::view-transition-old(shell-main)) {
+		animation-name: oldright;
+	}
+
+	:global(html[data-transition='back']::view-transition-new(shell-main)) {
+		animation-name: newleft;
+	}
+
+	/* Something inside the page owns this one — hold the column still and let it animate. */
+	:global(html[data-scope]::view-transition-old(shell-main)) {
+		opacity: 0;
+		animation: none;
+	}
+
+	:global(html[data-scope]::view-transition-new(shell-main)) {
+		animation: none;
+	}
+
+	@keyframes oldleft {
+		to {
+			opacity: 0;
+			transform: translateX(calc(-1 * var(--shift)));
+		}
+	}
+
+	@keyframes newright {
+		from {
+			opacity: 0;
+			transform: translateX(var(--shift));
+		}
+	}
+
+	@keyframes oldright {
+		to {
+			opacity: 0;
+			transform: translateX(var(--shift));
+		}
+	}
+
+	@keyframes newleft {
+		from {
+			opacity: 0;
+			transform: translateX(calc(-1 * var(--shift)));
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		:global(::view-transition-old(shell-main)),
+		:global(::view-transition-new(shell-main)),
+		:global(::view-transition-old(shell-nav)),
+		:global(::view-transition-new(shell-nav)) {
+			animation: none;
 		}
 	}
 </style>

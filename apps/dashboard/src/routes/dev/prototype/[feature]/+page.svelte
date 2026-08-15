@@ -69,4 +69,47 @@
 	.panel :global(.markdown-body) {
 		max-width: 80ch;
 	}
+
+	/* Named only while the swap it owns is running: an unconditional name would make this
+	   its own group on every navigation, including ones where it exists on one side only. */
+	:global(html[data-swap~='doc']) .panel {
+		view-transition-name: doc;
+	}
+
+	:global(::view-transition-old(doc)),
+	:global(::view-transition-new(doc)) {
+		animation-duration: 200ms;
+		animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+		animation-fill-mode: both;
+		mix-blend-mode: normal;
+	}
+
+	:global(::view-transition-old(doc)) {
+		animation-name: out;
+	}
+
+	:global(::view-transition-new(doc)) {
+		animation-name: in;
+	}
+
+	@keyframes out {
+		to {
+			opacity: 0;
+			transform: translateY(-4px);
+		}
+	}
+
+	@keyframes in {
+		from {
+			opacity: 0;
+			transform: translateY(6px);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		:global(::view-transition-old(doc)),
+		:global(::view-transition-new(doc)) {
+			animation: none;
+		}
+	}
 </style>

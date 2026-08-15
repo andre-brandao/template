@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Code, toast } from '@template/ui';
 	import { cli, curl, fetch as js, sdk } from './snippets';
+	import { swap } from '$lib/utils/swap';
 
 	let {
 		input
@@ -23,14 +24,14 @@
 	<div class="head">
 		<div class="tabs">
 			{#each Object.keys(builders) as one (one)}
-				<button class="tab" class:active={kind === one} onclick={() => (kind = one as Kind)}>
+				<button class="tab" class:active={kind === one} onclick={() => swap('kind', () => (kind = one as Kind))}>
 					{one}
 				</button>
 			{/each}
 		</div>
 		<button class="copy" onclick={copy}>Copy</button>
 	</div>
-	<Code value={text} lang={langs[kind]} />
+	<div class="body"><Code value={text} lang={langs[kind]} /></div>
 </section>
 
 <style>
@@ -73,5 +74,48 @@
 		font-size: 0.78em;
 		line-height: 1.5;
 		color: var(--muted);
+	}
+
+	/* Named only while the swap it owns is running: an unconditional name would make this
+	   its own group on every navigation, including ones where it exists on one side only. */
+	:global(html[data-swap~='kind']) .body {
+		view-transition-name: snippet;
+	}
+
+	:global(::view-transition-old(snippet)),
+	:global(::view-transition-new(snippet)) {
+		animation-duration: 200ms;
+		animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+		animation-fill-mode: both;
+		mix-blend-mode: normal;
+	}
+
+	:global(::view-transition-old(snippet)) {
+		animation-name: out;
+	}
+
+	:global(::view-transition-new(snippet)) {
+		animation-name: in;
+	}
+
+	@keyframes out {
+		to {
+			opacity: 0;
+			transform: translateY(-4px);
+		}
+	}
+
+	@keyframes in {
+		from {
+			opacity: 0;
+			transform: translateY(6px);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		:global(::view-transition-old(snippet)),
+		:global(::view-transition-new(snippet)) {
+			animation: none;
+		}
 	}
 </style>

@@ -22,7 +22,12 @@ export async function list() {
     found.sort().map(async (entry) => {
       const name = entry.slice(0, entry.indexOf("/"));
       const data = meta(await Bun.file(`${dir}/${entry}`).text());
-      return { name, title: data.title ?? name, description: data.description, status: data.status };
+      return {
+        name,
+        title: data.title ?? name,
+        description: data.description,
+        status: data.status,
+      };
     }),
   );
 }

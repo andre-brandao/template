@@ -12,7 +12,7 @@ const project = () => ({ source: "project", sourceID: Identifier.create("project
 const titles = (page: { data: Todo.Info[] }) => page.data.map((todo) => todo.title);
 
 const mint = (name: string) =>
-  Actor.provide("system", {}, () => User.create({ name, email: testEmail() }));
+  Actor.provide("system", {}, async () => (await User.create({ name, email: testEmail() })).id);
 
 describe("order", () => {
   withTestUser("sorts ascending and descending on one key", async () => {
@@ -130,7 +130,7 @@ describe("order across namespaces", () => {
   withTestUser(
     "sorts the event log by type within a scope",
     async () => {
-      const id = await Todo.create({ title: "Audited" });
+      const { id } = await Todo.create({ title: "Audited" });
       await Todo.update({ id, status: "active" });
 
       // A todo's own event stream — scoped so other tests cannot leak into the assertion.

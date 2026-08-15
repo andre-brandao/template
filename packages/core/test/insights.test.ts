@@ -20,8 +20,8 @@ const scoped = (r: ReturnType<typeof range>) => ({ source: r.source, sourceID: r
 describe("insights", () => {
   withTestUser("stats aggregates totals, rate and in-flight counts", async () => {
     const r = range();
-    const done = await Todo.create({ title: "One", ...scoped(r) });
-    const active = await Todo.create({ title: "Two", ...scoped(r) });
+    const { id: done } = await Todo.create({ title: "One", ...scoped(r) });
+    const { id: active } = await Todo.create({ title: "Two", ...scoped(r) });
     await Todo.update({ id: done, status: "done" });
     await Todo.update({ id: active, status: "active" });
 
@@ -55,7 +55,7 @@ describe("insights", () => {
 
   withTestUser("load breaks work down per assignee", async ({ userID }) => {
     const r = range();
-    const id = await Todo.create({ title: "Mine", assignee: userID, ...scoped(r) });
+    const { id } = await Todo.create({ title: "Mine", assignee: userID, ...scoped(r) });
     await Todo.create({ title: "Nobody's", ...scoped(r) });
     await Todo.update({ id, status: "active" });
 
@@ -70,7 +70,7 @@ describe("insights", () => {
 
   withTestUser("activity flags active ranges and buckets creations", async () => {
     const r = range();
-    const id = await Todo.create({ title: "One", ...scoped(r) });
+    const { id } = await Todo.create({ title: "One", ...scoped(r) });
     await Todo.update({ id, status: "done" });
     const activity = await Insights.activity(r);
     expect(activity.active).toBe(true);

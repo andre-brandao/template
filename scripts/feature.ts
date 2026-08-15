@@ -94,13 +94,19 @@ export namespace ${pascal} {
     });
   export type Info = z.infer<typeof Info>;
 
-  export const create = fn(z.object({ title: Info.shape.title.min(1) }), async (input) => {
-    const id = Identifier.create("${name}");
-    await Database.use((tx) =>
-      tx.insert(${pascal}Table).values({ id, userID: Actor.userID(), title: input.title }),
-    );
-    return id;
-  });
+  export const create = fn(z.object({ title: Info.shape.title.min(1) }), (input) =>
+    Database.use((tx) =>
+      tx
+        .insert(${pascal}Table)
+        .values({
+          id: Identifier.create("${name}"),
+          userID: Actor.userID(),
+          title: input.title,
+        })
+        .returning()
+        .then((rows) => serialize(rows[0]!)),
+    ),
+  );
 
   export const list = fn(
     Common.Query(["title", "timeCreated"]).extend({ search: z.string().optional() }),
@@ -184,7 +190,7 @@ import { withTestUser } from "./util";
 
 describe("${name}", () => {
   withTestUser("create and fetch a ${name}", async ({ userID }) => {
-    const id = await ${pascal}.create({ title: "First" });
+    const { id } = await ${pascal}.create({ title: "First" });
     const row = await ${pascal}.fromID(id);
     expect(row?.title).toBe("First");
     expect(row?.userID).toBe(userID);
@@ -199,14 +205,14 @@ describe("${name}", () => {
   });
 
   withTestUser("update renames the ${name}", async () => {
-    const id = await ${pascal}.create({ title: "Before" });
+    const { id } = await ${pascal}.create({ title: "Before" });
     await ${pascal}.update({ id, title: "After" });
     const row = await ${pascal}.fromID(id);
     expect(row?.title).toBe("After");
   });
 
   withTestUser("remove soft-deletes the ${name}", async () => {
-    const id = await ${pascal}.create({ title: "Temporary" });
+    const { id } = await ${pascal}.create({ title: "Temporary" });
     await ${pascal}.remove(id);
     expect(await ${pascal}.fromID(id)).toBeNull();
   });
@@ -288,10 +294,7 @@ export namespace ${pascal}Api {
       }),
       authRequired,
       validator("json", ${pascal}.create.schema),
-      async (c) => {
-        const id = await ${pascal}.create(c.req.valid("json"));
-        return c.json(await ${pascal}.fromID(id), 200);
-      },
+      async (c) => c.json(await ${pascal}.create(c.req.valid("json")), 200),
     )
     .patch(
       "/:id",
@@ -383,10 +386,7 @@ export function ${name}(server: McpServer) {
       description: "Create a ${name} for the current user.",
       inputSchema: ${pascal}.create.schema.shape,
     },
-    async (input) => {
-      const id = await ${pascal}.create(input);
-      return text(await ${pascal}.fromID(id));
-    },
+    async (input) => text(await ${pascal}.create(input)),
   );
 
   server.registerTool(

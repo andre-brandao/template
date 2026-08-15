@@ -41,14 +41,15 @@ export namespace Project {
           name: input.name,
           description: input.description ?? null,
         });
+        const project = found("Project", await fromID.force(id));
         await Event.publish({
           type: "project.created",
           source: "project",
           sourceID: id,
           data: { name: input.name },
-          state: found("Project", await fromID.force(id)),
+          state: project,
         });
-        return id;
+        return project;
       });
     },
   );

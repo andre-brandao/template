@@ -11,7 +11,7 @@ function mate() {
   const email = testEmail();
   return Actor.provide("system", {}, async () => ({
     email,
-    id: await User.create({ name: "Mate", email }),
+    id: (await User.create({ name: "Mate", email })).id,
   }));
 }
 

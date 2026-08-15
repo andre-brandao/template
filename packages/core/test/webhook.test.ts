@@ -95,7 +95,7 @@ describe("webhook", () => {
     async () => {
       const to = receiver();
       await Webhook.create({ url: to.url, types: ["todo.updated"] });
-      const id = await Todo.create({ title: "Ship it" });
+      const { id } = await Todo.create({ title: "Ship it" });
 
       await Queue.provide(memory(), async () => {
         await Todo.update({ id, status: "active" });

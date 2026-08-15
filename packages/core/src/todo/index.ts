@@ -217,6 +217,7 @@ export namespace Todo {
       dueDate: Info.shape.dueDate.optional(),
     }),
     async (input) => {
+      Actor.check({ todo: ["create"] });
       const id = Identifier.create("todo");
       const tags = clean(input.tags);
       const status = input.status ?? "backlog";
@@ -237,6 +238,7 @@ export namespace Todo {
           dueDate: date(input.dueDate),
           ...times(status, null),
         });
+        const todo = found("Todo", await fromID.force(id));
         await Event.publish({
           type: "todo.created",
           source: "todo",
@@ -250,9 +252,9 @@ export namespace Todo {
             startDate: input.startDate ?? null,
             dueDate: input.dueDate ?? null,
           },
-          state: found("Todo", await fromID.force(id)),
+          state: todo,
         });
-        return id;
+        return todo;
       });
     },
   );
@@ -278,6 +280,7 @@ export namespace Todo {
       search: z.string().optional(),
     }),
     (input) => {
+      Actor.check({ todo: ["read"] });
       const { page, pageSize, limit, offset } = Common.page(input);
       const conditions = scope(input);
       if (input.status) conditions.push(eq(TodoTable.status, input.status));
@@ -322,8 +325,9 @@ export namespace Todo {
       source: Info.shape.source.unwrap().optional(),
       sourceID: Info.shape.sourceID.unwrap().optional(),
     }),
-    (input) =>
-      Database.use((tx) =>
+    (input) => {
+      Actor.check({ todo: ["read"] });
+      return Database.use((tx) =>
         tx
           .select({
             name: TodoTable.stage,
@@ -345,7 +349,8 @@ export namespace Todo {
               end: iso(row.end),
             })),
           ),
-      ),
+      );
+    },
   );
 
   /** Renames a stage across every todo wearing it — the only stage edit there is. */
@@ -356,25 +361,28 @@ export namespace Todo {
       source: Info.shape.source.unwrap().optional(),
       sourceID: Info.shape.sourceID.unwrap().optional(),
     }),
-    (input) =>
-      Database.use((tx) =>
+    (input) => {
+      Actor.check({ todo: ["update"] });
+      return Database.use((tx) =>
         tx
           .update(TodoTable)
           .set({ stage: input.to.trim(), timeUpdated: new Date() })
           .where(and(...scope(input), eq(TodoTable.stage, input.from))),
-      ),
+      );
+    },
   );
 
-  export const fromID = fn(Info.shape.id, (id) =>
-    Database.use((tx) =>
+  export const fromID = fn(Info.shape.id, (id) => {
+    Actor.check({ todo: ["read"] });
+    return Database.use((tx) =>
       tx
         .select({ todo: TodoTable, user: assignee })
         .from(TodoTable)
         .leftJoin(UserTable, eq(TodoTable.assignee, UserTable.id))
         .where(and(eq(TodoTable.id, id), isNull(TodoTable.timeDeleted)))
         .then((rows) => (rows[0] ? serialize(rows[0]) : null)),
-    ),
-  );
+    );
+  });
 
   async function moved(id: string, before: Info, next: Patch, tags: string[]) {
     if (next.status === undefined || next.status === before.status) return;
@@ -435,6 +443,7 @@ export namespace Todo {
 
   export const update = fn(Patch.extend({ id: Info.shape.id }), async ({ id, ...patch }) => {
     const before = found("Todo", await fromID.force(id));
+    Actor.check({ todo: ["update"] }, before.createdBy);
     const next = {
       ...patch,
       ...(patch.tags !== undefined ? { tags: clean(patch.tags) } : {}),
@@ -449,6 +458,7 @@ export namespace Todo {
 
   export const remove = fn(Info.shape.id, async (id) => {
     const before = found("Todo", await fromID.force(id));
+    Actor.check({ todo: ["delete"] }, before.createdBy);
 
     return Database.transaction(async (tx) => {
       await tx.update(TodoTable).set({ timeDeleted: new Date() }).where(eq(TodoTable.id, id));

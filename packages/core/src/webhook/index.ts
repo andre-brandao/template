@@ -10,10 +10,9 @@ import { Identifier } from "../identifier";
 import { Queue } from "../lib/queue";
 import { Log } from "../util/log";
 import { sign } from "../util/sign";
+import { token } from "../util/token";
 import { Types } from "./types";
 import { WebhookTable } from "./webhook.sql";
-
-const CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
 /** Consecutive failed POSTs before a subscription turns itself off. One dead event costs 4. */
 const LIMIT = 20;
@@ -73,7 +72,7 @@ export namespace Webhook {
             id: Identifier.create("webhook"),
             createdBy: Actor.userID(),
             url: input.url,
-            secret: token(),
+            secret: token("whsec_"),
             types: input.types ?? [],
           })
           .returning()
@@ -221,12 +220,6 @@ export namespace Webhook {
         .where(eq(WebhookTable.id, row.id)),
     );
     return row.id;
-  }
-
-  function token() {
-    const bytes = new Uint32Array(64);
-    crypto.getRandomValues(bytes);
-    return "whsec_" + Array.from(bytes, (n) => CHARS[n % CHARS.length]!).join("");
   }
 
   function serialize(row: typeof WebhookTable.$inferSelect): Info {

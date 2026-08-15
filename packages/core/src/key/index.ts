@@ -8,9 +8,8 @@ import { Database } from "../drizzle";
 import { Examples } from "../examples";
 import { Identifier } from "../identifier";
 import { memo } from "../util/memo";
+import { token } from "../util/token";
 import { KeyTable } from "./key.sql";
-
-const CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
 export namespace Key {
   export const Info = z
@@ -53,7 +52,7 @@ export namespace Key {
             id: Identifier.create("key"),
             userID: input.userID,
             name: input.name,
-            key: token(),
+            key: token("sk-"),
             expiresAt: input.expiresAt ?? null,
           })
           .returning()
@@ -103,7 +102,7 @@ export namespace Key {
           id: Identifier.create("key"),
           userID: null,
           name: "url-signing",
-          key: token(),
+          key: token("sk-"),
           type: "signing",
         })
         .returning()
@@ -173,12 +172,6 @@ export namespace Key {
   /** Unexpired: no expiry set, or expiry still in the future. */
   function live() {
     return or(isNull(KeyTable.expiresAt), gt(KeyTable.expiresAt, new Date()));
-  }
-
-  function token() {
-    const bytes = new Uint32Array(64);
-    crypto.getRandomValues(bytes);
-    return "sk-" + Array.from(bytes, (n) => CHARS[n % CHARS.length]!).join("");
   }
 
   function serialize(row: typeof KeyTable.$inferSelect, current?: string): Info {

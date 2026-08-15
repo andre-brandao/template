@@ -1,5 +1,6 @@
 import { describe, expect } from "bun:test";
-import { Todo } from "../src/todo";
+import { Actor } from "../src/actor";
+import { Insights, Todo } from "../src/todo";
 import { Identifier } from "../src/identifier";
 import { withTestUser } from "./util";
 
@@ -9,7 +10,7 @@ const project = () => ({ source: "project", sourceID: Identifier.create("project
 
 describe("todo", () => {
   withTestUser("create and fetch a todo", async ({ userID }) => {
-    const id = await Todo.create({ title: "Write the report" });
+    const { id } = await Todo.create({ title: "Write the report" });
     const todo = await Todo.fromID(id);
     expect(todo?.title).toBe("Write the report");
     expect(todo?.status).toBe("backlog");
@@ -31,7 +32,12 @@ describe("todo", () => {
 
   withTestUser("list filters by status, assignee and stage", async ({ userID }) => {
     const src = project();
-    const mine = await Todo.create({ title: "Mine", assignee: userID, stage: "Sprint 1", ...src });
+    const { id: mine } = await Todo.create({
+      title: "Mine",
+      assignee: userID,
+      stage: "Sprint 1",
+      ...src,
+    });
     await Todo.create({ title: "Nobody's", ...src });
     await Todo.update({ id: mine, status: "active" });
 
@@ -43,7 +49,7 @@ describe("todo", () => {
   });
 
   withTestUser("starting stamps the actual start, finishing stamps the end", async () => {
-    const id = await Todo.create({ title: "Do the thing" });
+    const { id } = await Todo.create({ title: "Do the thing" });
 
     await Todo.update({ id, status: "active" });
     const started = await Todo.fromID(id);
@@ -66,7 +72,7 @@ describe("todo", () => {
   });
 
   withTestUser("falling back to backlog means it never started", async () => {
-    const id = await Todo.create({ title: "False start", status: "active" });
+    const { id } = await Todo.create({ title: "False start", status: "active" });
     expect((await Todo.fromID(id))?.timeStarted).not.toBeNull();
 
     await Todo.update({ id, status: "backlog" });
@@ -76,7 +82,7 @@ describe("todo", () => {
   });
 
   withTestUser("assignment joins the user back in", async ({ userID }) => {
-    const id = await Todo.create({ title: "Hand it over" });
+    const { id } = await Todo.create({ title: "Hand it over" });
     await Todo.update({ id, assignee: userID });
     expect((await Todo.fromID(id))?.assignee).toMatchObject({ id: userID, name: "Test User" });
 
@@ -93,7 +99,7 @@ describe("todo", () => {
       dueDate: "2026-01-09T00:00:00.000Z",
       ...src,
     });
-    const late = await Todo.create({
+    const { id: late } = await Todo.create({
       title: "Wrap up",
       stage: "Discovery",
       startDate: "2026-01-07T00:00:00.000Z",
@@ -132,7 +138,7 @@ describe("todo", () => {
   });
 
   withTestUser("tags are trimmed and deduped", async () => {
-    const id = await Todo.create({ title: "Tagged", tags: [" work ", "urgent", "urgent"] });
+    const { id } = await Todo.create({ title: "Tagged", tags: [" work ", "urgent", "urgent"] });
     expect((await Todo.fromID(id))?.tags).toEqual(["work", "urgent"]);
   });
 
@@ -147,9 +153,28 @@ describe("todo", () => {
   });
 
   withTestUser("remove soft-deletes the todo", async () => {
-    const id = await Todo.create({ title: "Temporary" });
+    const { id } = await Todo.create({ title: "Temporary" });
     await Todo.remove(id);
     const todo = await Todo.fromID(id);
     expect(todo).toBeNull();
+  });
+
+  withTestUser("a signed-out caller is denied", async () => {
+    const { id } = await Todo.create({ title: "Private" });
+    await Actor.provide("public", {}, async () => {
+      // `list` guards before it touches a promise; `remove` is async, so the identical
+      // throw surfaces as a rejection.
+      expect(() => Todo.list({})).toThrow(/todo:read/);
+      expect(() => Insights.stats({ start: "2026-01-01", end: "2026-01-31" })).toThrow(/todo:read/);
+      await expect(Todo.remove(id)).rejects.toThrow(/todo:read/);
+    });
+  });
+
+  withTestUser("system bypasses enforcement", async () => {
+    const { id } = await Todo.create({ title: "Batch" });
+    await Actor.provide("system", {}, async () => {
+      await Todo.update({ id, title: "Renamed by a job" });
+      expect((await Todo.fromID(id))?.title).toBe("Renamed by a job");
+    });
   });
 });

@@ -80,11 +80,7 @@ export namespace ProjectApi {
       }),
       authRequired,
       validator("json", Project.create.schema),
-      async (c) => {
-        const id = await Project.create(c.req.valid("json"));
-        const project = await Project.fromID(id);
-        return c.json(project, 200);
-      },
+      async (c) => c.json(await Project.create(c.req.valid("json")), 200),
     )
     .patch(
       "/:id",

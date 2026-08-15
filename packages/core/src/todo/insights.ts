@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { and, asc, count, eq, gte, isNotNull, isNull, lt, ne, sql } from "drizzle-orm";
 import { fn } from "../util/fn";
+import { Actor } from "../actor";
 import { Database } from "../drizzle";
 import { UserTable } from "../user/user.sql";
 import { StatusValues, TodoTable } from "./todo.sql";
@@ -31,7 +32,9 @@ export namespace Insights {
     .refine((range) => span(range) <= 366, "range must not exceed a year");
   export type Range = z.infer<typeof Range>;
 
+  /** Every insight funnels through here, so the read check sits here rather than in all six. */
   function visible(input: Scope) {
+    Actor.check({ todo: ["read"] });
     const out = [isNull(TodoTable.timeDeleted)];
     if (input.source) out.push(eq(TodoTable.source, input.source));
     if (input.sourceID) out.push(eq(TodoTable.sourceID, input.sourceID));

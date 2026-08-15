@@ -84,7 +84,7 @@ export namespace Auth {
 
         const userID =
           byEmail?.id ??
-          (await User.create({ name: input.name ?? input.email, email: input.email }));
+          (await User.create({ name: input.name ?? input.email, email: input.email })).id;
 
         await tx.insert(ProviderTable).values({
           id: Identifier.create("provider"),

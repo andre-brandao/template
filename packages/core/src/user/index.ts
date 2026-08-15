@@ -86,17 +86,19 @@ export namespace User {
       image: Info.shape.image.optional(),
     }),
     async (input) => {
-      const id = Identifier.create("user");
-      await Database.use((tx) =>
-        tx.insert(UserTable).values({
-          id,
-          name: input.name,
-          email: input.email,
-          emailVerified: input.emailVerified ?? false,
-          image: input.image ?? null,
-        }),
+      return Database.use((tx) =>
+        tx
+          .insert(UserTable)
+          .values({
+            id: Identifier.create("user"),
+            name: input.name,
+            email: input.email,
+            emailVerified: input.emailVerified ?? false,
+            image: input.image ?? null,
+          })
+          .returning()
+          .then((rows) => serialize(rows[0]!)),
       );
-      return id;
     },
   );
 

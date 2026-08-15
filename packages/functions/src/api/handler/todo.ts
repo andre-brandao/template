@@ -104,11 +104,7 @@ export namespace TodoApi {
       }),
       authRequired,
       validator("json", Todo.create.schema),
-      async (c) => {
-        const id = await Todo.create(c.req.valid("json"));
-        const todo = await Todo.fromID(id);
-        return c.json(todo, 200);
-      },
+      async (c) => c.json(await Todo.create(c.req.valid("json")), 200),
     )
     .patch(
       "/:id",

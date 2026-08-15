@@ -156,8 +156,8 @@
   "catalog": {
     "@openauthjs/openauth": "0.4.3",
     "@types/bun": "1.3.13",
-    "drizzle-kit": "^1.0.0-rc.2",
-    "drizzle-orm": "^1.0.0-rc.2",
+    "drizzle-kit": "1.0.0-rc.5-ab785fc",
+    "drizzle-orm": "1.0.0-rc.5-ab785fc",
     "hono": "^4.13.1",
     "postgres": "^3.4.8",
     "sst": "4.17.1",

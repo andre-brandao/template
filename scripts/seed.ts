@@ -171,14 +171,17 @@ async function seed() {
 
         // Todo.create stamps the clock to now; backdate the whole trail here.
         await Database.use((tx) =>
-          tx.execute(sql`
+          tx.execute(
+            sql`
             update todo
             set time_created = ${at.toISOString()}::timestamptz,
                 time_updated = ${(done ?? at).toISOString()}::timestamptz,
                 time_started = ${started?.toISOString() ?? null}::timestamptz,
                 time_done = ${done?.toISOString() ?? null}::timestamptz
             where id = ${id}
-          `),
+          `,
+            "objects",
+          ),
         );
       }),
     );

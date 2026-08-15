@@ -6,7 +6,9 @@ import { Database, sql } from "@template/core/drizzle";
 const db = Database.create();
 
 await Database.provide(db, () =>
-  Database.use((tx) => tx.execute(sql`drop schema public cascade; create schema public;`)),
+  Database.use((tx) =>
+    tx.execute(sql`drop schema public cascade; create schema public;`, "objects"),
+  ),
 );
 await Database.release(db);
 

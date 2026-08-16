@@ -78,3 +78,33 @@ a {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
+
+/* The theme swap, wiped in as a circle from the control that was clicked. `ThemeToggle`
+   sets --x/--y/--r on the root and flips `data-theme` inside a view transition; custom
+   properties inherit into the pseudo tree, so the keyframes below read them from there. */
+:root[data-scope="theme"] * {
+  /* The shell names its own groups (rail, nav, main) for navigations. They would carve the
+     page into snapshots the root clip can't reach, so a theme swap is one group again. */
+  view-transition-name: none !important;
+}
+
+:root[data-scope="theme"]::view-transition-old(root),
+:root[data-scope="theme"]::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+/* Only the incoming frame moves: it is clipped over the old one, which holds still. */
+:root[data-scope="theme"]::view-transition-new(root) {
+  z-index: 1;
+  animation: wipe 690ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes wipe {
+  from {
+    clip-path: circle(0 at var(--x) var(--y));
+  }
+  to {
+    clip-path: circle(var(--r) at var(--x) var(--y));
+  }
+}

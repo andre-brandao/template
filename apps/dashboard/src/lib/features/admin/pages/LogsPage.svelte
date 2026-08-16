@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { z } from 'zod';
-	import { Button, Input, LazySelect, Pager } from '@template/ui';
+	import { Button, Fill, Input, LazySelect, Pagination, Scroll } from '@template/ui';
 	import Header from '$lib/components/Header.svelte';
 	import { debounce } from '$lib/utils/debounce';
 	import { query } from '$lib/utils/params';
@@ -44,9 +44,9 @@
 	const commit = debounce((q: string) => pick({ q }), 300);
 </script>
 
-<!-- Header, filters and pager hold still; only the list scrolls. A log is read by
+<!-- Header, filters and pagination hold still; only the list scrolls. A log is read by
      narrowing it, so the controls that narrow it have to stay in reach. -->
-<div class="fill">
+<Fill>
 	<Header title="Logs">
 		Every audit entry this instance has recorded, newest first. Entries are written by core as
 		side effects of the actions themselves, so they cannot be edited or deleted from here.
@@ -86,40 +86,19 @@
 		</p>
 	{/if}
 
-	<div class="scroll">
+	<Scroll>
 		<LogsTable
 			rows={log.data}
 			sorting={events.decode(params.sort)}
 			onsort={(sort) => pick({ sort })}
 			onuser={(user) => pick({ user })}
 		/>
-	</div>
+	</Scroll>
 
-	<Pager of={log} onchange={(page) => params.update({ page })} />
-</div>
+	<Pagination of={log} onchange={(page) => params.update({ page })} />
+</Fill>
 
 <style>
-	/* Header, filters and pager stay put; the list takes what they leave. `--fill` comes
-	   from the shell's <main> — what the viewport has once the topbar and padding are taken. */
-	.fill {
-		display: flex;
-		flex-direction: column;
-		height: var(--fill);
-		/* Below this the list is too short to be worth its own scroller; let the page scroll
-		   instead of squeezing it to two rows. */
-		min-height: 22em;
-	}
-
-	.scroll {
-		flex: 1;
-		min-height: 0;
-		overflow-y: auto;
-		/* Reaching the end shouldn't hand the scroll to the document behind it. */
-		overscroll-behavior: contain;
-		/* Room for the scrollbar so rows don't shift under it. */
-		scrollbar-gutter: stable;
-	}
-
 	.bar {
 		display: flex;
 		flex-wrap: wrap;

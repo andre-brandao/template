@@ -23,8 +23,10 @@
   // (aws, cf); the overlap is stage-setup wiring, not logic worth extracting.
   // Anything narrower than a directory is waived where it lives, with a
   // `fallow-ignore-next-line code-duplication` comment above the block.
+  // /dev is a local-only playground, 404'd in production: its index screens and
+  // stage shells are meant to read alike, so the overlap is chrome, not logic.
   "duplicates": {
-    "ignore": ["infra/**"],
+    "ignore": ["infra/**", "apps/*/src/routes/dev/**"],
   },
   "health": {
     "maxCrap": 69,

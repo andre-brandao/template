@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Input, Pager } from '@template/ui';
+	import { Fill, Input, Pagination, Scroll } from '@template/ui';
 	import Header from '$lib/components/Header.svelte';
 	import { debounce } from '$lib/utils/debounce';
 	import { getUsers } from '../api/admin.remote';
@@ -30,7 +30,7 @@
 </script>
 
 <!-- Same shape as the log: header and filters hold still, only the list scrolls. -->
-<div class="fill">
+<Fill>
 	<Header title="Users">
 		Everyone with an account on this instance. Changing a role takes effect on that person's
 		next request; disabling one turns them away at login and hides them from every actor lookup.
@@ -58,7 +58,7 @@
 		</label>
 	</div>
 
-	<div class="scroll">
+	<Scroll>
 		<UsersTable
 			rows={page.data}
 			sorting={users.decode(keys)}
@@ -68,33 +68,12 @@
 			}}
 			onchange={() => getUsers(args).refresh()}
 		/>
-	</div>
+	</Scroll>
 
-	<Pager of={page} onchange={(next) => (at = next)} label="users" />
-</div>
+	<Pagination of={page} onchange={(next) => (at = next)} label="users" />
+</Fill>
 
 <style>
-	/* Header, filters and pager stay put; the list takes what they leave. `--fill` comes
-	   from the shell's <main> — what the viewport has once the topbar and padding are taken. */
-	.fill {
-		display: flex;
-		flex-direction: column;
-		height: var(--fill);
-		/* Below this the list is too short to be worth its own scroller; let the page scroll
-		   instead of squeezing it to two rows. */
-		min-height: 22em;
-	}
-
-	.scroll {
-		flex: 1;
-		min-height: 0;
-		overflow-y: auto;
-		/* Reaching the end shouldn't hand the scroll to the document behind it. */
-		overscroll-behavior: contain;
-		/* Room for the scrollbar so rows don't shift under it. */
-		scrollbar-gutter: stable;
-	}
-
 	.bar {
 		display: flex;
 		align-items: center;

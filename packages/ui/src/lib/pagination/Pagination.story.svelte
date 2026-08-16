@@ -1,18 +1,18 @@
 <script module lang="ts">
 	import type { Story } from '../story';
 	import Field from '../field/Field.svelte';
-	import Pager from './Pager.svelte';
+	import Pagination from './Pagination.svelte';
 
 	export const story: Story = {
-		title: 'Pager',
+		title: 'Pagination',
 		blurb: 'Renders nothing when there is only one page — the hiding is the point of the component.',
-		of: Pager
+		of: Pagination
 	};
 </script>
 
 <script lang="ts">
 	// Imports the markup below needs — they sit in the story's module block, which is not shown.
-	// import { Pager } from '@template/ui';
+	// import { Pagination } from '@template/ui';
 
 	let page = $state(1);
 	let size = $state(20);
@@ -28,7 +28,7 @@
 	</Field>
 </div>
 
-<Pager of={{ page, pageSize: size, total }} onchange={(next) => (page = next)} label="todos" />
+<Pagination of={{ page, pageSize: size, total }} onchange={(next) => (page = next)} label="todos" />
 
 <p class="note">Set total below pageSize and the control disappears.</p>
 

@@ -25,12 +25,14 @@ export { features, type Features } from "./table/table";
 export { default as Drawer, type Side } from "./drawer/Drawer.svelte";
 export { default as Empty } from "./empty/Empty.svelte";
 export { default as Field } from "./field/Field.svelte";
+export { default as Fill } from "./pane/Fill.svelte";
 export { default as FormBoundary } from "./boundary/FormBoundary.svelte";
 export { default as Full } from "./full/Full.svelte";
 export { default as Issue } from "./issue/Issue.svelte";
 export { default as Modals } from "./modal/Modals.svelte";
 export { modal, type Ask } from "./modal/modal.svelte";
-export { default as Pager } from "./pager/Pager.svelte";
+export { default as Pagination } from "./pagination/Pagination.svelte";
+export { default as Scroll } from "./pane/Scroll.svelte";
 export { default as Skeleton } from "./skeleton/Skeleton.svelte";
 export { default as Spinner } from "./spinner/Spinner.svelte";
 // A container and its items, so it lands as a namespace like Combobox.

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { User } from '@template/core/user';
-	import { Button, FormBoundary, Input, toast } from '@template/ui';
+	import { Button, Field, FormBoundary, Input, Issue, toast } from '@template/ui';
 	import AvatarUpload from '$lib/components/AvatarUpload.svelte';
 	import { getMe, rename } from '../api/profile.remote';
 
@@ -27,7 +27,7 @@
 
 <FormBoundary>
 	{#each issues as issue (issue)}
-		<p class="error">{issue.message}</p>
+		<Issue>{issue.message}</Issue>
 	{/each}
 
 	<form
@@ -36,13 +36,12 @@
 			toast.success('Name saved');
 		})}
 	>
-		<label class="field name">
-			<span>Display name</span>
+		<Field label="Display name" style="max-width: 24em">
 			<div class="row">
 				<Input {...rename.fields.name.as('text', user.name)} />
 				<Button type="submit" {pending}>Save</Button>
 			</div>
-		</label>
+		</Field>
 	</form>
 </FormBoundary>
 
@@ -70,10 +69,6 @@
 		text-transform: uppercase;
 		letter-spacing: 0.06em;
 		color: var(--dim);
-	}
-
-	.name {
-		max-width: 24em;
 	}
 
 	.row {

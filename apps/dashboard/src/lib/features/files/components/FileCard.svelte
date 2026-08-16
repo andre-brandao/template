@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Button, Card } from '@template/ui';
+	import { Button, Card, Issue } from '@template/ui';
 	import type { Storage } from '@template/core/storage';
 	import { fmt } from '$lib/utils/fmt';
 	import { size } from '$lib/utils/size';
@@ -18,7 +18,7 @@
 
 <Card interactive>
 	{#each remove.fields.allIssues() ?? [] as issue, i (i)}
-		<p class="error">{issue.message}</p>
+		<Issue>{issue.message}</Issue>
 	{/each}
 
 	<div class="row">
@@ -55,12 +55,6 @@
 </Card>
 
 <style>
-	.error {
-		margin: 0 0 0.5em;
-		color: var(--danger, crimson);
-		font-size: 0.85em;
-	}
-
 	.row {
 		display: flex;
 		align-items: center;

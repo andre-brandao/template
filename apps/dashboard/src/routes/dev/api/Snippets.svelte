@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Code, toast } from '@template/ui';
+	import { Code, Tabs, toast } from '@template/ui';
 	import { cli, curl, fetch as js, sdk } from './snippets';
 
 	let {
@@ -21,13 +21,13 @@
 
 <section>
 	<div class="head">
-		<div class="tabs">
+		<Tabs.Root>
 			{#each Object.keys(builders) as one (one)}
-				<button class="tab" class:active={kind === one} onclick={() => (kind = one as Kind)}>
+				<Tabs.Item active={kind === one} onclick={() => (kind = one as Kind)}>
 					{one}
-				</button>
+				</Tabs.Item>
 			{/each}
-		</div>
+		</Tabs.Root>
 		<button class="copy" onclick={copy}>Copy</button>
 	</div>
 	<Code value={text} lang={langs[kind]} />

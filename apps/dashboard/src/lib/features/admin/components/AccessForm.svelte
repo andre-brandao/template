@@ -1,7 +1,7 @@
 <script lang="ts">
 	import RotateCcw from '@lucide/svelte/icons/rotate-ccw';
 	import Trash2 from '@lucide/svelte/icons/trash-2';
-	import { FormBoundary, Spinner, modal } from '@template/ui';
+	import { FormBoundary, Issue, Spinner, modal } from '@template/ui';
 	import type { User } from '@template/core/user';
 	import { fmt } from '$lib/utils/fmt';
 	import { disableUser, enableUser } from '../api/admin.remote';
@@ -25,7 +25,7 @@
 
 <FormBoundary>
 	{#each toggle.fields.allIssues() ?? [] as issue (issue)}
-		<p class="error">{issue.message}</p>
+		<Issue>{issue.message}</Issue>
 	{/each}
 
 	<div class="acts">
@@ -110,11 +110,5 @@
 	.back:disabled {
 		cursor: default;
 		opacity: 0.6;
-	}
-
-	.error {
-		margin: 0 0 0.4em;
-		font-size: 0.85em;
-		color: var(--danger, #c0392b);
 	}
 </style>

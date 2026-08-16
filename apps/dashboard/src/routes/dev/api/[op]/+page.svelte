@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { Issue } from '@template/ui';
 	import { page } from '$app/state';
 	import { doc } from '../api.remote';
 	import Console from '../Console.svelte';
@@ -15,6 +16,6 @@
 			<Console {op} base={spec.base} />
 		{/key}
 	{:else}
-		<p class="error">No operation named <code>{id}</code>.</p>
+		<Issue>No operation named <code>{id}</code>.</Issue>
 	{/if}
 {/if}

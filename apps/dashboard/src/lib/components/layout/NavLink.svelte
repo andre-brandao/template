@@ -25,8 +25,18 @@
 		display: flex;
 		align-items: center;
 		gap: 0.6em;
+		padding: 0.5em 0.7em;
+		border-radius: var(--radius);
+		color: var(--muted);
 		font-family: var(--font-mono);
 		font-size: 0.82em;
+		text-decoration: none;
+	}
+
+	.navlink:hover,
+	.navlink[aria-current='page'] {
+		color: var(--ink);
+		background: var(--surface-2);
 	}
 
 	.slim {

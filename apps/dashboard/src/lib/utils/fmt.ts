@@ -51,39 +51,6 @@ export function ago(iso: string, prefs: Prefs) {
 /** The zone the browser resolves — what `zone: null` means in practice. */
 export const local = () => Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-function gmt(zone: string, now: Date) {
-  const parts = new Intl.DateTimeFormat("en", {
-    timeZone: zone,
-    timeZoneName: "longOffset",
-  }).formatToParts(now);
-  const found = parts.find((p) => p.type === "timeZoneName")?.value ?? "GMT";
-  // Zones sitting exactly on UTC come back as a bare "GMT".
-  return found === "GMT" ? "GMT+00:00" : found;
-}
-
-/** Minutes east of UTC, parsed from a `GMT+05:45` style offset. */
-export function rank(offset: string) {
-  const [hours, minutes] = offset.replace("GMT", "").split(":");
-  // The sign belongs to the whole offset, so -03:30 is -210 minutes, not -180 + 30.
-  const sign = hours.startsWith("-") ? -1 : 1;
-  return Number(hours) * 60 + sign * Number(minutes);
-}
-
-/**
- * Every IANA zone, labelled `(GMT-03:00) America/Sao_Paulo`, west to east.
- * `supportedValuesOf` is ICU-dependent, so an unknown `current` is folded in —
- * otherwise the select renders with nothing selected.
- */
-export function zones(current?: string | null) {
-  const now = new Date();
-  const names = Intl.supportedValuesOf("timeZone");
-  const all = current && !names.includes(current) ? [current, ...names] : names;
-  return all
-    .map((zone) => ({ zone, offset: gmt(zone, now) }))
-    .sort((a, b) => rank(a.offset) - rank(b.offset) || a.zone.localeCompare(b.zone))
-    .map((entry) => ({ value: entry.zone, label: `(${entry.offset}) ${entry.zone}` }));
-}
-
 /**
  * Formatters bound to the signed-in user's preferences. Call during component init —
  * it reads context — then use the returned helpers anywhere in the template.

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Todo } from '@template/core/todo';
-	import { Empty } from '@template/ui';
+	import { Empty, Scroll } from '@template/ui';
 	import TodoCard from '../card/TodoCard.svelte';
 	import { group, type By } from '../../group';
 
@@ -9,36 +9,38 @@
 	const columns = $derived(group(todos, by));
 </script>
 
-<div class="board">
-	{#each columns as column (column.key)}
-		<div class="column">
-			<div class="column-head">
-				<span class="dot" style:background={column.color ?? 'var(--border-bright)'}></span>
-				<span class="title">{column.label}</span>
-				<span class="count">{column.items.length}</span>
+<Scroll orientation="horizontal">
+	<div class="board">
+		{#each columns as column (column.key)}
+			<div class="column">
+				<div class="column-head">
+					<span class="dot" style:background={column.color ?? 'var(--border-bright)'}></span>
+					<span class="title">{column.label}</span>
+					<span class="count">{column.items.length}</span>
+				</div>
+				<Scroll>
+					<div class="column-body">
+						{#each column.items as todo (todo.id)}
+							<TodoCard {todo} />
+						{/each}
+						{#if column.items.length === 0}
+							<Empty>No tasks</Empty>
+						{/if}
+					</div>
+				</Scroll>
 			</div>
-			<div class="column-body">
-				{#each column.items as todo (todo.id)}
-					<TodoCard {todo} />
-				{/each}
-				{#if column.items.length === 0}
-					<Empty>No tasks</Empty>
-				{/if}
-			</div>
-		</div>
-	{/each}
-	{#if columns.length === 0}
-		<Empty>No tasks match this filter</Empty>
-	{/if}
-</div>
+		{/each}
+		{#if columns.length === 0}
+			<Empty>No tasks match this filter</Empty>
+		{/if}
+	</div>
+</Scroll>
 
 <style>
 	.board {
 		display: flex;
 		gap: 1em;
 		align-items: start;
-		overflow-x: auto;
-		scrollbar-width: thin;
 		padding-bottom: 0.5em;
 	}
 
@@ -88,8 +90,5 @@
 		display: flex;
 		flex-direction: column;
 		gap: 0.6em;
-		min-height: 0;
-		overflow-y: auto;
-		scrollbar-width: thin;
 	}
 </style>

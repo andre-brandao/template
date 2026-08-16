@@ -4,7 +4,7 @@
 	import EyeOff from '@lucide/svelte/icons/eye-off';
 	import Power from '@lucide/svelte/icons/power';
 	import Trash2 from '@lucide/svelte/icons/trash-2';
-	import { Card, FormBoundary, modal } from '@template/ui';
+	import { Card, FormBoundary, Issue, modal } from '@template/ui';
 	import type { Webhook } from '@template/core/webhook';
 	import { fmt } from '$lib/utils/fmt';
 	import { disableWebhook, enableWebhook, removeWebhook } from '../api/admin.remote';
@@ -75,7 +75,7 @@
 
 		<FormBoundary>
 			{#each issues as issue (issue)}
-				<p class="error">{issue.message}</p>
+				<Issue>{issue.message}</Issue>
 			{/each}
 
 			<div class="acts">
@@ -273,11 +273,5 @@
 	.power button:disabled {
 		cursor: default;
 		opacity: 0.6;
-	}
-
-	.error {
-		margin: 0 0 0.4em;
-		font-size: 0.85em;
-		color: var(--danger, #c0392b);
 	}
 </style>

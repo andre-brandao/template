@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Button, FormBoundary, Input, MarkdownEditor } from '@template/ui';
+	import { Button, Field, FormBoundary, Input, Issue, MarkdownEditor } from '@template/ui';
 	import { upload } from '$lib/upload';
 	import { createTodo } from '../../api/todos.remote';
 	import TagEditor from '../TagEditor.svelte';
@@ -18,7 +18,7 @@
 
 <FormBoundary>
 	{#each createTodo.fields.allIssues() ?? [] as issue, i (i)}
-		<p class="error">{issue.message}</p>
+		<Issue>{issue.message}</Issue>
 	{/each}
 
 	<form
@@ -30,55 +30,47 @@
 			onsuccess?.();
 		})}
 	>
-		<label class="field">
-			<span>Title</span>
+		<Field label="Title">
 			<Input placeholder="What needs doing?" {...createTodo.fields.title.as('text')} />
-		</label>
+		</Field>
 
 		<div class="pair">
-			<label class="field">
-				<span>Stage</span>
+			<Field label="Stage">
 				<StagePicker {scope} {...createTodo.fields.stage.as('text')} />
-			</label>
+			</Field>
 
-			<label class="field">
-				<span>Assignee</span>
+			<Field label="Assignee">
 				<AssigneePicker {...createTodo.fields.assignee.as('select')} />
-			</label>
+			</Field>
 		</div>
 
 		<div class="pair">
-			<label class="field">
-				<span>Start</span>
+			<Field label="Start">
 				<Input {...createTodo.fields.startDate.as('date')} />
-			</label>
+			</Field>
 
-			<label class="field">
-				<span>Due</span>
+			<Field label="Due">
 				<Input {...createTodo.fields.dueDate.as('date')} />
-			</label>
+			</Field>
 		</div>
 
-		<label class="field">
-			<span>Status</span>
+		<Field label="Status">
 			<select {...createTodo.fields.status.as('select')}>
 				{#each STATUSES as status (status)}
 					<option value={status}>{label(status)}</option>
 				{/each}
 			</select>
-		</label>
+		</Field>
 
-		<div class="field">
-			<span>Tags</span>
+		<Field label="Tags" as="div">
 			<TagEditor bind:tags />
 			<input {...createTodo.fields.tags.as('hidden', tags.join(','))} />
-		</div>
+		</Field>
 
-		<div class="field">
-			<span>Description</span>
+		<Field label="Description" as="div">
 			<MarkdownEditor bind:value={body} {upload} />
 			<input {...createTodo.fields.body.as('hidden', body)} />
-		</div>
+		</Field>
 
 		<input {...createTodo.fields.source.as('hidden', scope.source ?? '')} />
 		<input {...createTodo.fields.sourceID.as('hidden', scope.sourceID ?? '')} />

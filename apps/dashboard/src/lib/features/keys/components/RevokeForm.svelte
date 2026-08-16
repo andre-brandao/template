@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Button, FormBoundary } from '@template/ui';
+	import { Button, FormBoundary, Issue } from '@template/ui';
 	import { removeKey } from '../api/keys.remote';
 
 	let { id, label = 'Revoke' }: { id: string; label?: string } = $props();
@@ -11,7 +11,7 @@
 
 <FormBoundary>
 	{#each issues as issue (issue)}
-		<p class="error">{issue.message}</p>
+		<Issue>{issue.message}</Issue>
 	{/each}
 
 	<form {...revoke}>

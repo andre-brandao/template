@@ -79,94 +79,32 @@ a {
   outline-offset: 2px;
 }
 
-.error {
-  display: block;
-  margin: 0 0 0.5em;
-  padding: 0.5em 0.7em;
-  border: 1px solid color-mix(in srgb, var(--danger) 45%, transparent);
-  border-radius: var(--radius);
-  background: color-mix(in srgb, var(--danger) 10%, transparent);
-  color: var(--danger);
-  font-size: 0.85em;
+/* The theme swap, wiped in as a circle from the control that was clicked. `ThemeToggle`
+   sets --x/--y/--r on the root and flips `data-theme` inside a view transition; custom
+   properties inherit into the pseudo tree, so the keyframes below read them from there. */
+:root[data-scope="theme"] * {
+  /* The shell names its own groups (rail, nav, main) for navigations. They would carve the
+     page into snapshots the root clip can't reach, so a theme swap is one group again. */
+  view-transition-name: none !important;
 }
 
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4em;
+:root[data-scope="theme"]::view-transition-old(root),
+:root[data-scope="theme"]::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
 }
 
-.field > span,
-.field > label {
-  font-family: var(--font-mono);
-  font-size: 0.72em;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--dim);
+/* Only the incoming frame moves: it is clipped over the old one, which holds still. */
+:root[data-scope="theme"]::view-transition-new(root) {
+  z-index: 1;
+  animation: wipe 690ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-/* A screen that scrolls its list rather than the page, so its header, filters and pager
-   stay put. `--fill` comes from the shell's <main> — what the viewport has left once the
-   topbar and that padding are taken — and the one `.scroll` child takes whatever the fixed
-   chrome above and below it doesn't use. */
-.fill {
-  display: flex;
-  flex-direction: column;
-  height: var(--fill);
-  /* Below this the list is too short to be worth its own scroller; let the page scroll
-     instead of squeezing it to two rows. */
-  min-height: 22em;
-}
-
-.scroll {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-  /* Reaching the end shouldn't hand the scroll to the document behind it. */
-  overscroll-behavior: contain;
-  /* Room for the scrollbar so rows don't shift under it. */
-  scrollbar-gutter: stable;
-}
-
-/* Shared by the app sidebar and the settings nav; each sets its own type scale. */
-.navlink {
-  color: var(--muted);
-  text-decoration: none;
-  padding: 0.5em 0.7em;
-  border-radius: var(--radius);
-}
-
-.navlink:hover,
-.navlink[aria-current="page"] {
-  color: var(--ink);
-  background: var(--surface-2);
-}
-
-.tabs {
-  display: inline-flex;
-  gap: 2px;
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 2px;
-}
-
-.tab {
-  font-family: var(--font-mono);
-  font-size: 0.78em;
-  padding: 0.4em 0.9em;
-  border-radius: 4px;
-  border: none;
-  background: none;
-  color: var(--dim);
-  cursor: pointer;
-}
-
-.tab:hover {
-  color: var(--muted);
-}
-
-.tab.active {
-  background: var(--surface);
-  color: var(--ink);
+@keyframes wipe {
+  from {
+    clip-path: circle(0 at var(--x) var(--y));
+  }
+  to {
+    clip-path: circle(var(--r) at var(--x) var(--y));
+  }
 }

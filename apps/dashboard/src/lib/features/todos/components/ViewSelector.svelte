@@ -3,17 +3,15 @@
 </script>
 
 <script lang="ts">
+	import { Tabs } from '@template/ui';
+
 	let { view = 'table', onchange }: { view?: View; onchange: (view: View) => void } = $props();
 </script>
 
-<div class="tabs">
-	{#each ['table', 'board', 'timeline',  'list'] as const as v (v)}
-		<button class="tab" class:active={view === v} onclick={() => onchange(v)}>{v}</button>
+<Tabs.Root>
+	{#each ['table', 'board', 'timeline', 'list'] as const as v (v)}
+		<Tabs.Item active={view === v} style="text-transform: capitalize" onclick={() => onchange(v)}>
+			{v}
+		</Tabs.Item>
 	{/each}
-</div>
-
-<style>
-	.tab {
-		text-transform: capitalize;
-	}
-</style>
+</Tabs.Root>

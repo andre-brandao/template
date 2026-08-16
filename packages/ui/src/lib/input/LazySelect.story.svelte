@@ -1,5 +1,6 @@
 <script module lang="ts">
 	import type { Story } from '../story';
+	import Field from '../field/Field.svelte';
 	import LazySelect from './LazySelect.svelte';
 	import type { Option } from './Select.svelte';
 
@@ -31,19 +32,17 @@
 		);
 </script>
 
-<label class="field">
-	<span>Project</span>
+<Field label="Project">
 	<LazySelect {load} options={statics} />
-</label>
+</Field>
 
 <p class="note">
 	A value outside the static options fetches immediately instead, so the label resolves:
 </p>
 
-<label class="field">
-	<span>Preselected</span>
+<Field label="Preselected">
 	<LazySelect {load} options={statics} value="p2" dedupe />
-</label>
+</Field>
 
 <style>
 	.note {

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Button, FormBoundary, Input } from '@template/ui';
+	import { Button, Field, FormBoundary, Input, Issue } from '@template/ui';
 	import type { Storage } from '@template/core/storage';
 	import { renameFile } from '../api/files.remote';
 
@@ -11,7 +11,7 @@
 
 <FormBoundary>
 	{#each rename.fields.allIssues() ?? [] as issue, i (i)}
-		<p class="error">{issue.message}</p>
+		<Issue>{issue.message}</Issue>
 	{/each}
 
 	<form
@@ -23,10 +23,9 @@
 	>
 		<input {...rename.fields.name.as('hidden', name)} />
 
-		<label class="field">
-			<span>Name</span>
+		<Field label="Name">
 			<Input {...rename.fields.to.as('text', name)} />
-		</label>
+		</Field>
 
 		<div class="footer">
 			<Button type="submit" pending={!!rename.pending}>Save</Button>
@@ -35,28 +34,10 @@
 </FormBoundary>
 
 <style>
-	.error {
-		margin: 0 0 0.5em;
-		color: var(--danger, crimson);
-		font-size: 0.85em;
-	}
-
 	.edit {
 		display: flex;
 		flex-direction: column;
 		gap: 1em;
-	}
-
-	.field {
-		display: flex;
-		flex-direction: column;
-		gap: 0.4em;
-	}
-
-	.field span {
-		font-family: var(--font-mono);
-		font-size: 0.78em;
-		color: var(--muted);
 	}
 
 	.footer {

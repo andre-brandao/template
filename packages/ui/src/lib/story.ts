@@ -16,11 +16,15 @@ import * as code from "./code/Code.story.svelte";
 import * as combobox from "./combobox/Combobox.story.svelte";
 import * as drawer from "./drawer/Drawer.story.svelte";
 import * as empty from "./empty/Empty.story.svelte";
+import * as field from "./field/Field.story.svelte";
 import * as boundary from "./boundary/FormBoundary.story.svelte";
+import * as issue from "./issue/Issue.story.svelte";
 import * as modal from "./modal/Modals.story.svelte";
-import * as pager from "./pager/Pager.story.svelte";
+import * as pagination from "./pagination/Pagination.story.svelte";
+import * as scroll from "./pane/Scroll.story.svelte";
 import * as skeleton from "./skeleton/Skeleton.story.svelte";
 import * as spinner from "./spinner/Spinner.story.svelte";
+import * as tabs from "./tabs/Tabs.story.svelte";
 import * as toaster from "./toast/Toaster.story.svelte";
 import * as tooltip from "./tooltip/Tooltip.story.svelte";
 
@@ -82,11 +86,15 @@ export const stories = [
   { slug: "combobox", story: combobox.story, demo: combobox.default },
   { slug: "drawer", story: drawer.story, demo: drawer.default },
   { slug: "empty", story: empty.story, demo: empty.default },
+  { slug: "field", story: field.story, demo: field.default },
   { slug: "formboundary", story: boundary.story, demo: boundary.default },
+  { slug: "issue", story: issue.story, demo: issue.default },
   { slug: "modals", story: modal.story, demo: modal.default },
-  { slug: "pager", story: pager.story, demo: pager.default },
+  { slug: "pagination", story: pagination.story, demo: pagination.default },
+  { slug: "scroll", story: scroll.story, demo: scroll.default },
   { slug: "skeleton", story: skeleton.story, demo: skeleton.default },
   { slug: "spinner", story: spinner.story, demo: spinner.default },
+  { slug: "tabs", story: tabs.story, demo: tabs.default },
   { slug: "toaster", story: toaster.story, demo: toaster.default },
   { slug: "tooltip", story: tooltip.story, demo: tooltip.default },
 ]

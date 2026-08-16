@@ -8,7 +8,6 @@ import { Common } from "../../common";
 import { Database } from "../../drizzle";
 import { Examples } from "../../examples";
 import { Identifier } from "../../identifier";
-import { memo } from "../../util/memo";
 import { token } from "../../util/token";
 import { KeyTable } from "./key.sql";
 
@@ -77,56 +76,6 @@ export namespace Key {
         )
         .returning({ userID: KeyTable.userID })
         .then((rows) => rows.at(0)?.userID ?? null),
-    ),
-  );
-
-  /**
-   * URL-signing key, minted on first use and cached per process. No user row, so `list`
-   * and `remove` can't reach it. A racing first mint just leaves two usable keys.
-   */
-  export const signing = memo(async () => {
-    const existing = await Database.use((tx) =>
-      tx
-        .select()
-        .from(KeyTable)
-        .where(and(eq(KeyTable.type, "signing"), isNull(KeyTable.timeDeleted), live()))
-        .orderBy(desc(KeyTable.timeCreated))
-        .limit(1)
-        .then((rows) => rows.at(0)),
-    );
-    if (existing) return { id: existing.id, secret: existing.key };
-
-    const made = await Database.use((tx) =>
-      tx
-        .insert(KeyTable)
-        .values({
-          id: Identifier.create("key"),
-          userID: null,
-          name: "url-signing",
-          key: token("sk-"),
-          type: "signing",
-        })
-        .returning()
-        .then((rows) => rows[0]!),
-    );
-    return { id: made.id, secret: made.key };
-  });
-
-  /** The secret behind a signing key id — the verifying half, for routes checking a URL. */
-  export const secret = fn(Info.shape.id, (id) =>
-    Database.use((tx) =>
-      tx
-        .select({ key: KeyTable.key })
-        .from(KeyTable)
-        .where(
-          and(
-            eq(KeyTable.id, id),
-            eq(KeyTable.type, "signing"),
-            isNull(KeyTable.timeDeleted),
-            live(),
-          ),
-        )
-        .then((rows) => rows.at(0)?.key ?? null),
     ),
   );
 

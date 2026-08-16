@@ -1,7 +1,7 @@
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Context } from "../../context";
-import { Key } from "../../platform/key";
+import { Signing } from "../../platform/key/signing";
 import { Log } from "../../util/log";
 import type * as port from "./port";
 import { fs } from "./adapter/fs";
@@ -118,7 +118,7 @@ export namespace Storage {
 
     const disks: Record<string, Disk> = {
       // The filesystem can't presign, so `STORAGE_URL` points at a route that can.
-      fs: env.STORAGE_URL ? serve(local, { url: env.STORAGE_URL, key: Key.signing }) : local,
+      fs: env.STORAGE_URL ? serve(local, { url: env.STORAGE_URL, key: Signing.current }) : local,
     };
     if (name === "s3" || env.S3_BUCKET)
       disks.s3 = s3({

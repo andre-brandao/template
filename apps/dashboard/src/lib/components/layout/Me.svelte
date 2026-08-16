@@ -9,6 +9,7 @@
 	import { resolve } from '$app/paths';
 	import type { User } from '@template/core/user';
 	import { Avatar } from '@template/ui';
+	import ThemeToggle from './ThemeToggle.svelte';
 	import Can from '../Can.svelte';
 	import Menu from '../Menu.svelte';
 
@@ -48,6 +49,7 @@
 					<Can grants={{ admin: ['read'] }}>
 						<a class="item" role="menuitem" href={resolve('/admin')} onclick={close}>Admin</a>
 					</Can>
+					<ThemeToggle />
 					<a class="item leave" role="menuitem" href={resolve('/logout')} onclick={close}
 						>Log out</a
 					>

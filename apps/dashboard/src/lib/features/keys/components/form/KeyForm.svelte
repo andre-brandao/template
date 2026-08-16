@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Button, FormBoundary, Input } from '@template/ui';
+	import { Button, Field, FormBoundary, Input, Issue } from '@template/ui';
 	import { createKey } from '../../api/keys.remote';
 
 	let { onsuccess }: { onsuccess?: () => void } = $props();
@@ -7,7 +7,7 @@
 
 <FormBoundary>
 	{#each createKey.fields.allIssues() ?? [] as issue (issue)}
-		<p class="error">{issue.message}</p>
+		<Issue>{issue.message}</Issue>
 	{/each}
 
 	<form
@@ -17,19 +17,17 @@
 			onsuccess?.();
 		})}
 	>
-		<label class="field name">
-			<span>Name</span>
+		<Field label="Name" style="flex: 1 1 14em">
 			<Input placeholder="e.g. laptop" {...createKey.fields.name.as('text')} />
-		</label>
-		<label class="field ttl">
-			<span>Expires</span>
+		</Field>
+		<Field label="Expires" style="flex: 0 1 auto">
 			<select name="ttl">
 				<option value="">Never expires</option>
 				<option value="30">30 days</option>
 				<option value="90">90 days</option>
 				<option value="365">1 year</option>
 			</select>
-		</label>
+		</Field>
 		<Button type="submit" pending={!!createKey.pending}>Create</Button>
 	</form>
 </FormBoundary>
@@ -41,14 +39,6 @@
 		flex-wrap: wrap;
 		gap: 0.6em;
 		margin-bottom: 1.5em;
-	}
-
-	.name {
-		flex: 1 1 14em;
-	}
-
-	.ttl {
-		flex: 0 1 auto;
 	}
 
 	select {

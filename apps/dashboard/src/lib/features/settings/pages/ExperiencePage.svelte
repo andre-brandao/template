@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { invalidateAll } from '$app/navigation';
-	import { Select } from '@template/ui';
+	import { Field, Select } from '@template/ui';
 	import { Locales, Prefs, type Patch } from '@template/core/user/prefs';
 	import { user } from '$lib/utils/context';
 	import Header from '$lib/components/Header.svelte';
@@ -40,15 +40,14 @@
 
 <h2>Language</h2>
 <p class="lead">Sets how dates and numbers are written. The interface itself stays in English.</p>
-<label class="field lang">
-	<span>Language</span>
+<Field label="Language" style="max-width: 28em">
 	<Select
 		name="locale"
 		options={locales}
 		value={prefs.locale}
 		onchange={(e) => pick({ locale: e.currentTarget.value as (typeof Locales)[number] })}
 	/>
-</label>
+</Field>
 
 <h2>Date and time</h2>
 <p class="lead">How timestamps are shown across the app.</p>
@@ -64,9 +63,5 @@
 		margin: 0 0 1.25em;
 		color: var(--muted);
 		max-width: 60ch;
-	}
-
-	.lang {
-		max-width: 28em;
 	}
 </style>

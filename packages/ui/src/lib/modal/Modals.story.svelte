@@ -3,7 +3,7 @@
 	import Modals from './Modals.svelte';
 	import Button from '../input/Button.svelte';
 	import { modal, type Ask } from './modal.svelte';
-	import Pager from '../pager/Pager.svelte';
+	import Pagination from '../pagination/Pagination.svelte';
 
 	export const story: Story = {
 		title: 'Modals',
@@ -15,7 +15,7 @@
 
 <script lang="ts">
 	// Imports the markup below needs — they sit in the story's module block, which is not shown.
-	// import { Modals, Button, Pager, modal, type Ask } from '@template/ui';
+	// import { Modals, Button, Pagination, modal, type Ask } from '@template/ui';
 
 	let said = $state('—');
 
@@ -48,7 +48,7 @@
 	</Button>
 	<Button
 		variant="secondary"
-		onclick={async () => (said = String(await modal(Pager, { page: 1, pages: 3 })))}
+		onclick={async () => (said = String(await modal(Pagination, { page: 1, pages: 3 })))}
 	>
 		arbitrary component
 	</Button>
@@ -57,7 +57,7 @@
 <p class="note">
 	Last result: <code>{said}</code>. Escape and the backdrop both dismiss — a confirm resolves
 	<code>false</code>, anything else <code>undefined</code>. The arbitrary component is handed a
-	<code>close</code> prop to resolve with; Pager ignores it, so only a dismissal ends it.
+	<code>close</code> prop to resolve with; Pagination ignores it, so only a dismissal ends it.
 </p>
 
 <style>

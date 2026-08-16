@@ -24,6 +24,7 @@
     "./user/*": "./src/user/*.ts",
     "./event": "./src/platform/event/index.ts",
     "./key": "./src/platform/key/index.ts",
+    "./key/*": "./src/platform/key/*.ts",
     "./webhook": "./src/platform/webhook/index.ts",
     "./webhook/*": "./src/platform/webhook/*.ts",
     "./util/*": "./src/util/*.ts"

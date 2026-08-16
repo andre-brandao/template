@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Input, Pager } from '@template/ui';
+	import { Fill, Input, Pagination, Scroll } from '@template/ui';
 	import Header from '$lib/components/Header.svelte';
 	import { debounce } from '$lib/utils/debounce';
 	import { getUsers } from '../api/admin.remote';
@@ -30,7 +30,7 @@
 </script>
 
 <!-- Same shape as the log: header and filters hold still, only the list scrolls. -->
-<div class="fill">
+<Fill>
 	<Header title="Users">
 		Everyone with an account on this instance. Changing a role takes effect on that person's
 		next request; disabling one turns them away at login and hides them from every actor lookup.
@@ -58,7 +58,7 @@
 		</label>
 	</div>
 
-	<div class="scroll">
+	<Scroll fill>
 		<UsersTable
 			rows={page.data}
 			sorting={users.decode(keys)}
@@ -68,10 +68,10 @@
 			}}
 			onchange={() => getUsers(args).refresh()}
 		/>
-	</div>
+	</Scroll>
 
-	<Pager of={page} onchange={(next) => (at = next)} label="users" />
-</div>
+	<Pagination of={page} onchange={(next) => (at = next)} label="users" />
+</Fill>
 
 <style>
 	.bar {

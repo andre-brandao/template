@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
-	import { Button } from '@template/ui';
+	import { Button, Field } from '@template/ui';
 	import Params from './Params.svelte';
 	import Responses from './Responses.svelte';
 	import Result from './Result.svelte';
@@ -74,10 +74,9 @@
 		<Params params={query} bind:values />
 
 		{#if op.mime === 'application/json'}
-			<label class="field body">
-				<span>body</span>
+			<Field label="body" style="margin-bottom: 1.2em">
 				<textarea rows="10" spellcheck="false" bind:value={body}></textarea>
-			</label>
+			</Field>
 		{/if}
 
 		<!-- Always rendered, so the arriving response fills a slot instead of growing the card. -->
@@ -213,10 +212,6 @@
 			max-height: none;
 			overflow-y: visible;
 		}
-	}
-
-	.body {
-		margin-bottom: 1.2em;
 	}
 
 	.schema {

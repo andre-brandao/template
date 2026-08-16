@@ -18,6 +18,10 @@ Bun workspaces monorepo. Postgres via Drizzle, Hono services, SvelteKit dashboar
 | `scripts`            | —                     | dev, seed, feature scaffold                              |
 | `infra`              | —                     | SST 4, plus `infra/docker` compose                       |
 
+Each package has its own `AGENTS.md` (symlinked as `CLAUDE.md`) with the rules for editing
+it. `docs/` holds the cross-cutting picture: [architecture](docs/architecture.md),
+[core layering](docs/core.md), [runtime and deploy](docs/runtime.md).
+
 ## Commands
 
 | Command             | What                                                       |

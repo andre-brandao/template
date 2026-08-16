@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Calendar connections — Google, Microsoft, ICS</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: light-dark(#f7f6f3, #17181a);
+    --surface: light-dark(#ffffff, #1f2022);
+    --surface-2: light-dark(#eeece7, #26282b);
+    --border: light-dark(#dedbd4, #2e3033);
+    --border-bright: light-dark(#c6c2b8, #3c3e42);
+    --ink: light-dark(#22231f, #e4e3df);
+    --muted: light-dark(#6b6a64, #8b8a84);
+    --dim: light-dark(#94928a, #5c5b56);
+    --accent: light-dark(#2f7f68, #4fa98f);
+    --accent-ink: light-dark(#ffffff, #0d1110);
+    --danger: light-dark(#b8452c, #d3684f);
+    --warn: light-dark(#a3672a, #c98a3f);
+    --radius: 8px;
+    --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    --font-mono: ui-monospace, "JetBrains Mono", "SF Mono", monospace;
+    --shadow-1: 0 1px 2px light-dark(rgb(0 0 0 / .08), rgb(0 0 0 / .3));
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 1.5rem 1.25rem 4rem; background: var(--bg); color: var(--ink); font: 14px/1.5 var(--font-sans); }
+  .page { max-width: 760px; margin: 0 auto; }
+  h1 { margin: 0 0 .2rem; font-size: 1.25rem; }
+  .lede { margin: 0 0 1.6rem; color: var(--muted); }
+  h2 { font-size: .76rem; letter-spacing: .07em; text-transform: uppercase; color: var(--dim); margin: 1.8rem 0 .6rem; }
+  button, select { font: inherit; color: inherit; cursor: pointer; }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: .8rem; overflow: hidden; }
+  .acct { display: flex; align-items: center; gap: .7rem; padding: .85rem 1rem; }
+  .logo { width: 30px; height: 30px; border-radius: 7px; display: grid; place-items: center; flex: none;
+    font-weight: 800; font-size: .8rem; color: #fff; }
+  .logo.g { background: #3b6fa8; } .logo.m { background: #a8434f; } .logo.i { background: #7c8a99; }
+  .acct .who { flex: 1; min-width: 0; }
+  .acct .who b { display: block; font-weight: 600; }
+  .acct .who span { font-size: .8rem; color: var(--muted); }
+  .pill { display: inline-flex; align-items: center; gap: .3rem; padding: .12rem .5rem; border-radius: 999px;
+    font-size: .72rem; font-weight: 600; border: 1px solid transparent; }
+  .pill i { width: 6px; height: 6px; border-radius: 999px; background: currentColor; }
+  .pill.ok { color: var(--accent); background: color-mix(in oklab, var(--accent) 13%, var(--surface)); }
+  .pill.warn { color: var(--warn); background: color-mix(in oklab, var(--warn) 14%, var(--surface)); }
+  .pill.bad { color: var(--danger); background: color-mix(in oklab, var(--danger) 14%, var(--surface)); }
+  .ghost { border: 1px solid var(--border); background: var(--surface); border-radius: 6px; padding: .3rem .7rem; }
+  .ghost:hover { border-color: var(--border-bright); }
+  .ghost.bad { color: var(--danger); border-color: color-mix(in oklab, var(--danger) 40%, var(--border)); }
+
+  .links { border-top: 1px solid var(--border); background: color-mix(in oklab, var(--surface-2) 45%, var(--surface)); }
+  .link { display: flex; align-items: center; gap: .6rem; padding: .55rem 1rem; border-bottom: 1px solid var(--border); }
+  .link:last-child { border-bottom: 0; }
+  .link input[type=checkbox] { width: 15px; height: 15px; accent-color: var(--accent); margin: 0; flex: none; }
+  .link .dot { width: 9px; height: 9px; border-radius: 999px; flex: none; }
+  .link .n { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .link.off .n { color: var(--dim); }
+  .link .n em { font-style: normal; color: var(--dim); font-size: .78rem; }
+  .link select { border: 1px solid var(--border); border-radius: 6px; background: var(--bg); padding: .2rem .4rem; font-size: .8rem; }
+  .link .maps { font-size: .76rem; color: var(--muted); font-family: var(--font-mono); }
+
+  .meta { display: flex; flex-wrap: wrap; gap: .4rem 1.4rem; padding: .6rem 1rem; border-top: 1px solid var(--border);
+    font-size: .78rem; color: var(--muted); }
+  .meta b { color: var(--ink); font-weight: 600; }
+  .meta .grow { margin-left: auto; }
+
+  .alert { display: flex; gap: .6rem; align-items: flex-start; padding: .65rem 1rem; border-top: 1px solid var(--border);
+    background: color-mix(in oklab, var(--danger) 9%, var(--surface)); font-size: .83rem; }
+  .alert b { display: block; }
+  .alert .ghost { margin-left: auto; flex: none; }
+
+  .add { display: grid; grid-template-columns: repeat(3, 1fr); gap: .6rem; }
+  .add button { display: flex; align-items: center; gap: .6rem; padding: .75rem .85rem; text-align: left;
+    border: 1px dashed var(--border-bright); border-radius: var(--radius); background: var(--surface); }
+  .add button:hover { border-style: solid; border-color: var(--accent); }
+  .add span { font-size: .8rem; color: var(--muted); display: block; }
+  .add b { font-weight: 600; }
+
+  .opts { padding: .3rem 0; }
+  .opt { display: flex; align-items: flex-start; gap: .7rem; padding: .6rem 1rem; border-bottom: 1px solid var(--border); }
+  .opt:last-child { border-bottom: 0; }
+  .opt .t { flex: 1; }
+  .opt .t b { display: block; font-weight: 600; }
+  .opt .t span { font-size: .8rem; color: var(--muted); }
+  .opt select { border: 1px solid var(--border); border-radius: 6px; background: var(--bg); padding: .3rem .5rem; flex: none; }
+  .sw { position: relative; width: 36px; height: 20px; border-radius: 999px; border: 0; flex: none;
+    background: var(--border-bright); transition: background 120ms; }
+  .sw::after { content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 999px;
+    background: var(--surface); transition: transform 120ms; }
+  .sw[aria-pressed="true"] { background: var(--accent); }
+  .sw[aria-pressed="true"]::after { transform: translateX(16px); }
+
+  .log { font-family: var(--font-mono); font-size: .74rem; color: var(--muted); padding: .7rem 1rem; margin: 0;
+    white-space: pre-wrap; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Calendar connections</h1>
+  <p class="lede">Link an external account, then choose which of its calendars this app reads and writes.</p>
+
+  <h2>Connected accounts</h2>
+
+  <div class="card">
+    <div class="acct">
+      <span class="logo g">G</span>
+      <span class="who"><b>Google Calendar</b><span>andre@gmail.example · calendar.events, calendar.readonly</span></span>
+      <span class="pill ok"><i></i>Synced</span>
+      <button class="ghost" data-sync>Sync now</button>
+    </div>
+    <div class="links">
+      <div class="link"><input type="checkbox" checked /><span class="dot" style="background:#b06a1f"></span>
+        <span class="n">Work <em>· primary</em></span><span class="maps">→ cal_work</span>
+        <select><option>Two-way</option><option>Pull only</option><option>Push only</option></select></div>
+      <div class="link"><input type="checkbox" checked /><span class="dot" style="background:#2f7f68"></span>
+        <span class="n">Personal</span><span class="maps">→ cal_personal</span>
+        <select><option selected>Pull only</option><option>Two-way</option><option>Push only</option></select></div>
+      <div class="link off"><input type="checkbox" /><span class="dot" style="background:#7c8a99"></span>
+        <span class="n">Holidays in Brazil <em>· read-only at Google</em></span><span class="maps">—</span>
+        <select disabled><option>Pull only</option></select></div>
+    </div>
+    <div class="meta">
+      <span>Last sync <b data-when>4 minutes ago</b></span>
+      <span>Watch channel renews <b>in 21 days</b></span>
+      <span>Sync token <b>held</b></span>
+      <span class="grow"><button class="ghost bad">Disconnect</button></span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="acct">
+      <span class="logo m">M</span>
+      <span class="who"><b>Microsoft 365</b><span>andre@work.example · Calendars.ReadWrite</span></span>
+      <span class="pill bad"><i></i>Reconnect needed</span>
+      <button class="ghost" disabled>Sync now</button>
+    </div>
+    <div class="alert">
+      <span>⚠</span>
+      <span><b>The refresh token was revoked 2 days ago.</b>Pulls stopped; 3 local changes are queued and will push once you reconnect.</span>
+      <button class="ghost">Reconnect</button>
+    </div>
+    <div class="links">
+      <div class="link"><input type="checkbox" checked /><span class="dot" style="background:#a8434f"></span>
+        <span class="n">Billing v2 <em>· shared group calendar</em></span><span class="maps">→ cal_billing</span>
+        <select><option>Two-way</option><option>Pull only</option><option>Push only</option></select></div>
+    </div>
+    <div class="meta">
+      <span>Last sync <b>2 days ago</b></span>
+      <span>Subscription expired <b>2 days ago</b></span>
+      <span>Delta link <b>held</b></span>
+      <span class="grow"><button class="ghost bad">Disconnect</button></span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="acct">
+      <span class="logo i">ICS</span>
+      <span class="who"><b>On-call rotation</b><span>https://pager.example/schedules/atlas.ics</span></span>
+      <span class="pill warn"><i></i>Read-only</span>
+      <button class="ghost" data-sync>Sync now</button>
+    </div>
+    <div class="meta">
+      <span>Refreshed <b>18 minutes ago</b></span>
+      <span>Polls <b>every 30 minutes</b></span>
+      <span>ETag <b>unchanged</b></span>
+      <span class="grow"><button class="ghost bad">Remove</button></span>
+    </div>
+  </div>
+
+  <h2>Add a connection</h2>
+  <div class="add">
+    <button><span class="logo g">G</span><span><b>Google</b><span>OAuth</span></span></button>
+    <button><span class="logo m">M</span><span><b>Microsoft</b><span>OAuth</span></span></button>
+    <button><span class="logo i">ICS</span><span><b>ICS URL</b><span>Read-only feed</span></span></button>
+  </div>
+
+  <h2>Sync behaviour</h2>
+  <div class="card opts">
+    <div class="opt">
+      <span class="t"><b>Conflict winner</b><span>When both sides changed the same event since the last sync.</span></span>
+      <select><option>Newest change wins</option><option>External always wins</option><option>Ask me</option></select>
+    </div>
+    <div class="opt">
+      <span class="t"><b>Push todos with dates</b><span>Todos that have a start or due date appear on the linked calendar as events.</span></span>
+      <button class="sw" aria-pressed="true"></button>
+    </div>
+    <div class="opt">
+      <span class="t"><b>Send invitations from this app</b><span>Off means guests are stored locally and only the external calendar emails them.</span></span>
+      <button class="sw" aria-pressed="false"></button>
+    </div>
+    <div class="opt">
+      <span class="t"><b>Import window</b><span>How far back the first import reaches. Future events are always fully imported.</span></span>
+      <select><option>6 months</option><option>1 year</option><option>Everything</option></select>
+    </div>
+  </div>
+
+  <h2>Recent sync activity</h2>
+  <div class="card">
+    <pre class="log" id="log">11:18  google/cal_work      pull   delta 12 changed, 1 deleted
+11:18  google/cal_work      push   2 events, 0 conflicts
+11:12  ics/on-call          poll   304 not modified
+10:47  google/cal_personal  pull   delta 0 changed
+09:31  microsoft/cal_billing push  deferred — token revoked (3 queued)
+09:02  google                renew  watch channel extended to 06 Sep</pre>
+  </div>
+</div>
+
+<script>
+document.querySelectorAll('.sw').forEach((s) => {
+  s.onclick = () => s.setAttribute('aria-pressed', String(s.getAttribute('aria-pressed') !== 'true'));
+});
+
+document.querySelectorAll('[data-sync]').forEach((b) => {
+  b.onclick = () => {
+    const card = b.closest('.card');
+    const pill = card.querySelector('.pill');
+    const before = pill.className;
+    const text = pill.textContent;
+    b.disabled = true;
+    pill.className = 'pill warn';
+    pill.innerHTML = '<i></i>Syncing…';
+    setTimeout(() => {
+      pill.className = before;
+      pill.innerHTML = `<i></i>${text}`;
+      const when = card.querySelector('[data-when]');
+      if (when) when.textContent = 'just now';
+      const log = document.getElementById('log');
+      log.textContent = '11:22  google/cal_work      pull   delta 0 changed\n' + log.textContent;
+      b.disabled = false;
+    }, 900);
+  };
+});
+
+// A link that is unchecked stops syncing but keeps the rows already imported.
+document.querySelectorAll('.link input').forEach((box) => {
+  box.onchange = () => {
+    box.closest('.link').classList.toggle('off', !box.checked);
+    box.closest('.link').querySelector('select').disabled = !box.checked;
+  };
+});
+</script>
+</body>
+</html>

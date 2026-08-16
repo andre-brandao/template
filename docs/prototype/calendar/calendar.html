@@ -1,0 +1,429 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Calendar — month, week, agenda</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: light-dark(#f7f6f3, #17181a);
+    --surface: light-dark(#ffffff, #1f2022);
+    --surface-2: light-dark(#eeece7, #26282b);
+    --border: light-dark(#dedbd4, #2e3033);
+    --border-bright: light-dark(#c6c2b8, #3c3e42);
+    --ink: light-dark(#22231f, #e4e3df);
+    --muted: light-dark(#6b6a64, #8b8a84);
+    --dim: light-dark(#94928a, #5c5b56);
+    --accent: light-dark(#2f7f68, #4fa98f);
+    --accent-ink: light-dark(#ffffff, #0d1110);
+    --danger: light-dark(#b8452c, #d3684f);
+    --radius: 8px;
+    --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    --shadow-1: 0 1px 2px light-dark(rgb(0 0 0 / .08), rgb(0 0 0 / .3));
+    --shadow-2: 0 12px 28px -14px light-dark(rgb(0 0 0 / .18), rgb(0 0 0 / .6));
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.5 var(--font-sans); }
+  button { font: inherit; color: inherit; cursor: pointer; }
+
+  .app { display: grid; grid-template-columns: 232px 1fr; height: 100vh; }
+
+  /* ---- rail ---- */
+  .rail { border-right: 1px solid var(--border); background: var(--surface); overflow-y: auto; padding: .9rem .8rem 2rem; }
+  .rail h3 { margin: 1.3rem 0 .5rem; font-size: .72rem; letter-spacing: .07em; text-transform: uppercase; color: var(--dim); }
+  .rail h3:first-of-type { margin-top: .6rem; }
+  .cal { display: flex; align-items: center; gap: .55rem; padding: .3rem .35rem; border-radius: 6px; cursor: pointer; }
+  .cal:hover { background: var(--surface-2); }
+  .cal input { appearance: none; margin: 0; width: 14px; height: 14px; flex: none; border-radius: 4px;
+    border: 1.5px solid var(--swatch); background: transparent; position: relative; cursor: pointer; }
+  .cal input:checked { background: var(--swatch); }
+  .cal input:checked::after { content: ""; position: absolute; inset: 0; margin: auto; width: 3px; height: 6px;
+    border: solid #fff; border-width: 0 1.6px 1.6px 0; transform: translateY(-1px) rotate(45deg); }
+  .cal span.name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .cal.off span.name { color: var(--dim); }
+  .tag { flex: none; width: 15px; height: 15px; display: grid; place-items: center; border-radius: 4px;
+    background: var(--surface-2); border: 1px solid var(--border); font-size: 8.5px; font-weight: 700; color: var(--muted); }
+  .add { margin-top: .9rem; width: 100%; padding: .45rem; border: 1px dashed var(--border-bright); border-radius: 6px;
+    background: none; color: var(--muted); }
+  .add:hover { color: var(--ink); border-color: var(--muted); }
+
+  /* ---- main ---- */
+  .main { display: flex; flex-direction: column; min-width: 0; }
+  .bar { display: flex; align-items: center; gap: .6rem; padding: .7rem 1rem; border-bottom: 1px solid var(--border);
+    background: var(--surface); }
+  .bar h1 { margin: 0; font-size: 1.05rem; font-weight: 600; min-width: 11ch; }
+  .nav { display: flex; gap: 2px; }
+  .nav button, .today { border: 1px solid var(--border); background: var(--surface); border-radius: 6px;
+    padding: .3rem .55rem; line-height: 1; }
+  .nav button:hover, .today:hover { border-color: var(--border-bright); }
+  .today { padding: .34rem .7rem; }
+  .views { margin-left: auto; display: flex; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+  .views button { border: 0; background: var(--surface); padding: .34rem .75rem; color: var(--muted); }
+  .views button[aria-pressed="true"] { background: var(--surface-2); color: var(--ink); font-weight: 600; }
+  .new { border: 0; border-radius: 6px; background: var(--accent); color: var(--accent-ink); padding: .4rem .85rem; font-weight: 600; }
+
+  .scroll { flex: 1; overflow: auto; padding: 1rem; }
+
+  /* ---- month ---- */
+  .dow { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; margin-bottom: 1px; }
+  .dow div { padding: .3rem .5rem; font-size: .72rem; letter-spacing: .05em; text-transform: uppercase; color: var(--dim); }
+  .month { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background: var(--border);
+    border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  .day { background: var(--surface); min-height: 108px; min-width: 0; padding: .3rem; display: flex; flex-direction: column; gap: 2px; }
+  .day.out { background: var(--bg); }
+  .day .num { font-size: .78rem; color: var(--muted); padding: .1rem .25rem; align-self: flex-start; }
+  .day.out .num { color: var(--dim); }
+  .day.now .num { background: var(--accent); color: var(--accent-ink); border-radius: 999px; font-weight: 700;
+    min-width: 1.5em; text-align: center; }
+
+  .chip { display: flex; align-items: center; gap: .3rem; padding: .12rem .3rem; border-radius: 4px; border: 0;
+    background: none; text-align: left; font-size: .76rem; width: 100%; overflow: hidden; }
+  .chip:hover { background: var(--surface-2); }
+  .chip .dot { flex: none; width: 7px; height: 7px; border-radius: 999px; background: var(--c); }
+  .chip .t { color: var(--muted); font-variant-numeric: tabular-nums; flex: none; }
+  .chip .s { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .chip.block { background: color-mix(in oklab, var(--c) 20%, var(--surface)); }
+  .chip.block .s { color: var(--ink); }
+  .chip.tentative { border: 1px dashed color-mix(in oklab, var(--c) 60%, var(--border)); }
+  .chip.tentative .s { font-style: italic; }
+  .chip.mirror .s { color: var(--muted); }
+  .more { font-size: .72rem; color: var(--dim); background: none; border: 0; padding: .1rem .3rem; text-align: left; }
+  .more:hover { color: var(--ink); }
+
+  /* ---- week ---- */
+  .week { display: grid; grid-template-columns: 52px repeat(7, 1fr); border: 1px solid var(--border);
+    border-radius: var(--radius); background: var(--surface); overflow: hidden; }
+  .week .head { border-bottom: 1px solid var(--border); padding: .4rem .3rem; text-align: center; font-size: .75rem; color: var(--muted); }
+  .week .head b { display: block; font-size: 1.05rem; color: var(--ink); font-weight: 600; }
+  .week .head.now b { color: var(--accent); }
+  .week .head.corner { border-right: 1px solid var(--border); }
+  .grid { position: relative; min-width: 0; border-right: 1px solid var(--border); }
+  .grid:last-child { border-right: 0; }
+  .hour { height: 34px; border-bottom: 1px solid color-mix(in oklab, var(--border) 55%, transparent); }
+  .gutter { border-right: 1px solid var(--border); }
+  .week .allday { border-bottom: 1px solid var(--border); border-right: 1px solid var(--border);
+    min-width: 0; padding: 3px; display: flex; flex-direction: column; gap: 2px; min-height: 36px; }
+  .week .allday:last-of-type { border-right: 0; }
+  .week .allday.label { font-size: .66rem; color: var(--dim); text-align: right; justify-content: center;
+    padding-right: .4rem; }
+  .gutter .hour { border-bottom: 0; font-size: .68rem; color: var(--dim); text-align: right; padding-right: .4rem;
+    transform: translateY(-.5em); font-variant-numeric: tabular-nums; }
+  .slot { position: absolute; left: 2px; right: 2px; border-radius: 5px; padding: .15rem .3rem; overflow: hidden;
+    font-size: .72rem; line-height: 1.25; border: 0; text-align: left;
+    background: color-mix(in oklab, var(--c) 22%, var(--surface)); border-left: 3px solid var(--c); color: var(--ink); }
+  .slot:hover { background: color-mix(in oklab, var(--c) 34%, var(--surface)); }
+  .slot b { display: block; font-weight: 600; }
+  .slot em { color: var(--muted); font-style: normal; font-variant-numeric: tabular-nums; }
+  .slot.tentative { background: repeating-linear-gradient(135deg, transparent 0 5px,
+      color-mix(in oklab, var(--c) 26%, var(--surface)) 5px 10px); }
+  .nowline { position: absolute; left: 0; right: 0; height: 0; border-top: 2px solid var(--danger); z-index: 3; }
+  .nowline::before { content: ""; position: absolute; left: -3px; top: -4px; width: 7px; height: 7px;
+    border-radius: 999px; background: var(--danger); }
+
+  /* ---- agenda ---- */
+  .agenda { max-width: 720px; }
+  .agenda section { margin-bottom: 1.2rem; }
+  .agenda h4 { margin: 0 0 .4rem; font-size: .78rem; color: var(--dim); letter-spacing: .05em; text-transform: uppercase; }
+  .row { display: flex; align-items: baseline; gap: .7rem; width: 100%; text-align: left; padding: .5rem .7rem;
+    border: 1px solid var(--border); border-left: 3px solid var(--c); border-radius: 6px; background: var(--surface);
+    margin-bottom: 4px; }
+  .row:hover { border-color: var(--border-bright); box-shadow: var(--shadow-1); }
+  .row .t { flex: none; width: 11ch; color: var(--muted); font-variant-numeric: tabular-nums; font-size: .8rem; }
+  .row .s { flex: 1; font-weight: 500; }
+  .row .m { color: var(--dim); font-size: .78rem; }
+
+  .empty { color: var(--dim); padding: 2rem; text-align: center; }
+
+  /* ---- popover ---- */
+  dialog { border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); color: var(--ink);
+    padding: 0; width: min(380px, 92vw); box-shadow: var(--shadow-2); }
+  dialog::backdrop { background: light-dark(rgb(0 0 0 / .2), rgb(0 0 0 / .5)); }
+  .pop { padding: 1rem 1.1rem 1.1rem; }
+  .pop header { display: flex; align-items: flex-start; gap: .6rem; margin-bottom: .7rem; }
+  .pop .dot { width: 10px; height: 10px; border-radius: 999px; background: var(--c); margin-top: .38rem; flex: none; }
+  .pop h2 { margin: 0; font-size: 1.02rem; }
+  .pop .close { margin-left: auto; border: 0; background: none; color: var(--dim); font-size: 1.1rem; line-height: 1; }
+  .pop dl { display: grid; grid-template-columns: 5.5rem 1fr; gap: .4rem .6rem; margin: 0; font-size: .84rem; }
+  .pop dt { color: var(--dim); }
+  .pop dd { margin: 0; }
+  .who { display: flex; align-items: center; gap: .4rem; margin-bottom: .2rem; }
+  .who i { width: 6px; height: 6px; border-radius: 999px; flex: none; }
+  .yes { background: var(--accent); } .no { background: var(--danger); } .maybe { background: var(--muted); }
+  .pop footer { display: flex; gap: .4rem; margin-top: .9rem; padding-top: .8rem; border-top: 1px solid var(--border); }
+  .pop footer button { border: 1px solid var(--border); background: var(--surface); border-radius: 6px; padding: .32rem .7rem; }
+  .pop footer button.p { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 600; }
+  .note { margin: .7rem 0 0; padding: .45rem .6rem; border-radius: 6px; background: var(--surface-2);
+    font-size: .78rem; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="rail">
+    <h3>My calendars</h3>
+    <div id="mine"></div>
+    <h3>Projects</h3>
+    <div id="project"></div>
+    <h3>Subscribed</h3>
+    <div id="sub"></div>
+    <button class="add">+ New calendar</button>
+  </aside>
+
+  <div class="main">
+    <div class="bar">
+      <div class="nav"><button id="prev">‹</button><button id="next">›</button></div>
+      <button class="today" id="today">Today</button>
+      <h1 id="label"></h1>
+      <div class="views">
+        <button data-view="month" aria-pressed="true">Month</button>
+        <button data-view="week" aria-pressed="false">Week</button>
+        <button data-view="agenda" aria-pressed="false">Agenda</button>
+      </div>
+      <button class="new">New event</button>
+    </div>
+    <div class="scroll" id="stage"></div>
+  </div>
+</div>
+
+<dialog id="pop"></dialog>
+
+<script>
+// Mock data mirrors the proposed model: a calendar is owned through source/sourceID,
+// an event belongs to exactly one calendar and carries the iCalendar field surface.
+const calendars = [
+  { id: 'cal_personal', name: 'Personal',          group: 'mine',    color: '#2f7f68', link: null,        on: true },
+  { id: 'cal_work',     name: 'Work',              group: 'mine',    color: '#b06a1f', link: 'google',    on: true },
+  { id: 'cal_focus',    name: 'Focus blocks',      group: 'mine',    color: '#7a4fa3', link: null,        on: true },
+  { id: 'cal_atlas',    name: 'Atlas migration',   group: 'project', color: '#3b6fa8', link: null,        on: true },
+  { id: 'cal_billing',  name: 'Billing v2',        group: 'project', color: '#a8434f', link: 'microsoft', on: true },
+  { id: 'cal_hol',      name: 'Holidays — Brazil', group: 'sub',     color: '#7c8a99', link: 'ics',       on: true },
+  { id: 'cal_oncall',   name: 'On-call rotation',  group: 'sub',     color: '#8a7a3f', link: 'ics',       on: false },
+];
+
+const TODAY = '2026-08-19';
+
+// start/end are local wall times; allDay rows have no time. `mirror` marks a todo
+// projected into the calendar rather than a real event row.
+const events = [
+  { id:'e1',  cal:'cal_atlas',    day:'2026-08-03', start:'09:30', end:'10:00', title:'Atlas standup', rrule:'Weekly on weekdays', attendees:6, busy:'busy' },
+  { id:'e2',  cal:'cal_work',     day:'2026-08-04', start:'14:00', end:'15:00', title:'Design review — scheduler', attendees:4, busy:'busy', where:'Meet' },
+  { id:'e3',  cal:'cal_billing',  day:'2026-08-05', start:'11:00', end:'11:45', title:'Invoice webhooks handover', attendees:3, busy:'busy', where:'Teams' },
+  { id:'e4',  cal:'cal_personal', day:'2026-08-07', allDay:true, title:'Dentist', busy:'free' },
+  { id:'e5',  cal:'cal_hol',      day:'2026-08-11', allDay:true, title:'Company offsite', busy:'free' },
+  { id:'e6',  cal:'cal_atlas',    day:'2026-08-12', start:'16:00', end:'17:30', title:'Cutover dry run', attendees:8, busy:'busy' },
+  { id:'e7',  cal:'cal_focus',    day:'2026-08-13', start:'08:00', end:'11:00', title:'Deep work — sync engine', rrule:'Weekly on Thu', busy:'busy' },
+  { id:'e8',  cal:'cal_work',     day:'2026-08-14', start:'13:00', end:'13:30', title:'1:1 with Marina', rrule:'Every 2 weeks on Fri', attendees:2, busy:'busy' },
+
+  { id:'e10', cal:'cal_atlas',    day:'2026-08-17', start:'09:30', end:'10:00', title:'Atlas standup', rrule:'Weekly on weekdays', attendees:6, busy:'busy' },
+  { id:'e11', cal:'cal_billing',  day:'2026-08-17', start:'15:00', end:'16:00', title:'Billing v2 kickoff', attendees:5, busy:'busy', where:'Teams', tentative:true },
+  { id:'e12', cal:'cal_atlas',    day:'2026-08-18', start:'09:30', end:'10:00', title:'Atlas standup', rrule:'Weekly on weekdays', attendees:6, busy:'busy' },
+  { id:'e13', cal:'cal_work',     day:'2026-08-18', start:'11:00', end:'12:00', title:'Roadmap sync', attendees:9, busy:'busy', where:'Meet' },
+  { id:'e14', cal:'cal_atlas',    day:'2026-08-18', start:'14:00', end:'15:30', title:'Schema freeze review', attendees:4, busy:'busy' },
+  { id:'e15', cal:'cal_atlas',    day:'2026-08-19', start:'09:30', end:'10:15', title:'Atlas standup — extended', rrule:'Weekly on weekdays', override:true, attendees:6, busy:'busy' },
+  { id:'e16', cal:'cal_focus',    day:'2026-08-19', start:'13:00', end:'16:00', title:'Deep work — recurrence expansion', busy:'busy' },
+  { id:'e17', cal:'cal_personal', day:'2026-08-19', start:'19:00', end:'20:30', title:'Jiu-jitsu', rrule:'Weekly on Wed', busy:'free' },
+  { id:'e18', cal:'cal_atlas',    day:'2026-08-20', start:'09:30', end:'10:00', title:'Atlas standup', rrule:'Weekly on weekdays', attendees:6, busy:'busy' },
+  { id:'e19', cal:'cal_atlas',    day:'2026-08-20', allDay:true, title:'Ship: sync worker to staging', mirror:'todo', busy:'free' },
+  { id:'e20', cal:'cal_work',     day:'2026-08-20', start:'16:00', end:'17:00', title:'Interview — backend', attendees:3, busy:'busy' },
+  { id:'e21', cal:'cal_billing',  day:'2026-08-21', start:'10:00', end:'10:30', title:'Invoice retry postmortem', attendees:4, busy:'busy', where:'Teams' },
+  { id:'e22', cal:'cal_atlas',    day:'2026-08-21', start:'09:30', end:'10:00', title:'Atlas standup', rrule:'Weekly on weekdays', attendees:6, busy:'busy' },
+
+  { id:'e30', cal:'cal_billing',  day:'2026-08-25', start:'15:00', end:'16:00', title:'Billing v2 checkpoint', attendees:5, busy:'busy', where:'Teams' },
+  { id:'e31', cal:'cal_work',     day:'2026-08-26', start:'11:00', end:'12:00', title:'Roadmap sync', attendees:9, busy:'busy', where:'Meet' },
+  { id:'e32', cal:'cal_atlas',    day:'2026-08-27', allDay:true, title:'Atlas cutover window', busy:'busy' },
+  { id:'e33', cal:'cal_atlas',    day:'2026-08-28', allDay:true, title:'Atlas cutover window', busy:'busy' },
+  { id:'e34', cal:'cal_personal', day:'2026-08-29', start:'12:00', end:'16:00', title:'Lunch with Rafa', busy:'free' },
+];
+
+const guests = {
+  e13: [['Marina Alves','yes'],['Rafael Lima','yes'],['Priya Nair','maybe'],['Tom Okafor','no']],
+  e11: [['Marina Alves','yes'],['Dan Weiss','maybe'],['Priya Nair','yes']],
+  e14: [['Rafael Lima','yes'],['Priya Nair','yes'],['Tom Okafor','maybe']],
+};
+
+const badge = { google: 'G', microsoft: 'M', ics: 'ICS' };
+const byId = (id) => calendars.find((c) => c.id === id);
+const DOW = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+
+let view = 'month';
+let focus = new Date(2026, 7, 19);
+
+// ---- rail ----
+function rail() {
+  for (const group of ['mine', 'project', 'sub']) {
+    document.getElementById(group).innerHTML = calendars
+      .filter((c) => c.group === group)
+      .map((c) => `<label class="cal ${c.on ? '' : 'off'}" style="--swatch:${c.color}">
+          <input type="checkbox" data-id="${c.id}" ${c.on ? 'checked' : ''} />
+          <span class="name">${c.name}</span>
+          ${c.link ? `<span class="tag" title="Linked to ${c.link}">${badge[c.link]}</span>` : ''}
+        </label>`)
+      .join('');
+  }
+  document.querySelectorAll('.cal input').forEach((box) => {
+    box.onchange = () => { byId(box.dataset.id).on = box.checked; rail(); draw(); };
+  });
+}
+
+const visible = () => events.filter((e) => byId(e.cal).on);
+const iso = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+const mins = (t) => Number(t.slice(0, 2)) * 60 + Number(t.slice(3));
+const order = (a, b) => (a.allDay ? -1 : b.allDay ? 1 : mins(a.start) - mins(b.start));
+
+/** Monday of the week holding `d`. */
+function monday(d) {
+  const out = new Date(d);
+  out.setDate(out.getDate() - ((out.getDay() + 6) % 7));
+  return out;
+}
+
+// ---- month ----
+function month() {
+  const first = new Date(focus.getFullYear(), focus.getMonth(), 1);
+  const cursor = monday(first);
+  const cells = [];
+  for (let i = 0; i < 42; i++) {
+    const day = iso(cursor);
+    const list = visible().filter((e) => e.day === day).sort(order);
+    const shown = list.slice(0, 3);
+    cells.push(`<div class="day ${cursor.getMonth() === focus.getMonth() ? '' : 'out'} ${day === TODAY ? 'now' : ''}">
+        <span class="num">${cursor.getDate()}</span>
+        ${shown.map(chip).join('')}
+        ${list.length > shown.length ? `<button class="more">+${list.length - shown.length} more</button>` : ''}
+      </div>`);
+    cursor.setDate(cursor.getDate() + 1);
+  }
+  return `<div class="dow">${DOW.map((d) => `<div>${d}</div>`).join('')}</div>
+    <div class="month">${cells.join('')}</div>`;
+}
+
+function chip(e) {
+  const c = byId(e.cal).color;
+  const kind = [e.allDay ? 'block' : '', e.tentative ? 'tentative' : '', e.mirror ? 'mirror' : ''].join(' ');
+  return `<button class="chip ${kind}" style="--c:${c}" data-id="${e.id}">
+      ${e.allDay ? '' : '<span class="dot"></span>'}
+      ${e.allDay ? '' : `<span class="t">${e.start}</span>`}
+      <span class="s">${e.mirror ? '✓ ' : ''}${e.title}</span>
+    </button>`;
+}
+
+// ---- week ----
+const FROM = 7, TO = 21, PX = 34;
+function week() {
+  const start = monday(focus);
+  const days = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(start); d.setDate(d.getDate() + i); return d;
+  });
+  const heads = days.map((d, i) => `<div class="head ${iso(d) === TODAY ? 'now' : ''}">${DOW[i]}<b>${d.getDate()}</b></div>`).join('');
+  const hours = Array.from({ length: TO - FROM }, (_, i) => `<div class="hour">${String(FROM + i).padStart(2, '0')}:00</div>`).join('');
+
+  const strip = days.map((d) => {
+    const list = visible().filter((e) => e.day === iso(d) && e.allDay);
+    return `<div class="allday">${list.map(chip).join('')}</div>`;
+  }).join('');
+
+  const cols = days.map((d) => {
+    const day = iso(d);
+    const list = visible().filter((e) => e.day === day && !e.allDay);
+    const slots = list.map((e) => {
+      const top = (mins(e.start) - FROM * 60) / 60 * PX;
+      const height = Math.max(18, (mins(e.end) - mins(e.start)) / 60 * PX - 2);
+      return `<button class="slot ${e.tentative ? 'tentative' : ''}" style="--c:${byId(e.cal).color};top:${top}px;height:${height}px" data-id="${e.id}">
+          <b>${e.title}</b><em>${e.start}–${e.end}</em></button>`;
+    }).join('');
+    // 11:20 on the mocked "today", so the line lands mid-morning.
+    const now = day === TODAY ? `<div class="nowline" style="top:${(11 * 60 + 20 - FROM * 60) / 60 * PX}px"></div>` : '';
+    return `<div class="grid">${Array.from({ length: TO - FROM }, () => '<div class="hour"></div>').join('')}${slots}${now}</div>`;
+  }).join('');
+
+  return `<div class="week">
+      <div class="head corner"></div>${heads}
+      <div class="allday label">all-day</div>${strip}
+      <div class="gutter">${hours}</div>${cols}
+    </div>`;
+}
+
+// ---- agenda ----
+function agenda() {
+  const from = iso(focus);
+  const list = visible().filter((e) => e.day >= from).sort((a, b) => a.day.localeCompare(b.day) || order(a, b));
+  if (!list.length) return '<p class="empty">Nothing scheduled from here on.</p>';
+  const days = [...new Set(list.map((e) => e.day))];
+  return `<div class="agenda">${days.map((day) => {
+    const d = new Date(day + 'T00:00:00');
+    const head = d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+    return `<section><h4>${head}${day === TODAY ? ' — today' : ''}</h4>
+      ${list.filter((e) => e.day === day).map((e) => `<button class="row" style="--c:${byId(e.cal).color}" data-id="${e.id}">
+          <span class="t">${e.allDay ? 'All day' : `${e.start}–${e.end}`}</span>
+          <span class="s">${e.mirror ? '✓ ' : ''}${e.title}</span>
+          <span class="m">${byId(e.cal).name}${e.attendees ? ` · ${e.attendees} guests` : ''}</span>
+        </button>`).join('')}</section>`;
+  }).join('')}</div>`;
+}
+
+// ---- detail popover ----
+function open(id) {
+  const e = events.find((x) => x.id === id);
+  const cal = byId(e.cal);
+  const d = new Date(e.day + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  const people = guests[id];
+  const pop = document.getElementById('pop');
+  pop.innerHTML = `<div class="pop" style="--c:${cal.color}">
+      <header><span class="dot"></span><h2>${e.title}</h2><button class="close">✕</button></header>
+      <dl>
+        <dt>When</dt><dd>${d}<br>${e.allDay ? 'All day' : `${e.start} – ${e.end}`}</dd>
+        ${e.rrule ? `<dt>Repeats</dt><dd>${e.rrule}${e.override ? ' <em>(this one edited)</em>' : ''}</dd>` : ''}
+        <dt>Calendar</dt><dd>${cal.name}${cal.link ? ` · synced with ${cal.link}` : ''}</dd>
+        ${e.where ? `<dt>Where</dt><dd>${e.where}</dd>` : ''}
+        <dt>Shows as</dt><dd>${e.busy === 'busy' ? 'Busy' : 'Free'}</dd>
+        ${people ? `<dt>Guests</dt><dd>${people.map(([n, r]) => `<div class="who"><i class="${r}"></i>${n}</div>`).join('')}</dd>` : ''}
+      </dl>
+      ${e.mirror ? '<p class="note">Mirrored from a todo. Editing the dates here moves the todo.</p>' : ''}
+      ${e.tentative ? '<p class="note">You have not responded yet.</p>' : ''}
+      ${cal.link ? `<p class="note">Last synced 4 min ago · changes push to ${cal.link} within a minute.</p>` : ''}
+      <footer>
+        ${people ? '<button class="p">Going</button><button>Maybe</button><button>Can’t</button>' : '<button class="p">Edit</button><button>Delete</button>'}
+      </footer>
+    </div>`;
+  pop.querySelector('.close').onclick = () => pop.close();
+  pop.showModal();
+}
+
+// ---- shell ----
+function draw() {
+  const stage = document.getElementById('stage');
+  stage.innerHTML = view === 'month' ? month() : view === 'week' ? week() : agenda();
+  stage.querySelectorAll('[data-id]').forEach((el) => (el.onclick = () => open(el.dataset.id)));
+
+  const label = document.getElementById('label');
+  if (view === 'week') {
+    const s = monday(focus), e = new Date(s); e.setDate(e.getDate() + 6);
+    label.textContent = `${s.getDate()} – ${e.getDate()} ${e.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}`;
+  } else {
+    label.textContent = focus.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+  }
+}
+
+function shift(by) {
+  if (view === 'month') focus.setMonth(focus.getMonth() + by);
+  else focus.setDate(focus.getDate() + by * 7);
+  draw();
+}
+
+document.getElementById('prev').onclick = () => shift(-1);
+document.getElementById('next').onclick = () => shift(1);
+document.getElementById('today').onclick = () => { focus = new Date(2026, 7, 19); draw(); };
+document.querySelectorAll('.views button').forEach((b) => {
+  b.onclick = () => {
+    view = b.dataset.view;
+    document.querySelectorAll('.views button').forEach((o) => o.setAttribute('aria-pressed', String(o === b)));
+    draw();
+  };
+});
+
+rail();
+draw();
+</script>
+</body>
+</html>

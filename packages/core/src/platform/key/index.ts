@@ -123,6 +123,7 @@ export namespace Key {
             .where(
               and(
                 eq(KeyTable.id, id),
+                eq(KeyTable.type, "api"),
                 eq(KeyTable.userID, Actor.userID()),
                 isNull(KeyTable.timeDeleted),
               ),

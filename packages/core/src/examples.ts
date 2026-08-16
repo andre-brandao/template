@@ -52,6 +52,12 @@ export namespace Examples {
     current: false,
   } as const;
 
+  export const Session = {
+    userID: Id("user"),
+    email: "john@example.com",
+    role: "member",
+  } as const;
+
   export const File = {
     key: `${Id("user")}/screenshot.png`,
     size: 102400,

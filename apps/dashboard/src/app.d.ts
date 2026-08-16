@@ -7,7 +7,7 @@ declare global {
       code?: string;
     }
     interface Locals {
-      session: import("$lib/server/session").Session | null;
+      session: import("@template/core/key/session").Session.Info | null;
     }
     interface PageData {
       /** The section's shell nav, contributed by its `+layout.ts`. Absent = no shell. */

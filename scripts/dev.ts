@@ -29,7 +29,6 @@ const env = {
   PG_MAX: process.env.PG_MAX ?? (driver === "pglite" ? "1" : "10"),
   PG_RELEASE: process.env.PG_RELEASE ?? String(driver === "pglite"),
   AUTH_URL: process.env.AUTH_URL ?? `http://localhost:${authport}`,
-  SESSION_SECRET: process.env.SESSION_SECRET ?? "dev-session-secret",
   // `db` so pushes land in the job table for the queue worker; `sync` would run them inline.
   QUEUE_DRIVER: process.env.QUEUE_DRIVER ?? "db",
 };

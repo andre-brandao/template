@@ -524,26 +524,15 @@ if (tooled === mcp) {
 }
 if (tooled !== mcp) await Bun.write(`${root}/packages/functions/src/mcp/index.ts`, tooled);
 
-const nav = `${root}/apps/dashboard/src/lib/components/layout/Sidebar.svelte`;
-const bar = await Bun.file(nav).text();
-const linked = bar.replace(
-  /(\{ href: '\/insights', label: 'Insights' \})\n/,
-  `$1,\n\t\t{ href: '/${plural}', label: '${pascal}s' }\n`,
-);
-if (linked === bar) {
-  console.warn(`Could not wire Sidebar.svelte automatically; add this link yourself:`);
-  console.warn(`  { href: '/${plural}', label: '${pascal}s' }`);
-}
-if (linked !== bar) await Bun.write(nav, linked);
-
 console.log(`Created feature "${name}":`);
 for (const target of Object.values(targets)) console.log(`  ${target.replace(`${root}/`, "")}`);
 console.log(
-  `Wired: identifier prefix "${prefix}", Examples.${pascal}, route /${name}, MCP ${name}_* tools, /${plural} sidebar link`,
+  `Wired: identifier prefix "${prefix}", Examples.${pascal}, route /${name}, MCP ${name}_* tools`,
 );
 console.log(`
 Next steps:
   - restart \`bun dev\` (drizzle pushes the new "${name}" table on startup)
+  - link it: add { href: '/${plural}', label: '${pascal}s', icon } to a layout's nav.sections
   - \`bun run gen\` to refresh the OpenAPI spec + SDK
   - typecheck: \`cd packages/core && bun typecheck\`
   - tests: \`cd packages/core && bun test ${name}\`

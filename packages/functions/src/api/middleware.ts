@@ -3,6 +3,7 @@ import { VisibleError, ErrorCodes } from "@template/core/error";
 import { Actor } from "@template/core/actor";
 import { Key } from "@template/core/key";
 import { User } from "@template/core/user";
+import { zone } from "@template/core/user/prefs";
 import { subjects } from "../auth/subject";
 import { client } from "./auth";
 
@@ -16,7 +17,7 @@ async function actor(userID: string, next: Next) {
       ErrorCodes.Authentication.INVALID_TOKEN,
       "Token belongs to a user that no longer exists",
     );
-  return Actor.provide("user", { userID, role: row.role }, next);
+  return Actor.provide("user", { userID, role: row.role, timezone: zone(row.prefs) }, next);
 }
 
 export const auth: MiddlewareHandler = async (c, next) => {

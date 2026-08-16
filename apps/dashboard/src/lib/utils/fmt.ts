@@ -1,10 +1,12 @@
-import type { Prefs } from "@template/core/user/prefs";
+import { zone, type Prefs } from "@template/core/user/prefs";
 import { user } from "./context";
 
 // A fixed instant, so the format pickers preview the same date every time.
 export const SAMPLE = new Date("2024-03-12T09:30:00.000Z");
 
-const opts = (prefs: Prefs) => ({ timeZone: prefs.zone ?? undefined }) as const;
+// The stored zone, never the browser's: a server render has no browser to ask, and
+// disagreeing with it is a hydration mismatch on every timestamp.
+const opts = (prefs: Prefs) => ({ timeZone: zone(prefs) }) as const;
 
 /**
  * `Intl` has no way to force field order, so anything but `system` is reassembled from

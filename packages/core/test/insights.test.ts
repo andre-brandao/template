@@ -1,5 +1,9 @@
 import { describe, expect } from "bun:test";
+import { eq } from "drizzle-orm";
+import { Actor } from "../src/actor";
+import { Database } from "../src/drizzle";
 import { Insights, Todo } from "../src/todo";
+import { TodoTable } from "../src/todo/todo.sql";
 import { Identifier } from "../src/identifier";
 import { withTestUser } from "./util";
 
@@ -76,5 +80,42 @@ describe("insights", () => {
     expect(activity.active).toBe(true);
     expect(activity.series.reduce((sum, point) => sum + point.created, 0)).toBe(1);
     expect(activity.series.reduce((sum, point) => sum + point.completed, 0)).toBe(1);
+  });
+
+  withTestUser("buckets a day in the reader's zone, not UTC", async ({ userID }) => {
+    const r = { ...range(), start: "2026-06-01", end: "2026-06-30" };
+    const { id } = await Todo.create({ title: "Late one", ...scoped(r) });
+    // 01:00 UTC on the 8th is still the evening of the 7th anywhere west of Greenwich.
+    await Database.use((tx) =>
+      tx
+        .update(TodoTable)
+        .set({ timeCreated: new Date("2026-06-08T01:00:00.000Z") })
+        .where(eq(TodoTable.id, id)),
+    );
+
+    const as = (timezone?: string) =>
+      Actor.provide("user", { userID, role: "member", timezone }, () => Insights.calendar(r));
+
+    expect((await as()).days).toEqual([{ day: "2026-06-08", count: 1 }]);
+    expect((await as("America/Sao_Paulo")).days).toEqual([{ day: "2026-06-07", count: 1 }]);
+  });
+
+  withTestUser("the range edges move with the zone too", async ({ userID }) => {
+    const r = { ...range(), start: "2026-06-08", end: "2026-06-30" };
+    const { id } = await Todo.create({ title: "Edge", ...scoped(r) });
+    await Database.use((tx) =>
+      tx
+        .update(TodoTable)
+        .set({ timeCreated: new Date("2026-06-08T01:00:00.000Z") })
+        .where(eq(TodoTable.id, id)),
+    );
+
+    const as = (timezone?: string) =>
+      Actor.provide("user", { userID, role: "member", timezone }, () => Insights.calendar(r));
+
+    // In UTC it lands on the first day of the range; in São Paulo it is the day before,
+    // so it falls outside — and must not come back as a stray bucket.
+    expect((await as()).total).toBe(1);
+    expect((await as("America/Sao_Paulo")).total).toBe(0);
   });
 });

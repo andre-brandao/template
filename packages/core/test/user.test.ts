@@ -3,7 +3,7 @@ import { User } from "../src/user";
 import { Auth } from "../src/user/auth";
 import { Actor } from "../src/actor";
 import { ProviderIds } from "../src/user/provider.sql";
-import { DEFAULTS } from "../src/user/prefs";
+import { DEFAULTS, zone } from "../src/user/prefs";
 import { testEmail, withTestUser } from "./util";
 
 describe("user", () => {
@@ -76,11 +76,25 @@ describe("user", () => {
     });
   });
 
-  withTestUser("prefs stores a timezone and clears it back to system", async ({ userID }) => {
+  // Clearing means "unset", not "UTC" — the next browser to report seeds it again.
+  withTestUser("prefs stores a timezone and clears it back to unset", async ({ userID }) => {
     await User.prefs({ zone: "America/Sao_Paulo" });
     expect((await User.fromID(userID))?.prefs.zone).toBe("America/Sao_Paulo");
 
     await User.prefs({ zone: null });
+    expect((await User.fromID(userID))?.prefs.zone).toBeNull();
+  });
+
+  withTestUser("a zone reads as UTC until one is stored", async ({ userID }) => {
+    expect((await User.fromID(userID))?.prefs.zone).toBeNull();
+    expect(zone((await User.fromID(userID))!.prefs)).toBe("UTC");
+
+    await User.prefs({ zone: "America/Sao_Paulo" });
+    expect(zone((await User.fromID(userID))!.prefs)).toBe("America/Sao_Paulo");
+  });
+
+  withTestUser("prefs rejects a zone Intl does not know", async ({ userID }) => {
+    expect(() => User.prefs({ zone: "Mars/Olympus" })).toThrow();
     expect((await User.fromID(userID))?.prefs.zone).toBeNull();
   });
 

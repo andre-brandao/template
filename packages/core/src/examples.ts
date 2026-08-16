@@ -56,6 +56,7 @@ export namespace Examples {
     userID: Id("user"),
     email: "john@example.com",
     role: "member",
+    timezone: "America/Sao_Paulo",
   } as const;
 
   export const File = {

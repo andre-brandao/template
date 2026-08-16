@@ -20,6 +20,8 @@ export namespace Actor {
     properties: {
       userID: string;
       role: Permission.Role;
+      /** IANA zone. Absent when whoever provided the actor had no way to know it. */
+      timezone?: string;
     };
   }
 
@@ -59,6 +61,17 @@ export namespace Actor {
 
   export function userID() {
     return Actor.assert("user").properties.userID;
+  }
+
+  /**
+   * The zone to count this actor's days in. UTC unless the caller that provided the actor
+   * knew better — a job and a system caller have no person to ask, and a `date_trunc` that
+   * guessed the server's zone would be worse than one that says UTC out loud.
+   */
+  export function timezone() {
+    const actor = use();
+    if (actor.type !== "user") return "UTC";
+    return actor.properties.timezone ?? "UTC";
   }
 
   /**

@@ -3,6 +3,7 @@ import { Feedback } from "$lib/features/feedback/api/feedback";
 import { User } from "@template/core/user";
 import { DEFAULTS } from "@template/core/user/prefs";
 import * as theme from "$lib/server/theme";
+import * as zone from "$lib/server/zone";
 import type { LayoutServerLoad } from "./$types";
 
 /** Feeds the session context in `+layout.svelte` — read it with `user()`, at any depth. */
@@ -23,5 +24,10 @@ export const load: LayoutServerLoad = async (event) => {
   // paints in the right theme rather than defaulting to `system` for one navigation.
   theme.write(event, user.prefs.theme);
 
-  return { user, prefs: user.prefs, feedback, rail };
+  // The zone travels the other way, and only once: the browser seeds an empty preference,
+  // and from then on it is the user's, so a deliberate choice is never overwritten.
+  const seed = user.prefs.zone ? null : zone.read(event);
+  if (seed) await User.prefs({ zone: seed });
+
+  return { user, prefs: { ...user.prefs, zone: user.prefs.zone ?? seed }, feedback, rail };
 };

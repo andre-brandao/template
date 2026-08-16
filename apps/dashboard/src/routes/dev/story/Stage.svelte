@@ -19,13 +19,13 @@
 		Object.fromEntries(Object.entries(props).map(([name, one]) => [name, one.value]));
 
 	// Seeded once — the page keys this component on the slug, so a new story remounts.
-	let state = $state<Record<string, unknown>>(
+	let args = $state<Record<string, unknown>>(
 		untrack(() => (entry.story.props ? seed(entry.story.props) : {}))
 	);
 
 	const codes = $derived(
 		[
-			live ? { label: 'Usage', text: snippet(story, state) } : undefined,
+			live ? { label: 'Usage', text: snippet(story, args) } : undefined,
 			source ? { label: 'Story source', text: source } : undefined
 		].filter((one) => one !== undefined)
 	);
@@ -45,11 +45,11 @@
 				     the controllable instance, or the story file's own markup. -->
 				<div class="frame" class:canvas={live}>
 					{#if live}
-						{#key story.remount ? JSON.stringify(state) : ''}
+						{#key story.remount ? JSON.stringify(args) : ''}
 							{#if story.slot}
-								<Live {...story.base} {...state}>{story.slot}</Live>
+								<Live {...story.base} {...args}>{story.slot}</Live>
 							{:else}
-								<Live {...story.base} {...state} />
+								<Live {...story.base} {...args} />
 							{/if}
 						{/key}
 					{/if}
@@ -57,7 +57,7 @@
 				</div>
 
 				{#if story.props}
-					<Controls controls={story.props} bind:state />
+					<Controls controls={story.props} bind:state={args} />
 				{/if}
 			</div>
 

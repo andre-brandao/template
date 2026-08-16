@@ -11,7 +11,8 @@ src/
   api/
     index.ts            — mounts all routers
     routes.ts           — route definitions
-    common.ts           — Result/validator/authRequired/ErrorResponses helpers
+    common.ts           — validator/authRequired/PaginatedQuery/ErrorResponses helpers
+    doc.ts              — describe(tag) → doc(), the OpenAPI shaping for a handler
     middleware.ts       — actor resolution (bearer token) + error → HTTP response
     handler/            — one file per domain (file, key, project, todo, user)
     target/             — bun.ts | lambda.ts | worker.ts, the entry points
@@ -48,10 +49,30 @@ import { VisibleError, ErrorCodes } from "@template/core/error";
 throw new VisibleError("not_found", ErrorCodes.NotFound.RESOURCE_NOT_FOUND, "Resource not found");
 ```
 
-**OpenAPI** — the spec starts in core: its Zod schemas carry the `.meta({ description, example })`
-annotations. Routes reuse those schemas through `hono-openapi`'s `describeRoute` rather than
-restating them, so a description written once in core reaches the SDK. Every public route needs
-request and response schemas.
+**OpenAPI** — the spec starts in core. Its Zod schemas carry the `.meta({ description, example })`
+annotations, and its `fn()` ops carry a `meta` of their own (`{ title, description }`) that names the
+operation. A handler restates neither:
+
+```ts
+const doc = describe("Todo"); // binds the tag once for the file
+
+.get(
+  "/:id",
+  doc(Todo.fromID.meta, { 200: doc.json(Todo.Info) }),
+  authRequired,
+  validator("param", id),
+  async (c) => c.json(found("Todo", await Todo.fromID(c.req.valid("param").id)), 200),
+)
+```
+
+`doc()` takes the op's docs and the route's own responses, and merges in the standard error set —
+so summary, description, 200 description and example all come from schemas that already exist.
+`doc.json` wraps one, `doc.page` a page of them, `doc.list` an array, `doc.ok` a bare `"ok"`.
+The same `meta` feeds the MCP tool over that op, so the two can never drift.
+
+Pass a literal `{ title, description }` instead when a route reshapes its input into something core
+doesn't model — `/me` reads the actor rather than an id, and `POST /key` takes `expiresInDays`
+where core takes a date. Every public route needs request and response schemas.
 
 **Handlers** — keep handlers thin: validate input, call a `@template/core` function, return the result. No
 business logic in handlers.

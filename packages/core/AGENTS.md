@@ -20,7 +20,9 @@
 - **Documentation**: Annotate every Zod schema with `.meta({ description, example })`. These
   schemas are where the OpenAPI spec starts, so a missing description ships all the way to the SDK
 - **Database**: Use Drizzle ORM via `Database.use()` for shared db/tx access and `Database.transaction()` when you need an explicit transaction
-- **Validation**: Use `fn()` utility for input validation and schema definition
+- **Validation**: Use `fn()` utility for input validation and schema definition. Pass a third
+  `{ title, description }` when the op backs an HTTP route or an MCP tool — that prose is what the
+  route's `summary`/`description` and the tool's registration both read, so it is written once
 
 ## Module Layout
 

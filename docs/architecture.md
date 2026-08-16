@@ -51,7 +51,7 @@ downstream is derived.
 
 ```mermaid
 graph LR
-  schema["core: Zod schema<br/>+ .meta()"] --> route["functions: describeRoute"]
+  schema["core: Zod schema + .meta()<br/>fn() op + meta"] --> route["functions: doc()"]
   route -->|"gen:spec"| spec["packages/sdk/openapi.json"]
   spec -->|"gen"| gen["sdk/ts/src/*.gen.ts"]
   gen --> cli["apps/cli"]

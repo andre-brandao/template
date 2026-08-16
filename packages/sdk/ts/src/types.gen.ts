@@ -50,7 +50,7 @@ export type User = {
 };
 
 /**
- * Permission error
+ * Server error
  */
 export type ErrorResponse = {
   /**
@@ -261,9 +261,21 @@ export type GetMeData = {
 
 export type GetMeErrors = {
   /**
+   * Bad Request
+   */
+  400: ErrorResponse;
+  /**
    * Unauthorized
    */
   401: ErrorResponse;
+  /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
+   * Not Found
+   */
+  404: ErrorResponse;
   /**
    * Internal Server Error
    */
@@ -274,7 +286,7 @@ export type GetMeError = GetMeErrors[keyof GetMeErrors];
 
 export type GetMeResponses = {
   /**
-   * The current user.
+   * A user account.
    */
   200: User;
 };
@@ -290,9 +302,21 @@ export type GetKeyData = {
 
 export type GetKeyErrors = {
   /**
+   * Bad Request
+   */
+  400: ErrorResponse;
+  /**
    * Unauthorized
    */
   401: ErrorResponse;
+  /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
+   * Not Found
+   */
+  404: ErrorResponse;
   /**
    * Internal Server Error
    */
@@ -303,7 +327,7 @@ export type GetKeyError = GetKeyErrors[keyof GetKeyErrors];
 
 export type GetKeyResponses = {
   /**
-   * The user's keys.
+   * An API key belonging to a user.
    */
   200: Array<Key>;
 };
@@ -333,6 +357,14 @@ export type PostKeyErrors = {
    */
   401: ErrorResponse;
   /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
+   * Not Found
+   */
+  404: ErrorResponse;
+  /**
    * Internal Server Error
    */
   500: ErrorResponse;
@@ -342,7 +374,7 @@ export type PostKeyError = PostKeyErrors[keyof PostKeyErrors];
 
 export type PostKeyResponses = {
   /**
-   * The created key, including its secret.
+   * An API key belonging to a user.
    */
   200: Key;
 };
@@ -352,6 +384,10 @@ export type PostKeyResponse = PostKeyResponses[keyof PostKeyResponses];
 export type DeleteKeyByIdData = {
   body?: never;
   path: {
+    /**
+     * Unique object identifier.
+     * The format and length of IDs may change over time.
+     */
     id: string;
   };
   query?: never;
@@ -368,6 +404,10 @@ export type DeleteKeyByIdErrors = {
    */
   401: ErrorResponse;
   /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
    * Not Found
    */
   404: ErrorResponse;
@@ -381,7 +421,7 @@ export type DeleteKeyByIdError = DeleteKeyByIdErrors[keyof DeleteKeyByIdErrors];
 
 export type DeleteKeyByIdResponses = {
   /**
-   * Revoked.
+   * Deleted.
    */
   200: "ok";
 };
@@ -816,6 +856,14 @@ export type GetProjectErrors = {
    */
   401: ErrorResponse;
   /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
+   * Not Found
+   */
+  404: ErrorResponse;
+  /**
    * Internal Server Error
    */
   500: ErrorResponse;
@@ -872,6 +920,14 @@ export type PostProjectErrors = {
    */
   401: ErrorResponse;
   /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
+   * Not Found
+   */
+  404: ErrorResponse;
+  /**
    * Internal Server Error
    */
   500: ErrorResponse;
@@ -881,7 +937,7 @@ export type PostProjectError = PostProjectErrors[keyof PostProjectErrors];
 
 export type PostProjectResponses = {
   /**
-   * The created project.
+   * A container for todos. Todos point at it through source/sourceID.
    */
   200: Project;
 };
@@ -891,6 +947,10 @@ export type PostProjectResponse = PostProjectResponses[keyof PostProjectResponse
 export type DeleteProjectByIdData = {
   body?: never;
   path: {
+    /**
+     * Unique object identifier.
+     * The format and length of IDs may change over time.
+     */
     id: string;
   };
   query?: never;
@@ -906,6 +966,10 @@ export type DeleteProjectByIdErrors = {
    * Unauthorized
    */
   401: ErrorResponse;
+  /**
+   * Forbidden
+   */
+  403: ErrorResponse;
   /**
    * Not Found
    */
@@ -951,6 +1015,10 @@ export type GetProjectByIdErrors = {
    */
   401: ErrorResponse;
   /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
    * Not Found
    */
   404: ErrorResponse;
@@ -964,7 +1032,7 @@ export type GetProjectByIdError = GetProjectByIdErrors[keyof GetProjectByIdError
 
 export type GetProjectByIdResponses = {
   /**
-   * The project.
+   * A container for todos. Todos point at it through source/sourceID.
    */
   200: Project;
 };
@@ -1007,6 +1075,10 @@ export type PatchProjectByIdErrors = {
    */
   401: ErrorResponse;
   /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
    * Not Found
    */
   404: ErrorResponse;
@@ -1020,7 +1092,7 @@ export type PatchProjectByIdError = PatchProjectByIdErrors[keyof PatchProjectByI
 
 export type PatchProjectByIdResponses = {
   /**
-   * The updated project.
+   * A container for todos. Todos point at it through source/sourceID.
    */
   200: Project;
 };
@@ -1036,9 +1108,21 @@ export type GetFileData = {
 
 export type GetFileErrors = {
   /**
+   * Bad Request
+   */
+  400: ErrorResponse;
+  /**
    * Unauthorized
    */
   401: ErrorResponse;
+  /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
+   * Not Found
+   */
+  404: ErrorResponse;
   /**
    * Internal Server Error
    */
@@ -1049,7 +1133,7 @@ export type GetFileError = GetFileErrors[keyof GetFileErrors];
 
 export type GetFileResponses = {
   /**
-   * The user's files.
+   * An object on the user's storage disk.
    */
   200: Array<File>;
 };
@@ -1075,6 +1159,14 @@ export type PostFileErrors = {
    */
   401: ErrorResponse;
   /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
+   * Not Found
+   */
+  404: ErrorResponse;
+  /**
    * Internal Server Error
    */
   500: ErrorResponse;
@@ -1084,7 +1176,7 @@ export type PostFileError = PostFileErrors[keyof PostFileErrors];
 
 export type PostFileResponses = {
   /**
-   * The uploaded file.
+   * An object on the user's storage disk, with its content type.
    */
   200: FileMeta;
 };
@@ -1108,6 +1200,10 @@ export type GetFileSignedErrors = {
    * Bad Request
    */
   400: ErrorResponse;
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
   /**
    * Forbidden
    */
@@ -1150,6 +1246,10 @@ export type GetFileByNameContentErrors = {
    */
   401: ErrorResponse;
   /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
    * Not Found
    */
   404: ErrorResponse;
@@ -1188,6 +1288,14 @@ export type DeleteFileByNameErrors = {
    */
   401: ErrorResponse;
   /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
+   * Not Found
+   */
+  404: ErrorResponse;
+  /**
    * Internal Server Error
    */
   500: ErrorResponse;
@@ -1225,6 +1333,10 @@ export type PatchFileByNameErrors = {
    */
   401: ErrorResponse;
   /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
    * Not Found
    */
   404: ErrorResponse;
@@ -1238,7 +1350,7 @@ export type PatchFileByNameError = PatchFileByNameErrors[keyof PatchFileByNameEr
 
 export type PatchFileByNameResponses = {
   /**
-   * The renamed file.
+   * An object on the user's storage disk, with its content type.
    */
   200: FileMeta;
 };

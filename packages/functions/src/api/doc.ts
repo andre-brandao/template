@@ -41,6 +41,7 @@ const ok = body(z.literal("ok").meta({ description: "Deleted." }));
 
 /** Every route in a handler shares a tag, so it is bound once at the top of the file. */
 export function describe(tag: string) {
+  // Every route documents the same errors: `Actor.check` can forbid from anywhere.
   const doc = (meta: Meta, responses: Responses) =>
     describeRoute({
       tags: [tag],

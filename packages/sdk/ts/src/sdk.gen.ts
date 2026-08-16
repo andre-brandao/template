@@ -456,7 +456,7 @@ export class TemplateSdk extends HeyApiClient {
   /**
    * List projects
    *
-   * List projects, optionally filtered by name. Paginated.
+   * List projects, optionally filtered by name. Paginated. Use a project id as `sourceID` on a todo, with source "project".
    */
   public getProject<ThrowOnError extends boolean = false>(
     parameters?: {
@@ -494,6 +494,8 @@ export class TemplateSdk extends HeyApiClient {
 
   /**
    * Create project
+   *
+   * Create a project to hang todos off.
    */
   public postProject<ThrowOnError extends boolean = false>(
     parameters: {
@@ -532,6 +534,8 @@ export class TemplateSdk extends HeyApiClient {
 
   /**
    * Delete project
+   *
+   * Soft-delete a project. Its todos stay reachable from the unscoped views.
    */
   public deleteProjectById<ThrowOnError extends boolean = false>(
     parameters: {
@@ -554,6 +558,8 @@ export class TemplateSdk extends HeyApiClient {
 
   /**
    * Get project
+   *
+   * Fetch a single project by id.
    */
   public getProjectById<ThrowOnError extends boolean = false>(
     parameters: {
@@ -576,6 +582,8 @@ export class TemplateSdk extends HeyApiClient {
 
   /**
    * Update project
+   *
+   * Update a project's name, description or image.
    */
   public patchProjectById<ThrowOnError extends boolean = false>(
     parameters: {

@@ -37,6 +37,11 @@ export namespace Key {
     });
   export type Info = z.infer<typeof Info>;
 
+  /** A number of days from now as an expiry instant. No days means a key that never expires. */
+  export function expires(days?: number) {
+    return days ? new Date(Date.now() + days * 86_400_000) : null;
+  }
+
   /** Takes `userID` so a key can be minted before an actor exists. Returns the raw secret. */
   export const create = fn(
     z.object({
@@ -80,43 +85,56 @@ export namespace Key {
   );
 
   /** Every live key the user has. Pass the caller's secret to flag its key `current`. */
-  export const list = fn(z.string().optional(), (current) =>
-    Database.use((tx) =>
-      tx
-        .select()
-        .from(KeyTable)
-        .where(
-          and(
-            eq(KeyTable.userID, Actor.userID()),
-            eq(KeyTable.type, "api"),
-            isNull(KeyTable.timeDeleted),
-            live(),
-          ),
-        )
-        .orderBy(desc(KeyTable.timeCreated))
-        .then((rows) => rows.map((row) => serialize(row, current))),
-    ),
+  export const list = fn(
+    z.string().optional(),
+    (current) =>
+      Database.use((tx) =>
+        tx
+          .select()
+          .from(KeyTable)
+          .where(
+            and(
+              eq(KeyTable.userID, Actor.userID()),
+              eq(KeyTable.type, "api"),
+              isNull(KeyTable.timeDeleted),
+              live(),
+            ),
+          )
+          .orderBy(desc(KeyTable.timeCreated))
+          .then((rows) => rows.map((row) => serialize(row, current))),
+      ),
+    {
+      title: "List keys",
+      description:
+        "List the current user's API keys. The key authenticating this request is flagged `current`.",
+    },
   );
 
   /** Revokes an API key — the secret stops authenticating immediately. */
-  export const remove = fn(Info.shape.id, async (id) =>
-    found(
-      "Key",
-      await Database.use((tx) =>
-        tx
-          .update(KeyTable)
-          .set({ timeDeleted: new Date() })
-          .where(
-            and(
-              eq(KeyTable.id, id),
-              eq(KeyTable.userID, Actor.userID()),
-              isNull(KeyTable.timeDeleted),
-            ),
-          )
-          .returning({ id: KeyTable.id })
-          .then((rows) => rows.at(0)),
+  export const remove = fn(
+    Info.shape.id,
+    async (id) =>
+      found(
+        "Key",
+        await Database.use((tx) =>
+          tx
+            .update(KeyTable)
+            .set({ timeDeleted: new Date() })
+            .where(
+              and(
+                eq(KeyTable.id, id),
+                eq(KeyTable.userID, Actor.userID()),
+                isNull(KeyTable.timeDeleted),
+              ),
+            )
+            .returning({ id: KeyTable.id })
+            .then((rows) => rows.at(0)),
+        ),
       ),
-    ),
+    {
+      title: "Revoke key",
+      description: "Revoke an API key. The secret stops authenticating immediately.",
+    },
   );
 
   /** Unexpired: no expiry set, or expiry still in the future. */

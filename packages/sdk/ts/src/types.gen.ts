@@ -50,7 +50,7 @@ export type User = {
 };
 
 /**
- * Server error
+ * Permission error
  */
 export type ErrorResponse = {
   /**
@@ -261,21 +261,9 @@ export type GetMeData = {
 
 export type GetMeErrors = {
   /**
-   * Bad Request
-   */
-  400: ErrorResponse;
-  /**
    * Unauthorized
    */
   401: ErrorResponse;
-  /**
-   * Forbidden
-   */
-  403: ErrorResponse;
-  /**
-   * Not Found
-   */
-  404: ErrorResponse;
   /**
    * Internal Server Error
    */
@@ -302,21 +290,9 @@ export type GetKeyData = {
 
 export type GetKeyErrors = {
   /**
-   * Bad Request
-   */
-  400: ErrorResponse;
-  /**
    * Unauthorized
    */
   401: ErrorResponse;
-  /**
-   * Forbidden
-   */
-  403: ErrorResponse;
-  /**
-   * Not Found
-   */
-  404: ErrorResponse;
   /**
    * Internal Server Error
    */
@@ -357,14 +333,6 @@ export type PostKeyErrors = {
    */
   401: ErrorResponse;
   /**
-   * Forbidden
-   */
-  403: ErrorResponse;
-  /**
-   * Not Found
-   */
-  404: ErrorResponse;
-  /**
    * Internal Server Error
    */
   500: ErrorResponse;
@@ -403,10 +371,6 @@ export type DeleteKeyByIdErrors = {
    * Unauthorized
    */
   401: ErrorResponse;
-  /**
-   * Forbidden
-   */
-  403: ErrorResponse;
   /**
    * Not Found
    */
@@ -496,10 +460,6 @@ export type GetTodoErrors = {
    */
   403: ErrorResponse;
   /**
-   * Not Found
-   */
-  404: ErrorResponse;
-  /**
    * Internal Server Error
    */
   500: ErrorResponse;
@@ -586,10 +546,6 @@ export type PostTodoErrors = {
    */
   403: ErrorResponse;
   /**
-   * Not Found
-   */
-  404: ErrorResponse;
-  /**
    * Internal Server Error
    */
   500: ErrorResponse;
@@ -629,10 +585,6 @@ export type GetTodoStageErrors = {
    * Forbidden
    */
   403: ErrorResponse;
-  /**
-   * Not Found
-   */
-  404: ErrorResponse;
   /**
    * Internal Server Error
    */
@@ -860,10 +812,6 @@ export type GetProjectErrors = {
    */
   403: ErrorResponse;
   /**
-   * Not Found
-   */
-  404: ErrorResponse;
-  /**
    * Internal Server Error
    */
   500: ErrorResponse;
@@ -923,10 +871,6 @@ export type PostProjectErrors = {
    * Forbidden
    */
   403: ErrorResponse;
-  /**
-   * Not Found
-   */
-  404: ErrorResponse;
   /**
    * Internal Server Error
    */
@@ -1108,21 +1052,9 @@ export type GetFileData = {
 
 export type GetFileErrors = {
   /**
-   * Bad Request
-   */
-  400: ErrorResponse;
-  /**
    * Unauthorized
    */
   401: ErrorResponse;
-  /**
-   * Forbidden
-   */
-  403: ErrorResponse;
-  /**
-   * Not Found
-   */
-  404: ErrorResponse;
   /**
    * Internal Server Error
    */
@@ -1159,14 +1091,6 @@ export type PostFileErrors = {
    */
   401: ErrorResponse;
   /**
-   * Forbidden
-   */
-  403: ErrorResponse;
-  /**
-   * Not Found
-   */
-  404: ErrorResponse;
-  /**
    * Internal Server Error
    */
   500: ErrorResponse;
@@ -1200,10 +1124,6 @@ export type GetFileSignedErrors = {
    * Bad Request
    */
   400: ErrorResponse;
-  /**
-   * Unauthorized
-   */
-  401: ErrorResponse;
   /**
    * Forbidden
    */
@@ -1246,10 +1166,6 @@ export type GetFileByNameContentErrors = {
    */
   401: ErrorResponse;
   /**
-   * Forbidden
-   */
-  403: ErrorResponse;
-  /**
    * Not Found
    */
   404: ErrorResponse;
@@ -1288,14 +1204,6 @@ export type DeleteFileByNameErrors = {
    */
   401: ErrorResponse;
   /**
-   * Forbidden
-   */
-  403: ErrorResponse;
-  /**
-   * Not Found
-   */
-  404: ErrorResponse;
-  /**
    * Internal Server Error
    */
   500: ErrorResponse;
@@ -1332,10 +1240,6 @@ export type PatchFileByNameErrors = {
    * Unauthorized
    */
   401: ErrorResponse;
-  /**
-   * Forbidden
-   */
-  403: ErrorResponse;
   /**
    * Not Found
    */

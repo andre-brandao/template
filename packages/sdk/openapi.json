@@ -179,7 +179,7 @@
           }
         },
         "required": ["type", "code", "message"],
-        "description": "Server error"
+        "description": "Permission error"
       },
       "Key": {
         "type": "object",
@@ -664,30 +664,6 @@
             },
             "description": "A user account."
           },
-          "400": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "validation",
-                  "code": "invalid_parameter",
-                  "message": "Invalid input: expected string, received undefined",
-                  "param": "email",
-                  "details": {
-                    "issues": [
-                      {
-                        "path": "email",
-                        "message": "Invalid input: expected string, received undefined"
-                      }
-                    ]
-                  }
-                }
-              }
-            },
-            "description": "Bad Request"
-          },
           "401": {
             "content": {
               "application/json": {
@@ -702,36 +678,6 @@
               }
             },
             "description": "Unauthorized"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "forbidden",
-                  "code": "permission_denied",
-                  "message": "You do not have permission"
-                }
-              }
-            },
-            "description": "Forbidden"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "not_found",
-                  "code": "resource_not_found",
-                  "message": "The requested resource could not be found"
-                }
-              }
-            },
-            "description": "Not Found"
           },
           "500": {
             "content": {
@@ -794,30 +740,6 @@
             },
             "description": "An API key belonging to a user."
           },
-          "400": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "validation",
-                  "code": "invalid_parameter",
-                  "message": "Invalid input: expected string, received undefined",
-                  "param": "email",
-                  "details": {
-                    "issues": [
-                      {
-                        "path": "email",
-                        "message": "Invalid input: expected string, received undefined"
-                      }
-                    ]
-                  }
-                }
-              }
-            },
-            "description": "Bad Request"
-          },
           "401": {
             "content": {
               "application/json": {
@@ -832,36 +754,6 @@
               }
             },
             "description": "Unauthorized"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "forbidden",
-                  "code": "permission_denied",
-                  "message": "You do not have permission"
-                }
-              }
-            },
-            "description": "Forbidden"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "not_found",
-                  "code": "resource_not_found",
-                  "message": "The requested resource could not be found"
-                }
-              }
-            },
-            "description": "Not Found"
           },
           "500": {
             "content": {
@@ -943,36 +835,6 @@
               }
             },
             "description": "Unauthorized"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "forbidden",
-                  "code": "permission_denied",
-                  "message": "You do not have permission"
-                }
-              }
-            },
-            "description": "Forbidden"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "not_found",
-                  "code": "resource_not_found",
-                  "message": "The requested resource could not be found"
-                }
-              }
-            },
-            "description": "Not Found"
           },
           "500": {
             "content": {
@@ -1073,21 +935,6 @@
               }
             },
             "description": "Unauthorized"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "forbidden",
-                  "code": "permission_denied",
-                  "message": "You do not have permission"
-                }
-              }
-            },
-            "description": "Forbidden"
           },
           "404": {
             "content": {
@@ -1282,21 +1129,6 @@
               }
             },
             "description": "Forbidden"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "not_found",
-                  "code": "resource_not_found",
-                  "message": "The requested resource could not be found"
-                }
-              }
-            },
-            "description": "Not Found"
           },
           "500": {
             "content": {
@@ -1516,21 +1348,6 @@
             },
             "description": "Forbidden"
           },
-          "404": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "not_found",
-                  "code": "resource_not_found",
-                  "message": "The requested resource could not be found"
-                }
-              }
-            },
-            "description": "Not Found"
-          },
           "500": {
             "content": {
               "application/json": {
@@ -1739,21 +1556,6 @@
               }
             },
             "description": "Forbidden"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "not_found",
-                  "code": "resource_not_found",
-                  "message": "The requested resource could not be found"
-                }
-              }
-            },
-            "description": "Not Found"
           },
           "500": {
             "content": {
@@ -2404,21 +2206,6 @@
             },
             "description": "Forbidden"
           },
-          "404": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "not_found",
-                  "code": "resource_not_found",
-                  "message": "The requested resource could not be found"
-                }
-              }
-            },
-            "description": "Not Found"
-          },
           "500": {
             "content": {
               "application/json": {
@@ -2558,21 +2345,6 @@
               }
             },
             "description": "Forbidden"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "not_found",
-                  "code": "resource_not_found",
-                  "message": "The requested resource could not be found"
-                }
-              }
-            },
-            "description": "Not Found"
           },
           "500": {
             "content": {
@@ -3102,36 +2874,6 @@
             },
             "description": "Unauthorized"
           },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "forbidden",
-                  "code": "permission_denied",
-                  "message": "You do not have permission"
-                }
-              }
-            },
-            "description": "Forbidden"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "not_found",
-                  "code": "resource_not_found",
-                  "message": "The requested resource could not be found"
-                }
-              }
-            },
-            "description": "Not Found"
-          },
           "500": {
             "content": {
               "application/json": {
@@ -3183,30 +2925,6 @@
             },
             "description": "An object on the user's storage disk."
           },
-          "400": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "validation",
-                  "code": "invalid_parameter",
-                  "message": "Invalid input: expected string, received undefined",
-                  "param": "email",
-                  "details": {
-                    "issues": [
-                      {
-                        "path": "email",
-                        "message": "Invalid input: expected string, received undefined"
-                      }
-                    ]
-                  }
-                }
-              }
-            },
-            "description": "Bad Request"
-          },
           "401": {
             "content": {
               "application/json": {
@@ -3221,36 +2939,6 @@
               }
             },
             "description": "Unauthorized"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "forbidden",
-                  "code": "permission_denied",
-                  "message": "You do not have permission"
-                }
-              }
-            },
-            "description": "Forbidden"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "not_found",
-                  "code": "resource_not_found",
-                  "message": "The requested resource could not be found"
-                }
-              }
-            },
-            "description": "Not Found"
           },
           "500": {
             "content": {
@@ -3303,21 +2991,6 @@
               }
             },
             "description": "Bad Request"
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "authentication",
-                  "code": "unauthorized",
-                  "message": "Authentication required"
-                }
-              }
-            },
-            "description": "Unauthorized"
           },
           "403": {
             "content": {
@@ -3453,21 +3126,6 @@
             },
             "description": "Unauthorized"
           },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "forbidden",
-                  "code": "permission_denied",
-                  "message": "You do not have permission"
-                }
-              }
-            },
-            "description": "Forbidden"
-          },
           "404": {
             "content": {
               "application/json": {
@@ -3572,21 +3230,6 @@
               }
             },
             "description": "Unauthorized"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "forbidden",
-                  "code": "permission_denied",
-                  "message": "You do not have permission"
-                }
-              }
-            },
-            "description": "Forbidden"
           },
           "404": {
             "content": {
@@ -3703,36 +3346,6 @@
               }
             },
             "description": "Unauthorized"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "forbidden",
-                  "code": "permission_denied",
-                  "message": "You do not have permission"
-                }
-              }
-            },
-            "description": "Forbidden"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "not_found",
-                  "code": "resource_not_found",
-                  "message": "The requested resource could not be found"
-                }
-              }
-            },
-            "description": "Not Found"
           },
           "500": {
             "content": {

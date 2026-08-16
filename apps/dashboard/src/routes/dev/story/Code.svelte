@@ -18,17 +18,13 @@
 </div>
 
 <style>
-	/* Grows to whatever a flex column parent gives it, and scrolls the listing inside —
-	   same deal as the preview frame. */
+	/* Flat: it sits inside the stage's bordered block, which draws the outer edge. The rule
+	   on top is its own, so a second listing under the first is separated by one line. */
 	.code {
 		display: flex;
 		flex-direction: column;
-		flex: 1;
-		min-height: 0;
-		border: 1px solid var(--border);
-		border-radius: var(--radius);
+		border-top: 1px solid var(--border);
 		background: var(--surface);
-		overflow: hidden;
 	}
 
 	.head {
@@ -61,11 +57,10 @@
 		border-color: var(--border-bright);
 	}
 
+	/* Only long lines scroll here; the listing wrapping this owns the vertical scroll. */
 	.code :global(pre.tm-code) {
 		margin: 0;
-		flex: 1;
-		min-height: 0;
-		overflow: auto;
+		overflow-x: auto;
 		padding: 0.9em 1em;
 		font-family: var(--font-mono);
 		font-size: 0.78em;

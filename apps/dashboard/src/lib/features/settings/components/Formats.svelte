@@ -1,15 +1,14 @@
 <script lang="ts">
 	import { Field, Select } from '@template/ui';
 	import { Dates, Times, type Patch, type Prefs } from '@template/core/user/prefs';
-	import { SAMPLE, date, local, stamp, time, zones } from '$lib/utils/fmt';
+	import { SAMPLE, date, local, stamp, time } from '$lib/utils/fmt';
 
 	let { prefs, onpick }: { prefs: Prefs; onpick: (patch: Patch) => void } = $props();
 
-	// Several hundred entries, but a native select copes fine and it saves curating a list.
-	const zone = $derived([
-		{ value: '', label: 'System settings', hint: local() },
-		...zones(prefs.zone)
-	]);
+	const zone = [
+		{ value: '', label: 'Local time', hint: local() },
+		{ value: 'UTC', label: 'UTC' }
+	];
 
 	// Twenty's trick: every option is labelled with the output it would produce.
 	const dates = $derived(
@@ -38,7 +37,7 @@
 
 <div class="grid">
 	<Field label="Time zone">
-		<Select name="zone" options={zone} value={prefs.zone ?? ''} onchange={pick} />
+		<Select name="zone" options={zone} value={prefs.zone === 'UTC' ? 'UTC' : ''} onchange={pick} />
 	</Field>
 
 	<Field label="Date format">

@@ -51,15 +51,17 @@
 </aside>
 
 <style>
+	/* A column of the stage's block, not a card of its own: it draws the divider and scrolls
+	   inside the height the block fixes. */
 	aside {
 		display: flex;
 		flex-direction: column;
 		gap: 0.8em;
 		width: 15em;
 		flex-shrink: 0;
+		overflow-y: auto;
 		padding: 1em;
-		border: 1px solid var(--border);
-		border-radius: var(--radius);
+		border-left: 1px solid var(--border);
 		background: var(--surface);
 	}
 
@@ -93,6 +95,8 @@
 	@media (max-width: 900px) {
 		aside {
 			width: 100%;
+			border-left: none;
+			border-top: 1px solid var(--border);
 		}
 	}
 </style>

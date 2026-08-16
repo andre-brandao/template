@@ -1,6 +1,6 @@
 import { describe, expect } from "bun:test";
 import { Actor } from "../src/actor";
-import { Admin } from "../src/admin";
+import { Admin } from "../src/platform/admin";
 import { Todo } from "../src/todo";
 import { User } from "../src/user";
 import { Event } from "../src/platform/event";

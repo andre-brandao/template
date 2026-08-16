@@ -1,14 +1,9 @@
 import type { RequestEvent } from "@sveltejs/kit";
+import { Session } from "@template/core/key/session";
 
-// Signed-cookie session: the issuer token is verified once at /callback and discarded,
-// leaving a cheap HMAC check per request. `dev` reads NODE_ENV, not $app/environment,
-// so the e2e `mint` helper works outside SvelteKit.
+// The cookie is an opaque token; the row behind it carries who, the role and the expiry.
+// `dev` reads NODE_ENV, not $app/environment, so the e2e `mint` helper works outside SvelteKit.
 const dev = process.env.NODE_ENV !== "production";
-
-export interface Session {
-  userID: string;
-  email: string;
-}
 
 const COOKIE = "auth";
 const OPTS = {
@@ -16,69 +11,29 @@ const OPTS = {
   sameSite: "lax" as const,
   secure: !dev,
   path: "/",
-  maxAge: 60 * 60 * 24 * 30,
+  maxAge: Session.TTL,
 };
 
-const encoder = new TextEncoder();
-
-function encode(bytes: Uint8Array) {
-  let str = "";
-  for (const b of bytes) str += String.fromCharCode(b);
-  return btoa(str).replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
-}
-
-function decode(s: string) {
-  const pad = s.length % 4 === 0 ? "" : "=".repeat(4 - (s.length % 4));
-  const bin = atob(s.replace(/-/g, "+").replace(/_/g, "/") + pad);
-  const out = new Uint8Array(bin.length);
-  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
-  return out;
-}
-
-async function key() {
-  const secret = process.env.SESSION_SECRET;
-  if (!secret) throw new Error("SESSION_SECRET is not set");
-  return crypto.subtle.importKey(
-    "raw",
-    encoder.encode(secret),
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-    ["sign", "verify"],
-  );
-}
-
-export async function seal(session: Session) {
-  const payload = encode(encoder.encode(JSON.stringify(session)));
-  const sig = encode(
-    new Uint8Array(await crypto.subtle.sign("HMAC", await key(), encoder.encode(payload))),
-  );
-  return `${payload}.${sig}`;
-}
-
-async function open(raw: string): Promise<Session | null> {
-  const [payload, sig] = raw.split(".");
-  if (!payload || !sig) return null;
-  const ok = await crypto.subtle.verify("HMAC", await key(), decode(sig), encoder.encode(payload));
-  if (!ok) return null;
-  try {
-    return JSON.parse(new TextDecoder().decode(decode(payload))) as Session;
-  } catch {
-    return null;
-  }
-}
-
-export async function read(event: RequestEvent): Promise<Session | null> {
+export async function read(event: RequestEvent) {
   const raw = event.cookies.get(COOKIE);
   if (!raw) return null;
-  const session = await open(raw).catch(() => null);
-  if (!session) event.cookies.delete(COOKIE, { path: "/" });
-  return session;
+  const me = await Session.verify(raw);
+  if (!me) {
+    event.cookies.delete(COOKIE, { path: "/" });
+    return null;
+  }
+  // The row's window slides on use, so re-set the cookie or the browser's copy expires first.
+  event.cookies.set(COOKIE, raw, OPTS);
+  return me;
 }
 
-export async function write(event: RequestEvent, session: Session) {
-  event.cookies.set(COOKIE, await seal(session), OPTS);
+export async function write(event: RequestEvent, user: string) {
+  event.cookies.set(COOKIE, await Session.create(user), OPTS);
 }
 
-export function clear(event: RequestEvent) {
+/** Drops the cookie and the row behind it, so a copy taken off the wire stops working too. */
+export async function clear(event: RequestEvent) {
+  const raw = event.cookies.get(COOKIE);
   event.cookies.delete(COOKIE, { path: "/" });
+  if (raw) await Session.remove(raw);
 }

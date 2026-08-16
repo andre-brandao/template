@@ -6,7 +6,6 @@ import { Database } from "@template/core/drizzle";
 import { Queue } from "@template/core/queue";
 import { Storage } from "@template/core/storage";
 import { Actor } from "@template/core/actor";
-import { User } from "@template/core/user";
 import { VisibleError } from "@template/core/error";
 import { Log } from "@template/core/util/log";
 import { dev } from "$app/environment";
@@ -61,18 +60,12 @@ const handleAuth: Handle = async ({ event, resolve }) => {
   // Health probes don't need an actor; skip it so they don't spam logs.
   if (event.url.pathname === "/healthz") return resolve(event);
 
+  // One lookup answers all three: is the session live, who is it, what role do they hold.
   const me = await session.read(event);
   event.locals.session = me;
   if (!me) return Actor.provide("public", {}, () => resolve(event));
 
-  const row = await User.fromID(me.userID);
-  if (!row) {
-    session.clear(event);
-    event.locals.session = null;
-    return Actor.provide("public", {}, () => resolve(event));
-  }
-
-  return Actor.provide("user", { userID: me.userID, role: row.role }, () => resolve(event));
+  return Actor.provide("user", { userID: me.userID, role: me.role }, () => resolve(event));
 };
 
 // Read inside the callback, not before `resolve` — the root layout's load reconciles the

@@ -1,16 +1,16 @@
 import { z } from "zod";
 import { and, asc, count, ilike, isNotNull, isNull, or, sql, type SQL } from "drizzle-orm";
-import { fn } from "../util/fn";
-import { iso } from "../util/fmt";
-import { Actor } from "../actor";
-import { Common } from "../common";
-import { Database } from "../drizzle";
-import { order } from "../drizzle/order";
-import { ProjectTable } from "../project/project.sql";
-import { JobTable } from "../lib/queue/queue.sql";
-import { TodoTable } from "../todo/todo.sql";
-import { User } from "../user";
-import { UserTable } from "../user/user.sql";
+import { fn } from "../../util/fn";
+import { iso } from "../../util/fmt";
+import { Actor } from "../../actor";
+import { Common } from "../../common";
+import { Database } from "../../drizzle";
+import { order } from "../../drizzle/order";
+import { ProjectTable } from "../../project/project.sql";
+import { JobTable } from "../../lib/queue/queue.sql";
+import { TodoTable } from "../../todo/todo.sql";
+import { User } from "../../user";
+import { UserTable } from "../../user/user.sql";
 
 /** The back office: the account directory, plus read-only stats queried live. */
 export namespace Admin {

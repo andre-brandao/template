@@ -11,11 +11,10 @@ export const getKeys = remote
 export const createKey = remote.form(
   z.object({ name: Key.Info.shape.name, ttl: z.enum(["", "30", "90", "365"]).optional() }),
   async (input) => {
-    const days = input.ttl ? Number(input.ttl) : 0;
     await Key.create({
       userID: Actor.userID(),
       name: input.name,
-      expiresAt: days ? new Date(Date.now() + days * 86_400_000) : null,
+      expiresAt: Key.expires(input.ttl ? Number(input.ttl) : undefined),
     });
     await getKeys().refresh();
   },

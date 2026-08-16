@@ -12,10 +12,6 @@ const pg = process.env.E2E_PG ?? "postgresql://postgres:password@127.0.0.1:5432"
 const url = `${pg}/${process.env.E2E_DB ?? "template_e2e"}`;
 process.env.DATABASE_URL = url;
 
-// Same secret in the test process (mint seals the cookie) and the app server (hooks read it).
-const secret = process.env.SESSION_SECRET ?? "e2e-session-secret";
-process.env.SESSION_SECRET = secret;
-
 // Playwright's bundled chromium won't launch on NixOS; use the system one locally.
 // CI keeps the pinned browser; CHROME_PATH overrides.
 function browser() {
@@ -52,7 +48,7 @@ export default defineConfig({
     url: `${base}/healthz`,
     reuseExistingServer: !ci,
     timeout: 120_000,
-    env: { SVELTE_ADAPTER: "node", DATABASE_URL: url, SESSION_SECRET: secret },
+    env: { SVELTE_ADAPTER: "node", DATABASE_URL: url },
   },
   projects: [
     {

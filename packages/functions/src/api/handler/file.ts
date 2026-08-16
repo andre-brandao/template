@@ -1,8 +1,8 @@
-// fallow-ignore-file code-duplication
 import { z } from "zod";
 import { Hono } from "hono";
 import { describeRoute } from "hono-openapi";
-import { Result, validator, ErrorResponses, authRequired } from "../common";
+import { validator, authRequired } from "../common";
+import { describe } from "../doc";
 import { Actor } from "@template/core/actor";
 import { Signing } from "@template/core/key/signing";
 import { Storage } from "@template/core/storage";
@@ -13,8 +13,10 @@ import { found, VisibleError, ErrorCodes } from "@template/core/error";
 export namespace FileApi {
   const MAX = 20 * 1024 * 1024;
 
+  const doc = describe("File");
+
   /** `Storage.Entry` on the wire — what `list` can report about an object. */
-  const Entry = z
+  const Info = z
     .object({
       key: z.string(),
       size: z.number(),
@@ -26,12 +28,15 @@ export namespace FileApi {
       example: Examples.File,
     });
 
-  /** `Storage.Meta` — an `Entry` plus the content type, which only `head` knows. */
-  const Meta = Entry.extend({ contentType: z.string() }).meta({
+  /** `Storage.Meta` — an `Info` plus the content type, which only `head` knows. */
+  const Meta = Info.extend({ contentType: z.string() }).meta({
     ref: "FileMeta",
     description: "An object on the user's storage disk, with its content type.",
     example: { ...Examples.File, contentType: "image/png" },
   });
+
+  /** The `:name` path param, before `key()` flattens it to a basename. */
+  const param = z.object({ name: z.string() });
 
   /**
    * There is no metadata table, so a key's prefix *is* its owner. `name` comes off a
@@ -51,6 +56,8 @@ export namespace FileApi {
   export const route = new Hono()
     .post(
       "/",
+      // Raw: a multipart `requestBody` has no equivalent on a core op, and `doc` only
+      // shapes responses.
       describeRoute({
         tags: ["File"],
         summary: "Upload file",
@@ -68,18 +75,8 @@ export namespace FileApi {
           },
         },
         responses: {
-          200: {
-            content: {
-              "application/json": {
-                schema: Result(Meta),
-                example: { ...Examples.File, contentType: "image/png" },
-              },
-            },
-            description: "The uploaded file.",
-          },
-          400: ErrorResponses[400],
-          401: ErrorResponses[401],
-          500: ErrorResponses[500],
+          200: doc.json(Meta),
+          ...doc.errors(400, 401, 500),
         },
       }),
       authRequired,
@@ -112,21 +109,16 @@ export namespace FileApi {
     )
     .get(
       "/",
-      describeRoute({
-        tags: ["File"],
-        summary: "List files",
-        description: "Everything under the user's prefix on the default disk, newest first.",
-        responses: {
-          200: {
-            content: {
-              "application/json": { schema: Result(Entry.array()), example: [Examples.File] },
-            },
-            description: "The user's files.",
-          },
-          401: ErrorResponses[401],
-          500: ErrorResponses[500],
+      doc(
+        {
+          title: "List files",
+          description: "Everything under the user's prefix on the default disk, newest first.",
         },
-      }),
+        {
+          200: doc.list(Info),
+          ...doc.errors(401, 500),
+        },
+      ),
       authRequired,
       async (c) => {
         const rows = await Storage.disk().list(`${Actor.userID()}/`);
@@ -136,19 +128,18 @@ export namespace FileApi {
     )
     .get(
       "/signed",
-      describeRoute({
-        tags: ["File"],
-        summary: "Get signed file content",
-        description:
-          "Serves the bytes for a `temporaryUrl` minted by a disk that can't presign (fs, R2 binding). The signature stands in for the session, so no token is needed.",
-        responses: {
-          200: { description: "The raw file bytes." },
-          400: ErrorResponses[400],
-          403: ErrorResponses[403],
-          404: ErrorResponses[404],
-          500: ErrorResponses[500],
+      doc(
+        {
+          title: "Get signed file content",
+          description:
+            "Serves the bytes for a `temporaryUrl` minted by a disk that can't presign (fs, R2 binding). The signature stands in for the session, so no token is needed.",
         },
-      }),
+        // No 401: the signature stands in for the session, so this route never runs `authRequired`.
+        {
+          200: { description: "The raw file bytes." },
+          ...doc.errors(400, 403, 404, 500),
+        },
+      ),
       validator(
         "query",
         z.object({
@@ -177,22 +168,20 @@ export namespace FileApi {
     )
     .get(
       "/:name/content",
-      describeRoute({
-        tags: ["File"],
-        summary: "Get file content",
-        description:
-          "Redirects to a presigned storage URL when the disk supports it; streams the bytes otherwise.",
-        responses: {
+      doc(
+        {
+          title: "Get file content",
+          description:
+            "Redirects to a presigned storage URL when the disk supports it; streams the bytes otherwise.",
+        },
+        {
           200: { description: "The raw file bytes." },
           302: { description: "Redirect to a presigned storage URL." },
-          400: ErrorResponses[400],
-          401: ErrorResponses[401],
-          404: ErrorResponses[404],
-          500: ErrorResponses[500],
+          ...doc.errors(400, 401, 404, 500),
         },
-      }),
+      ),
       authRequired,
-      validator("param", z.object({ name: z.string() })),
+      validator("param", param),
       async (c) => {
         const at = key(c.req.valid("param").name);
         const url = await Storage.disk().temporaryUrl(at);
@@ -207,23 +196,18 @@ export namespace FileApi {
     )
     .patch(
       "/:name",
-      describeRoute({
-        tags: ["File"],
-        summary: "Rename file",
-        description: "Moves the object to a new key under the same prefix.",
-        responses: {
-          200: {
-            content: { "application/json": { schema: Result(Meta), example: Examples.File } },
-            description: "The renamed file.",
-          },
-          400: ErrorResponses[400],
-          401: ErrorResponses[401],
-          404: ErrorResponses[404],
-          500: ErrorResponses[500],
+      doc(
+        {
+          title: "Rename file",
+          description: "Moves the object to a new key under the same prefix.",
         },
-      }),
+        {
+          200: doc.json(Meta),
+          ...doc.errors(400, 401, 404, 500),
+        },
+      ),
       authRequired,
-      validator("param", z.object({ name: z.string() })),
+      validator("param", param),
       validator("json", z.object({ name: z.string().trim().min(1).max(255) })),
       async (c) => {
         const from = key(c.req.valid("param").name);
@@ -235,21 +219,16 @@ export namespace FileApi {
     )
     .delete(
       "/:name",
-      describeRoute({
-        tags: ["File"],
-        summary: "Delete file",
-        responses: {
-          200: {
-            content: { "application/json": { schema: Result(z.literal("ok")) } },
-            description: "Deleted.",
-          },
-          400: ErrorResponses[400],
-          401: ErrorResponses[401],
-          500: ErrorResponses[500],
+      // No 404: the disks treat deleting a missing key as a no-op.
+      doc(
+        { title: "Delete file" },
+        {
+          200: doc.ok,
+          ...doc.errors(400, 401, 500),
         },
-      }),
+      ),
       authRequired,
-      validator("param", z.object({ name: z.string() })),
+      validator("param", param),
       async (c) => {
         await Storage.disk().delete(key(c.req.valid("param").name));
         return c.json("ok" as const, 200);

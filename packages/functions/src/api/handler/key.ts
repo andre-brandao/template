@@ -1,31 +1,19 @@
-// fallow-ignore-file code-duplication
 import { z } from "zod";
 import { Hono } from "hono";
-import { describeRoute } from "hono-openapi";
-import { Result, validator, ErrorResponses, authRequired } from "../common";
+import { validator, authRequired } from "../common";
+import { describe } from "../doc";
 import { Key } from "@template/core/key";
 import { Actor } from "@template/core/actor";
-import { Examples } from "@template/core/examples";
 
 export namespace KeyApi {
+  const doc = describe("Key");
+
   export const route = new Hono()
     .get(
       "/",
-      describeRoute({
-        tags: ["Key"],
-        summary: "List keys",
-        description:
-          "List the current user's API keys. The key authenticating this request is flagged `current`.",
-        responses: {
-          200: {
-            content: {
-              "application/json": { schema: Result(Key.Info.array()), example: [Examples.Key] },
-            },
-            description: "The user's keys.",
-          },
-          401: ErrorResponses[401],
-          500: ErrorResponses[500],
-        },
+      doc(Key.list.meta, {
+        200: doc.list(Key.Info),
+        ...doc.errors(401, 500),
       }),
       authRequired,
       async (c) => {
@@ -35,21 +23,18 @@ export namespace KeyApi {
     )
     .post(
       "/",
-      describeRoute({
-        tags: ["Key"],
-        summary: "Create key",
-        description:
-          "Mint a named API key for the current user. Pass `expiresInDays` to set an expiry; omit it for a key that never expires.",
-        responses: {
-          200: {
-            content: { "application/json": { schema: Result(Key.Info), example: Examples.Key } },
-            description: "The created key, including its secret.",
-          },
-          400: ErrorResponses[400],
-          401: ErrorResponses[401],
-          500: ErrorResponses[500],
+      // Literal, not `Key.create.meta`: the route takes `expiresInDays` where core takes a date.
+      doc(
+        {
+          title: "Create key",
+          description:
+            "Mint a named API key for the current user. Pass `expiresInDays` to set an expiry; omit it for a key that never expires.",
         },
-      }),
+        {
+          200: doc.json(Key.Info),
+          ...doc.errors(400, 401, 500),
+        },
+      ),
       authRequired,
       validator(
         "json",
@@ -63,32 +48,19 @@ export namespace KeyApi {
         const key = await Key.create({
           userID: Actor.userID(),
           name: body.name,
-          expiresAt: body.expiresInDays
-            ? new Date(Date.now() + body.expiresInDays * 86_400_000)
-            : null,
+          expiresAt: Key.expires(body.expiresInDays),
         });
         return c.json(key, 200);
       },
     )
     .delete(
       "/:id",
-      describeRoute({
-        tags: ["Key"],
-        summary: "Revoke key",
-        description: "Revoke an API key. The secret stops authenticating immediately.",
-        responses: {
-          200: {
-            content: { "application/json": { schema: Result(z.literal("ok")) } },
-            description: "Revoked.",
-          },
-          400: ErrorResponses[400],
-          401: ErrorResponses[401],
-          404: ErrorResponses[404],
-          500: ErrorResponses[500],
-        },
+      doc(Key.remove.meta, {
+        200: doc.ok,
+        ...doc.errors(400, 401, 404, 500),
       }),
       authRequired,
-      validator("param", z.object({ id: z.string() })),
+      validator("param", z.object({ id: Key.Info.shape.id })),
       async (c) => {
         await Key.remove(c.req.valid("param").id);
         return c.json("ok" as const, 200);

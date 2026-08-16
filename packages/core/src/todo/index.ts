@@ -165,6 +165,11 @@ export namespace Todo {
         return todo;
       });
     },
+    {
+      title: "Create todo",
+      description:
+        'Create a todo. Attach it to an entity with source/sourceID (e.g. source "project"), and give it a stage, assignee and planned dates to place it on the timeline.',
+    },
   );
 
   export const list = fn(
@@ -178,11 +183,15 @@ export namespace Todo {
       "timeCreated",
     ]).extend({
       status: Status.optional(),
-      /** A user id, or "none" for unassigned. */
-      assignee: z.string().optional(),
-      /** A stage name, or "none" for todos without one. */
-      stage: Info.shape.stage.unwrap().optional(),
-      source: Info.shape.source.unwrap().optional(),
+      assignee: z.string().optional().meta({ description: 'A user id, or "none" for unassigned.' }),
+      stage: Info.shape.stage
+        .unwrap()
+        .optional()
+        .meta({ description: 'A stage name, or "none" for todos without one.' }),
+      source: Info.shape.source
+        .unwrap()
+        .optional()
+        .meta({ description: 'The owning entity type, e.g. "project".' }),
       sourceID: Info.shape.sourceID.unwrap().optional(),
       createdBy: Info.shape.createdBy.optional(),
       search: z.string().optional(),
@@ -227,6 +236,11 @@ export namespace Todo {
         return { data: rows.map(serialize), page, pageSize, total: totalRows[0]?.total ?? 0 };
       });
     },
+    {
+      title: "List todos",
+      description:
+        "List todos, optionally narrowed by status, assignee, stage, owning entity or search. Paginated.",
+    },
   );
 
   /** Stage list aggregated from the todos wearing each label — no second table to drift. */
@@ -268,6 +282,11 @@ export namespace Todo {
           ),
       );
     },
+    {
+      title: "List stages",
+      description:
+        "The stage labels in use, with the span and counts derived from the todos in each. Call before staging a todo so labels stay consistent.",
+    },
   );
 
   /** Renames a stage across every todo wearing it — the only stage edit there is. */
@@ -294,51 +313,68 @@ export namespace Todo {
           ),
       );
     },
+    { title: "Rename stage", description: "Rename a stage across every todo wearing it." },
   );
 
-  export const fromID = fn(Info.shape.id, (id) => {
-    Actor.check({ todo: ["read"] });
-    return Database.use((tx) =>
-      tx
-        .select({ todo: TodoTable, user: assignee })
-        .from(TodoTable)
-        .leftJoin(UserTable, eq(TodoTable.assignee, UserTable.id))
-        .where(and(eq(TodoTable.id, id), isNull(TodoTable.timeDeleted)))
-        .then((rows) => (rows[0] ? serialize(rows[0]) : null)),
-    );
-  });
+  export const fromID = fn(
+    Info.shape.id,
+    (id) => {
+      Actor.check({ todo: ["read"] });
+      return Database.use((tx) =>
+        tx
+          .select({ todo: TodoTable, user: assignee })
+          .from(TodoTable)
+          .leftJoin(UserTable, eq(TodoTable.assignee, UserTable.id))
+          .where(and(eq(TodoTable.id, id), isNull(TodoTable.timeDeleted)))
+          .then((rows) => (rows[0] ? serialize(rows[0]) : null)),
+      );
+    },
+    { title: "Get todo", description: "Fetch a single todo by id." },
+  );
 
-  export const update = fn(Patch.extend({ id: Info.shape.id }), async ({ id, ...patch }) => {
-    const before = found("Todo", await fromID.force(id));
-    Actor.check({ todo: ["update"] }, before.createdBy);
-    const next = {
-      ...patch,
-      ...(patch.tags !== undefined ? { tags: clean(patch.tags) } : {}),
-      ...(patch.stage !== undefined ? { stage: trim(patch.stage) } : {}),
-    };
+  export const update = fn(
+    Patch.extend({ id: Info.shape.id }),
+    async ({ id, ...patch }) => {
+      const before = found("Todo", await fromID.force(id));
+      Actor.check({ todo: ["update"] }, before.createdBy);
+      const next = {
+        ...patch,
+        ...(patch.tags !== undefined ? { tags: clean(patch.tags) } : {}),
+        ...(patch.stage !== undefined ? { stage: trim(patch.stage) } : {}),
+      };
 
-    return Database.transaction(async (tx) => {
-      await tx.update(TodoTable).set(fields(next, before)).where(eq(TodoTable.id, id));
-      await emit(id, before, next);
-    });
-  });
-
-  export const remove = fn(Info.shape.id, async (id) => {
-    const before = found("Todo", await fromID.force(id));
-    Actor.check({ todo: ["delete"] }, before.createdBy);
-
-    return Database.transaction(async (tx) => {
-      await tx.update(TodoTable).set({ timeDeleted: new Date() }).where(eq(TodoTable.id, id));
-      await Event.publish({
-        type: "todo.removed",
-        source: "todo",
-        sourceID: id,
-        tags: before.tags,
-        data: { title: before.title, status: before.status, tags: before.tags },
-        state: before,
+      return Database.transaction(async (tx) => {
+        await tx.update(TodoTable).set(fields(next, before)).where(eq(TodoTable.id, id));
+        await emit(id, before, next);
       });
-    });
-  });
+    },
+    {
+      title: "Update todo",
+      description:
+        "Update a todo's title, body, tags, stage, assignee, planned dates or status. Moving to `active` stamps the real start; `done` stamps the end.",
+    },
+  );
+
+  export const remove = fn(
+    Info.shape.id,
+    async (id) => {
+      const before = found("Todo", await fromID.force(id));
+      Actor.check({ todo: ["delete"] }, before.createdBy);
+
+      return Database.transaction(async (tx) => {
+        await tx.update(TodoTable).set({ timeDeleted: new Date() }).where(eq(TodoTable.id, id));
+        await Event.publish({
+          type: "todo.removed",
+          source: "todo",
+          sourceID: id,
+          tags: before.tags,
+          data: { title: before.title, status: before.status, tags: before.tags },
+          state: before,
+        });
+      });
+    },
+    { title: "Delete todo", description: "Soft-delete a todo." },
+  );
 
   function serialize(row: { todo: typeof TodoTable.$inferSelect; user: Assignee }): Info {
     return {

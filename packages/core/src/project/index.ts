@@ -52,6 +52,7 @@ export namespace Project {
         return project;
       });
     },
+    { title: "Create project", description: "Create a project to hang todos off." },
   );
 
   export const list = fn(
@@ -76,60 +77,83 @@ export namespace Project {
         return { data: rows.map(serialize), page, pageSize, total: totalRows[0]?.total ?? 0 };
       });
     },
+    {
+      title: "List projects",
+      description:
+        'List projects, optionally filtered by name. Paginated. Use a project id as `sourceID` on a todo, with source "project".',
+    },
   );
 
-  export const fromID = fn(Info.shape.id, (id) => {
-    Actor.check({ project: ["read"] });
-    return Database.use((tx) =>
-      tx
-        .select()
-        .from(ProjectTable)
-        // Overlap with todo/index.ts is the shared CRUD order, not shared logic: it spans
-        // the fromID/update boundary and extracts to nothing.
-        // fallow-ignore-next-line code-duplication
-        .where(and(eq(ProjectTable.id, id), isNull(ProjectTable.timeDeleted)))
-        .then((rows) => (rows[0] ? serialize(rows[0]) : null)),
-    );
-  });
+  export const fromID = fn(
+    Info.shape.id,
+    (id) => {
+      Actor.check({ project: ["read"] });
+      return Database.use((tx) =>
+        tx
+          .select()
+          .from(ProjectTable)
+          // Overlap with todo/index.ts is the shared CRUD order, not shared logic: it spans
+          // the fromID/update boundary and extracts to nothing.
+          // fallow-ignore-next-line code-duplication
+          .where(and(eq(ProjectTable.id, id), isNull(ProjectTable.timeDeleted)))
+          .then((rows) => (rows[0] ? serialize(rows[0]) : null)),
+      );
+    },
+    { title: "Get project", description: "Fetch a single project by id." },
+  );
 
-  export const update = fn(Patch.extend({ id: Info.shape.id }), async ({ id, ...patch }) => {
-    const before = found("Project", await fromID.force(id));
-    Actor.check({ project: ["update"] }, before.createdBy);
+  export const update = fn(
+    Patch.extend({ id: Info.shape.id }),
+    async ({ id, ...patch }) => {
+      const before = found("Project", await fromID.force(id));
+      Actor.check({ project: ["update"] }, before.createdBy);
 
-    return Database.transaction(async (tx) => {
-      await tx
-        .update(ProjectTable)
-        .set({ ...patch, timeUpdated: new Date() })
-        .where(eq(ProjectTable.id, id));
-      await Event.publish({
-        type: "project.updated",
-        source: "project",
-        sourceID: id,
-        data: { name: patch.name ?? before.name },
-        state: { ...before, ...patch },
+      return Database.transaction(async (tx) => {
+        await tx
+          .update(ProjectTable)
+          .set({ ...patch, timeUpdated: new Date() })
+          .where(eq(ProjectTable.id, id));
+        await Event.publish({
+          type: "project.updated",
+          source: "project",
+          sourceID: id,
+          data: { name: patch.name ?? before.name },
+          state: { ...before, ...patch },
+        });
       });
-    });
-  });
+    },
+    { title: "Update project", description: "Update a project's name, description or image." },
+  );
 
   /**
    * Soft-deletes the project. Its todos keep pointing at it and stay reachable from the
    * unscoped views — nothing is orphaned, and undoing is one `timeDeleted` away.
    */
-  export const remove = fn(Info.shape.id, async (id) => {
-    const before = found("Project", await fromID.force(id));
-    Actor.check({ project: ["delete"] }, before.createdBy);
+  export const remove = fn(
+    Info.shape.id,
+    async (id) => {
+      const before = found("Project", await fromID.force(id));
+      Actor.check({ project: ["delete"] }, before.createdBy);
 
-    return Database.transaction(async (tx) => {
-      await tx.update(ProjectTable).set({ timeDeleted: new Date() }).where(eq(ProjectTable.id, id));
-      await Event.publish({
-        type: "project.removed",
-        source: "project",
-        sourceID: id,
-        data: { name: before.name },
-        state: before,
+      return Database.transaction(async (tx) => {
+        await tx
+          .update(ProjectTable)
+          .set({ timeDeleted: new Date() })
+          .where(eq(ProjectTable.id, id));
+        await Event.publish({
+          type: "project.removed",
+          source: "project",
+          sourceID: id,
+          data: { name: before.name },
+          state: before,
+        });
       });
-    });
-  });
+    },
+    {
+      title: "Delete project",
+      description: "Soft-delete a project. Its todos stay reachable from the unscoped views.",
+    },
+  );
 
   function serialize(row: typeof ProjectTable.$inferSelect): Info {
     return {

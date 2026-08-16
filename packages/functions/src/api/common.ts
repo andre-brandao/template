@@ -1,13 +1,8 @@
 import { z } from "zod";
 import { ErrorResponse, ErrorCodes, VisibleError } from "@template/core/error";
-import { Common } from "@template/core/common";
 import { validator as zodValidator, resolver } from "hono-openapi";
 import type { MiddlewareHandler, ValidationTargets } from "hono";
 import { Actor } from "@template/core/actor";
-
-export function Result<T extends z.ZodType>(schema: T) {
-  return resolver(schema);
-}
 
 const num = (v: unknown) => (typeof v === "string" ? Number(v) : v);
 
@@ -24,23 +19,6 @@ export function PaginatedQuery<T extends z.ZodObject<any>>(schema: T) {
     pageSize: z.preprocess(num, schema.shape.pageSize),
     sort: z.preprocess(arr, schema.shape.sort),
   });
-}
-
-/** OpenAPI 200 response for a paginated list route — wraps `Common.Page(item)` so handlers don't repeat it. */
-export function PaginatedResponse<T extends z.ZodType>(
-  item: T,
-  description: string,
-  example: z.infer<T>,
-) {
-  return {
-    content: {
-      "application/json": {
-        schema: Result(Common.Page(item)),
-        example: { data: [example], page: 1, pageSize: 20, total: 1 },
-      },
-    },
-    description,
-  };
 }
 
 export const noop: MiddlewareHandler = (_c, next) => next();

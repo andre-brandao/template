@@ -19,7 +19,7 @@ sequenceDiagram
   M->>H: Actor.provide(...)
   H->>Core: one call, validated by fn()
   Core-->>H: result
-  H-->>C: Result() / VisibleError
+  H-->>C: JSON / VisibleError
 ```
 
 Two rules fall out of this. Handlers stay thin — validate, call one core function, return.

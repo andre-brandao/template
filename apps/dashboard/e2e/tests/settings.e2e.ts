@@ -89,10 +89,10 @@ test("the date format preference reaches the rest of the app", async ({ page, as
 
   await page.goto("/settings/experience");
   await page.waitForLoadState("networkidle");
-  // A DST-free zone well clear of the date boundary, so the rendered day can't
-  // drift. (`UTC` itself is absent from Node's `Intl.supportedValuesOf` list.)
+  // The zone select offers local time and UTC only; UTC pins the rendered day
+  // regardless of the runner's own zone.
   const zone = saved(page);
-  await page.selectOption("select[name='zone']", "Asia/Tokyo");
+  await page.selectOption("select[name='zone']", "UTC");
   await zone;
   const mdy = saved(page);
   await page.selectOption("select[name='date']", "mdy");

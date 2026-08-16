@@ -18,7 +18,12 @@ export async function read(event: RequestEvent) {
   const raw = event.cookies.get(COOKIE);
   if (!raw) return null;
   const me = await Session.verify(raw);
-  if (!me) event.cookies.delete(COOKIE, { path: "/" });
+  if (!me) {
+    event.cookies.delete(COOKIE, { path: "/" });
+    return null;
+  }
+  // The row's window slides on use, so re-set the cookie or the browser's copy expires first.
+  event.cookies.set(COOKIE, raw, OPTS);
   return me;
 }
 

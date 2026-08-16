@@ -1,6 +1,8 @@
 // Password hashing on Web Crypto only, so it runs under Bun, Node, Workers and the
 // browser. Stored form is self-describing: `pbkdf2$sha256$<iter>$<salt>$<hash>`.
 
+import { decode, encode, equal } from "./hash";
+
 const ITER = 600_000;
 const KEYLEN = 32;
 
@@ -39,20 +41,4 @@ async function derive(pw: string, salt: Uint8Array<ArrayBuffer>, iter: number) {
     KEYLEN * 8,
   );
   return new Uint8Array(bits);
-}
-
-/** Constant-time compare — Web Crypto has no `timingSafeEqual`. */
-function equal(a: Uint8Array, b: Uint8Array) {
-  if (a.length !== b.length) return false;
-  let diff = 0;
-  for (let i = 0; i < a.length; i++) diff |= a[i]! ^ b[i]!;
-  return diff === 0;
-}
-
-function encode(bytes: Uint8Array) {
-  return btoa(String.fromCharCode(...bytes));
-}
-
-function decode(s: string) {
-  return Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
 }

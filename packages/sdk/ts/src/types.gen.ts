@@ -420,8 +420,17 @@ export type GetTodoData = {
       | "-timeCreated"
     >;
     status?: "backlog" | "planned" | "active" | "blocked" | "done";
+    /**
+     * A user id, or "none" for unassigned.
+     */
     assignee?: string;
+    /**
+     * A stage name, or "none" for todos without one.
+     */
     stage?: string;
+    /**
+     * The owning entity type, e.g. "project".
+     */
     source?: string;
     sourceID?: string;
     /**
@@ -442,6 +451,14 @@ export type GetTodoErrors = {
    * Unauthorized
    */
   401: ErrorResponse;
+  /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
+   * Not Found
+   */
+  404: ErrorResponse;
   /**
    * Internal Server Error
    */
@@ -525,6 +542,14 @@ export type PostTodoErrors = {
    */
   401: ErrorResponse;
   /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
+   * Not Found
+   */
+  404: ErrorResponse;
+  /**
    * Internal Server Error
    */
   500: ErrorResponse;
@@ -534,7 +559,7 @@ export type PostTodoError = PostTodoErrors[keyof PostTodoErrors];
 
 export type PostTodoResponses = {
   /**
-   * The created todo.
+   * A unit of work, owned by whatever entity created it.
    */
   200: Todo;
 };
@@ -561,6 +586,14 @@ export type GetTodoStageErrors = {
    */
   401: ErrorResponse;
   /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
+   * Not Found
+   */
+  404: ErrorResponse;
+  /**
    * Internal Server Error
    */
   500: ErrorResponse;
@@ -570,7 +603,7 @@ export type GetTodoStageError = GetTodoStageErrors[keyof GetTodoStageErrors];
 
 export type GetTodoStageResponses = {
   /**
-   * The stages in use.
+   * A stage label, with the span and counts derived from its todos.
    */
   200: Array<Stage>;
 };
@@ -580,6 +613,10 @@ export type GetTodoStageResponse = GetTodoStageResponses[keyof GetTodoStageRespo
 export type DeleteTodoByIdData = {
   body?: never;
   path: {
+    /**
+     * Unique object identifier.
+     * The format and length of IDs may change over time.
+     */
     id: string;
   };
   query?: never;
@@ -595,6 +632,10 @@ export type DeleteTodoByIdErrors = {
    * Unauthorized
    */
   401: ErrorResponse;
+  /**
+   * Forbidden
+   */
+  403: ErrorResponse;
   /**
    * Not Found
    */
@@ -639,6 +680,10 @@ export type GetTodoByIdErrors = {
    */
   401: ErrorResponse;
   /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
    * Not Found
    */
   404: ErrorResponse;
@@ -652,7 +697,7 @@ export type GetTodoByIdError = GetTodoByIdErrors[keyof GetTodoByIdErrors];
 
 export type GetTodoByIdResponses = {
   /**
-   * The todo.
+   * A unit of work, owned by whatever entity created it.
    */
   200: Todo;
 };
@@ -696,6 +741,10 @@ export type PatchTodoByIdData = {
     assignee?: string | null;
   };
   path: {
+    /**
+     * Unique object identifier.
+     * The format and length of IDs may change over time.
+     */
     id: string;
   };
   query?: never;
@@ -712,6 +761,10 @@ export type PatchTodoByIdErrors = {
    */
   401: ErrorResponse;
   /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
    * Not Found
    */
   404: ErrorResponse;
@@ -725,7 +778,7 @@ export type PatchTodoByIdError = PatchTodoByIdErrors[keyof PatchTodoByIdErrors];
 
 export type PatchTodoByIdResponses = {
   /**
-   * The updated todo.
+   * A unit of work, owned by whatever entity created it.
    */
   200: Todo;
 };

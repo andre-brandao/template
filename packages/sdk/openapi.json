@@ -971,7 +971,7 @@
         "operationId": "getTodo",
         "tags": ["Todo"],
         "summary": "List todos",
-        "description": "List todos, optionally narrowed by status, assignee, stage or owning entity. Paginated.",
+        "description": "List todos, optionally narrowed by status, assignee, stage, owning entity or search. Paginated.",
         "responses": {
           "200": {
             "content": {
@@ -999,7 +999,35 @@
                     }
                   },
                   "required": ["data", "page", "pageSize", "total"],
-                  "description": "A page of results."
+                  "description": "A page of results.",
+                  "example": {
+                    "data": [
+                      {
+                        "id": "tod_XXXXXXXXXXXXXXXXXXXXXXXXX",
+                        "createdBy": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX",
+                        "assignee": {
+                          "id": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX",
+                          "name": "John Doe",
+                          "image": null
+                        },
+                        "source": "project",
+                        "sourceID": "prj_XXXXXXXXXXXXXXXXXXXXXXXXX",
+                        "stage": "Sprint 1",
+                        "title": "Write the quarterly report",
+                        "body": null,
+                        "status": "active",
+                        "reason": null,
+                        "tags": [],
+                        "startDate": "2026-06-07T00:00:00.000Z",
+                        "dueDate": "2026-06-14T00:00:00.000Z",
+                        "timeStarted": "2026-06-07T09:12:00.000Z",
+                        "timeDone": null
+                      }
+                    ],
+                    "page": 1,
+                    "pageSize": 20,
+                    "total": 1
+                  }
                 },
                 "example": {
                   "data": [
@@ -1031,7 +1059,7 @@
                 }
               }
             },
-            "description": "A page of todos."
+            "description": "A page of results."
           },
           "400": {
             "content": {
@@ -1071,6 +1099,36 @@
               }
             },
             "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "forbidden",
+                  "code": "permission_denied",
+                  "message": "You do not have permission"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "not_found",
+                  "code": "resource_not_found",
+                  "message": "The requested resource could not be found"
+                }
+              }
+            },
+            "description": "Not Found"
           },
           "500": {
             "content": {
@@ -1154,7 +1212,8 @@
             "name": "assignee",
             "schema": {
               "type": "string"
-            }
+            },
+            "description": "A user id, or \"none\" for unassigned."
           },
           {
             "in": "query",
@@ -1162,7 +1221,8 @@
             "schema": {
               "type": "string",
               "maxLength": 64
-            }
+            },
+            "description": "A stage name, or \"none\" for todos without one."
           },
           {
             "in": "query",
@@ -1170,7 +1230,8 @@
             "schema": {
               "type": "string",
               "maxLength": 64
-            }
+            },
+            "description": "The owning entity type, e.g. \"project\"."
           },
           {
             "in": "query",
@@ -1200,6 +1261,7 @@
         "operationId": "postTodo",
         "tags": ["Todo"],
         "summary": "Create todo",
+        "description": "Create a todo. Attach it to an entity with source/sourceID (e.g. source \"project\"), and give it a stage, assignee and planned dates to place it on the timeline.",
         "responses": {
           "200": {
             "content": {
@@ -1230,7 +1292,7 @@
                 }
               }
             },
-            "description": "The created todo."
+            "description": "A unit of work, owned by whatever entity created it."
           },
           "400": {
             "content": {
@@ -1270,6 +1332,36 @@
               }
             },
             "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "forbidden",
+                  "code": "permission_denied",
+                  "message": "You do not have permission"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "not_found",
+                  "code": "resource_not_found",
+                  "message": "The requested resource could not be found"
+                }
+              }
+            },
+            "description": "Not Found"
           },
           "500": {
             "content": {
@@ -1410,7 +1502,7 @@
         "operationId": "getTodoStage",
         "tags": ["Todo"],
         "summary": "List stages",
-        "description": "The stage labels in use, with the span and counts derived from the todos in each.",
+        "description": "The stage labels in use, with the span and counts derived from the todos in each. Call before staging a todo so labels stay consistent.",
         "responses": {
           "200": {
             "content": {
@@ -1419,11 +1511,12 @@
                   "type": "array",
                   "items": {
                     "$ref": "#/components/schemas/Stage"
-                  }
+                  },
+                  "description": "A stage label, with the span and counts derived from its todos."
                 }
               }
             },
-            "description": "The stages in use."
+            "description": "A stage label, with the span and counts derived from its todos."
           },
           "400": {
             "content": {
@@ -1464,6 +1557,36 @@
             },
             "description": "Unauthorized"
           },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "forbidden",
+                  "code": "permission_denied",
+                  "message": "You do not have permission"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "not_found",
+                  "code": "resource_not_found",
+                  "message": "The requested resource could not be found"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
           "500": {
             "content": {
               "application/json": {
@@ -1485,7 +1608,8 @@
             "in": "query",
             "name": "source",
             "schema": {
-              "type": "string"
+              "type": "string",
+              "maxLength": 64
             }
           },
           {
@@ -1503,6 +1627,7 @@
         "operationId": "getTodoById",
         "tags": ["Todo"],
         "summary": "Get todo",
+        "description": "Fetch a single todo by id.",
         "responses": {
           "200": {
             "content": {
@@ -1533,7 +1658,7 @@
                 }
               }
             },
-            "description": "The todo."
+            "description": "A unit of work, owned by whatever entity created it."
           },
           "400": {
             "content": {
@@ -1573,6 +1698,21 @@
               }
             },
             "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "forbidden",
+                  "code": "permission_denied",
+                  "message": "You do not have permission"
+                }
+              }
+            },
+            "description": "Forbidden"
           },
           "404": {
             "content": {
@@ -1622,6 +1762,7 @@
         "operationId": "patchTodoById",
         "tags": ["Todo"],
         "summary": "Update todo",
+        "description": "Update a todo's title, body, tags, stage, assignee, planned dates or status. Moving to `active` stamps the real start; `done` stamps the end.",
         "responses": {
           "200": {
             "content": {
@@ -1652,7 +1793,7 @@
                 }
               }
             },
-            "description": "The updated todo."
+            "description": "A unit of work, owned by whatever entity created it."
           },
           "400": {
             "content": {
@@ -1693,6 +1834,21 @@
             },
             "description": "Unauthorized"
           },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "forbidden",
+                  "code": "permission_denied",
+                  "message": "You do not have permission"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
           "404": {
             "content": {
               "application/json": {
@@ -1729,9 +1885,11 @@
             "in": "path",
             "name": "id",
             "schema": {
-              "type": "string"
+              "type": "string",
+              "example": "tod_XXXXXXXXXXXXXXXXXXXXXXXXX"
             },
-            "required": true
+            "required": true,
+            "description": "Unique object identifier.\nThe format and length of IDs may change over time."
           }
         ],
         "requestBody": {
@@ -1844,13 +2002,15 @@
         "operationId": "deleteTodoById",
         "tags": ["Todo"],
         "summary": "Delete todo",
+        "description": "Soft-delete a todo.",
         "responses": {
           "200": {
             "content": {
               "application/json": {
                 "schema": {
                   "type": "string",
-                  "const": "ok"
+                  "const": "ok",
+                  "description": "Deleted."
                 }
               }
             },
@@ -1895,6 +2055,21 @@
             },
             "description": "Unauthorized"
           },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "forbidden",
+                  "code": "permission_denied",
+                  "message": "You do not have permission"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
           "404": {
             "content": {
               "application/json": {
@@ -1931,9 +2106,11 @@
             "in": "path",
             "name": "id",
             "schema": {
-              "type": "string"
+              "type": "string",
+              "example": "tod_XXXXXXXXXXXXXXXXXXXXXXXXX"
             },
-            "required": true
+            "required": true,
+            "description": "Unique object identifier.\nThe format and length of IDs may change over time."
           }
         ]
       }

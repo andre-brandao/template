@@ -24,11 +24,7 @@
   // Anything narrower than a directory is waived where it lives, with a
   // `fallow-ignore-next-line code-duplication` comment above the block.
   "duplicates": {
-    "ignore": [
-      "infra/**",
-      "apps/dashboard/src/lib/features/todos/components/Stages.svelte",
-      "apps/dashboard/src/lib/features/todos/components/Recent.svelte",
-    ],
+    "ignore": ["infra/**"],
   },
   "health": {
     "maxCrap": 69,

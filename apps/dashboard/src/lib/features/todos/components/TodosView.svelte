@@ -43,6 +43,10 @@
 		animation-name: out;
 	}
 
+	/* The three screens that own a same-page swap share this animation. It can't be lifted
+	   without one global view-transition-name for all of them, and the marker has to sit on
+	   the line the clone starts on. */
+	/* fallow-ignore-next-line code-duplication */
 	:global(::view-transition-new(todos)) {
 		animation-name: in;
 	}

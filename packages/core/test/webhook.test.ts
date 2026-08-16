@@ -1,14 +1,14 @@
 import { afterEach, describe, expect } from "bun:test";
 import { eq } from "drizzle-orm";
 import { Database } from "../src/drizzle";
-import { Event } from "../src/event";
+import { Event } from "../src/platform/event";
 import { Identifier } from "../src/identifier";
 import { Queue } from "../src/lib/queue";
 import { memory } from "../src/lib/queue/adapter/memory";
 import { Todo } from "../src/todo";
 import { sign } from "../src/util/sign";
-import { Webhook } from "../src/webhook";
-import { WebhookTable } from "../src/webhook/webhook.sql";
+import { Webhook } from "../src/platform/webhook";
+import { WebhookTable } from "../src/platform/webhook/webhook.sql";
 import { withTestUser } from "./util";
 
 type Hit = { headers: Headers; body: string };

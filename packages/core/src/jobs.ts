@@ -3,7 +3,7 @@ import { found } from "./error";
 import { Email } from "./lib/email";
 import { Queue } from "./lib/queue";
 import { User } from "./user";
-import { Webhook } from "./webhook";
+import { Webhook } from "./platform/webhook";
 
 /** Every job in one import, so a worker process resolves all handlers. Push via `jobs.email.push`. */
 export const email = Email.job;

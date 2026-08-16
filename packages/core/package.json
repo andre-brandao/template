@@ -22,7 +22,10 @@
     "./storage": "./src/lib/storage/index.ts",
     "./storage/*": "./src/lib/storage/*.ts",
     "./user/*": "./src/user/*.ts",
-    "./webhook/*": "./src/webhook/*.ts",
+    "./event": "./src/platform/event/index.ts",
+    "./key": "./src/platform/key/index.ts",
+    "./webhook": "./src/platform/webhook/index.ts",
+    "./webhook/*": "./src/platform/webhook/*.ts",
     "./util/*": "./src/util/*.ts"
   },
   "scripts": {

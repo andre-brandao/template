@@ -1,3 +1,6 @@
+<!-- The list chrome matches Recent's: the rows differ, and each card staying
+     self-contained beats extracting presentation coincidence. -->
+<!-- fallow-ignore-file code-duplication -->
 <script lang="ts">
 	import { Empty, Skeleton } from '@template/ui';
 	import { getStages } from '../api/todos.remote';

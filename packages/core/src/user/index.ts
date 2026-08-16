@@ -6,7 +6,7 @@ import { Database } from "../drizzle";
 import { Actor } from "../actor";
 import { Common } from "../common";
 import { ErrorCodes, found, VisibleError } from "../error";
-import { Event } from "../event";
+import { Event } from "../platform/event";
 import { Examples } from "../examples";
 import { Identifier } from "../identifier";
 import { Permission } from "../permission";

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { Key } from "../src/key";
+import { Key } from "../src/platform/key";
 import { User } from "../src/user";
 import { testEmail, withTestUser } from "./util";
 

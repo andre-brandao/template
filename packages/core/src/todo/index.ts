@@ -10,7 +10,7 @@ import { Identifier } from "../identifier";
 import { order } from "../drizzle/order";
 import { date, iso, trim } from "../util/fmt";
 import { clean, Tags } from "../util/tag";
-import { Event } from "../event";
+import { Event } from "../platform/event";
 import { UserTable } from "../user/user.sql";
 import { rank, StatusValues, TodoTable } from "./todo.sql";
 

@@ -224,6 +224,11 @@
 		z-index: 3;
 	}
 
+	/* The sidebar's active pill rides above the menu it sits in, which is above the page. */
+	:global(::view-transition-group(active)) {
+		z-index: 4;
+	}
+
 	:global(::view-transition-old(shell-rail)),
 	:global(::view-transition-new(shell-rail)) {
 		animation: none;

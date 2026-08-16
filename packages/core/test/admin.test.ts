@@ -1,7 +1,7 @@
 import { describe, expect } from "bun:test";
 import { Actor } from "../src/actor";
 import { Admin } from "../src/admin";
-import { Event } from "../src/event";
+import { Event } from "../src/platform/event";
 import { Auth } from "../src/user/auth";
 import { User } from "../src/user";
 import { testEmail, withTestUser } from "./util";

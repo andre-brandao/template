@@ -8,7 +8,7 @@ import { Common } from "../common";
 import { Examples } from "../examples";
 import { Identifier } from "../identifier";
 import { order } from "../drizzle/order";
-import { Event } from "../event";
+import { Event } from "../platform/event";
 import { ProjectTable } from "./project.sql";
 
 export namespace Project {

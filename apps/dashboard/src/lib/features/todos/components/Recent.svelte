@@ -1,3 +1,6 @@
+<!-- The list chrome matches Stages': the rows differ, and each card staying
+     self-contained beats extracting presentation coincidence. -->
+<!-- fallow-ignore-file code-duplication -->
 <script lang="ts">
 	import { Empty, Skeleton } from '@template/ui';
 	import { getTodos } from '../api/todos.remote';

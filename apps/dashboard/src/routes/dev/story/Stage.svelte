@@ -100,31 +100,7 @@
 </div>
 
 <style>
-	/* Header and tabs are fixed chrome; only the panel scrolls, so switching story or tab
-	   never moves them. */
-	.stage {
-		display: flex;
-		flex-direction: column;
-		height: 100%;
-		min-height: 0;
-	}
-
-	header {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 1em;
-		padding-bottom: 0.9em;
-		border-bottom: 1px solid var(--border);
-	}
-
-	h1 {
-		margin: 0;
-		font-size: 1.5em;
-	}
-
 	.tab {
-		text-decoration: none;
 		text-transform: capitalize;
 	}
 

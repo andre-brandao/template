@@ -28,7 +28,15 @@ if ! printf '%s\n' "$CMD" | grep -Eq '(^|[[:space:];|&()])git[[:space:]]+(commit
   exit 0
 fi
 
-if command -v fallow >/dev/null 2>&1; then
+# The repo pins fallow as a devDependency, so the installed binary is the version this
+# project is configured for — prefer it over whatever happens to be on PATH.
+# Re-running `fallow setup-hooks` regenerates this file and drops this branch.
+LOCAL="${CLAUDE_PROJECT_DIR:-.}/node_modules/.bin/fallow"
+
+if [ -x "$LOCAL" ]; then
+  RUNNER=("$LOCAL")
+  BIN_DESC="$LOCAL"
+elif command -v fallow >/dev/null 2>&1; then
   RUNNER=(fallow)
   BIN_DESC="$(command -v fallow)"
 elif command -v bunx >/dev/null 2>&1 && VER_PROBE="$(bunx fallow --version 2>/dev/null || true)" && [[ "$VER_PROBE" == fallow* ]]; then
@@ -38,7 +46,7 @@ elif command -v npx >/dev/null 2>&1 && VER_PROBE="$(npx --no-install fallow --ve
   RUNNER=(npx --no-install fallow)
   BIN_DESC="npx --no-install fallow"
 else
-  echo "fallow-gate: fallow binary not found (tried PATH, bunx, and npx --no-install), skipping audit." >&2
+  echo "fallow-gate: fallow binary not found (tried node_modules, PATH, bunx, and npx --no-install), skipping audit." >&2
   exit 0
 fi
 

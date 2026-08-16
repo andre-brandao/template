@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { renderMermaidASCII, renderMermaidSVG } from 'beautiful-mermaid';
 	import Code from '../code/Code.svelte';
+	import Full from '../full/Full.svelte';
 
 	// `ascii` swaps the SVG for box-drawing text — same source, terminal-shaped output.
 	let { value, ascii = false }: { value: string; ascii?: boolean } = $props();
@@ -8,7 +9,6 @@
 	let el = $state<HTMLElement>();
 	let zoom = $state(1);
 	let view = $state<'diagram' | 'code'>('diagram');
-	let big = $state(false);
 
 	// Synchronous and DOM-free, so this renders on the server too. Colours go in as CSS
 	// custom properties, so a theme switch repaints the SVG without a re-render.
@@ -29,22 +29,9 @@
 			return { svg: '', text: '', err: e instanceof Error ? e.message : String(e) };
 		}
 	});
-
-	// Inline rather than a glyph: the ⛶ codepoint has no glyph in many system fonts.
-	const grow = 'M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3';
-	const shrink = 'M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3';
-
-	function full() {
-		if (document.fullscreenElement) return void document.exitFullscreen();
-		el?.requestFullscreen();
-	}
 </script>
 
-<figure
-	class="mermaid"
-	bind:this={el}
-	onfullscreenchange={() => (big = !!document.fullscreenElement)}
->
+<figure class="mermaid" bind:this={el}>
 	<div class="bar">
 		<div class="tabs">
 			<button type="button" class:on={view === 'diagram'} onclick={() => (view = 'diagram')}>
@@ -64,17 +51,7 @@
 					+
 				</button>
 			{/if}
-			<button
-				type="button"
-				class="full"
-				title={big ? 'Exit full screen' : 'Full screen'}
-				aria-label={big ? 'Exit full screen' : 'Full screen'}
-				onclick={full}
-			>
-				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-					<path d={big ? shrink : grow} />
-				</svg>
-			</button>
+			<Full {el} />
 		</div>
 	</div>
 
@@ -119,6 +96,8 @@
 		display: flex;
 		align-items: center;
 		gap: 0.15em;
+		font-family: var(--font-mono);
+		font-size: 0.72em;
 	}
 
 	button {
@@ -128,20 +107,7 @@
 		background: transparent;
 		color: var(--muted);
 		font: inherit;
-		font-family: var(--font-mono);
-		font-size: 0.72em;
 		cursor: pointer;
-	}
-
-	.full {
-		display: flex;
-		align-items: center;
-		padding: 0.3em;
-	}
-
-	.full svg {
-		width: 13px;
-		height: 13px;
 	}
 
 	button:hover,

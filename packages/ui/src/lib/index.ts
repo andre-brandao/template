@@ -25,6 +25,7 @@ export { features, type Features } from "./table/table";
 export { default as Drawer, type Side } from "./drawer/Drawer.svelte";
 export { default as Empty } from "./empty/Empty.svelte";
 export { default as FormBoundary } from "./boundary/FormBoundary.svelte";
+export { default as Full } from "./full/Full.svelte";
 export { default as Modals } from "./modal/Modals.svelte";
 export { modal, type Ask } from "./modal/modal.svelte";
 export { default as Pager } from "./pager/Pager.svelte";

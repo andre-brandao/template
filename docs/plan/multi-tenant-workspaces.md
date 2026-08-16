@@ -2,6 +2,12 @@
 
 A plan for turning the template's single shared tenancy into opencode-style workspaces.
 
+> [!NOTE]
+> This was written before [the prototype](../prototype/workspaces/PROTOTYPE.md), which settles
+> the product surface and puts each workspace on its own subdomain. The host is on every
+> request — including remote-function calls — so §5's session-cookie workaround is superseded.
+> The rest still holds; rewrite this against the prototype once it is validated.
+
 ## 1. Where we are today
 
 The template is **single-tenant**. There is one implicit organisation: every user sees every

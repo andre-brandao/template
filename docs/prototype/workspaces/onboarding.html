@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>First run</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: light-dark(#f7f6f3, #17181a);
+        --surface: light-dark(#ffffff, #1f2022);
+        --surface-2: light-dark(#eeece7, #26282b);
+        --border: light-dark(#dedbd4, #2e3033);
+        --border-bright: light-dark(#c6c2b8, #3c3e42);
+        --ink: light-dark(#22231f, #e4e3df);
+        --muted: light-dark(#6b6a64, #8b8a84);
+        --dim: light-dark(#94928a, #5c5b56);
+        --accent: light-dark(#2f7f68, #4fa98f);
+        --accent-ink: light-dark(#ffffff, #0d1110);
+        --danger: light-dark(#b8452c, #d3684f);
+        --radius: 8px;
+        --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+        --font-mono: ui-monospace, "JetBrains Mono", "SF Mono", monospace;
+        --shadow-1: 0 1px 2px light-dark(rgb(0 0 0 / 0.08), rgb(0 0 0 / 0.3));
+        --shadow-2: 0 12px 28px -14px light-dark(rgb(0 0 0 / 0.18), rgb(0 0 0 / 0.6));
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0; background: var(--bg); color: var(--ink);
+        font-family: var(--font-sans); font-size: 15px;
+        min-height: 100vh; display: flex; flex-direction: column;
+      }
+      .bar {
+        border-bottom: 1px solid var(--border); background: var(--surface);
+        padding: 0.6em 1.2em; display: flex; align-items: center; gap: 0.8em;
+      }
+      .url {
+        font-family: var(--font-mono); font-size: 0.75em; color: var(--muted);
+        background: var(--bg); border: 1px solid var(--border);
+        border-radius: 20px; padding: 0.35em 0.9em;
+      }
+      .url b { color: var(--ink); font-weight: 600; }
+      .spacer { flex: 1; }
+      .who { font-size: 0.8em; color: var(--muted); }
+      main { flex: 1; display: grid; place-items: center; padding: 2.4em 1.2em; }
+      .stage { width: 100%; max-width: 480px; }
+      .demo {
+        display: flex; align-items: center; gap: 0.7em; flex-wrap: wrap;
+        margin-bottom: 1.4em; padding: 0.6em 0.8em;
+        border: 1px solid var(--border); border-radius: var(--radius);
+        background: var(--surface-2); font-size: 0.78em; color: var(--muted);
+      }
+      .tabs { display: inline-flex; gap: 2px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 6px; padding: 2px; }
+      .tab { font-family: var(--font-mono); font-size: 0.78em; padding: 0.35em 0.8em; border-radius: 4px; border: none; background: none; color: var(--dim); cursor: pointer; }
+      .tab.active { background: var(--surface); color: var(--ink); }
+      .card {
+        background: var(--surface); border: 1px solid var(--border);
+        border-radius: var(--radius); box-shadow: var(--shadow-2); padding: 1.6em;
+      }
+      h1 { font-size: 1.25rem; margin: 0 0 0.3em; }
+      .sub { color: var(--muted); font-size: 0.86em; margin: 0 0 1.5em; line-height: 1.5; }
+      .field { display: flex; flex-direction: column; gap: 0.4em; }
+      .field > label {
+        font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.08em;
+        text-transform: uppercase; color: var(--dim);
+      }
+      input[type="text"] {
+        font: inherit; font-size: 0.95em; color: var(--ink);
+        background: var(--bg); border: 1px solid var(--border);
+        border-radius: 6px; padding: 0.6em 0.7em; width: 100%;
+      }
+      input.bad { border-color: var(--danger); }
+      .hint { font-size: 0.76em; color: var(--muted); margin: 0.5em 0 0; }
+      .hint b { font-family: var(--font-mono); color: var(--ink); font-weight: 600; }
+      .hint.err { color: var(--danger); }
+      button {
+        display: inline-flex; align-items: center; justify-content: center; gap: 0.5em;
+        border: 1px solid var(--border); border-radius: var(--radius);
+        padding: 0.55em 1em; font: inherit; font-family: var(--font-mono);
+        font-size: 0.85em; cursor: pointer; background: var(--surface); color: var(--ink);
+      }
+      button:hover:not(:disabled) { border-color: var(--border-bright); }
+      button:disabled { cursor: not-allowed; opacity: 0.5; }
+      button.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+      button.wide { width: 100%; margin-top: 1.4em; }
+      button.ghost { background: none; border-color: transparent; color: var(--muted); }
+      button.ghost:hover:not(:disabled) { color: var(--ink); }
+      .invites { list-style: none; margin: 0 0 1em; padding: 0; display: flex; flex-direction: column; gap: 0.6em; }
+      .invite {
+        display: flex; align-items: center; gap: 0.8em;
+        border: 1px solid var(--border); border-radius: var(--radius);
+        padding: 0.8em; background: var(--bg);
+      }
+      .mark {
+        width: 34px; height: 34px; flex: none; border-radius: 8px;
+        display: grid; place-items: center; color: #fff;
+        font-family: var(--font-mono); font-size: 0.78rem; font-weight: 600;
+      }
+      .invite .txt { flex: 1; min-width: 0; }
+      .invite .txt b { display: block; font-size: 0.9em; }
+      .invite .txt span { display: block; color: var(--muted); font-size: 0.78em; }
+      .sep { display: flex; align-items: center; gap: 0.8em; margin: 1.4em 0; color: var(--dim); font-size: 0.72em; font-family: var(--font-mono); letter-spacing: 0.08em; }
+      .sep::before, .sep::after { content: ""; height: 1px; background: var(--border); flex: 1; }
+      .done { text-align: center; }
+      .done .mark { width: 54px; height: 54px; border-radius: 14px; margin: 0 auto 1em; font-size: 1.1rem; }
+      .kv { text-align: left; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin: 1.2em 0; }
+      .kv div { display: flex; justify-content: space-between; gap: 1em; padding: 0.6em 0.8em; font-size: 0.82em; }
+      .kv div + div { border-top: 1px solid var(--border); }
+      .kv dt { color: var(--muted); margin: 0; }
+      .kv dd { margin: 0; font-family: var(--font-mono); font-size: 0.92em; }
+      .steps { display: flex; gap: 0.4em; justify-content: center; margin-top: 1.4em; }
+      .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--border-bright); }
+      .dot.on { background: var(--accent); }
+    </style>
+  </head>
+  <body>
+    <div class="bar">
+      <span class="url">https://<b>app.example.com</b>/welcome</span>
+      <span class="spacer"></span>
+      <span class="who">andre@example.com</span>
+    </div>
+
+    <main>
+      <div class="stage">
+        <div class="demo">
+          <span>Signed in, no workspace yet —</span>
+          <div class="tabs">
+            <button class="tab active" onclick="scene('invited')">has invites</button>
+            <button class="tab" onclick="scene('fresh')">no invites</button>
+          </div>
+        </div>
+
+        <!-- ---- has pending invites ---- -->
+        <div class="card" id="sceneInvited">
+          <h1>You've been invited</h1>
+          <p class="sub">Two teams are holding a seat for <b>andre@example.com</b>. Join one, or start
+            somewhere of your own — you can be in as many workspaces as you like.</p>
+          <ul class="invites" id="invites"></ul>
+          <div class="sep">or</div>
+          <button class="wide" onclick="scene('fresh')">Create my own workspace</button>
+        </div>
+
+        <!-- ---- no invites: create ---- -->
+        <div class="card" id="sceneFresh" hidden>
+          <h1>Name your workspace</h1>
+          <p class="sub">This is the container for your projects, todos and teammates. It gets its own
+            address, and you can rename it later.</p>
+          <div class="field">
+            <label for="label">Workspace name</label>
+            <input id="label" type="text" value="Andre's workspace" oninput="touch()" autofocus />
+          </div>
+          <p class="hint" id="hint">Lives at <b id="preview">andres-workspace.app.example.com</b></p>
+          <button class="primary wide" id="go" onclick="create()">Create workspace</button>
+          <button class="ghost wide" style="margin-top: 0.5em" onclick="scene('invited')">Back to invites</button>
+          <div class="steps"><span class="dot on"></span><span class="dot"></span></div>
+        </div>
+
+        <!-- ---- done ---- -->
+        <div class="card done" id="sceneDone" hidden>
+          <span class="mark" id="doneMark" style="background: var(--accent)">AW</span>
+          <h1 id="doneTitle">Workspace ready</h1>
+          <p class="sub" id="doneSub">You're the admin. An API key was minted so the CLI and MCP server
+            can reach it straight away.</p>
+          <div class="kv">
+            <div><dt>Address</dt><dd id="doneUrl">andres-workspace.app.example.com</dd></div>
+            <div><dt>Your role</dt><dd id="doneRole">admin</dd></div>
+            <div><dt>Default API key</dt><dd>sk-••••••••3f9c</dd></div>
+          </div>
+          <button class="primary wide" onclick="location.href = './switcher.html'">Open workspace</button>
+          <button class="ghost wide" style="margin-top: 0.5em" onclick="location.href = './members.html'">Invite teammates first</button>
+          <div class="steps"><span class="dot"></span><span class="dot on"></span></div>
+        </div>
+      </div>
+    </main>
+
+    <script>
+      const reserved = ["www", "api", "auth", "app", "admin", "static", "mail"];
+      const pending = [
+        { id: "p1", name: "Acme Corp", slug: "acme", color: "#2f7f68", by: "ana@example.com", role: "member", size: 8 },
+        { id: "p2", name: "Northwind Labs", slug: "northwind", color: "#a3672a", by: "ops@northwind.io", role: "admin", size: 23 },
+      ];
+
+      const slugify = (s) =>
+        s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+          .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 30);
+
+      const initials = (n) =>
+        n.split(/\s+/).filter(Boolean).map((p) => p[0]).slice(0, 2).join("").toUpperCase() || "?";
+
+      function scene(which) {
+        sceneInvited.hidden = which !== "invited";
+        sceneFresh.hidden = which !== "fresh";
+        sceneDone.hidden = which !== "done";
+        document.querySelectorAll(".demo .tab").forEach((t, i) =>
+          t.classList.toggle("active", (i === 0) === (which === "invited")),
+        );
+        if (which === "fresh") label.focus();
+      }
+
+      function touch() {
+        const s = slugify(label.value);
+        const err = !s ? "Give it a name." : reserved.includes(s) ? `“${s}” is reserved.` : s === "acme" ? "Taken — try another name." : null;
+        hint.className = err ? "hint err" : "hint";
+        hint.innerHTML = err ? err : `Lives at <b>${s}.app.example.com</b>`;
+        label.className = err ? "bad" : "";
+        go.disabled = !!err;
+      }
+
+      function create() {
+        const s = slugify(label.value);
+        doneMark.textContent = initials(label.value);
+        doneMark.style.background = "#7a5cc4";
+        doneTitle.textContent = "Workspace ready";
+        doneSub.textContent = "You're the admin. An API key was minted so the CLI and MCP server can reach it straight away.";
+        doneUrl.textContent = `${s}.app.example.com`;
+        doneRole.textContent = "admin";
+        scene("done");
+      }
+
+      function join(id) {
+        const w = pending.find((p) => p.id === id);
+        doneMark.textContent = initials(w.name);
+        doneMark.style.background = w.color;
+        doneTitle.textContent = `Welcome to ${w.name}`;
+        doneSub.textContent = `You joined as ${w.role === "admin" ? "an admin" : "a member"}, alongside ${w.size - 1} others.`;
+        doneUrl.textContent = `${w.slug}.app.example.com`;
+        doneRole.textContent = w.role;
+        scene("done");
+      }
+
+      function ignore(id) {
+        const at = pending.findIndex((p) => p.id === id);
+        pending.splice(at, 1);
+        if (!pending.length) return scene("fresh");
+        paint();
+      }
+
+      function paint() {
+        invites.innerHTML = pending
+          .map(
+            (w) => `
+          <li class="invite">
+            <span class="mark" style="background:${w.color}">${initials(w.name)}</span>
+            <span class="txt">
+              <b>${w.name}</b>
+              <span>${w.by} invited you as ${w.role} · ${w.size} members</span>
+            </span>
+            <button class="primary" onclick="join('${w.id}')">Join</button>
+            <button class="ghost" onclick="ignore('${w.id}')" title="Decline">✕</button>
+          </li>`,
+          )
+          .join("");
+      }
+
+      paint();
+      touch();
+    </script>
+  </body>
+</html>

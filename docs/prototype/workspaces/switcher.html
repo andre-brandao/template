@@ -1,0 +1,403 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Workspace switcher</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: light-dark(#f7f6f3, #17181a);
+        --surface: light-dark(#ffffff, #1f2022);
+        --surface-2: light-dark(#eeece7, #26282b);
+        --border: light-dark(#dedbd4, #2e3033);
+        --border-bright: light-dark(#c6c2b8, #3c3e42);
+        --ink: light-dark(#22231f, #e4e3df);
+        --muted: light-dark(#6b6a64, #8b8a84);
+        --dim: light-dark(#94928a, #5c5b56);
+        --accent: light-dark(#2f7f68, #4fa98f);
+        --accent-ink: light-dark(#ffffff, #0d1110);
+        --danger: light-dark(#b8452c, #d3684f);
+        --radius: 8px;
+        --rail: 220px;
+        --topbar: 60px;
+        --footer: 52px;
+        --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+        --font-mono: ui-monospace, "JetBrains Mono", "SF Mono", monospace;
+        --shadow-1: 0 1px 2px light-dark(rgb(0 0 0 / 0.08), rgb(0 0 0 / 0.3));
+        --shadow-2: 0 12px 28px -14px light-dark(rgb(0 0 0 / 0.18), rgb(0 0 0 / 0.6));
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: var(--font-sans);
+        font-size: 15px;
+      }
+      .frame { display: flex; min-height: 100vh; }
+
+      /* ---- sidebar ---- */
+      aside {
+        width: var(--rail);
+        flex: none;
+        border-right: 1px solid var(--border);
+        background: var(--surface);
+        display: flex;
+        flex-direction: column;
+      }
+      .crest {
+        height: var(--topbar);
+        flex: none;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        gap: 0.6em;
+        padding: 0 0.6em;
+        width: 100%;
+        background: none;
+        border-top: 0; border-left: 0; border-right: 0;
+        color: inherit;
+        font: inherit;
+        cursor: pointer;
+        text-align: left;
+      }
+      .crest:hover { background: var(--surface-2); }
+      .mark {
+        width: 30px; height: 30px; flex: none;
+        border-radius: 7px;
+        display: grid; place-items: center;
+        font-family: var(--font-mono);
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #fff;
+      }
+      .crest .who { min-width: 0; flex: 1; }
+      .crest .name {
+        display: block;
+        font-size: 0.9em;
+        font-weight: 600;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      }
+      .crest .role {
+        display: block;
+        font-family: var(--font-mono);
+        font-size: 0.62em;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--dim);
+      }
+      .chev { color: var(--dim); flex: none; }
+      .menu { flex: 1; padding: 0.8em 0.6em; display: flex; flex-direction: column; gap: 0.15em; }
+      .grouplabel {
+        font-family: var(--font-mono);
+        font-size: 0.62rem;
+        letter-spacing: 0.09em;
+        text-transform: uppercase;
+        color: var(--dim);
+        padding: 0.9em 0.7em 0.4em;
+      }
+      .navlink {
+        display: flex; align-items: center; gap: 0.6em;
+        color: var(--muted);
+        text-decoration: none;
+        padding: 0.5em 0.7em;
+        border-radius: var(--radius);
+        font-size: 0.9em;
+        cursor: pointer;
+      }
+      .navlink:hover { color: var(--ink); background: var(--surface-2); }
+      .navlink[aria-current="page"] { color: var(--ink); background: var(--surface-2); }
+      .strip {
+        height: var(--footer); flex: none;
+        border-top: 1px solid var(--border);
+        display: flex; align-items: center; gap: 0.55em;
+        padding: 0 0.8em;
+      }
+      .strip .mark { width: 24px; height: 24px; border-radius: 50%; font-size: 0.62rem; }
+      .strip .em { font-size: 0.75em; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+      /* ---- switcher panel ---- */
+      .panel {
+        position: absolute;
+        top: calc(var(--topbar) - 6px);
+        left: 0.6em;
+        width: 280px;
+        background: var(--surface);
+        border: 1px solid var(--border-bright);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow-2);
+        z-index: 20;
+        overflow: hidden;
+      }
+      .panel[hidden] { display: none; }
+      .panel .search { padding: 0.6em; border-bottom: 1px solid var(--border); }
+      .panel input[type="search"] {
+        width: 100%;
+        font: inherit;
+        font-size: 0.85em;
+        padding: 0.45em 0.6em;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        background: var(--bg);
+        color: var(--ink);
+      }
+      .panel ul { list-style: none; margin: 0; padding: 0.35em; max-height: 260px; overflow-y: auto; }
+      .wrow {
+        display: flex; align-items: center; gap: 0.6em;
+        width: 100%;
+        padding: 0.5em;
+        border: 0; background: none; color: inherit; font: inherit;
+        border-radius: 6px; cursor: pointer; text-align: left;
+      }
+      .wrow:hover { background: var(--surface-2); }
+      .wrow .mark { width: 26px; height: 26px; border-radius: 6px; font-size: 0.68rem; }
+      .wrow .lbl { flex: 1; min-width: 0; }
+      .wrow .lbl b { display: block; font-size: 0.86em; font-weight: 600; }
+      .wrow .lbl span {
+        display: block;
+        font-family: var(--font-mono); font-size: 0.62em;
+        letter-spacing: 0.06em; text-transform: uppercase; color: var(--dim);
+      }
+      .tick { color: var(--accent); flex: none; }
+      .panel .foot { border-top: 1px solid var(--border); padding: 0.35em; }
+      .foot .wrow { color: var(--muted); font-size: 0.95em; }
+      .foot .plus {
+        width: 26px; height: 26px; flex: none;
+        display: grid; place-items: center;
+        border: 1px dashed var(--border-bright);
+        border-radius: 6px; color: var(--dim);
+      }
+      .scrim { position: fixed; inset: 0; z-index: 10; }
+      .scrim[hidden] { display: none; }
+
+      /* ---- content ---- */
+      .content { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+      .topbar {
+        height: var(--topbar); flex: none;
+        border-bottom: 1px solid var(--border);
+        background: var(--surface);
+        display: flex; align-items: center; gap: 0.8em;
+        padding: 0 1.2em;
+      }
+      .url {
+        flex: 1;
+        font-family: var(--font-mono);
+        font-size: 0.75em;
+        color: var(--muted);
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        padding: 0.35em 0.9em;
+      }
+      .url b { color: var(--ink); font-weight: 600; }
+      .url .lock { color: var(--dim); margin-right: 0.4em; }
+      main { padding: 1.6em 1.4em; }
+      h1 { font-size: 1.3rem; margin: 0 0 0.15em; }
+      .sub { color: var(--muted); font-size: 0.85em; margin: 0 0 1.4em; }
+      .grid { display: grid; gap: 0.8em; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); }
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-left: 3px solid var(--accent);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow-1);
+        padding: 1em;
+      }
+      .card h3 { margin: 0 0 0.3em; font-size: 0.95rem; }
+      .card p { margin: 0 0 0.8em; color: var(--muted); font-size: 0.82em; }
+      .meta { font-family: var(--font-mono); font-size: 0.66em; letter-spacing: 0.06em; text-transform: uppercase; color: var(--dim); }
+      .banner {
+        display: flex; align-items: center; gap: 0.7em;
+        margin-bottom: 1.3em; padding: 0.7em 0.9em;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        background: var(--surface-2);
+        font-size: 0.82em; color: var(--muted);
+      }
+      .banner kbd {
+        font-family: var(--font-mono); font-size: 0.9em;
+        border: 1px solid var(--border-bright); border-radius: 4px;
+        padding: 0.1em 0.4em; background: var(--surface); color: var(--ink);
+      }
+      .badge {
+        font-family: var(--font-mono); font-size: 0.62em;
+        letter-spacing: 0.08em; text-transform: uppercase;
+        border: 1px solid var(--border); border-radius: 20px;
+        padding: 0.15em 0.6em; color: var(--muted);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="scrim" id="scrim" hidden onclick="shut()"></div>
+    <div class="frame">
+      <aside style="position: relative">
+        <button class="crest" id="crest" onclick="toggle()" aria-haspopup="menu" aria-expanded="false">
+          <span class="mark" id="crestMark"></span>
+          <span class="who">
+            <span class="name" id="crestName"></span>
+            <span class="role" id="crestRole"></span>
+          </span>
+          <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="m7 15 5 5 5-5M7 9l5-5 5 5" />
+          </svg>
+        </button>
+
+        <div class="panel" id="panel" hidden role="menu">
+          <div class="search">
+            <input type="search" id="q" placeholder="Find workspace…" oninput="render()" />
+          </div>
+          <ul id="list"></ul>
+          <div class="foot">
+            <button class="wrow" onclick="alert('→ onboarding.html (create workspace)')">
+              <span class="plus">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14" /></svg>
+              </span>
+              <span class="lbl"><b>Create workspace</b></span>
+            </button>
+          </div>
+        </div>
+
+        <nav class="menu">
+          <a class="navlink" aria-current="page" href="#">Todos</a>
+          <a class="navlink" href="#">Projects</a>
+          <a class="navlink" href="#">Insights</a>
+          <a class="navlink" href="#">Files</a>
+          <div class="grouplabel">Workspace</div>
+          <a class="navlink" href="./members.html">Members</a>
+          <a class="navlink" href="./keys.html">API keys</a>
+          <a class="navlink" href="./settings.html">Settings</a>
+        </nav>
+
+        <div class="strip">
+          <span class="mark" style="background: #7a5cc4">AB</span>
+          <span class="em">andre@example.com</span>
+        </div>
+      </aside>
+
+      <div class="content">
+        <div class="topbar">
+          <div class="url"><b id="host"></b><span id="path"></span></div>
+          <span class="badge" title="What reroute() rewrites the request to, internally">→ <span id="internal"></span></span>
+          <span class="badge" id="roleBadge"></span>
+        </div>
+        <main>
+          <div class="banner">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+            Click the workspace crest, top-left. Each workspace is its own subdomain — switching is a real
+            navigation to <kbd>&lt;slug&gt;.app.example.com</kbd>, and <kbd>reroute</kbd> maps that host onto the
+            internal <kbd>/w/[slug]</kbd> route. Press <kbd>Esc</kbd> to close.
+          </div>
+          <h1 id="title"></h1>
+          <p class="sub" id="subtitle"></p>
+          <div class="grid" id="projects"></div>
+        </main>
+      </div>
+    </div>
+
+    <script>
+      const spaces = [
+        {
+          id: "wrk_01JAY",
+          slug: "acme",
+          name: "Acme Corp",
+          color: "#2f7f68",
+          initials: "AC",
+          role: "admin",
+          members: 8,
+          projects: [
+            { name: "Website relaunch", body: "Marketing site rebuild on the new design system.", todos: 34, open: 9 },
+            { name: "Mobile app", body: "iOS and Android parity for the Q3 release.", todos: 61, open: 22 },
+            { name: "Internal tools", body: "Ops dashboard, invoicing, on-call rota.", todos: 18, open: 3 },
+          ],
+        },
+        {
+          id: "wrk_01JB2",
+          slug: "andre",
+          name: "Andre's workspace",
+          color: "#7a5cc4",
+          initials: "AB",
+          role: "admin",
+          members: 1,
+          projects: [
+            { name: "Side project", body: "Weekend build, nobody else invited.", todos: 12, open: 5 },
+            { name: "Reading list", body: "Papers and posts worth a second pass.", todos: 27, open: 27 },
+          ],
+        },
+        {
+          id: "wrk_01JC7",
+          slug: "northwind",
+          name: "Northwind Labs",
+          color: "#a3672a",
+          initials: "NL",
+          role: "member",
+          members: 23,
+          projects: [
+            { name: "Data pipeline", body: "Ingest, dedupe, and ship to the warehouse nightly.", todos: 44, open: 11 },
+          ],
+        },
+      ];
+
+      let current = spaces[0];
+      let open = false;
+
+      function toggle() {
+        open = !open;
+        panel.hidden = !open;
+        scrim.hidden = !open;
+        crest.setAttribute("aria-expanded", String(open));
+        if (open) { q.value = ""; render(); q.focus(); }
+      }
+      function shut() { if (open) toggle(); }
+      function pick(id) {
+        current = spaces.find((w) => w.id === id);
+        shut();
+        paint();
+      }
+      function render() {
+        const term = q.value.toLowerCase();
+        list.innerHTML = spaces
+          .filter((w) => w.name.toLowerCase().includes(term) || w.slug.includes(term))
+          .map(
+            (w) => `
+            <li>
+              <button class="wrow" onclick="pick('${w.id}')" role="menuitem">
+                <span class="mark" style="background:${w.color}">${w.initials}</span>
+                <span class="lbl"><b>${w.name}</b><span>${w.role} · ${w.members} member${w.members > 1 ? "s" : ""}</span></span>
+                ${
+                  w.id === current.id
+                    ? `<svg class="tick" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>`
+                    : ""
+                }
+              </button>
+            </li>`,
+          )
+          .join("");
+      }
+      function paint() {
+        crestMark.textContent = current.initials;
+        crestMark.style.background = current.color;
+        crestName.textContent = current.name;
+        crestRole.textContent = current.role;
+        roleBadge.textContent = current.role;
+        host.textContent = `${current.slug}.app.example.com`;
+        path.textContent = "/projects";
+        internal.textContent = `/w/${current.slug}/projects`;
+        title.textContent = "Projects";
+        subtitle.textContent = `${current.projects.length} project${current.projects.length > 1 ? "s" : ""} in ${current.name}`;
+        projects.innerHTML = current.projects
+          .map(
+            (p) => `
+            <div class="card">
+              <h3>${p.name}</h3>
+              <p>${p.body}</p>
+              <div class="meta">${p.open} open · ${p.todos} todos</div>
+            </div>`,
+          )
+          .join("");
+      }
+      addEventListener("keydown", (e) => e.key === "Escape" && shut());
+      paint();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Workspace API keys</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: light-dark(#f7f6f3, #17181a);
+        --surface: light-dark(#ffffff, #1f2022);
+        --surface-2: light-dark(#eeece7, #26282b);
+        --border: light-dark(#dedbd4, #2e3033);
+        --border-bright: light-dark(#c6c2b8, #3c3e42);
+        --ink: light-dark(#22231f, #e4e3df);
+        --muted: light-dark(#6b6a64, #8b8a84);
+        --dim: light-dark(#94928a, #5c5b56);
+        --accent: light-dark(#2f7f68, #4fa98f);
+        --accent-ink: light-dark(#ffffff, #0d1110);
+        --danger: light-dark(#b8452c, #d3684f);
+        --progress: light-dark(#a3672a, #c98a3f);
+        --radius: 8px;
+        --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+        --font-mono: ui-monospace, "JetBrains Mono", "SF Mono", monospace;
+        --shadow-1: 0 1px 2px light-dark(rgb(0 0 0 / 0.08), rgb(0 0 0 / 0.3));
+        --shadow-2: 0 12px 28px -14px light-dark(rgb(0 0 0 / 0.18), rgb(0 0 0 / 0.6));
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-sans); font-size: 15px; }
+      .wrap { display: flex; gap: 2.4em; max-width: 980px; margin: 0 auto; padding: 2em 1.4em 4em; }
+      .side { width: 170px; flex: none; }
+      .side .grouplabel {
+        font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.09em;
+        text-transform: uppercase; color: var(--dim); padding: 0 0.7em 0.5em;
+      }
+      .navlink { display: block; color: var(--muted); text-decoration: none; padding: 0.45em 0.7em; border-radius: var(--radius); font-size: 0.88em; }
+      .navlink:hover { color: var(--ink); background: var(--surface-2); }
+      .navlink[aria-current="page"] { color: var(--ink); background: var(--surface-2); }
+      .body { flex: 1; min-width: 0; }
+      h1 { font-size: 1.3rem; margin: 0 0 0.15em; }
+      .sub { color: var(--muted); font-size: 0.85em; margin: 0 0 1.5em; line-height: 1.55; }
+      .sub b { color: var(--ink); }
+      .note {
+        display: flex; gap: 0.7em; align-items: flex-start;
+        border: 1px solid var(--border); border-left: 3px solid var(--accent);
+        border-radius: var(--radius); background: var(--surface);
+        padding: 0.8em 0.9em; margin-bottom: 1.6em; font-size: 0.82em; color: var(--muted);
+      }
+      .note code {
+        font-family: var(--font-mono); font-size: 0.92em;
+        background: var(--surface-2); border-radius: 4px; padding: 0.1em 0.35em; color: var(--ink);
+      }
+      table { width: 100%; border-collapse: collapse; }
+      th {
+        text-align: left; font-family: var(--font-mono); font-weight: 400;
+        font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase;
+        color: var(--dim); padding: 0 0.7em 0.6em; border-bottom: 1px solid var(--border);
+      }
+      td { padding: 0.75em 0.7em; border-bottom: 1px solid var(--border); font-size: 0.88em; vertical-align: middle; }
+      tr:last-child td { border-bottom: 0; }
+      td.right { text-align: right; }
+      .mono { font-family: var(--font-mono); font-size: 0.82em; color: var(--muted); }
+      .keyname { display: block; font-weight: 600; }
+      .secret { font-family: var(--font-mono); font-size: 0.8em; color: var(--muted); }
+      .who { display: flex; align-items: center; gap: 0.55em; }
+      .mark {
+        width: 22px; height: 22px; flex: none; border-radius: 50%;
+        display: grid; place-items: center; color: #fff;
+        font-family: var(--font-mono); font-size: 0.55rem; font-weight: 600;
+      }
+      .badge {
+        font-family: var(--font-mono); font-size: 0.62em; letter-spacing: 0.08em;
+        text-transform: uppercase; border: 1px solid var(--border);
+        border-radius: 20px; padding: 0.15em 0.6em; color: var(--muted); white-space: nowrap;
+      }
+      .badge.mine { border-color: var(--accent); color: var(--accent); }
+      .badge.stale { border-color: var(--progress); color: var(--progress); }
+      button {
+        display: inline-flex; align-items: center; justify-content: center; gap: 0.5em;
+        border: 1px solid var(--border); border-radius: var(--radius);
+        padding: 0.45em 1em; font: inherit; font-family: var(--font-mono);
+        font-size: 0.85em; cursor: pointer; background: var(--surface); color: var(--ink);
+      }
+      button:hover:not(:disabled) { border-color: var(--border-bright); }
+      button:disabled { cursor: not-allowed; opacity: 0.5; }
+      button.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+      button.ghost { background: none; border-color: transparent; color: var(--muted); padding: 0.35em 0.6em; }
+      button.ghost:hover:not(:disabled) { color: var(--danger); }
+      .head { display: flex; align-items: center; gap: 0.8em; margin-bottom: 0.15em; }
+      .head h1 { flex: 1; }
+      .demo {
+        display: flex; align-items: center; gap: 0.7em; flex-wrap: wrap;
+        margin-bottom: 1.6em; padding: 0.7em 0.9em;
+        border: 1px solid var(--border); border-radius: var(--radius);
+        background: var(--surface-2); font-size: 0.8em; color: var(--muted);
+      }
+      .demo .spacer { flex: 1; }
+      .tabs { display: inline-flex; gap: 2px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 6px; padding: 2px; }
+      .tab { font-family: var(--font-mono); font-size: 0.78em; padding: 0.35em 0.8em; border-radius: 4px; border: none; background: none; color: var(--dim); cursor: pointer; }
+      .tab.active { background: var(--surface); color: var(--ink); }
+      dialog {
+        border: 1px solid var(--border-bright); border-radius: var(--radius);
+        background: var(--surface); color: var(--ink); padding: 1.4em;
+        width: min(440px, 92vw); box-shadow: var(--shadow-2);
+      }
+      dialog::backdrop { background: rgb(0 0 0 / 0.45); }
+      dialog h2 { margin: 0 0 0.3em; font-size: 1.05rem; }
+      dialog p { margin: 0 0 1.2em; color: var(--muted); font-size: 0.84em; line-height: 1.5; }
+      .field { display: flex; flex-direction: column; gap: 0.4em; }
+      .field > label {
+        font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.08em;
+        text-transform: uppercase; color: var(--dim);
+      }
+      input[type="text"] {
+        font: inherit; font-size: 0.9em; color: var(--ink);
+        background: var(--bg); border: 1px solid var(--border);
+        border-radius: 6px; padding: 0.55em 0.65em; width: 100%;
+      }
+      .reveal {
+        display: flex; gap: 0.5em; align-items: center;
+        border: 1px solid var(--border); border-radius: 6px;
+        background: var(--bg); padding: 0.6em 0.7em; margin-bottom: 1em;
+      }
+      .reveal code { flex: 1; font-family: var(--font-mono); font-size: 0.8em; word-break: break-all; }
+      .warn {
+        border: 1px solid color-mix(in srgb, var(--progress) 45%, transparent);
+        background: color-mix(in srgb, var(--progress) 10%, transparent);
+        color: var(--progress); border-radius: var(--radius);
+        padding: 0.6em 0.75em; font-size: 0.8em; margin-bottom: 1em;
+      }
+      .row { display: flex; gap: 0.6em; justify-content: flex-end; margin-top: 1.2em; }
+      .empty { color: var(--dim); font-size: 0.85em; padding: 1.4em 0.7em; text-align: center; }
+      .toast {
+        position: fixed; bottom: 1.4em; left: 50%; transform: translateX(-50%);
+        background: var(--surface); border: 1px solid var(--border-bright);
+        border-radius: var(--radius); padding: 0.7em 1.1em; font-size: 0.85em;
+        box-shadow: var(--shadow-2);
+      }
+      .toast[hidden] { display: none; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <nav class="side">
+        <div class="grouplabel">Acme Corp</div>
+        <a class="navlink" href="./settings.html">General</a>
+        <a class="navlink" href="./members.html">Members</a>
+        <a class="navlink" aria-current="page" href="#">API keys</a>
+        <div class="grouplabel" style="padding-top: 1.4em">Account</div>
+        <a class="navlink" href="#">Profile</a>
+        <a class="navlink" href="./switcher.html">Workspaces</a>
+      </nav>
+
+      <div class="body">
+        <div class="demo">
+          <span>Viewing as</span>
+          <div class="tabs">
+            <button class="tab active" onclick="setRole('admin')">admin</button>
+            <button class="tab" onclick="setRole('member')">member</button>
+          </div>
+          <span class="spacer"></span>
+          <span id="hint">Admins see every key in the workspace, but only their own secret.</span>
+        </div>
+
+        <div class="head">
+          <h1>API keys</h1>
+          <button class="primary" onclick="dlg.showModal(); newName.focus()">New key</button>
+        </div>
+        <p class="sub">Keys belong to <b>Acme Corp</b>, not to you personally. A key authenticates
+          straight into this workspace — no workspace header, no picker.</p>
+
+        <div class="note">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex: none; margin-top: 0.15em"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+          <span>
+            <code>curl -H "Authorization: Bearer sk-…" https://api.example.com/todo</code><br />
+            The same secret in the CLI (<code>template-cli --token</code>) or the MCP server reaches
+            Acme Corp and nothing else. Switching workspaces means switching keys.
+          </span>
+        </div>
+
+        <table>
+          <thead>
+            <tr><th style="width: 40%">Key</th><th>Owner</th><th>Last used</th><th></th></tr>
+          </thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <dialog id="dlg">
+      <div id="stepName">
+        <h2>New API key</h2>
+        <p>Name it after where it runs, so a leaked key is traceable to one place.</p>
+        <div class="field">
+          <label for="newName">Name</label>
+          <input id="newName" type="text" placeholder="CI pipeline" />
+        </div>
+        <div class="row">
+          <button onclick="dlg.close()">Cancel</button>
+          <button class="primary" onclick="mint()">Create key</button>
+        </div>
+      </div>
+
+      <div id="stepSecret" hidden>
+        <h2>Copy your key</h2>
+        <p>This is the only time the full secret is shown. Store it now — you can always mint another.</p>
+        <div class="reveal">
+          <code id="secret"></code>
+          <button onclick="copy()">Copy</button>
+        </div>
+        <div class="warn">Anyone holding this string can read and write everything in Acme Corp that
+          your role allows.</div>
+        <div class="row">
+          <button class="primary" onclick="finish()">Done</button>
+        </div>
+      </div>
+    </dialog>
+
+    <div class="toast" id="toast" hidden></div>
+
+    <script>
+      const colors = ["#2f7f68", "#7a5cc4", "#a3672a", "#b8452c", "#2a6ea3"];
+      let viewer = "admin";
+      const me = "Andre Brandao";
+
+      let keys = [
+        { id: "k1", name: "CI pipeline", tail: "3f9c", owner: "Andre Brandao", email: "andre@example.com", used: "12 minutes ago", mine: true },
+        { id: "k2", name: "Local CLI", tail: "a1d4", owner: "Andre Brandao", email: "andre@example.com", used: "3 days ago", mine: true },
+        { id: "k3", name: "MCP server", tail: "77b0", owner: "Ana Ribeiro", email: "ana@example.com", used: "an hour ago" },
+        { id: "k4", name: "Staging deploy", tail: "0e2f", owner: "Bruno Costa", email: "bruno@example.com", used: null },
+      ];
+
+      const initials = (n) => n.split(" ").map((p) => p[0]).slice(0, 2).join("").toUpperCase();
+      const tint = (s) => colors[[...s].reduce((a, c) => a + c.charCodeAt(0), 0) % colors.length];
+
+      function say(msg) {
+        toast.textContent = msg;
+        toast.hidden = false;
+        clearTimeout(say.t);
+        say.t = setTimeout(() => (toast.hidden = true), 2600);
+      }
+
+      function setRole(r) {
+        viewer = r;
+        document.querySelectorAll(".demo .tab").forEach((t) => t.classList.toggle("active", t.textContent === r));
+        hint.textContent =
+          r === "admin"
+            ? "Admins see every key in the workspace, but only their own secret."
+            : "Members see only the keys they minted themselves.";
+        paint();
+      }
+
+      function mint() {
+        const name = newName.value.trim() || "Untitled key";
+        const tail = Math.random().toString(16).slice(2, 6);
+        secret.textContent = `sk-${[...crypto.getRandomValues(new Uint8Array(24))].map((b) => "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"[b % 62]).join("")}${tail}`;
+        keys = [{ id: "k" + Date.now(), name, tail, owner: me, email: "andre@example.com", used: null, mine: true, fresh: true }, ...keys];
+        stepName.hidden = true;
+        stepSecret.hidden = false;
+        paint();
+      }
+
+      function copy() {
+        navigator.clipboard?.writeText(secret.textContent).then(
+          () => say("Copied to clipboard"),
+          () => say("Select and copy manually"),
+        );
+      }
+
+      function finish() {
+        dlg.close();
+        stepName.hidden = false;
+        stepSecret.hidden = true;
+        newName.value = "";
+        say("Key created");
+      }
+
+      function revoke(id) {
+        const k = keys.find((k) => k.id === id);
+        if (!confirm(`Revoke “${k.name}”?\n\nAnything using it starts failing immediately.`)) return;
+        keys = keys.filter((k) => k.id !== id);
+        say("Key revoked");
+        paint();
+      }
+
+      function paint() {
+        const visible = viewer === "admin" ? keys : keys.filter((k) => k.mine);
+        rows.innerHTML = visible.length
+          ? visible
+              .map(
+                (k) => `
+          <tr>
+            <td>
+              <span class="keyname">${k.name} ${k.fresh ? '<span class="badge mine">new</span>' : ""}</span>
+              <span class="secret">${k.mine ? `sk-••••••••${k.tail}` : "sk-•••••••••••• hidden"}</span>
+            </td>
+            <td>
+              <span class="who">
+                <span class="mark" style="background:${tint(k.email)}">${initials(k.owner)}</span>
+                <span>${k.mine ? "you" : k.owner}</span>
+              </span>
+            </td>
+            <td class="mono">${k.used ?? '<span class="badge stale">never used</span>'}</td>
+            <td class="right">
+              ${
+                viewer === "admin" || k.mine
+                  ? `<button class="ghost" onclick="revoke('${k.id}')" title="Revoke this key">Revoke</button>`
+                  : ""
+              }
+            </td>
+          </tr>`,
+              )
+              .join("")
+          : `<tr><td colspan="4" class="empty">No keys yet. Mint one to reach this workspace from the CLI or MCP.</td></tr>`;
+      }
+
+      paint();
+    </script>
+  </body>
+</html>

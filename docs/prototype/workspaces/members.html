@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Members & invites</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: light-dark(#f7f6f3, #17181a);
+        --surface: light-dark(#ffffff, #1f2022);
+        --surface-2: light-dark(#eeece7, #26282b);
+        --border: light-dark(#dedbd4, #2e3033);
+        --border-bright: light-dark(#c6c2b8, #3c3e42);
+        --ink: light-dark(#22231f, #e4e3df);
+        --muted: light-dark(#6b6a64, #8b8a84);
+        --dim: light-dark(#94928a, #5c5b56);
+        --accent: light-dark(#2f7f68, #4fa98f);
+        --accent-ink: light-dark(#ffffff, #0d1110);
+        --danger: light-dark(#b8452c, #d3684f);
+        --progress: light-dark(#a3672a, #c98a3f);
+        --radius: 8px;
+        --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+        --font-mono: ui-monospace, "JetBrains Mono", "SF Mono", monospace;
+        --shadow-1: 0 1px 2px light-dark(rgb(0 0 0 / 0.08), rgb(0 0 0 / 0.3));
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-sans); font-size: 15px; }
+      .wrap { display: flex; gap: 2.4em; max-width: 980px; margin: 0 auto; padding: 2em 1.4em 4em; }
+
+      .side { width: 170px; flex: none; }
+      .side .grouplabel {
+        font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.09em;
+        text-transform: uppercase; color: var(--dim); padding: 0 0.7em 0.5em;
+      }
+      .navlink {
+        display: block; color: var(--muted); text-decoration: none;
+        padding: 0.45em 0.7em; border-radius: var(--radius); font-size: 0.88em;
+      }
+      .navlink:hover { color: var(--ink); background: var(--surface-2); }
+      .navlink[aria-current="page"] { color: var(--ink); background: var(--surface-2); }
+
+      .body { flex: 1; min-width: 0; }
+      .head { display: flex; align-items: baseline; gap: 0.7em; margin-bottom: 0.2em; }
+      h1 { font-size: 1.3rem; margin: 0; }
+      h2 { font-size: 0.95rem; margin: 2.2em 0 0.2em; }
+      .sub { color: var(--muted); font-size: 0.85em; margin: 0.15em 0 1.6em; }
+      .sub.tight { margin-bottom: 1em; }
+
+      .mark {
+        width: 30px; height: 30px; flex: none; border-radius: 50%;
+        display: grid; place-items: center;
+        font-family: var(--font-mono); font-size: 0.72rem; font-weight: 600; color: #fff;
+      }
+      .mark.sq { border-radius: 7px; }
+      .mark.ghost { background: var(--surface-2) !important; color: var(--dim); border: 1px dashed var(--border-bright); }
+
+      table { width: 100%; border-collapse: collapse; }
+      th {
+        text-align: left; font-family: var(--font-mono); font-weight: 400;
+        font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase;
+        color: var(--dim); padding: 0 0.7em 0.6em; border-bottom: 1px solid var(--border);
+      }
+      td { padding: 0.7em; border-bottom: 1px solid var(--border); font-size: 0.88em; vertical-align: middle; }
+      tr:last-child td { border-bottom: 0; }
+      .who { display: flex; align-items: center; gap: 0.7em; }
+      .who b { display: block; font-weight: 600; }
+      .who span { display: block; color: var(--muted); font-size: 0.85em; }
+      td.right { text-align: right; }
+      .mono { font-family: var(--font-mono); font-size: 0.78em; color: var(--muted); }
+
+      select, input[type="email"], input[type="text"] {
+        font: inherit; font-size: 0.85em; color: var(--ink);
+        background: var(--surface); border: 1px solid var(--border);
+        border-radius: 6px; padding: 0.4em 0.6em;
+      }
+      select:disabled, input:disabled { opacity: 0.55; cursor: not-allowed; }
+      button {
+        display: inline-flex; align-items: center; gap: 0.5em;
+        border: 1px solid var(--border); border-radius: var(--radius);
+        padding: 0.45em 1em; font: inherit; font-family: var(--font-mono);
+        font-size: 0.85em; cursor: pointer; background: var(--surface); color: var(--ink);
+      }
+      button:hover:not(:disabled) { border-color: var(--border-bright); }
+      button:disabled { cursor: not-allowed; opacity: 0.5; }
+      button.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+      button.danger { background: transparent; border-color: var(--danger); color: var(--danger); }
+      button.danger:hover:not(:disabled) { background: var(--danger); color: #fff; }
+      button.ghost { background: none; border-color: transparent; color: var(--muted); padding: 0.35em 0.6em; }
+      button.ghost:hover:not(:disabled) { color: var(--ink); }
+
+      .badge {
+        font-family: var(--font-mono); font-size: 0.62em; letter-spacing: 0.08em;
+        text-transform: uppercase; border: 1px solid var(--border);
+        border-radius: 20px; padding: 0.15em 0.6em; color: var(--muted); white-space: nowrap;
+      }
+      .badge.you { border-color: var(--accent); color: var(--accent); }
+      .badge.pending { border-color: var(--progress); color: var(--progress); }
+
+      .panel {
+        background: var(--surface); border: 1px solid var(--border);
+        border-radius: var(--radius); box-shadow: var(--shadow-1); padding: 1.1em;
+      }
+      .invite { display: flex; gap: 0.6em; align-items: flex-end; flex-wrap: wrap; }
+      .field { display: flex; flex-direction: column; gap: 0.4em; }
+      .field > label {
+        font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.08em;
+        text-transform: uppercase; color: var(--dim);
+      }
+      .field.grow { flex: 1; min-width: 220px; }
+      .field.grow input { width: 100%; }
+
+      .demo {
+        display: flex; align-items: center; gap: 0.7em; flex-wrap: wrap;
+        margin-bottom: 1.6em; padding: 0.7em 0.9em;
+        border: 1px solid var(--border); border-radius: var(--radius);
+        background: var(--surface-2); font-size: 0.8em; color: var(--muted);
+      }
+      .demo .spacer { flex: 1; }
+      .tabs { display: inline-flex; gap: 2px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 6px; padding: 2px; }
+      .tab {
+        font-family: var(--font-mono); font-size: 0.78em; padding: 0.35em 0.8em;
+        border-radius: 4px; border: none; background: none; color: var(--dim); cursor: pointer;
+      }
+      .tab.active { background: var(--surface); color: var(--ink); }
+      .empty { color: var(--dim); font-size: 0.85em; padding: 1.2em 0.7em; text-align: center; }
+      .toast {
+        position: fixed; bottom: 1.4em; left: 50%; transform: translateX(-50%);
+        background: var(--surface); border: 1px solid var(--border-bright);
+        border-radius: var(--radius); padding: 0.7em 1.1em; font-size: 0.85em;
+        box-shadow: 0 12px 28px -14px rgb(0 0 0 / 0.4);
+      }
+      .toast[hidden] { display: none; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <nav class="side">
+        <div class="grouplabel">Acme Corp</div>
+        <a class="navlink" href="./settings.html">General</a>
+        <a class="navlink" aria-current="page" href="#">Members</a>
+        <a class="navlink" href="./keys.html">API keys</a>
+        <div class="grouplabel" style="padding-top: 1.4em">Account</div>
+        <a class="navlink" href="#">Profile</a>
+        <a class="navlink" href="./switcher.html">Workspaces</a>
+      </nav>
+
+      <div class="body">
+        <div class="demo">
+          <span>Viewing as</span>
+          <div class="tabs">
+            <button class="tab active" onclick="setRole('admin')">admin</button>
+            <button class="tab" onclick="setRole('member')">member</button>
+          </div>
+          <span class="spacer"></span>
+          <span id="hint">Admins invite, change roles and remove people.</span>
+        </div>
+
+        <div class="head">
+          <h1>Members</h1>
+          <span class="badge" id="count"></span>
+        </div>
+        <p class="sub">Everyone with access to <b>Acme Corp</b>. Roles apply to this workspace only — the same
+          person can be an admin here and a member somewhere else.</p>
+
+        <table>
+          <thead>
+            <tr><th style="width: 45%">Person</th><th>Role</th><th>Joined</th><th></th></tr>
+          </thead>
+          <tbody id="rows"></tbody>
+        </table>
+
+        <h2>Pending invites</h2>
+        <p class="sub tight">Invited by email. The seat is held until they sign in — then it becomes a normal
+          membership, whether or not they had an account already.</p>
+        <table>
+          <thead>
+            <tr><th style="width: 45%">Email</th><th>Role</th><th>Invited</th><th></th></tr>
+          </thead>
+          <tbody id="pending"></tbody>
+        </table>
+
+        <h2>Invite someone</h2>
+        <p class="sub tight">They get an email with a link back to <span class="mono">acme.app.example.com</span>.</p>
+        <div class="panel">
+          <form class="invite" onsubmit="invite(event)">
+            <div class="field grow">
+              <label for="email">Email</label>
+              <input id="email" type="email" placeholder="person@example.com" required />
+            </div>
+            <div class="field">
+              <label for="role">Role</label>
+              <select id="role">
+                <option value="member">member</option>
+                <option value="admin">admin</option>
+              </select>
+            </div>
+            <button class="primary" type="submit" id="send">Send invite</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="toast" id="toast" hidden></div>
+
+    <script>
+      const colors = ["#2f7f68", "#7a5cc4", "#a3672a", "#b8452c", "#2a6ea3", "#4d7c1f"];
+      let viewer = "admin";
+
+      let members = [
+        { id: "m1", name: "Andre Brandao", email: "andre@example.com", role: "admin", joined: "Mar 2026", you: true },
+        { id: "m2", name: "Ana Ribeiro", email: "ana@example.com", role: "admin", joined: "Mar 2026" },
+        { id: "m3", name: "Bruno Costa", email: "bruno@example.com", role: "member", joined: "Apr 2026" },
+        { id: "m4", name: "Cami Duarte", email: "cami@example.com", role: "member", joined: "Jun 2026" },
+      ];
+      let invites = [
+        { id: "i1", email: "dani@example.com", role: "member", by: "Ana Ribeiro", when: "2 days ago" },
+        { id: "i2", email: "eve@northwind.io", role: "admin", by: "you", when: "6 hours ago" },
+      ];
+
+      const initials = (n) => n.split(" ").map((p) => p[0]).slice(0, 2).join("").toUpperCase();
+      const tint = (s) => colors[[...s].reduce((a, c) => a + c.charCodeAt(0), 0) % colors.length];
+
+      function say(msg) {
+        toast.textContent = msg;
+        toast.hidden = false;
+        clearTimeout(say.t);
+        say.t = setTimeout(() => (toast.hidden = true), 2600);
+      }
+
+      function setRole(r) {
+        viewer = r;
+        document.querySelectorAll(".demo .tab").forEach((t) => t.classList.toggle("active", t.textContent === r));
+        hint.textContent =
+          r === "admin"
+            ? "Admins invite, change roles and remove people."
+            : "Members see the roster read-only. The last admin can never be demoted or removed.";
+        paint();
+      }
+
+      function change(id, role) {
+        members = members.map((m) => (m.id === id ? { ...m, role } : m));
+        const m = members.find((m) => m.id === id);
+        say(`${m.name} is now ${role === "admin" ? "an admin" : "a member"}`);
+        paint();
+      }
+
+      function remove(id) {
+        const m = members.find((m) => m.id === id);
+        if (!confirm(`Remove ${m.name} from Acme Corp?\n\nTheir todos and projects stay — they just lose access.`)) return;
+        members = members.filter((m) => m.id !== id);
+        say(`${m.name} removed`);
+        paint();
+      }
+
+      function revoke(id) {
+        invites = invites.filter((i) => i.id !== id);
+        say("Invite revoked");
+        paint();
+      }
+
+      function invite(e) {
+        e.preventDefault();
+        const addr = email.value.trim();
+        if (members.some((m) => m.email === addr) || invites.some((i) => i.email === addr)) {
+          say("That address already has a seat here");
+          return;
+        }
+        invites = [{ id: "i" + Date.now(), email: addr, role: role.value, by: "you", when: "just now" }, ...invites];
+        email.value = "";
+        say(`Invite sent to ${addr}`);
+        paint();
+      }
+
+      function paint() {
+        const admins = members.filter((m) => m.role === "admin").length;
+        count.textContent = `${members.length} member${members.length > 1 ? "s" : ""}`;
+
+        rows.innerHTML = members
+          .map((m) => {
+            const last = m.role === "admin" && admins === 1;
+            const locked = viewer !== "admin" || m.you || last;
+            const why = viewer !== "admin" ? "Only admins can change roles" : last ? "A workspace needs at least one admin" : m.you ? "You cannot change your own role" : "";
+            return `
+            <tr>
+              <td>
+                <div class="who">
+                  <span class="mark" style="background:${tint(m.email)}">${initials(m.name)}</span>
+                  <span><b>${m.name} ${m.you ? '<span class="badge you">you</span>' : ""}</b><span>${m.email}</span></span>
+                </div>
+              </td>
+              <td>
+                <select ${locked ? "disabled" : ""} title="${why}" onchange="change('${m.id}', this.value)">
+                  <option value="member" ${m.role === "member" ? "selected" : ""}>member</option>
+                  <option value="admin" ${m.role === "admin" ? "selected" : ""}>admin</option>
+                </select>
+              </td>
+              <td class="mono">${m.joined}</td>
+              <td class="right">
+                ${
+                  viewer === "admin" && !m.you && !last
+                    ? `<button class="ghost" onclick="remove('${m.id}')" title="Remove from workspace">Remove</button>`
+                    : ""
+                }
+              </td>
+            </tr>`;
+          })
+          .join("");
+
+        pending.innerHTML = invites.length
+          ? invites
+              .map(
+                (i) => `
+            <tr>
+              <td>
+                <div class="who">
+                  <span class="mark ghost">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg>
+                  </span>
+                  <span><b>${i.email} <span class="badge pending">pending</span></b><span>invited by ${i.by}, ${i.when}</span></span>
+                </div>
+              </td>
+              <td><span class="badge">${i.role}</span></td>
+              <td class="mono">${i.when}</td>
+              <td class="right">
+                ${viewer === "admin" ? `<button class="ghost" onclick="revoke('${i.id}')">Revoke</button>` : ""}
+              </td>
+            </tr>`,
+              )
+              .join("")
+          : `<tr><td colspan="4" class="empty">No invites waiting.</td></tr>`;
+
+        send.disabled = viewer !== "admin";
+        email.disabled = viewer !== "admin";
+        role.disabled = viewer !== "admin";
+      }
+
+      paint();
+    </script>
+  </body>
+</html>

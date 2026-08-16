@@ -2,12 +2,12 @@
 
 Bun scripts for running and populating the stack locally. Run from the repo root.
 
-| Script         | What                                                                   |
-| -------------- | ---------------------------------------------------------------------- |
-| `dev.ts`       | The whole stack. Spawns every service, owns their lifetimes and output |
-| `seed.ts`      | Demo data through core's own operations — no raw inserts               |
-| `pglite.ts`    | In-process Postgres for `DB=pglite`                                    |
-| `feature.ts`   | Scaffolds a full vertical slice                                        |
+| Script       | What                                                                   |
+| ------------ | ---------------------------------------------------------------------- |
+| `dev.ts`     | The whole stack. Spawns every service, owns their lifetimes and output |
+| `seed.ts`    | Demo data through core's own operations — no raw inserts               |
+| `pglite.ts`  | In-process Postgres for `DB=pglite`                                    |
+| `feature.ts` | Scaffolds a full vertical slice                                        |
 
 ## bun dev
 

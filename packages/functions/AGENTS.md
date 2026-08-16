@@ -1,19 +1,25 @@
 # functions/
 
-HTTP API layer — Hono server (port 3000) exposing OpenAPI-documented endpoints backed by `@template/core`.
+Hono services backed by `@template/core`: `api` (3000, OpenAPI-documented), `mcp` (3001),
+`auth` (3002, OpenAuth issuer) and the `queue` worker. Transport only — no business logic here.
 
 ## Structure
 
 ```
 src/
-  index.ts              — entry point, starts the Hono server
+  target.ts             — one wrapper per environment (bun, lambda, worker)
   api/
     index.ts            — mounts all routers
     routes.ts           — route definitions
     common.ts           — Result/validator/authRequired/ErrorResponses helpers
-    middleware.ts        — actor resolution (bearer session token) + error → HTTP response
-    handler/             — one file per domain (auth, user, todo)
+    middleware.ts       — actor resolution (bearer token) + error → HTTP response
+    handler/            — one file per domain (file, key, project, todo, user)
+    target/             — bun.ts | lambda.ts | worker.ts, the entry points
+  auth/ mcp/ queue/     — same shape: the service, plus its target/
 ```
+
+Each service is a plain Hono app; its `target/` wraps it with a database connection for the
+environment it runs in, so the app itself never knows where it runs. See `docs/runtime.md`.
 
 ## Key Patterns
 
@@ -29,10 +35,11 @@ Actor.assert("user"); // assert type and return typed actor
 
 Middleware sets the actor via `Actor.provide(type, properties, next)` — handlers never call `provide` directly.
 
-**Auth** — a request carries `Authorization: Bearer <session token>`. The token is minted by
-`POST /auth/register` or `POST /auth/login` (see `@template/core/user/auth`, the `Auth` namespace) and looked
-up against the `session` table in `middleware.ts`. No OAuth, no API keys — just email/password and a session
-token, on purpose, to keep this scaffold simple.
+**Auth** — a request carries `Authorization: Bearer <token>`, and `middleware.ts` resolves it two
+ways: an `sk-` prefix is a user-minted API key looked up in Postgres (`Key.verify`), anything else
+is a JWT from the OpenAuth issuer, verified statelessly against its JWKS. Both collapse to a bare
+user id, and the role always comes from the user row — so an API key can never outlive the
+permissions of whoever minted it. No header at all means the `public` actor.
 
 **Errors** — throw `VisibleError` for client-safe error responses:
 
@@ -41,8 +48,10 @@ import { VisibleError, ErrorCodes } from "@template/core/error";
 throw new VisibleError("not_found", ErrorCodes.NotFound.RESOURCE_NOT_FOUND, "Resource not found");
 ```
 
-**OpenAPI** — annotate routes with Zod schemas via `hono-openapi`'s `describeRoute`. Every public route must
-have request/response schemas.
+**OpenAPI** — the spec starts in core: its Zod schemas carry the `.meta({ description, example })`
+annotations. Routes reuse those schemas through `hono-openapi`'s `describeRoute` rather than
+restating them, so a description written once in core reaches the SDK. Every public route needs
+request and response schemas.
 
 **Handlers** — keep handlers thin: validate input, call a `@template/core` function, return the result. No
 business logic in handlers.
@@ -50,10 +59,11 @@ business logic in handlers.
 ## Commands
 
 ```sh
-bun run dev          # start dev server with hot reload
-bun run gen:spec     # regenerate packages/sdk/openapi.json from routes
+bun run dev          # api, hot reload. also dev:mcp, dev:auth, dev:queue
+bun run gen:spec     # regenerate packages/sdk/openapi.json — the user runs this, not an agent
 bun typecheck        # type check
 bun test             # run tests
 ```
 
-Regenerate the OpenAPI spec whenever routes or schemas change — the SDK (`packages/sdk/ts`) is generated from it.
+Whenever a route or a core schema changes, the spec is stale and so is the SDK generated from it
+(`packages/sdk/ts`). Hand the user `gen:spec` here, then `gen` there — in that order.

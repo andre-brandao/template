@@ -221,12 +221,14 @@
 	}
 
 	:global(::view-transition-group(shell-nav)) {
-		z-index: 3;
+		z-index: 4;
 	}
 
-	/* The sidebar's active pill rides above the menu it sits in, which is above the page. */
+	/* The pill is a background, so it goes under the menu snapshot that carries the labels
+	   and icons, and over the rail it slides along. The menu paints nothing but text, so
+	   none of the pill is lost behind it. */
 	:global(::view-transition-group(active)) {
-		z-index: 4;
+		z-index: 3;
 	}
 
 	:global(::view-transition-old(shell-rail)),

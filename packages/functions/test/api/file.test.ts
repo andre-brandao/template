@@ -3,6 +3,7 @@ import { setupApiTest } from "./util";
 import { app } from "../../src/api/routes";
 import { User } from "@template/core/user";
 import { Key } from "@template/core/key";
+import { Signing } from "@template/core/key/signing";
 import { Storage } from "@template/core/storage";
 import { serve } from "@template/core/storage/adapter/serve";
 
@@ -89,7 +90,7 @@ describe("file", () => {
     // Signed against the same disk the route reads from, so the bytes are actually there.
     const disk = serve(Storage.fake(), {
       url: "http://localhost/file/signed",
-      key: Key.signing,
+      key: Signing.current,
     });
 
     await Storage.provide(disk, async () => {

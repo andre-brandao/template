@@ -4,7 +4,7 @@ import { Hono } from "hono";
 import { describeRoute } from "hono-openapi";
 import { Result, validator, ErrorResponses, authRequired } from "../common";
 import { Actor } from "@template/core/actor";
-import { Key } from "@template/core/key";
+import { Signing } from "@template/core/key/signing";
 import { Storage } from "@template/core/storage";
 import { check } from "@template/core/storage/adapter/serve";
 import { Examples } from "@template/core/examples";
@@ -160,7 +160,7 @@ export namespace FileApi {
       ),
       async (c) => {
         const query = c.req.valid("query");
-        const secret = await Key.secret(query.kid);
+        const secret = await Signing.secret(query.kid);
         if (!secret || !(await check(query, secret)))
           throw new VisibleError(
             "forbidden",

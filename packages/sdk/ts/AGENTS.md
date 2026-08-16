@@ -1,44 +1,41 @@
-# sdk/ts/
+# sdk
 
-Auto-generated TypeScript SDK for the Template API. **Do not hand-edit files under `src/` — they are fully generated.**
+Generated TypeScript client. **Never hand-edit `src/*.gen.ts` or `src/client/`, `src/core/`.**
 
-## Source of Truth
+## Where it comes from
 
-The SDK is generated from `packages/sdk/openapi.json`, which is itself generated from the running API routes in `packages/functions`.
+```
+functions/src/api/routes.ts  ──gen:spec──▶  packages/sdk/openapi.json  ──gen──▶  src/*.gen.ts
+```
 
-## Regeneration Workflow
-
-1. Change routes / schemas in `packages/functions`
-2. `bun run gen:spec` (in `packages/functions`) → updates `packages/sdk/openapi.json`
-3. `bun run gen` (in this directory) → regenerates all `src/*.gen.ts` files via `@hey-api/openapi-ts`
+Both steps are **the user's to run**, in that order:
 
 ```sh
-# From repo root:
 cd packages/functions && bun run gen:spec
 cd ../sdk/ts && bun run gen
 ```
 
+An agent that changed a route edits the route, then hands over the commands — it does not
+run them and does not patch the generated output to match.
+
 ## Structure
 
-```
-src/
-  index.ts          — public API surface (re-exports from generated files)
-  sdk.gen.ts        — generated SDK class
-  types.gen.ts      — generated request/response types
-  client.gen.ts     — generated HTTP client
-  client/           — generated client internals
-  core/             — generated core utilities (auth, serialisation, SSE, etc.)
-openapi.json        — OpenAPI spec (source for generation, lives one level up)
-build.ts            — generation script (@hey-api/openapi-ts)
-fetch.ts            — fetch wrapper with timeout + single retry, for callers to opt into
-```
+| Path           | What                                                     |
+| -------------- | -------------------------------------------------------- |
+| `src/index.ts` | Public surface. Re-exports the generated files.          |
+| `src/*.gen.ts` | Generated: SDK class, types, client.                     |
+| `build.ts`     | Generation script (`@hey-api/openapi-ts`).               |
+| `fetch.ts`     | Hand-written fetch wrapper: timeout + one retry, opt-in. |
+
+Hand-written additions go in a non-`.gen.ts` file and are re-exported from `src/index.ts`.
+That is the only way to extend this package.
 
 ## Usage
 
 ```ts
 import { createClient } from "@template/sdk";
-
 const client = createClient({ baseUrl: "http://localhost:3000" });
 ```
 
-If you need to add a helper or wrapper, create a non-`.gen.ts` file and re-export from `src/index.ts`. Never modify `.gen.ts` files directly.
+`apps/cli` reflects `TemplateSdk.prototype`, so a new endpoint appears there automatically
+once this package regenerates. Nothing needs listing by hand.

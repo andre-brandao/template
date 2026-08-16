@@ -58,7 +58,7 @@
 		</label>
 	</div>
 
-	<Scroll>
+	<Scroll fill>
 		<UsersTable
 			rows={page.data}
 			sorting={users.decode(keys)}

@@ -96,12 +96,10 @@
 </div>
 
 <style>
-	/* The title is fixed chrome; only the panel below it scrolls. */
+	/* The page scrolls this, not a pane inside it — the footer belongs under the story. */
 	.stage {
 		display: flex;
 		flex-direction: column;
-		height: 100%;
-		min-height: 0;
 	}
 
 	.stage > header {
@@ -115,11 +113,6 @@
 	}
 
 	.panel {
-		flex: 1;
-		min-height: 0;
-		overflow-y: auto;
-		/* Reaching the end shouldn't hand the scroll to the document behind it. */
-		overscroll-behavior: contain;
 		padding: 1.25em 0 3em;
 	}
 
@@ -262,14 +255,6 @@
 	}
 
 	@media (max-width: 900px) {
-		.stage {
-			height: auto;
-		}
-
-		.panel {
-			overflow: visible;
-		}
-
 		.row {
 			flex-direction: column;
 			height: auto;

@@ -35,20 +35,25 @@
 </div>
 
 <style>
-	/* Header and tabs are fixed chrome; only the panel below them scrolls. */
+	/* The page scrolls the doc; only the header holds still. */
 	.stage {
 		display: flex;
 		flex-direction: column;
-		height: 100%;
-		min-height: 0;
 	}
 
+	/* Pinned under the app bar, opaque so the prose passes behind it. The negative margin
+	   cancels the padding the sticky state needs, so at rest nothing has moved. */
 	.stage > header {
+		position: sticky;
+		top: var(--topbar);
+		z-index: 5;
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
 		gap: 1em;
-		padding-bottom: 0.9em;
+		padding: 0.9em 0;
+		margin-top: -0.9em;
+		background: var(--bg);
 		border-bottom: 1px solid var(--border);
 	}
 
@@ -58,16 +63,11 @@
 	}
 
 	.panel {
-		flex: 1;
-		min-height: 0;
-		overflow-y: auto;
-		/* Reaching the end shouldn't hand the scroll to the document behind it. */
-		overscroll-behavior: contain;
 		padding: 1.25em 0 3em;
 	}
 
-	/* The scrollbar stays at the pane's edge; the column inside holds everything — prose,
-	   mockups and diagrams — at one measure so their edges line up. */
+	/* One measure for everything the doc holds — prose, mockups and diagrams — so their
+	   edges line up. */
 	.panel :global(.markdown-body) {
 		max-width: 80ch;
 	}

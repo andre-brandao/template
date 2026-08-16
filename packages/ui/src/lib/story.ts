@@ -21,6 +21,7 @@ import * as boundary from "./boundary/FormBoundary.story.svelte";
 import * as issue from "./issue/Issue.story.svelte";
 import * as modal from "./modal/Modals.story.svelte";
 import * as pagination from "./pagination/Pagination.story.svelte";
+import * as scroll from "./pane/Scroll.story.svelte";
 import * as skeleton from "./skeleton/Skeleton.story.svelte";
 import * as spinner from "./spinner/Spinner.story.svelte";
 import * as tabs from "./tabs/Tabs.story.svelte";
@@ -90,6 +91,7 @@ export const stories = [
   { slug: "issue", story: issue.story, demo: issue.default },
   { slug: "modals", story: modal.story, demo: modal.default },
   { slug: "pagination", story: pagination.story, demo: pagination.default },
+  { slug: "scroll", story: scroll.story, demo: scroll.default },
   { slug: "skeleton", story: skeleton.story, demo: skeleton.default },
   { slug: "spinner", story: spinner.story, demo: spinner.default },
   { slug: "tabs", story: tabs.story, demo: tabs.default },

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Todo } from '@template/core/todo';
-	import { Spinner } from '@template/ui';
+	import { Scroll, Spinner } from '@template/ui';
 	import Menu from '$lib/components/Menu.svelte';
 	import { setStatus } from '../api/todos.remote';
 	import { STATUSES, color, label } from '../status';
@@ -33,7 +33,7 @@
 			</button>
 		{/snippet}
 		{#snippet children(close)}
-			<div class="list">
+			<Scroll style="min-width: 14em; max-height: 280px">
 				{#each items as item (item.key)}
 					{@const form = setStatus.for(`${todo.id}:${item.key}`)}
 					<!-- Closing on click would detach the form before the browser submits it
@@ -70,7 +70,7 @@
 						placeholder="waiting on design…"
 					/>
 				</label>
-			</div>
+			</Scroll>
 		{/snippet}
 	</Menu>
 </span>
@@ -80,7 +80,8 @@
 		display: inline-flex;
 	}
 
-	.list form {
+	/* The only forms here are the items themselves; each posts its own status. */
+	form {
 		display: contents;
 	}
 
@@ -119,12 +120,6 @@
 
 	.caret {
 		opacity: 0.7;
-	}
-
-	.list {
-		min-width: 14em;
-		max-height: 280px;
-		overflow-y: auto;
 	}
 
 	.item {

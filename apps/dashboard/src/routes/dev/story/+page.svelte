@@ -31,12 +31,10 @@
 </div>
 
 <style>
-	/* Same shape as a story page: the intro is fixed chrome, the list below it scrolls. */
+	/* Same shape as a story page: the page scrolls it, the footer lands under the list. */
 	.index {
 		display: flex;
 		flex-direction: column;
-		height: 100%;
-		min-height: 0;
 	}
 
 	header {
@@ -67,10 +65,6 @@
 		grid-template-columns: repeat(auto-fill, minmax(24em, 1fr));
 		align-content: start;
 		gap: 0.8em;
-		flex: 1;
-		min-height: 0;
-		overflow-y: auto;
-		overscroll-behavior: contain;
 		padding: 1.25em 0 3em;
 	}
 
@@ -89,15 +83,5 @@
 	.list code {
 		font-family: var(--font-mono);
 		color: var(--ink);
-	}
-
-	@media (max-width: 900px) {
-		.index {
-			height: auto;
-		}
-
-		.list {
-			overflow: visible;
-		}
 	}
 </style>

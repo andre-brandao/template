@@ -86,7 +86,7 @@
 		</p>
 	{/if}
 
-	<Scroll>
+	<Scroll fill>
 		<LogsTable
 			rows={log.data}
 			sorting={events.decode(params.sort)}

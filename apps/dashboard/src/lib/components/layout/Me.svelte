@@ -9,7 +9,7 @@
 	import { resolve } from '$app/paths';
 	import type { User } from '@template/core/user';
 	import { Avatar } from '@template/ui';
-	import ThemeToggle from '$lib/features/settings/components/ThemeToggle.svelte';
+	import ThemeToggle from './ThemeToggle.svelte';
 	import Can from '../Can.svelte';
 	import Menu from '../Menu.svelte';
 

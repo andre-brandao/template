@@ -1,6 +1,6 @@
 <!--
 	The account menu's quick theme switch — the same preference the Experience page owns,
-	one click away. Lives in this slice so the write still goes through `prefs.remote`.
+	one click away. Writes through the chrome's own one-field command, not settings'.
 -->
 <script lang="ts">
 	import { invalidateAll } from '$app/navigation';
@@ -9,7 +9,7 @@
 	import Sun from '@lucide/svelte/icons/sun';
 	import Moon from '@lucide/svelte/icons/moon';
 	import { Themes, type Prefs } from '@template/core/user/prefs';
-	import { save } from '../api/prefs.remote';
+	import { save } from './theme.remote';
 
 	const icons = { system: Monitor, light: Sun, dark: Moon };
 	const labels = { system: 'System', light: 'Light', dark: 'Dark' };
@@ -45,7 +45,7 @@
 	async function pick(theme: Prefs['theme'], from: HTMLElement) {
 		value = theme;
 		swap(theme, from);
-		await save({ theme });
+		await save(theme);
 		// A `command` doesn't invalidate loads, so the settings page would keep the old value.
 		await invalidateAll();
 	}

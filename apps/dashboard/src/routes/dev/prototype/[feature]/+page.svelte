@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { Markdown } from '@template/ui';
+	import { Markdown, Tabs } from '@template/ui';
 	import Frame from './Frame.svelte';
 	import Link from './Link.svelte';
 
@@ -13,28 +13,56 @@
 	<header>
 		<h1>{feature?.title ?? page.params.feature}</h1>
 		{#if data.docs.length > 1}
-			<nav class="tabs" aria-label="Document">
-				{#each data.docs as one (one)}
-					<a
-						class="tab"
-						class:active={data.doc === one}
-						aria-current={data.doc === one ? 'page' : undefined}
-						href="?doc={one}"
-						data-sveltekit-replacestate
-						data-sveltekit-noscroll>{one.toLowerCase()}</a
-					>
-				{/each}
+			<nav aria-label="Document">
+				<Tabs.Root>
+					{#each data.docs as one (one)}
+						<Tabs.Item
+							active={data.doc === one}
+							aria-current={data.doc === one ? 'page' : undefined}
+							href="?doc={one}"
+							data-sveltekit-replacestate
+							data-sveltekit-noscroll>{one.toLowerCase()}</Tabs.Item
+						>
+					{/each}
+				</Tabs.Root>
 			</nav>
 		{/if}
 	</header>
 
-	<div class="panel scroll">
+	<div class="panel">
 		<Markdown value={data.text} html components={{ html: Frame, a: Link }} />
 	</div>
 </div>
 
 <style>
+	/* Header and tabs are fixed chrome; only the panel below them scrolls. */
+	.stage {
+		display: flex;
+		flex-direction: column;
+		height: 100%;
+		min-height: 0;
+	}
+
+	.stage > header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 1em;
+		padding-bottom: 0.9em;
+		border-bottom: 1px solid var(--border);
+	}
+
+	.stage h1 {
+		margin: 0;
+		font-size: 1.5em;
+	}
+
 	.panel {
+		flex: 1;
+		min-height: 0;
+		overflow-y: auto;
+		/* Reaching the end shouldn't hand the scroll to the document behind it. */
+		overscroll-behavior: contain;
 		padding: 1.25em 0 3em;
 	}
 

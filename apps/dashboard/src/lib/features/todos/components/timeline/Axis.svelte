@@ -15,7 +15,7 @@
 </script>
 
 <!-- One ruling for the whole chart, so the calendar reads through the group gaps. -->
-<div class="field" aria-hidden="true">
+<div class="ruling" aria-hidden="true">
 	{#each ticks as tick (tick.at)}
 		{#if tick.off}
 			<span class="off" style:left="{pct(tick.at)}%" style:width="{100 / days}%"></span>
@@ -39,7 +39,7 @@
 <style>
 	/* Overlays and the scale all start where the track starts, so a percent means the
 	   same instant in every layer. */
-	.field {
+	.ruling {
 		position: absolute;
 		inset: 0 0 0 calc(var(--lane) + var(--name));
 		pointer-events: none;

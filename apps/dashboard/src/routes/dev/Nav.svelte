@@ -129,9 +129,18 @@
 		display: flex;
 		align-items: center;
 		gap: 0.5em;
-		font-size: 0.8em;
 		padding: 0.4em 0.7em;
+		border-radius: var(--radius);
 		overflow: hidden;
+		color: var(--muted);
+		font-size: 0.8em;
+		text-decoration: none;
+	}
+
+	.navlink:hover,
+	.navlink[aria-current='page'] {
+		color: var(--ink);
+		background: var(--surface-2);
 	}
 
 	summary {

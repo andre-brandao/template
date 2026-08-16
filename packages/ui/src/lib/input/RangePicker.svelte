@@ -20,6 +20,7 @@
 
 <script lang="ts">
 	import { tick } from 'svelte';
+	import * as Tabs from '../tabs';
 
 	let {
 		range = $bindable(last(30)),
@@ -49,13 +50,11 @@
 </script>
 
 <div class="picker">
-	<div class="tabs">
+	<Tabs.Root>
 		{#each presets as days (days)}
-			<button class="tab" class:active={active(days)} onclick={() => set(last(days))}>
-				{tag(days)}
-			</button>
+			<Tabs.Item active={active(days)} onclick={() => set(last(days))}>{tag(days)}</Tabs.Item>
 		{/each}
-	</div>
+	</Tabs.Root>
 	<input type="date" name="start" value={range.start} max={range.end} onchange={move('start')} />
 	<span class="arrow">→</span>
 	<input
@@ -74,35 +73,6 @@
 		align-items: center;
 		flex-wrap: wrap;
 		gap: 0.75em;
-	}
-
-	.tabs {
-		display: inline-flex;
-		gap: 2px;
-		background: var(--surface-2, #eee);
-		border: 1px solid var(--border, #333);
-		border-radius: 6px;
-		padding: 2px;
-	}
-
-	.tab {
-		font-family: var(--font-mono, monospace);
-		font-size: 0.78em;
-		padding: 0.4em 0.9em;
-		border-radius: 4px;
-		border: none;
-		background: none;
-		color: var(--dim, #888);
-		cursor: pointer;
-	}
-
-	.tab:hover {
-		color: var(--muted, #666);
-	}
-
-	.tab.active {
-		background: var(--surface, #fff);
-		color: var(--ink, #111);
 	}
 
 	input {

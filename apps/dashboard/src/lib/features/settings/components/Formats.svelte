@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Select } from '@template/ui';
+	import { Field, Select } from '@template/ui';
 	import { Dates, Times, type Patch, type Prefs } from '@template/core/user/prefs';
 	import { SAMPLE, date, local, stamp, time, zones } from '$lib/utils/fmt';
 
@@ -37,20 +37,17 @@
 </script>
 
 <div class="grid">
-	<label class="field">
-		<span>Time zone</span>
+	<Field label="Time zone">
 		<Select name="zone" options={zone} value={prefs.zone ?? ''} onchange={pick} />
-	</label>
+	</Field>
 
-	<label class="field">
-		<span>Date format</span>
+	<Field label="Date format">
 		<Select name="date" options={dates} value={prefs.date} onchange={pick} />
-	</label>
+	</Field>
 
-	<label class="field">
-		<span>Time format</span>
+	<Field label="Time format">
 		<Select name="time" options={times} value={prefs.time} onchange={pick} />
-	</label>
+	</Field>
 </div>
 
 <p class="preview">{stamp(new Date(), prefs)}</p>

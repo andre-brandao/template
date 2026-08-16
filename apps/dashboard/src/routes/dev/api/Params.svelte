@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Input, Select } from '@template/ui';
+	import { Field, Input, Select } from '@template/ui';
 	import type { doc } from './api.remote';
 
 	type Param = Awaited<ReturnType<typeof doc>>['list'][number]['params'][number];
@@ -12,11 +12,11 @@
 {#if params.length}
 	<section>
 		{#each params as one (one.name)}
-			<label class="field">
-				<span>
-					{one.name}{one.required ? ' *' : ''}
-					<em>{one.type}{one.note ? ` · ${one.note}` : ''}</em>
-				</span>
+			{#snippet caption()}
+				{one.name}{one.required ? ' *' : ''}
+				<em>{one.type}{one.note ? ` · ${one.note}` : ''}</em>
+			{/snippet}
+			<Field label={caption}>
 				{#if one.options}
 					<Select
 						options={[
@@ -36,7 +36,7 @@
 				{#if one.description}
 					<small>{one.description}</small>
 				{/if}
-			</label>
+			</Field>
 		{/each}
 	</section>
 {/if}

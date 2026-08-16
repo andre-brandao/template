@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { FormBoundary, Select } from '@template/ui';
+	import { FormBoundary, Issue, Select } from '@template/ui';
 	import { Permission } from '@template/core/permission';
 	import type { User } from '@template/core/user';
 	import { assignRole } from '../api/admin.remote';
@@ -17,7 +17,7 @@
 {:else}
 	<FormBoundary>
 		{#each assign.fields.allIssues() ?? [] as issue (issue)}
-			<p class="error">{issue.message}</p>
+			<Issue>{issue.message}</Issue>
 		{/each}
 
 		<form
@@ -41,11 +41,5 @@
 	.role {
 		font-size: 0.85em;
 		color: var(--muted);
-	}
-
-	.error {
-		margin: 0 0 0.4em;
-		font-size: 0.85em;
-		color: var(--danger, #c0392b);
 	}
 </style>

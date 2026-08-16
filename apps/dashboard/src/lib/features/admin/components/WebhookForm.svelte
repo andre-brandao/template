@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { dev } from '$app/environment';
-	import { Button, FormBoundary, Input } from '@template/ui';
+	import { Button, Field, FormBoundary, Input, Issue } from '@template/ui';
 	import { Types } from '@template/core/webhook/types';
 	import { createWebhook } from '../api/admin.remote';
 
@@ -31,7 +31,7 @@
 
 <FormBoundary>
 	{#each createWebhook.fields.allIssues() ?? [] as issue (issue)}
-		<p class="error">{issue.message}</p>
+		<Issue>{issue.message}</Issue>
 	{/each}
 
 	<form
@@ -42,14 +42,13 @@
 			onsuccess?.();
 		})}
 	>
-		<label class="field">
-			<span>Endpoint URL</span>
+		<Field label="Endpoint URL">
 			<Input
 				placeholder="https://example.com/hooks"
 				{...createWebhook.fields.url.as('url')}
 				{@attach (node) => void (el = node as HTMLInputElement)}
 			/>
-		</label>
+		</Field>
 
 		{#if dev}
 			<button type="button" class="local" onclick={fill}>
@@ -102,17 +101,6 @@
 		display: flex;
 		flex-direction: column;
 		gap: 1.2em;
-	}
-
-	.field {
-		display: flex;
-		flex-direction: column;
-		gap: 0.35em;
-	}
-
-	.field span {
-		font-size: 0.85em;
-		color: var(--muted);
 	}
 
 	.local {
@@ -192,11 +180,5 @@
 		color: var(--muted);
 		font-family: var(--font-mono);
 		font-size: 0.78em;
-	}
-
-	.error {
-		margin: 0 0 0.6em;
-		font-size: 0.85em;
-		color: var(--danger, #c0392b);
 	}
 </style>

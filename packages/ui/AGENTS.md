@@ -30,7 +30,9 @@ Every component is re-exported from `src/lib/index.ts`, and every story is regis
 - **No core imports.** If a component needs a domain type, it takes a structural prop.
 - Split a collection by destination (`{ top, bottom }`) rather than tagging items with a
   `bottom: true` modifier.
-- CSS lives beside the component, scoped. Global names belong to the app, not here.
+- CSS lives beside the component, scoped. Never lean on a class the app defines — the
+  only thing crossing the boundary is a token (`--border`, `--radius`), and every one is
+  written with a fallback so the component still reads on its own.
 
 ## Commands
 

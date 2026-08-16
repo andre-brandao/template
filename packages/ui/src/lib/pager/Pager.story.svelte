@@ -1,5 +1,6 @@
 <script module lang="ts">
 	import type { Story } from '../story';
+	import Field from '../field/Field.svelte';
 	import Pager from './Pager.svelte';
 
 	export const story: Story = {
@@ -19,14 +20,12 @@
 </script>
 
 <div class="knobs">
-	<label class="field">
-		<span>pageSize</span>
+	<Field label="pageSize">
 		<input type="number" min="1" bind:value={size} />
-	</label>
-	<label class="field">
-		<span>total</span>
+	</Field>
+	<Field label="total">
 		<input type="number" min="0" bind:value={total} />
-	</label>
+	</Field>
 </div>
 
 <Pager of={{ page, pageSize: size, total }} onchange={(next) => (page = next)} label="todos" />

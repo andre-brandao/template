@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { resolve } from '$app/paths';
-	import { Select } from '@template/ui';
+	import { Field, Select } from '@template/ui';
 	import { getKeys } from '$lib/features/keys/api/keys.remote';
 	import Nav from '../Nav.svelte';
 	import { doc } from './api.remote';
@@ -27,8 +27,7 @@
 
 <Nav label="Operations" {items} {children}>
 	{#snippet head()}
-		<label class="field">
-			<span>auth</span>
+		<Field label="auth">
 			<Select
 				options={[
 					{ value: '', label: 'None (public)' },
@@ -37,7 +36,7 @@
 				value={token.current}
 				onchange={(e) => (token.current = e.currentTarget.value)}
 			/>
-		</label>
+		</Field>
 		{#if !keys.length}
 			<p class="hint">
 				No keys yet, so authenticated routes answer 401. Mint one in

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Button, Card } from '@template/ui';
+	import { Button, Card, Issue } from '@template/ui';
 	import { removeTodo } from '../../api/todos.remote';
 	import type { Todo } from '@template/core/todo';
 	import StatusPill from '../StatusPill.svelte';
@@ -33,7 +33,7 @@
 <!-- fallow-ignore-next-line code-duplication -->
 <Card accent={color(todo.status)} interactive>
 	{#each remove.fields.allIssues() ?? [] as issue, i (i)}
-		<p class="error">{issue.message}</p>
+		<Issue>{issue.message}</Issue>
 	{/each}
 
 	<div class="head">

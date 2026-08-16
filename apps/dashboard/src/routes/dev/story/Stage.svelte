@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
+	import { Tabs } from '@template/ui';
 	import { page } from '$app/state';
 	import type { Control, Entry } from '@template/ui/story';
 	import Controls from './Controls.svelte';
@@ -32,21 +33,23 @@
 <div class="stage">
 	<header>
 		<h1>{story.title}</h1>
-		<nav class="tabs" aria-label="View">
-			{#each tabs as one (one)}
-				<a
-					class="tab"
-					class:active={tab === one}
-					aria-current={tab === one ? 'page' : undefined}
-					href="?tab={one}"
-					data-sveltekit-replacestate
-					data-sveltekit-noscroll>{one}</a
-				>
-			{/each}
+		<nav aria-label="View">
+			<Tabs.Root>
+				{#each tabs as one (one)}
+					<Tabs.Item
+						active={tab === one}
+						aria-current={tab === one ? 'page' : undefined}
+						href="?tab={one}"
+						style="text-transform: capitalize"
+						data-sveltekit-replacestate
+						data-sveltekit-noscroll>{one}</Tabs.Item
+					>
+				{/each}
+			</Tabs.Root>
 		</nav>
 	</header>
 
-	<div class="panel scroll">
+	<div class="panel">
 		<p class="blurb">{story.blurb ?? ''}</p>
 
 		{#if tab === 'preview'}
@@ -100,13 +103,36 @@
 </div>
 
 <style>
-	.tab {
-		text-transform: capitalize;
+	/* Header and tabs are fixed chrome; only the panel below them scrolls. */
+	.stage {
+		display: flex;
+		flex-direction: column;
+		height: 100%;
+		min-height: 0;
+	}
+
+	.stage > header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 1em;
+		padding-bottom: 0.9em;
+		border-bottom: 1px solid var(--border);
+	}
+
+	.stage h1 {
+		margin: 0;
+		font-size: 1.5em;
 	}
 
 	.panel {
 		display: flex;
 		flex-direction: column;
+		flex: 1;
+		min-height: 0;
+		overflow-y: auto;
+		/* Reaching the end shouldn't hand the scroll to the document behind it. */
+		overscroll-behavior: contain;
 		padding-top: 1.25em;
 	}
 

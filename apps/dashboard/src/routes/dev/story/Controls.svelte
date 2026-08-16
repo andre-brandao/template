@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Input, Select } from '@template/ui';
+	import { Field, Input, Select } from '@template/ui';
 	import type { Control } from '@template/ui/story';
 
 	// Bindable because the panel edits the bag in place — that is the whole job.
@@ -7,13 +7,15 @@
 		controls,
 		state = $bindable({})
 	}: { controls: Record<string, Control>; state?: Record<string, unknown> } = $props();
+
+	// A checkbox reads better inline than stacked under its label.
+	const row = 'flex-direction: row; align-items: center; justify-content: space-between';
 </script>
 
 <aside>
 	<h3>Props</h3>
 	{#each Object.entries(controls) as [name, control] (name)}
-		<label class="field">
-			<span>{name}</span>
+		<Field label={name} style={control.type === 'bool' ? row : undefined}>
 			{#if control.type === 'select'}
 				<Select
 					options={control.options.map((one) => ({ value: one, label: one }))}
@@ -44,7 +46,7 @@
 					oninput={(e) => (state[name] = e.currentTarget.value)}
 				/>
 			{/if}
-		</label>
+		</Field>
 	{/each}
 </aside>
 
@@ -92,12 +94,5 @@
 		aside {
 			width: 100%;
 		}
-	}
-
-	/* The shared `.field` stacks label over control; a checkbox reads better inline. */
-	.field:has(input[type='checkbox']) {
-		flex-direction: row;
-		align-items: center;
-		justify-content: space-between;
 	}
 </style>

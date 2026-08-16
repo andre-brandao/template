@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Drawer, Empty } from '@template/ui';
+	import { Drawer, Empty, Issue } from '@template/ui';
 	import type { Storage } from '@template/core/storage';
 	import Header from '$lib/components/Header.svelte';
 	import { getFiles } from '../api/files.remote';
@@ -62,7 +62,7 @@
 	</Header>
 
 	{#each failed as name (name)}
-		<p class="error">Upload failed: {name}</p>
+		<Issue>Upload failed: {name}</Issue>
 	{/each}
 
 	<div class="list">
@@ -101,12 +101,6 @@
 	h2 {
 		margin: 0 0 1em;
 		font-size: 1.15em;
-	}
-
-	.error {
-		margin: 0 0 0.5em;
-		color: var(--danger, crimson);
-		font-size: 0.85em;
 	}
 
 	.list {

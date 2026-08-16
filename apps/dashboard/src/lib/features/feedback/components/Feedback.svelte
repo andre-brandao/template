@@ -5,7 +5,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import MessageSquare from '@lucide/svelte/icons/message-square';
-	import { Button, Drawer, FormBoundary } from '@template/ui';
+	import { Button, Drawer, Field, FormBoundary, Issue } from '@template/ui';
 	import { send } from '../api/feedback.remote';
 
 	let open = $state(false);
@@ -33,7 +33,7 @@
 			<Button onclick={() => (open = false)}>Done</Button>
 		{:else}
 			{#each send.fields.allIssues() ?? [] as issue, i (i)}
-				<p class="error">{issue.message}</p>
+				<Issue>{issue.message}</Issue>
 			{/each}
 
 			<form
@@ -42,26 +42,23 @@
 				})}
 			>
 				<div class="pair">
-					<label class="field">
-						<span>Type</span>
+					<Field label="Type">
 						<select {...send.fields.tag.as('select')}>
 							<option value="bug">Bug</option>
 							<option value="feature">Feature</option>
 						</select>
-					</label>
+					</Field>
 
-					<label class="field">
-						<span>Urgency</span>
+					<Field label="Urgency">
 						<select {...send.fields.urgency.as('select')}>
 							<option value="low">Low</option>
 							<option value="medium">Medium</option>
 							<option value="high">High</option>
 						</select>
-					</label>
+					</Field>
 				</div>
 
-				<label class="field">
-					<span>Details</span>
+				<Field label="Details">
 					<textarea
 						{id}
 						rows="6"
@@ -69,7 +66,7 @@
 						bind:value={body}
 					></textarea>
 					<input {...send.fields.body.as('hidden', body)} />
-				</label>
+				</Field>
 
 				<input {...send.fields.page.as('hidden', page.url.pathname + page.url.search)} />
 

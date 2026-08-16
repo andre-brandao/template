@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Button, Card, Input } from '@template/ui';
+	import { Button, Card, Input, Issue } from '@template/ui';
 	import type { Event } from '@template/core/event';
 	import { getTodo, planTodo, removeTodo, updateTodo } from '../api/todos.remote';
 	import Timeline from '$lib/features/events/components/Timeline.svelte';
@@ -104,7 +104,7 @@
 				</form>
 
 				{#each remove.fields.allIssues() ?? [] as issue, i (i)}
-					<p class="error">{issue.message}</p>
+					<Issue>{issue.message}</Issue>
 				{/each}
 
 				<div class="actions">

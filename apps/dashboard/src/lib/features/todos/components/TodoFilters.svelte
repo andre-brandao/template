@@ -11,7 +11,7 @@
 
 <script lang="ts">
 	import type { Snippet } from 'svelte';
-	import { LazySelect } from '@template/ui';
+	import { LazySelect, Tabs } from '@template/ui';
 	import { debounce } from '$lib/utils/debounce';
 	import { getStages, getUsers } from '../api/todos.remote';
 	import { STATUSES, label } from '../status';
@@ -55,24 +55,22 @@
 </div>
 
 <div class="bar">
-	<div class="tabs">
-		<button
-			class="tab"
-			class:active={filters.status === 'all'}
+	<Tabs.Root style="align-items: center; flex-wrap: wrap; height: 2.4em">
+		<Tabs.Item
+			active={filters.status === 'all'}
 			onclick={() => onchange({ ...filters, status: 'all' })}
 		>
 			All
-		</button>
+		</Tabs.Item>
 		{#each STATUSES as status (status)}
-			<button
-				class="tab"
-				class:active={filters.status === status}
+			<Tabs.Item
+				active={filters.status === status}
 				onclick={() => onchange({ ...filters, status })}
 			>
 				{label(status)}
-			</button>
+			</Tabs.Item>
 		{/each}
-	</div>
+	</Tabs.Root>
 
 	<LazySelect
 		value={filters.assignee}
@@ -137,17 +135,5 @@
 	.bar :global(select:focus-visible) {
 		border-color: var(--accent);
 		outline: none;
-	}
-
-	.tabs {
-		display: inline-flex;
-		align-items: center;
-		flex-wrap: wrap;
-		gap: 2px;
-		height: 2.4em;
-		background: var(--surface-2);
-		border: 1px solid var(--border);
-		border-radius: var(--radius);
-		padding: 0 2px;
 	}
 </style>

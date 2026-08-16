@@ -54,7 +54,11 @@ export const saveTodo = remote.form(schema, handler); // errors land as form iss
   `<script>` that awaits a remote query fires before the boundary can catch it.
 - **Guard `[id]` pages** with `{#if params.id}` — params are empty mid-navigation and will
   fire a remote query with `undefined`.
-- `routes/layout.css` defines global `.fill`, `.scroll`, `.navlink`. Don't shadow those names.
+- **No global CSS.** `routes/layout.css` holds design tokens and the document reset,
+  nothing else. A look shared by more than one screen becomes a component in
+  `@template/ui` (`Field`, `Issue`, `Tabs`); a look used once stays scoped in the file
+  that uses it. Scoped styles can't cross into a child, so pass a one-off layout tweak to
+  a component as `style="..."` rather than reaching in with `:global`.
 - `resolve()` breaks past ~30 routes; nav components cast untyped rather than fight it.
 
 ## Commands

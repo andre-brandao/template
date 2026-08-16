@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { Issue } from '@template/ui';
 	import { page } from '$app/state';
 	import { stories } from '@template/ui/story';
 	import Stage from '../Stage.svelte';
@@ -14,6 +15,6 @@
 			<Stage {entry} />
 		{/key}
 	{:else}
-		<p class="error">No story named <code>{slug}</code>.</p>
+		<Issue>No story named <code>{slug}</code>.</Issue>
 	{/if}
 {/if}

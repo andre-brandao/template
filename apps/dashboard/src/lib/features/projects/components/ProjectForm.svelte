@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Button, FormBoundary, Input } from '@template/ui';
+	import { Button, Field, FormBoundary, Input, Issue } from '@template/ui';
 	import { createProject } from '../api/projects.remote';
 
 	let { onsuccess }: { onsuccess?: () => void } = $props();
@@ -7,7 +7,7 @@
 
 <FormBoundary>
 	{#each createProject.fields.allIssues() ?? [] as issue, i (i)}
-		<p class="error">{issue.message}</p>
+		<Issue>{issue.message}</Issue>
 	{/each}
 
 	<form
@@ -17,15 +17,13 @@
 			onsuccess?.();
 		})}
 	>
-		<label class="field">
-			<span>Name</span>
+		<Field label="Name">
 			<Input placeholder="Quarterly close" {...createProject.fields.name.as('text')} />
-		</label>
+		</Field>
 
-		<label class="field">
-			<span>Description</span>
+		<Field label="Description">
 			<Input placeholder="What is this for?" {...createProject.fields.description.as('text')} />
-		</label>
+		</Field>
 
 		<div class="footer">
 			<Button type="submit" pending={!!createProject.pending}>Add project</Button>

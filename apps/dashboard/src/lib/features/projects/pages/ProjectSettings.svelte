@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Button, FormBoundary, Input } from '@template/ui';
+	import { Button, Field, FormBoundary, Input, Issue } from '@template/ui';
 	import Header from '$lib/components/Header.svelte';
 	import AvatarUpload from '$lib/components/AvatarUpload.svelte';
 	import Can from '$lib/components/Can.svelte';
@@ -36,7 +36,7 @@
 
 		<FormBoundary>
 			{#each update.fields.allIssues() ?? [] as issue, i (i)}
-				<p class="error">{issue.message}</p>
+				<Issue>{issue.message}</Issue>
 			{/each}
 
 			<form
@@ -49,18 +49,16 @@
 			>
 				<input {...update.fields.id.as('hidden', id)} />
 
-				<label class="field">
-					<span>Name</span>
+				<Field label="Name">
 					<Input {...update.fields.name.as('text', project.name)} />
-				</label>
+				</Field>
 
-				<label class="field">
-					<span>Description</span>
+				<Field label="Description">
 					<Input
 						{...update.fields.description.as('text', project.description ?? '')}
 						placeholder="What is this for?"
 					/>
-				</label>
+				</Field>
 
 				<div class="foot">
 					{#if saved}<span class="saved">Saved</span>{/if}

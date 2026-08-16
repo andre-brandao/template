@@ -74,6 +74,27 @@
 </div>
 
 <style>
+	/* Header, filters and pager stay put; the list takes what they leave. `--fill` comes
+	   from the shell's <main> — what the viewport has once the topbar and padding are taken. */
+	.fill {
+		display: flex;
+		flex-direction: column;
+		height: var(--fill);
+		/* Below this the list is too short to be worth its own scroller; let the page scroll
+		   instead of squeezing it to two rows. */
+		min-height: 22em;
+	}
+
+	.scroll {
+		flex: 1;
+		min-height: 0;
+		overflow-y: auto;
+		/* Reaching the end shouldn't hand the scroll to the document behind it. */
+		overscroll-behavior: contain;
+		/* Room for the scrollbar so rows don't shift under it. */
+		scrollbar-gutter: stable;
+	}
+
 	.bar {
 		display: flex;
 		align-items: center;

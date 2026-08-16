@@ -22,6 +22,7 @@
     "./storage": "./src/lib/storage/index.ts",
     "./storage/*": "./src/lib/storage/*.ts",
     "./user/*": "./src/user/*.ts",
+    "./admin": "./src/platform/admin/index.ts",
     "./event": "./src/platform/event/index.ts",
     "./key": "./src/platform/key/index.ts",
     "./key/*": "./src/platform/key/*.ts",

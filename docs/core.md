@@ -5,8 +5,8 @@ visible as directories.
 
 ```mermaid
 graph TD
-  domain["<b>the product</b><br/>admin · project · todo · user"]
-  platform["<b>platform/</b><br/>key · webhook · event"]
+  domain["<b>the product</b><br/>project · todo · user"]
+  platform["<b>platform/</b><br/>admin · key · webhook · event"]
   lib["<b>lib/</b><br/>queue · storage · email"]
   kernel["<b>kernel</b><br/>actor · context · error · permission · drizzle · util"]
 
@@ -49,8 +49,8 @@ nesting never affects migrations.
   port itself takes the key as an option, so nothing in the port layer knows about it.
 - `platform/event` joins `user/user.sql` to name the actor on a log row. Platform may reach
   `user`, the identity anchor; nothing else in the product.
-- `admin/` stays at the top level despite feeling infrastructural — it queries `ProjectTable`
-  and `TodoTable`, and its stats get rewritten per product.
+- `platform/admin` reads `project` and `todo` tables for its counts — the one arrow that
+  points up. A fork rewrites the tallies in `counts`; the rest of the back office is generic.
 
 File-level conventions (module shape, ordering inside a file) live in
 [`packages/core/AGENTS.md`](../packages/core/AGENTS.md).

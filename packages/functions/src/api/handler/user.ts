@@ -17,7 +17,11 @@ export namespace UserApi {
         title: "Get current user",
         description: "Get the profile of the currently authenticated user.",
       },
-      { 200: doc.json(User.Info) },
+      {
+        200: doc.json(User.Info),
+        401: doc.error(401),
+        500: doc.error(500),
+      },
     ),
     authRequired,
     async (c) => {

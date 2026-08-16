@@ -39,21 +39,24 @@ function list<T extends z.ZodType>(item: T) {
 
 const ok = body(z.literal("ok").meta({ description: "Deleted." }));
 
+/** The shared body for one error status. A route lists only the ones it can return. */
+const error = (status: keyof typeof ErrorResponses) => ErrorResponses[status];
+
 /** Every route in a handler shares a tag, so it is bound once at the top of the file. */
 export function describe(tag: string) {
-  // Every route documents the same errors: `Actor.check` can forbid from anywhere.
+  // Errors are not merged in: a route only documents the ones it can actually return.
   const doc = (meta: Meta, responses: Responses) =>
     describeRoute({
       tags: [tag],
       summary: meta.title,
       description: meta.description,
-      // Route-specific entries win, so a handler can replace one with its own prose.
-      responses: { ...ErrorResponses, ...responses },
+      responses,
     });
 
   doc.json = body;
   doc.page = page;
   doc.list = list;
   doc.ok = ok;
+  doc.error = error;
   return doc;
 }

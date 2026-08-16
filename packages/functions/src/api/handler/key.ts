@@ -9,10 +9,19 @@ export namespace KeyApi {
   const doc = describe("Key");
 
   export const route = new Hono()
-    .get("/", doc(Key.list.meta, { 200: doc.list(Key.Info) }), authRequired, async (c) => {
-      const keys = await Key.list(c.req.header("authorization")!.replace(/^Bearer /, ""));
-      return c.json(keys, 200);
-    })
+    .get(
+      "/",
+      doc(Key.list.meta, {
+        200: doc.list(Key.Info),
+        401: doc.error(401),
+        500: doc.error(500),
+      }),
+      authRequired,
+      async (c) => {
+        const keys = await Key.list(c.req.header("authorization")!.replace(/^Bearer /, ""));
+        return c.json(keys, 200);
+      },
+    )
     .post(
       "/",
       // Literal, not `Key.create.meta`: the route takes `expiresInDays` where core takes a date.
@@ -22,7 +31,12 @@ export namespace KeyApi {
           description:
             "Mint a named API key for the current user. Pass `expiresInDays` to set an expiry; omit it for a key that never expires.",
         },
-        { 200: doc.json(Key.Info) },
+        {
+          200: doc.json(Key.Info),
+          400: doc.error(400),
+          401: doc.error(401),
+          500: doc.error(500),
+        },
       ),
       authRequired,
       validator(
@@ -44,7 +58,13 @@ export namespace KeyApi {
     )
     .delete(
       "/:id",
-      doc(Key.remove.meta, { 200: doc.ok }),
+      doc(Key.remove.meta, {
+        200: doc.ok,
+        400: doc.error(400),
+        401: doc.error(401),
+        404: doc.error(404),
+        500: doc.error(500),
+      }),
       authRequired,
       validator("param", z.object({ id: Key.Info.shape.id })),
       async (c) => {

@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { Hono } from "hono";
 import { describeRoute } from "hono-openapi";
-import { validator, authRequired, ErrorResponses } from "../common";
+import { validator, authRequired } from "../common";
 import { describe } from "../doc";
 import { Actor } from "@template/core/actor";
 import { Signing } from "@template/core/key/signing";
@@ -74,7 +74,12 @@ export namespace FileApi {
             },
           },
         },
-        responses: { ...ErrorResponses, 200: doc.json(Meta) },
+        responses: {
+          200: doc.json(Meta),
+          400: doc.error(400),
+          401: doc.error(401),
+          500: doc.error(500),
+        },
       }),
       authRequired,
       async (c) => {
@@ -111,7 +116,11 @@ export namespace FileApi {
           title: "List files",
           description: "Everything under the user's prefix on the default disk, newest first.",
         },
-        { 200: doc.list(Info) },
+        {
+          200: doc.list(Info),
+          401: doc.error(401),
+          500: doc.error(500),
+        },
       ),
       authRequired,
       async (c) => {
@@ -128,7 +137,14 @@ export namespace FileApi {
           description:
             "Serves the bytes for a `temporaryUrl` minted by a disk that can't presign (fs, R2 binding). The signature stands in for the session, so no token is needed.",
         },
-        { 200: { description: "The raw file bytes." } },
+        // No 401: the signature stands in for the session, so this route never runs `authRequired`.
+        {
+          200: { description: "The raw file bytes." },
+          400: doc.error(400),
+          403: doc.error(403),
+          404: doc.error(404),
+          500: doc.error(500),
+        },
       ),
       validator(
         "query",
@@ -167,6 +183,10 @@ export namespace FileApi {
         {
           200: { description: "The raw file bytes." },
           302: { description: "Redirect to a presigned storage URL." },
+          400: doc.error(400),
+          401: doc.error(401),
+          404: doc.error(404),
+          500: doc.error(500),
         },
       ),
       authRequired,
@@ -190,7 +210,13 @@ export namespace FileApi {
           title: "Rename file",
           description: "Moves the object to a new key under the same prefix.",
         },
-        { 200: doc.json(Meta) },
+        {
+          200: doc.json(Meta),
+          400: doc.error(400),
+          401: doc.error(401),
+          404: doc.error(404),
+          500: doc.error(500),
+        },
       ),
       authRequired,
       validator("param", param),
@@ -205,7 +231,16 @@ export namespace FileApi {
     )
     .delete(
       "/:name",
-      doc({ title: "Delete file" }, { 200: doc.ok }),
+      // No 404: the disks treat deleting a missing key as a no-op.
+      doc(
+        { title: "Delete file" },
+        {
+          200: doc.ok,
+          400: doc.error(400),
+          401: doc.error(401),
+          500: doc.error(500),
+        },
+      ),
       authRequired,
       validator("param", param),
       async (c) => {

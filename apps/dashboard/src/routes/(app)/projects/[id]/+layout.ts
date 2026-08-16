@@ -1,3 +1,4 @@
+import CalendarDays from "@lucide/svelte/icons/calendar-days";
 import ChartLine from "@lucide/svelte/icons/chart-line";
 import LayoutDashboard from "@lucide/svelte/icons/layout-dashboard";
 import ListTodo from "@lucide/svelte/icons/list-todo";
@@ -24,6 +25,7 @@ export const load: LayoutLoad = async ({ params }) => {
             items: [
               { href: base, label: "Overview", exact: true, icon: LayoutDashboard },
               { href: `${base}/todos`, label: "Todos", icon: ListTodo },
+              { href: `${base}/calendar`, label: "Calendar", icon: CalendarDays },
               { href: `${base}/insights`, label: "Insights", icon: ChartLine },
             ],
           },

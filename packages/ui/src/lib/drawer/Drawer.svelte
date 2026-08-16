@@ -1,5 +1,5 @@
 <script module lang="ts">
-	export type Side = 'left' | 'right';
+	export type Side = 'left' | 'right' | 'bottom';
 </script>
 
 <script lang="ts">
@@ -75,6 +75,22 @@
 		translate: -100% 0;
 	}
 
+	/* A sheet: full width, capped height, and it never fills more of the screen than it needs. */
+	dialog.bottom {
+		inset-block-start: auto;
+		inset-block-end: 0;
+		inset-inline: 0;
+		width: 100vw;
+		height: auto;
+		max-height: 85dvh;
+		border-inline-start: none;
+		border-block-start: 1px solid var(--border, #333);
+		border-radius: var(--radius, 8px) var(--radius, 8px) 0 0;
+		padding-bottom: max(1.25em, env(safe-area-inset-bottom));
+		box-shadow: 0 -8px 24px rgb(0 0 0 / 0.15);
+		translate: 0 100%;
+	}
+
 	dialog[open] {
 		translate: 0 0;
 	}
@@ -86,6 +102,10 @@
 
 		dialog.left[open] {
 			translate: -100% 0;
+		}
+
+		dialog.bottom[open] {
+			translate: 0 100%;
 		}
 	}
 

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { Empty } from '@template/ui';
 	import Header from '$lib/components/Header.svelte';
 	import { fmt } from '$lib/utils/fmt';
 	import { size } from '$lib/utils/size';
@@ -61,7 +62,7 @@
 <section>
 	<h2>Tables</h2>
 	{#if stats.tables.tables.length === 0}
-		<p class="empty">No tables yet.</p>
+		<Empty>No tables yet.</Empty>
 	{:else}
 		<ul>
 			{#each stats.tables.tables as table (table.name)}
@@ -144,10 +145,6 @@
 	.bytes {
 		min-width: 5em;
 		text-align: right;
-	}
-
-	.empty {
-		color: var(--dim);
 	}
 
 	/* The bar is decoration; below the fold of a phone the numbers carry it alone. */

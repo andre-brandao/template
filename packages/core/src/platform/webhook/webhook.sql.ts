@@ -1,5 +1,5 @@
 import { boolean, index, integer, pgTable as table, text } from "drizzle-orm/pg-core";
-import { id, timestamp, timestamps, ulid } from "../drizzle/types";
+import { id, timestamp, timestamps, ulid } from "../../drizzle/types";
 
 /**
  * An outbound subscription. `secret` is stored plaintext so deliveries can be signed;

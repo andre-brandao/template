@@ -34,6 +34,25 @@
 		padding-inline: 0;
 	}
 
+	/* The highlight is its own layer, named, so a navigation morphs it from the link you
+	   left to the one you land on — the browser tweens the two snapshots, no keyframes.
+	   Only one sidebar is ever rendered (the rail hides below 700px, the drawer above it),
+	   so the name is claimed once. */
+	.navlink[aria-current='page'] {
+		position: relative;
+		background: none;
+	}
+
+	.navlink[aria-current='page']::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		z-index: -1;
+		border-radius: var(--radius);
+		background: var(--surface-2);
+		view-transition-name: active;
+	}
+
 	/* The label carries the whole width of an expanded link, so it must not shrink
 	   the icon when a name runs long. */
 	.label {

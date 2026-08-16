@@ -21,14 +21,10 @@
   "ignoreExports": [{ "file": "**/*.story.svelte", "exports": ["story"] }],
   // infra/*/stage.ts share a small boilerplate header across cloud targets
   // (aws, cf); the overlap is stage-setup wiring, not logic worth extracting.
-  // Stages/Recent share list-chrome CSS: the row layouts differ, and keeping each
-  // card self-contained beats extracting presentation coincidence.
+  // Anything narrower than a directory is waived where it lives, with a
+  // `fallow-ignore-next-line code-duplication` comment above the block.
   "duplicates": {
-    "ignore": [
-      "infra/**",
-      "apps/dashboard/src/lib/features/todos/components/Stages.svelte",
-      "apps/dashboard/src/lib/features/todos/components/Recent.svelte",
-    ],
+    "ignore": ["infra/**"],
   },
   "health": {
     "maxCrap": 69,

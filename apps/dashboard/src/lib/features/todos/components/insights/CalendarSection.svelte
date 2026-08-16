@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Insights } from '@template/core/todo';
+	import { Empty } from '@template/ui';
 	import { getCalendar } from '../../api/insights.remote';
 	import Section from './Section.svelte';
 	import CalendarChart from './CalendarChart.svelte';
@@ -13,13 +14,9 @@
 	{#if data.total > 0}
 		<CalendarChart {data} />
 	{:else}
-		<p class="empty">No todos created in this range</p>
+		<Empty>No todos created in this range</Empty>
 	{/if}
 </Section>
 
 <style>
-	.empty {
-		color: var(--dim);
-		margin: 0;
-	}
 </style>

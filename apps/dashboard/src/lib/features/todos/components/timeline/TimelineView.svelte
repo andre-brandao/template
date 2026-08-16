@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Todo } from '@template/core/todo';
+	import { Empty } from '@template/ui';
 	import { user } from '$lib/utils/context';
 	import { fmt } from '$lib/utils/fmt';
 	import { group, type By } from '../../group';
@@ -110,7 +111,7 @@
 </script>
 
 {#if !span}
-	<p class="empty">Give a todo a start or due date and it lands on the cronograma.</p>
+	<Empty>Give a todo a start or due date and it lands on the cronograma.</Empty>
 {:else}
 	<div class="wrap">
 		<div class="grid" style:--cols={ticks.length} style:--col={col}>
@@ -332,11 +333,5 @@
 	.range {
 		margin-left: auto;
 		color: var(--dim);
-	}
-
-	.empty {
-		color: var(--dim);
-		font-size: 0.9em;
-		margin: 0.5em 0.2em;
 	}
 </style>

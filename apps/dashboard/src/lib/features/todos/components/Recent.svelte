@@ -1,7 +1,10 @@
+<!-- The list chrome matches Stages': the rows differ, and each card staying
+     self-contained beats extracting presentation coincidence. -->
+<!-- fallow-ignore-file code-duplication -->
 <script lang="ts">
+	import { Empty, Skeleton } from '@template/ui';
 	import { getTodos } from '../api/todos.remote';
 	import StatusPill from './StatusPill.svelte';
-	import Skeleton from './insights/Skeleton.svelte';
 	import { late } from '../status';
 	import { fmt } from '$lib/utils/fmt';
 
@@ -11,10 +14,10 @@
 </script>
 
 <svelte:boundary>
-	{#snippet pending()}<Skeleton height="128px" />{/snippet}
+	{#snippet pending()}<Skeleton h="128px" />{/snippet}
 	{@const todos = await getTodos(scope)}
 	{#if todos.length === 0}
-		<p class="empty">Nothing here yet.</p>
+		<Empty>Nothing here yet.</Empty>
 	{:else}
 		<ul>
 			{#each todos.slice(0, 8) as todo (todo.id)}
@@ -84,11 +87,5 @@
 
 	.when.late {
 		color: var(--danger);
-	}
-
-	.empty {
-		color: var(--dim);
-		font-size: 0.9em;
-		margin: 0;
 	}
 </style>

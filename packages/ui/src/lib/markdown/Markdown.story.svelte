@@ -24,9 +24,12 @@ const answer: number = 42; // highlighted by @tanstack/highlight
 	export const story: Story = {
 		title: 'Markdown',
 		blurb:
-			'Renders the `@tanstack/markdown` AST as real Svelte elements — no `{@html}`, no sanitizer. Pass `components` to override `a`, `img` or `code`. It tracks `value`, so no `{#key}` wrapper is needed.',
+			'Renders the `@tanstack/markdown` AST as real Svelte elements — no `{@html}`, no sanitizer. Pass `components` to override `a`, `img`, `code` or `html`. `html` keeps raw html nodes, which still render escaped unless an override claims them. It tracks `value`, so no `{#key}` wrapper is needed.',
 		of: Markdown,
-		props: { value: { type: 'textarea', value: sample } },
+		props: {
+			value: { type: 'textarea', value: sample },
+			html: { type: 'bool', value: false }
+		},
 		variants: [
 			{ label: 'sample document', props: { value: sample } },
 			{ label: 'empty', props: { value: '' } }

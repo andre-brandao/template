@@ -1,6 +1,9 @@
+<!-- The list chrome matches Recent's: the rows differ, and each card staying
+     self-contained beats extracting presentation coincidence. -->
+<!-- fallow-ignore-file code-duplication -->
 <script lang="ts">
+	import { Empty, Skeleton } from '@template/ui';
 	import { getStages } from '../api/todos.remote';
-	import Skeleton from './insights/Skeleton.svelte';
 	import { fmt } from '$lib/utils/fmt';
 
 	let { scope, base }: { scope: { source: string; sourceID: string }; base: string } = $props();
@@ -12,10 +15,10 @@
 </script>
 
 <svelte:boundary>
-	{#snippet pending()}<Skeleton height="128px" />{/snippet}
+	{#snippet pending()}<Skeleton h="128px" />{/snippet}
 	{@const stages = await getStages(scope)}
 	{#if stages.length === 0}
-		<p class="empty">No stages yet — give a todo a stage label to start one.</p>
+		<Empty>No stages yet — give a todo a stage label to start one.</Empty>
 	{:else}
 		<ul>
 			{#each stages as stage (stage.name)}
@@ -89,11 +92,5 @@
 		display: block;
 		height: 100%;
 		background: var(--done);
-	}
-
-	.empty {
-		color: var(--dim);
-		font-size: 0.9em;
-		margin: 0;
 	}
 </style>

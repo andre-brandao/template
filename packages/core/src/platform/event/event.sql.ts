@@ -1,5 +1,5 @@
 import { index, jsonb, pgTable as table, text } from "drizzle-orm/pg-core";
-import { id, timestamps, ulid } from "../drizzle/types";
+import { id, timestamps, ulid } from "../../drizzle/types";
 
 export const EventTable = table(
   "event",

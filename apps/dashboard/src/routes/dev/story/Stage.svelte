@@ -100,31 +100,7 @@
 </div>
 
 <style>
-	/* Header and tabs are fixed chrome; only the panel scrolls, so switching story or tab
-	   never moves them. */
-	.stage {
-		display: flex;
-		flex-direction: column;
-		height: 100%;
-		min-height: 0;
-	}
-
-	header {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 1em;
-		padding-bottom: 0.9em;
-		border-bottom: 1px solid var(--border);
-	}
-
-	h1 {
-		margin: 0;
-		font-size: 1.5em;
-	}
-
 	.tab {
-		text-decoration: none;
 		text-transform: capitalize;
 	}
 
@@ -248,6 +224,53 @@
 
 		.frame {
 			overflow: visible;
+		}
+	}
+
+	/* Named only while the swap it owns is running: an unconditional name would make this
+	   its own group on every navigation, including ones where it exists on one side only. */
+	:global(html[data-swap~='tab']) .panel {
+		view-transition-name: stage;
+	}
+
+	:global(::view-transition-old(stage)),
+	:global(::view-transition-new(stage)) {
+		animation-duration: 200ms;
+		animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+		animation-fill-mode: both;
+		mix-blend-mode: normal;
+	}
+
+	:global(::view-transition-old(stage)) {
+		animation-name: out;
+	}
+
+	/* The three screens that own a same-page swap share this animation. It can't be lifted
+	   without one global view-transition-name for all of them, and the marker has to sit on
+	   the line the clone starts on. */
+	/* fallow-ignore-next-line code-duplication */
+	:global(::view-transition-new(stage)) {
+		animation-name: in;
+	}
+
+	@keyframes out {
+		to {
+			opacity: 0;
+			transform: translateY(-4px);
+		}
+	}
+
+	@keyframes in {
+		from {
+			opacity: 0;
+			transform: translateY(6px);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		:global(::view-transition-old(stage)),
+		:global(::view-transition-new(stage)) {
+			animation: none;
 		}
 	}
 </style>

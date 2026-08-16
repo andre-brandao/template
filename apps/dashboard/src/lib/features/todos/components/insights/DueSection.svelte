@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Insights } from '@template/core/todo';
+	import { Empty } from '@template/ui';
 	import { getDue } from '../../api/insights.remote';
 	import StatusPill from '../StatusPill.svelte';
 	import Section from './Section.svelte';
@@ -17,7 +18,7 @@
 
 <Section title="Next due">
 	{#if todos.length === 0}
-		<p class="empty">No upcoming due todos.</p>
+		<Empty>No upcoming due todos.</Empty>
 	{:else}
 		<ul>
 			{#each todos as todo (todo.id)}
@@ -67,11 +68,6 @@
 	span {
 		color: var(--muted);
 		font-size: 0.9em;
-	}
-
-	.empty {
-		margin: 0;
-		color: var(--muted);
 	}
 
 	@media (max-width: 640px) {

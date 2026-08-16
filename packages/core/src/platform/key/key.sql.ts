@@ -1,5 +1,5 @@
 import { index, pgTable as table, text, uniqueIndex, varchar } from "drizzle-orm/pg-core";
-import { id, timestamp, timestamps, ulid } from "../drizzle/types";
+import { id, timestamp, timestamps, ulid } from "../../drizzle/types";
 
 /**
  * Secrets, stored plaintext; null expiry = never. `type` separates user-minted `api`

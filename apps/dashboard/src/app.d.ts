@@ -9,7 +9,10 @@ declare global {
     interface Locals {
       session: import("$lib/server/session").Session | null;
     }
-    // interface PageData {}
+    interface PageData {
+      /** The section's shell nav, contributed by its `+layout.ts`. Absent = no shell. */
+      nav?: import("$lib/components/layout/nav").Nav;
+    }
     interface PageState {
       /** Id a peeked link pushed; the page hosting the link renders it in a drawer. */
       selected?: string;

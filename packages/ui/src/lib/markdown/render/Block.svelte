@@ -53,7 +53,12 @@
 {:else if node.type === 'thematicBreak'}
 	<hr />
 {:else if node.type === 'html'}
-	<p>{node.value}</p>
+	{#if components?.html}
+		{@const H = components.html}
+		<H value={node.value} />
+	{:else}
+		<p>{node.value}</p>
+	{/if}
 {:else if node.type === 'callout'}
 	<div class="markdown-alert markdown-alert-{node.kind.toLowerCase()}">
 		<p class="markdown-alert-title">{node.title}</p>

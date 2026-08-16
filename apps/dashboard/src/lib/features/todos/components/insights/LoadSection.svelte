@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Insights } from '@template/core/todo';
+	import { Empty } from '@template/ui';
 	import { barX, defineChart, stack, text } from '@tanstack/charts';
 	import { scaleBand } from '@tanstack/charts/scales/band';
 	import { scaleLinear } from '@tanstack/charts/scales/linear';
@@ -63,7 +64,7 @@
 
 <Section title="By assignee">
 	{#if load.rows.length === 0}
-		<p class="empty">No tasks in this range</p>
+		<Empty>No tasks in this range</Empty>
 	{:else}
 		<Chart
 			{definition}
@@ -74,8 +75,4 @@
 </Section>
 
 <style>
-	.empty {
-		color: var(--dim);
-		margin: 0;
-	}
 </style>

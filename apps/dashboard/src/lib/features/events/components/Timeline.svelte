@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import type { Event } from '@template/core/event';
+	import { Empty } from '@template/ui';
 	import { getEvents } from '../api/events.remote';
 	import { fmt } from '$lib/utils/fmt';
 
@@ -28,7 +29,7 @@
 	{/if}
 
 	{#if events.length === 0}
-		<p class="empty">{empty}</p>
+		<Empty>{empty}</Empty>
 	{:else}
 		<ol>
 			{#each events as event (event.id)}
@@ -107,10 +108,5 @@
 		font-size: 0.78em;
 		font-family: var(--font-mono);
 		white-space: nowrap;
-	}
-
-	.empty {
-		margin: 0;
-		color: var(--muted);
 	}
 </style>

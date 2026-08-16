@@ -1,13 +1,14 @@
 <script lang="ts">
 	import { renderMermaidASCII, renderMermaidSVG } from 'beautiful-mermaid';
 	import Code from '../code/Code.svelte';
+	import Full from '../full/Full.svelte';
 
 	// `ascii` swaps the SVG for box-drawing text — same source, terminal-shaped output.
 	let { value, ascii = false }: { value: string; ascii?: boolean } = $props();
 
 	let el = $state<HTMLElement>();
+	let zoom = $state(1);
 	let view = $state<'diagram' | 'code'>('diagram');
-	let big = $state(false);
 
 	// Synchronous and DOM-free, so this renders on the server too. Colours go in as CSS
 	// custom properties, so a theme switch repaints the SVG without a re-render.
@@ -28,18 +29,9 @@
 			return { svg: '', text: '', err: e instanceof Error ? e.message : String(e) };
 		}
 	});
-
-	function full() {
-		if (document.fullscreenElement) return void document.exitFullscreen();
-		el?.requestFullscreen();
-	}
 </script>
 
-<figure
-	class="mermaid"
-	bind:this={el}
-	onfullscreenchange={() => (big = !!document.fullscreenElement)}
->
+<figure class="mermaid" bind:this={el}>
 	<div class="bar">
 		<div class="tabs">
 			<button type="button" class:on={view === 'diagram'} onclick={() => (view = 'diagram')}>
@@ -47,22 +39,30 @@
 			</button>
 			<button type="button" class:on={view === 'code'} onclick={() => (view = 'code')}>Code</button>
 		</div>
-		<button
-			type="button"
-			class="full"
-			title={big ? 'Exit full screen' : 'Full screen'}
-			aria-label={big ? 'Exit full screen' : 'Full screen'}
-			onclick={full}
-		>
-			{big ? '✕' : '⛶'}
-		</button>
+		<div class="right">
+			{#if view === 'diagram' && !ascii && !out.err}
+				<button type="button" aria-label="Zoom out" onclick={() => (zoom = Math.max(0.5, zoom - 0.25))}>
+					−
+				</button>
+				<button type="button" title="Reset zoom" onclick={() => (zoom = 1)}>
+					{Math.round(zoom * 100)}%
+				</button>
+				<button type="button" aria-label="Zoom in" onclick={() => (zoom = Math.min(4, zoom + 0.25))}>
+					+
+				</button>
+			{/if}
+			<Full {el} />
+		</div>
 	</div>
 
 	{#if view === 'diagram' && !out.err}
 		{#if ascii}
 			<pre class="ascii">{out.text}</pre>
 		{:else}
-			<div class="canvas">{@html out.svg}</div>
+			<div class="canvas">
+				<!-- The svg carries a viewBox, so a percentage width scales it whole. -->
+				<div class="fit" style="width: {zoom * 100}%">{@html out.svg}</div>
+			</div>
 		{/if}
 	{:else}
 		<!-- On a parse error the highlighted source is the useful fallback. -->
@@ -91,9 +91,13 @@
 		border-bottom: 1px solid var(--border);
 	}
 
-	.tabs {
+	.tabs,
+	.right {
 		display: flex;
+		align-items: center;
 		gap: 0.15em;
+		font-family: var(--font-mono);
+		font-size: 0.72em;
 	}
 
 	button {
@@ -103,8 +107,6 @@
 		background: transparent;
 		color: var(--muted);
 		font: inherit;
-		font-family: var(--font-mono);
-		font-size: 0.72em;
 		cursor: pointer;
 	}
 
@@ -125,13 +127,21 @@
 	}
 
 	.canvas {
+		display: flex;
+		/* `safe`: zoomed past the frame it aligns to the start instead of centring the
+		   overflow out of reach. */
+		justify-content: safe center;
 		padding: 1em;
 		overflow: auto;
-		text-align: center;
 	}
 
-	.canvas :global(svg) {
-		max-width: 100%;
+	.fit {
+		flex: none;
+	}
+
+	.fit :global(svg) {
+		display: block;
+		width: 100%;
 		height: auto;
 	}
 
@@ -156,12 +166,5 @@
 	.mermaid:fullscreen .canvas {
 		flex: 1;
 		min-height: 0;
-		display: grid;
-		place-items: center;
-	}
-
-	.mermaid:fullscreen .canvas :global(svg) {
-		max-width: 100%;
-		max-height: 100%;
 	}
 </style>

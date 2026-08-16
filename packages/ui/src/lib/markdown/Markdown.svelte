@@ -4,9 +4,15 @@
 	import type { Components } from './render/types';
 	import './markdown.css';
 
-	let { value, components }: { value: string; components?: Components } = $props();
+	// `html` keeps raw html nodes in the tree; without a `components.html` override they still
+	// render escaped, so turning it on alone changes nothing visible.
+	let {
+		value,
+		components,
+		html = false
+	}: { value: string; components?: Components; html?: boolean } = $props();
 
-	const doc = $derived(parseMarkdown(value));
+	const doc = $derived(parseMarkdown(value, { allowHtml: html }));
 </script>
 
 <div class="markdown-body">

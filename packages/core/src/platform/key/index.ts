@@ -1,15 +1,15 @@
 import { z } from "zod";
 import { and, desc, eq, gt, isNull, or } from "drizzle-orm";
-import { fn } from "../util/fn";
-import { iso } from "../util/fmt";
-import { found } from "../error";
-import { Actor } from "../actor";
-import { Common } from "../common";
-import { Database } from "../drizzle";
-import { Examples } from "../examples";
-import { Identifier } from "../identifier";
-import { memo } from "../util/memo";
-import { token } from "../util/token";
+import { fn } from "../../util/fn";
+import { iso } from "../../util/fmt";
+import { found } from "../../error";
+import { Actor } from "../../actor";
+import { Common } from "../../common";
+import { Database } from "../../drizzle";
+import { Examples } from "../../examples";
+import { Identifier } from "../../identifier";
+import { memo } from "../../util/memo";
+import { token } from "../../util/token";
 import { KeyTable } from "./key.sql";
 
 export namespace Key {

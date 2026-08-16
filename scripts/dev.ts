@@ -38,6 +38,9 @@ const apiport = Number(process.env.API_PORT ?? 3000);
 const mcpport = Number(process.env.MCP_PORT ?? 3001);
 const webport = Number(process.env.WEB_PORT ?? 5173);
 
+// docker's postgres is a container, not a child, so its port never leaks here
+const ports = [webport, apiport, mcpport, authport, ...(driver === "pglite" ? [pgport] : [])];
+
 // The file, not the package script: `bun run <script>` forks a grandchild, and `stop`
 // only ever sees the wrapper — the orphan then keeps its port and database pool for good.
 const servers = [
@@ -108,24 +111,38 @@ async function pipe(stream: ReadableStream<Uint8Array>, tag: string, ready?: () 
   }
 }
 
+// SIGTERM is advisory once a child installs its own handler, so escalate. One child
+// that ignores it would otherwise keep `stop` pending and leak the whole stack.
 async function stop() {
   await Promise.all(
     [...children].map(async (child) => {
       child.kill();
+      const timer = setTimeout(() => child.kill("SIGKILL"), 3000);
       await child.exited;
+      clearTimeout(timer);
     }),
   );
 }
 
-process.on("SIGINT", async () => {
+// A second Ctrl-C bails out instead of queueing another stop behind a stuck one.
+let stopping = false;
+async function bye() {
+  if (stopping) {
+    console.log(paint.red("\nForced exit — surviving children keep their ports and db pool."));
+    const pids = [...children].map((child) => child.pid);
+    if (pids.length) console.log(`  kill -9 ${pids.join(" ")}`);
+    // web forks vite through its package script, so a grandchild can outlive the pids above
+    console.log(`  lsof -ti ${ports.map((port) => `:${port}`).join(" ")} | xargs -r kill -9`);
+    process.exit(1);
+  }
+  stopping = true;
+  console.log("\nStopping... press Ctrl-C again to force.");
   await stop();
   process.exit(0);
-});
+}
 
-process.on("SIGTERM", async () => {
-  await stop();
-  process.exit(0);
-});
+process.on("SIGINT", bye);
+process.on("SIGTERM", bye);
 
 // In-process postgres; dies with this script, so migrations run on every start.
 async function pglite() {

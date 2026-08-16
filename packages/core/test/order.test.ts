@@ -3,7 +3,7 @@ import { Actor } from "../src/actor";
 import { Admin } from "../src/admin";
 import { Todo } from "../src/todo";
 import { User } from "../src/user";
-import { Event } from "../src/event";
+import { Event } from "../src/platform/event";
 import { Identifier } from "../src/identifier";
 import { testEmail, withTestUser } from "./util";
 

@@ -3,9 +3,8 @@
 	import ChevronRight from '@lucide/svelte/icons/chevron-right';
 	import { createTable, renderSnippet } from '@tanstack/svelte-table';
 	import type { ColumnDef, ExpandedState, Row } from '@tanstack/svelte-table';
-	import { DataTable, features } from '@template/ui';
+	import { Avatar, DataTable, features } from '@template/ui';
 	import type { Event } from '@template/core/event';
-	import Avatar from '$lib/components/Avatar.svelte';
 	import { fmt } from '$lib/utils/fmt';
 	import { events } from '../sort';
 

@@ -3,7 +3,7 @@
 		name,
 		image,
 		size = 28
-	}: { name: string; image: string | null; size?: number } = $props();
+	}: { name: string; image?: string | null; size?: number } = $props();
 
 	const initial = $derived(name.trim().charAt(0).toUpperCase() || '?');
 </script>
@@ -28,11 +28,11 @@
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
-		font-family: var(--font-mono);
+		font-family: var(--font-mono, monospace);
 		font-size: calc(var(--size) * 0.42);
 		font-weight: 600;
-		color: var(--ink);
-		background: var(--surface-2);
-		border: 1px solid var(--border);
+		color: var(--ink, #111);
+		background: var(--surface-2, #eee);
+		border: 1px solid var(--border, #333);
 	}
 </style>

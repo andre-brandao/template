@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { z } from 'zod';
 	import { query } from '$lib/utils/params';
-	import { Button, Drawer } from '@template/ui';
+	import { Button, Drawer, Empty } from '@template/ui';
 	import Header from '$lib/components/Header.svelte';
 	import { getProjects } from '../api/projects.remote';
 	import Folder from '../components/Folder.svelte';
@@ -43,13 +43,13 @@
 </div>
 
 {#if projects.length === 0}
-	<p class="empty">
+	<Empty>
 		{#if params.q}
 			No projects match “{params.q}”.
 		{:else}
 			No projects yet. Create one to start filing todos.
 		{/if}
-	</p>
+	</Empty>
 {/if}
 
 <style>
@@ -79,10 +79,5 @@
 		display: grid;
 		grid-template-columns: repeat(auto-fill, minmax(16em, 1fr));
 		gap: 1.25em;
-	}
-
-	.empty {
-		color: var(--dim);
-		font-size: 0.9em;
 	}
 </style>

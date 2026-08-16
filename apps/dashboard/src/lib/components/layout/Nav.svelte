@@ -5,7 +5,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import ArrowLeft from '@lucide/svelte/icons/arrow-left';
-	import type { Item } from './nav';
+	import type { Nav, Section } from './nav';
 	import NavLink from './NavLink.svelte';
 
 	let {
@@ -14,7 +14,7 @@
 		slim = false
 	}: {
 		back?: { href: string; label: string };
-		sections: { title?: string; items: Item[]; bottom?: boolean }[];
+		sections: Nav['sections'];
 		slim?: boolean;
 	} = $props();
 </script>
@@ -33,9 +33,9 @@
 	</a>
 {/if}
 
-<nav>
-	{#each sections as section (section.title ?? section.items[0]?.href)}
-		<div class="section" class:bottom={section.bottom}>
+{#snippet group(list: Section[])}
+	{#each list as section (section.title ?? section.items[0]?.href)}
+		<div class="section">
 			{#if section.title && !slim}<span class="title">{section.title}</span>{/if}
 			<!-- Collapsed there is no room for the name, but the grouping it marked still has to
 			     read — a rule stands in for it, and `hr` keeps the boundary for a screen reader. -->
@@ -45,6 +45,13 @@
 			{/each}
 		</div>
 	{/each}
+{/snippet}
+
+<nav>
+	{@render group(sections.top)}
+	{#if sections.bottom}
+		<div class="bottom">{@render group(sections.bottom)}</div>
+	{/if}
 </nav>
 
 <style>
@@ -52,11 +59,14 @@
 		display: flex;
 		flex-direction: column;
 		gap: 1.5em;
-		/* Fills the rail so a `bottom` section's auto margin has room to push. */
+		/* Fills the rail so the bottom group's auto margin has room to push. */
 		flex: 1;
 	}
 
 	.bottom {
+		display: flex;
+		flex-direction: column;
+		gap: 1.5em;
 		margin-top: auto;
 	}
 

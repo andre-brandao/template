@@ -88,4 +88,14 @@ export default defineConfig({
     }),
     ...(process.env.SVELTE_ADAPTER === "cloudflare" ? [cloudflaredPg()] : []),
   ],
+  build: {
+    rolldownOptions: {
+      output: {
+        // elkjs's browserify prelude reads a free `require`, so rolldown emits a
+        // module-scope `createRequire(import.meta.url)`. workerd has no import.meta.url,
+        // so that throws at startup. Unpolyfilled, `typeof require` is just undefined.
+        ...(process.env.SVELTE_ADAPTER === "cloudflare" && { polyfillRequire: false }),
+      },
+    },
+  },
 });

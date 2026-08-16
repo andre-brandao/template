@@ -13,8 +13,7 @@ export namespace KeyApi {
       "/",
       doc(Key.list.meta, {
         200: doc.list(Key.Info),
-        401: doc.error(401),
-        500: doc.error(500),
+        ...doc.errors(401, 500),
       }),
       authRequired,
       async (c) => {
@@ -33,9 +32,7 @@ export namespace KeyApi {
         },
         {
           200: doc.json(Key.Info),
-          400: doc.error(400),
-          401: doc.error(401),
-          500: doc.error(500),
+          ...doc.errors(400, 401, 500),
         },
       ),
       authRequired,
@@ -60,10 +57,7 @@ export namespace KeyApi {
       "/:id",
       doc(Key.remove.meta, {
         200: doc.ok,
-        400: doc.error(400),
-        401: doc.error(401),
-        404: doc.error(404),
-        500: doc.error(500),
+        ...doc.errors(400, 401, 404, 500),
       }),
       authRequired,
       validator("param", z.object({ id: Key.Info.shape.id })),

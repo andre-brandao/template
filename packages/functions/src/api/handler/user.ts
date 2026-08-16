@@ -19,8 +19,7 @@ export namespace UserApi {
       },
       {
         200: doc.json(User.Info),
-        401: doc.error(401),
-        500: doc.error(500),
+        ...doc.errors(401, 500),
       },
     ),
     authRequired,

@@ -60,11 +60,7 @@ const doc = describe("Todo"); // binds the tag once for the file
   "/:id",
   doc(Todo.fromID.meta, {
     200: doc.json(Todo.Info),
-    400: doc.error(400),
-    401: doc.error(401),
-    403: doc.error(403),
-    404: doc.error(404),
-    500: doc.error(500),
+    ...doc.errors(400, 401, 403, 404, 500),
   }),
   authRequired,
   validator("param", id),
@@ -75,7 +71,8 @@ const doc = describe("Todo"); // binds the tag once for the file
 `doc()` takes the op's docs and the route's own responses — so summary, description, 200
 description and example all come from schemas that already exist. `doc.json` wraps one,
 `doc.page` a page of them, `doc.list` an array, `doc.ok` a bare `"ok"`, `doc.error` one of the
-standard error bodies. The same `meta` feeds the MCP tool over that op, so the two can never drift.
+standard error bodies and `doc.errors` several of them, spread in. The same `meta` feeds the
+MCP tool over that op, so the two can never drift.
 
 Nothing is merged in: a route lists every status it can return, and only those. `authRequired`
 means 401, a `validator` means 400, a reachable `Actor.check` means 403, a reachable `found()`

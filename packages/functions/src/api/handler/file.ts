@@ -76,9 +76,7 @@ export namespace FileApi {
         },
         responses: {
           200: doc.json(Meta),
-          400: doc.error(400),
-          401: doc.error(401),
-          500: doc.error(500),
+          ...doc.errors(400, 401, 500),
         },
       }),
       authRequired,
@@ -118,8 +116,7 @@ export namespace FileApi {
         },
         {
           200: doc.list(Info),
-          401: doc.error(401),
-          500: doc.error(500),
+          ...doc.errors(401, 500),
         },
       ),
       authRequired,
@@ -140,10 +137,7 @@ export namespace FileApi {
         // No 401: the signature stands in for the session, so this route never runs `authRequired`.
         {
           200: { description: "The raw file bytes." },
-          400: doc.error(400),
-          403: doc.error(403),
-          404: doc.error(404),
-          500: doc.error(500),
+          ...doc.errors(400, 403, 404, 500),
         },
       ),
       validator(
@@ -183,10 +177,7 @@ export namespace FileApi {
         {
           200: { description: "The raw file bytes." },
           302: { description: "Redirect to a presigned storage URL." },
-          400: doc.error(400),
-          401: doc.error(401),
-          404: doc.error(404),
-          500: doc.error(500),
+          ...doc.errors(400, 401, 404, 500),
         },
       ),
       authRequired,
@@ -212,10 +203,7 @@ export namespace FileApi {
         },
         {
           200: doc.json(Meta),
-          400: doc.error(400),
-          401: doc.error(401),
-          404: doc.error(404),
-          500: doc.error(500),
+          ...doc.errors(400, 401, 404, 500),
         },
       ),
       authRequired,
@@ -236,9 +224,7 @@ export namespace FileApi {
         { title: "Delete file" },
         {
           200: doc.ok,
-          400: doc.error(400),
-          401: doc.error(401),
-          500: doc.error(500),
+          ...doc.errors(400, 401, 500),
         },
       ),
       authRequired,

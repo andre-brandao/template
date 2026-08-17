@@ -43,8 +43,23 @@ export namespace Insights {
     );
   }
 
-  function within(col: typeof TodoTable.timeCreated | typeof TodoTable.timeDone, range: Range) {
-    return and(gte(col, new Date(range.start)), lt(col, new Date(Date.parse(range.end) + DAY)));
+  /** The two instant columns an insight ever buckets or bounds by. */
+  type Stamp = typeof TodoTable.timeCreated | typeof TodoTable.timeDone;
+
+  /** The instant a day begins for the reader — the boundary a bucket edge has to agree with. */
+  const at = (day: string) => sql`${day}::timestamp at time zone ${Actor.timezone()}::text`;
+
+  /** A day column truncated in the reader's zone, labelled as the plain day it lands on. */
+  const bucket = (unit: Unit, col: Stamp) =>
+    sql<string>`to_char(date_trunc(${sql.raw(`'${unit}'`)}, ${col} at time zone ${Actor.timezone()}::text), 'YYYY-MM-DD')`;
+
+  // Both ends in the reader's zone too. Truncating there but bounding in UTC would leak
+  // three hours of the neighbouring day into the first and last bucket.
+  function within(col: Stamp, range: Range) {
+    return and(
+      gte(col, at(range.start)),
+      lt(col, at(new Date(Date.parse(range.end) + DAY).toISOString().slice(0, 10))),
+    );
   }
 
   function grouped(input: Range) {
@@ -179,14 +194,16 @@ export namespace Insights {
 
   /** Per-day created counts over the range for a GitHub-style contribution grid. */
   export const calendar = fn(Range, (input) => {
-    const day = sql<string>`to_char(date_trunc('day', ${TodoTable.timeCreated} at time zone 'utc'), 'YYYY-MM-DD')`;
+    const day = bucket("day", TodoTable.timeCreated);
     return Database.use(async (tx) => {
       const rows = await tx
         .select({ day, total: count() })
         .from(TodoTable)
         .where(and(visible(input), within(TodoTable.timeCreated, input)))
-        .groupBy(day)
-        .orderBy(asc(day));
+        // By ordinal: the zone is a bound parameter, so repeating the expression here would
+        // be a second placeholder and postgres would not match it to the select.
+        .groupBy(sql`1`)
+        .orderBy(sql`1`);
       const max = Math.max(0, ...rows.map((row) => row.total));
       return {
         start: input.start,
@@ -202,21 +219,21 @@ export namespace Insights {
     // Bucket coarser as ranges grow: keeps point counts chart-friendly (~31 max).
     const days = span(input);
     const unit: Unit = days <= 31 ? "day" : days <= 217 ? "week" : "month";
-    const made = sql<string>`to_char(date_trunc(${sql.raw(`'${unit}'`)}, ${TodoTable.timeCreated} at time zone 'utc'), 'YYYY-MM-DD')`;
-    const ended = sql<string>`to_char(date_trunc(${sql.raw(`'${unit}'`)}, ${TodoTable.timeDone} at time zone 'utc'), 'YYYY-MM-DD')`;
+    const made = bucket(unit, TodoTable.timeCreated);
+    const ended = bucket(unit, TodoTable.timeDone);
     return Database.use(async (tx) => {
       const [created, completed] = await Promise.all([
         tx
           .select({ day: made, total: count() })
           .from(TodoTable)
           .where(and(visible(input), within(TodoTable.timeCreated, input)))
-          .groupBy(made)
+          .groupBy(sql`1`)
           .then((rows) => new Map(rows.map((row) => [row.day, row.total]))),
         tx
           .select({ day: ended, total: count() })
           .from(TodoTable)
           .where(and(visible(input), within(TodoTable.timeDone, input)))
-          .groupBy(ended)
+          .groupBy(sql`1`)
           .then((rows) => new Map(rows.map((row) => [row.day, row.total]))),
       ] as const);
       const series = buckets(input, unit).map((day) => ({

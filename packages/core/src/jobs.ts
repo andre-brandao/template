@@ -3,6 +3,7 @@ import { found } from "./error";
 import { Email } from "./lib/email";
 import { Queue } from "./lib/queue";
 import { User } from "./user";
+import { zone } from "./user/prefs";
 import { Webhook } from "./platform/webhook";
 
 /** Every job in one import, so a worker process resolves all handlers. Push via `jobs.email.push`. */
@@ -16,5 +17,9 @@ export const webhook = Webhook.job;
 export async function run(job: Queue.Job) {
   if (!job.userID) return Actor.provide("system", {}, () => Queue.run(job));
   const row = found("User", await User.fromID(job.userID));
-  return Actor.provide("user", { userID: job.userID, role: row.role }, () => Queue.run(job));
+  return Actor.provide(
+    "user",
+    { userID: job.userID, role: row.role, timezone: zone(row.prefs) },
+    () => Queue.run(job),
+  );
 }

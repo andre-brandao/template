@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { resolve } from '$app/paths';
-	import { Field, Select } from '@template/ui';
-	import { getKeys } from '$lib/features/keys/api/keys.remote';
+	import { Button, Field, Input } from '@template/ui';
+	import { mintKey } from '$lib/features/keys/api/keys.remote';
 	import Nav from '../Nav.svelte';
 	import { doc } from './api.remote';
 	import { createToken } from './token.svelte';
@@ -13,7 +13,7 @@
 	// Before the awaits below: context has to be set while the component initializes.
 	const token = createToken();
 	const ops = $derived((await doc()).list);
-	const keys = $derived(await getKeys());
+	const mint = async () => (token.current = await mintKey());
 	const items = $derived(
 		ops.map((op) => ({
 			href: resolve('/dev/api/[op]', { op: op.id }),
@@ -28,21 +28,19 @@
 <Nav label="Operations" {items} {children}>
 	{#snippet head()}
 		<Field label="auth">
-			<Select
-				options={[
-					{ value: '', label: 'None (public)' },
-					...keys.map((key) => ({ value: key.key, label: key.name, hint: key.display }))
-				]}
+			<Input
+				placeholder="sk-…"
 				value={token.current}
-				onchange={(e) => (token.current = e.currentTarget.value)}
+				oninput={(e) => (token.current = e.currentTarget.value)}
 			/>
 		</Field>
-		{#if !keys.length}
+		<div class="mint">
+			<Button variant="secondary" pending={!!mintKey.pending} onclick={mint}>Mint a test key</Button>
 			<p class="hint">
-				No keys yet, so authenticated routes answer 401. Mint one in
+				Expires in a day. Any other key has to be pasted — one is only readable when minted, in
 				<a href="/settings/keys">settings</a>.
 			</p>
-		{/if}
+		</div>
 	{/snippet}
 
 	{#snippet row(op)}
@@ -52,6 +50,13 @@
 </Nav>
 
 <style>
+	.mint {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5em;
+		align-items: start;
+	}
+
 	.hint {
 		margin: 0;
 		color: var(--dim);

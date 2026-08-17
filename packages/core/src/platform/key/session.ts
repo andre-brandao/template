@@ -8,6 +8,7 @@ import { Identifier } from "../../identifier";
 import { Permission } from "../../permission";
 import { decode, digest, encode, equal } from "../../util/hash";
 import { token } from "../../util/token";
+import { Prefs, zone } from "../../user/prefs";
 import { UserTable } from "../../user/user.sql";
 import { KeyTable } from "./key.sql";
 
@@ -27,6 +28,10 @@ export namespace Session {
       }),
       role: z.enum(Permission.roles).meta({
         description: "Read off the user row on every request, so a change takes effect at once.",
+      }),
+      timezone: z.string().meta({
+        description: "The zone the session's times belong in, resolved from the user's prefs.",
+        example: "America/Sao_Paulo",
       }),
     })
     .meta({
@@ -78,6 +83,7 @@ export namespace Session {
           userID: UserTable.id,
           email: UserTable.email,
           role: UserTable.role,
+          prefs: UserTable.prefs,
         })
         .from(KeyTable)
         .innerJoin(UserTable, eq(UserTable.id, KeyTable.userID))
@@ -99,7 +105,13 @@ export namespace Session {
     // Slides the window, at most hourly, so an active session isn't a write per request.
     if (!row.used || Date.now() - row.used.getTime() >= TOUCH) await touch(id);
 
-    return { userID: row.userID, email: row.email, role: row.role };
+    return {
+      userID: row.userID,
+      email: row.email,
+      role: row.role,
+      // Parsed: a row written before a preference existed is missing that key.
+      timezone: zone(Prefs.parse(row.prefs)),
+    };
   });
 
   /** Logout. Hard delete, so a copy lifted off the wire dies with the original. */

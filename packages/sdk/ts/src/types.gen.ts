@@ -103,15 +103,15 @@ export type Key = {
    */
   name: string;
   /**
-   * The secret. Handed back in full so it can be copied.
-   */
-  key: string;
-  /**
    * Masked secret, safe to show in a list.
    */
   display: string;
   /**
-   * When the key last authenticated a request.
+   * The secret, handed back in full the once so it can be copied. Null everywhere else — the row holds a hash, so a key that wasn't saved has to be replaced.
+   */
+  key: string | null;
+  /**
+   * When the key last authenticated a request, to the hour.
    */
   timeUsed: string | null;
   /**

@@ -1,5 +1,9 @@
 import { describe, expect, it } from "bun:test";
+import { eq } from "drizzle-orm";
+import { Database } from "../src/drizzle";
+import { digest, encode } from "../src/util/hash";
 import { Key } from "../src/platform/key";
+import { KeyTable } from "../src/platform/key/key.sql";
 import { Signing } from "../src/platform/key/signing";
 import { User } from "../src/user";
 import { testEmail, withTestUser } from "./util";
@@ -9,18 +13,24 @@ describe("key", () => {
     const key = await Key.create({ userID, name: "laptop" });
 
     expect(key.key).toStartWith("sk-");
-    expect(key.display).toBe(`${key.key.slice(0, 7)}...${key.key.slice(-4)}`);
     expect(await Key.verify(key.key)).toBe(userID);
 
     const keys = await Key.list(undefined);
     expect(keys.map((k) => k.id)).toContain(key.id);
   });
 
-  withTestUser("list hands back the secret", async ({ userID }) => {
+  withTestUser("the secret is minted once and never read back", async ({ userID }) => {
     const key = await Key.create({ userID, name: "laptop" });
 
-    const keys = await Key.list(undefined);
-    expect(keys.find((k) => k.id === key.id)?.key).toBe(key.key);
+    const keys = await Key.list(key.key);
+    expect(keys.find((k) => k.id === key.id)?.key).toBeNull();
+
+    // Not even by the row: what's stored is a hash, so the secret is not in the table.
+    const rows = await Database.use((tx) =>
+      tx.select().from(KeyTable).where(eq(KeyTable.id, key.id)),
+    );
+    expect(rows[0]?.key).not.toBe(key.key);
+    expect(rows[0]?.key).toBe(encode(await digest(key.key)));
   });
 
   withTestUser("remove revokes the key", async ({ userID }) => {
@@ -88,6 +98,28 @@ describe("key", () => {
 
     expect((await Key.list(undefined))[0]?.timeUsed).not.toBeNull();
   });
+
+  withTestUser(
+    "a fresh stamp is left alone, so a busy key isn't a write a request",
+    async ({ userID }) => {
+      const key = await Key.create({ userID, name: "laptop" });
+      await Key.verify(key.key);
+
+      const first = (await Key.list(undefined))[0]?.timeUsed;
+      await Key.verify(key.key);
+      expect((await Key.list(undefined))[0]?.timeUsed).toBe(first!);
+
+      // Stale enough to be worth a write, and the next use slides it forward.
+      await Database.use((tx) =>
+        tx
+          .update(KeyTable)
+          .set({ timeUsed: new Date(Date.now() - 2 * 60 * 60 * 1000) })
+          .where(eq(KeyTable.id, key.id)),
+      );
+      await Key.verify(key.key);
+      expect((await Key.list(undefined))[0]?.timeUsed).not.toBe(first!);
+    },
+  );
 
   withTestUser("the signing key is app-level and never authenticates a request", async () => {
     const signing = await Signing.current();

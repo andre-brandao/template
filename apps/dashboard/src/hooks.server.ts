@@ -65,7 +65,9 @@ const handleAuth: Handle = async ({ event, resolve }) => {
   event.locals.session = me;
   if (!me) return Actor.provide("public", {}, () => resolve(event));
 
-  return Actor.provide("user", { userID: me.userID, role: me.role }, () => resolve(event));
+  return Actor.provide("user", { userID: me.userID, role: me.role, timezone: me.timezone }, () =>
+    resolve(event),
+  );
 };
 
 // Read inside the callback, not before `resolve` — the root layout's load reconciles the

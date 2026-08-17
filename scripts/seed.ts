@@ -15,6 +15,7 @@ process.env.LOG_QUIET ??= "true";
 
 const email = process.env.SEED_EMAIL ?? "dev@example.com";
 const name = process.env.SEED_NAME ?? "Dev User";
+const pw = process.env.SEED_PASSWORD ?? "password123";
 
 const count = Number(process.env.SEED_TODO_COUNT ?? 260);
 const days = Number(process.env.SEED_DAYS ?? 365);
@@ -128,6 +129,9 @@ async function seed() {
   // The dev account owns the instance: `/admin` is otherwise unreachable without hand-writing
   // the promotion SQL. The team below stay members, so both roles are represented locally.
   await Actor.provide("system", {}, () => User.assign({ id: userID, role: "admin" }));
+  // The login screen prefills these credentials in dev, so the dev account needs a real
+  // password row for them to match — an account gains one, it never signs up with one.
+  await Actor.provide("user", { userID, role: "admin" }, () => Auth.Pass.set({ password: pw }));
   const key = await Key.create({ userID, name: "seed" });
   const mates = await Promise.all(
     team.map((one) =>

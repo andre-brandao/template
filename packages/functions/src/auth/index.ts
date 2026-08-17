@@ -1,27 +1,17 @@
 import { issuer } from "@openauthjs/openauth/issuer";
-import { PasswordProvider } from "@openauthjs/openauth/provider/password";
-import { PasswordUI } from "@openauthjs/openauth/ui/password";
-import { CodeProvider } from "@openauthjs/openauth/provider/code";
-import { CodeUI } from "@openauthjs/openauth/ui/code";
 import { GithubProvider } from "@openauthjs/openauth/provider/github";
 import { GoogleProvider } from "@openauthjs/openauth/provider/google";
 import { THEME_OPENAUTH } from "@openauthjs/openauth/ui/theme";
 import type { StorageAdapter } from "@openauthjs/openauth/storage/storage";
 import type { Provider } from "@openauthjs/openauth/provider/provider";
-import { Password } from "@template/core/util/password";
-import { Template } from "@template/core/email/template";
 import { Auth } from "@template/core/user/auth";
 import { subjects } from "./subject";
 
-const hasher = { hash: Password.hash, verify: Password.verify };
-
-/** Providers keyed by name; each returns `null` when its credentials are absent. */
+/**
+ * OAuth only. Password and emailed-code logins are the dashboard's, straight against the
+ * database through `Auth` — so a local stack signs in with no issuer in the path.
+ */
 const build: Record<string, () => Provider | null> = {
-  password: () => PasswordProvider({ ...PasswordUI({ sendCode: Template.sendLoginCode }), hasher }),
-  code: () =>
-    CodeProvider(
-      CodeUI({ sendCode: (claims, code) => Template.sendLoginCode(claims.email!, code) }),
-    ),
   github: () => {
     const id = process.env.GITHUB_CLIENT_ID;
     const secret = process.env.GITHUB_CLIENT_SECRET;
@@ -46,7 +36,7 @@ const build: Record<string, () => Provider | null> = {
 };
 
 function providers() {
-  const want = (process.env.AUTH_PROVIDERS?.trim() || "password,code,github,google")
+  const want = (process.env.AUTH_PROVIDERS?.trim() || "github,google")
     .split(",")
     .map((s) => s.trim())
     .filter(Boolean);
@@ -55,7 +45,9 @@ function providers() {
     const p = build[name]?.();
     if (p) out[name] = p;
   }
-  if (Object.keys(out).length === 0) throw new Error("No auth providers configured");
+  // Not fatal: with no OAuth credentials the issuer has nothing to serve, and the dashboard
+  // still logs in on its own. Booting anyway keeps `bun dev` whole.
+  if (Object.keys(out).length === 0) console.warn("No OAuth providers configured");
   return out;
 }
 
@@ -84,18 +76,6 @@ export function createAuth(storage: StorageAdapter) {
     providers: providers(),
     allow: async (input) => !!process.env.SST_DEV || allow(input.redirectURI),
     success: async (ctx, response) => {
-      if (response.provider === "password") {
-        const email = response.email;
-        const userID = await Auth.provision({ provider: "email", accountId: email, email });
-        return ctx.subject("user", { userID, email });
-      }
-
-      if (response.provider === "code") {
-        const email = response.claims.email!;
-        const userID = await Auth.provision({ provider: "email", accountId: email, email });
-        return ctx.subject("user", { userID, email });
-      }
-
       if (response.provider === "github") {
         const headers = {
           Authorization: `Bearer ${response.tokenset.access}`,

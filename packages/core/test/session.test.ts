@@ -4,6 +4,8 @@ import { Database } from "../src/drizzle";
 import { Key } from "../src/platform/key";
 import { KeyTable } from "../src/platform/key/key.sql";
 import { Session } from "../src/platform/key/session";
+import { Actor } from "../src/actor";
+import { User } from "../src/user";
 import { withTestUser } from "./util";
 
 const row = (userID: string) =>
@@ -16,10 +18,19 @@ const row = (userID: string) =>
   );
 
 describe("Session", () => {
-  withTestUser("verify answers who and what role in one read", async ({ userID, email }) => {
-    const raw = await Session.create(userID);
-    expect(await Session.verify(raw)).toEqual({ userID, email, role: "member" });
-  });
+  withTestUser(
+    "verify answers who, what role and which zone in one read",
+    async ({ userID, email }) => {
+      const raw = await Session.create(userID);
+      // Nothing stored yet, so the zone is the UTC fallback.
+      expect(await Session.verify(raw)).toEqual({ userID, email, role: "member", timezone: "UTC" });
+
+      await Actor.provide("user", { userID, role: "member" }, () =>
+        User.prefs({ zone: "America/Sao_Paulo" }),
+      );
+      expect((await Session.verify(raw))?.timezone).toBe("America/Sao_Paulo");
+    },
+  );
 
   withTestUser("the cookie is the row id and a secret", async ({ userID }) => {
     const [id, secret] = (await Session.create(userID)).split(".");

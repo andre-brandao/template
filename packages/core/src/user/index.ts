@@ -257,7 +257,9 @@ export namespace User {
       emailVerified: row.emailVerified,
       image: row.image,
       role: row.role,
-      prefs: row.prefs,
+      // Parsed, not passed through: a row written before a preference existed is missing
+      // that key, and the column's `$type` would claim otherwise.
+      prefs: Prefs.parse(row.prefs),
       timeDeleted: iso(row.timeDeleted),
     };
   }

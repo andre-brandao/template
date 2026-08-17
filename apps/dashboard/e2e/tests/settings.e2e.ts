@@ -89,10 +89,14 @@ test("the date format preference reaches the rest of the app", async ({ page, as
 
   await page.goto("/settings/experience");
   await page.waitForLoadState("networkidle");
-  // The zone select offers local time and UTC only; UTC pins the rendered day
-  // regardless of the runner's own zone.
+  // The zone picker is a combobox over every zone `Intl` knows, so search then pick. UTC
+  // pins the rendered day regardless of the runner's own zone. `button[role=combobox]` is
+  // the trigger — a bare `combobox` role would also match the two native selects below it,
+  // and the option is matched by prefix because on a UTC runner it carries a "Here" badge.
   const zone = saved(page);
-  await page.selectOption("select[name='zone']", "UTC");
+  await page.locator("button[role='combobox']").click();
+  await page.getByRole("searchbox", { name: "Search zones" }).fill("UTC");
+  await page.getByRole("option", { name: /^UTC/ }).first().click();
   await zone;
   const mdy = saved(page);
   await page.selectOption("select[name='date']", "mdy");

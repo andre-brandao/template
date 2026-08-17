@@ -7,11 +7,11 @@
 	const f = fmt();
 
 	const labels: Record<User.Provider['id'], string> = {
-		email: 'Email & password',
+		email: 'Email code',
+		password: 'Password',
 		github: 'GitHub',
 		google: 'Google'
 	};
-
 	const label = $derived(labels[provider.id]);
 	const since = $derived(
 		provider.timeCreated

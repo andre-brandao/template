@@ -9,8 +9,14 @@
 
 	let {
 		onsuccess,
-		scope = {}
-	}: { onsuccess?: () => void; scope?: { source?: string; sourceID?: string } } = $props();
+		scope = {},
+		due
+	}: {
+		onsuccess?: () => void;
+		scope?: { source?: string; sourceID?: string };
+		/** Prefilled when the form opens from a calendar day. */
+		due?: string;
+	} = $props();
 
 	let body = $state('');
 	let tags = $state<string[]>([]);
@@ -50,7 +56,8 @@
 			</Field>
 
 			<Field label="Due">
-				<Input {...createTodo.fields.dueDate.as('date')} />
+				<!-- Static, so it seeds the field without fighting what gets typed after. -->
+				<Input {...createTodo.fields.dueDate.as('date', due)} />
 			</Field>
 		</div>
 

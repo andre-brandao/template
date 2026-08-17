@@ -129,3 +129,19 @@ export const removeTodo = remote.form(
   z.object({ id: Todo.Info.shape.id }).transform((input) => input.id),
   Todo.remove,
 );
+
+/**
+ * Drag and resize on the calendar. Dates always; the lane fields only when the drag
+ * crossed a resource row, so an absent one leaves that field alone.
+ */
+export const moveTodo = remote.command(
+  z.object({
+    id: Todo.Info.shape.id,
+    startDate: day,
+    dueDate: day,
+    status: Todo.Status.optional(),
+    stage: z.string().nullable().optional(),
+    assignee: z.string().nullable().optional(),
+  }),
+  Todo.update,
+);

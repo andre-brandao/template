@@ -52,6 +52,9 @@
 						autocomplete="current-password"
 					/>
 				</Field>
+				<!-- Only the code signs anyone up, so a new visitor who types a password they'd
+				     like would otherwise just get "Invalid email or password" and no reason why. -->
+				<p class="hint">Signing up? Use the code — passwords are added later, in Settings.</p>
 			{/if}
 
 			<Button type="submit" pending={!!start.pending}>

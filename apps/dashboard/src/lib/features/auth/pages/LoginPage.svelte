@@ -8,8 +8,10 @@
 </script>
 
 <div class="auth">
-	<h1>Log in</h1>
-	<p class="sub">New here? The code makes your account.</p>
+	<!-- One box for both: there is no separate signup, because a code for an address nobody
+	     holds creates the account. Saying so is the only thing that makes that discoverable. -->
+	<h1>Log in or sign up</h1>
+	<p class="sub">Enter your email. If you're new, the code creates your account.</p>
 
 	<Card>
 		<LoginForm />

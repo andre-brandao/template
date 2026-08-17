@@ -1,18 +1,14 @@
 <script lang="ts">
 	import type { Key } from '@template/core/key';
-	import { Button, Card } from '@template/ui';
+	import { Card } from '@template/ui';
 	import RevokeForm from '../RevokeForm.svelte';
 	import { fmt } from '$lib/utils/fmt';
 
 	let { key }: { key: Key.Info } = $props();
 
 	const f = fmt();
-	let shown = $state(false);
 
-	// Non-null for `api` keys, which is all this card is ever given.
-	const secret = $derived(key.key);
-	const text = $derived(shown && secret ? secret : key.display);
-	const toggle = $derived(shown ? 'Hide' : 'Reveal');
+	// The mask is all there is: the row keeps a hash, so nothing here can be revealed.
 	const used = $derived(key.timeUsed ? `last used ${f.date(key.timeUsed)}` : 'never used');
 	const expires = $derived(key.expiresAt ? `expires ${f.date(key.expiresAt)}` : 'never expires');
 
@@ -20,8 +16,6 @@
 		!!key.expiresAt && new Date(key.expiresAt).getTime() - Date.now() < 7 * 86_400_000
 	);
 	const rail = $derived(!key.timeUsed ? 'var(--dim)' : soon ? 'var(--progress)' : 'var(--accent)');
-
-	const copy = () => secret && navigator.clipboard.writeText(secret);
 </script>
 
 <Card as="li" accent={rail} interactive dense>
@@ -31,15 +25,11 @@
 			<span class="used">{used} · {expires}</span>
 		</div>
 
-		<div class="secret" class:revealed={shown}>
-			<code>{text}</code>
+		<div class="secret">
+			<code>{key.display}</code>
 		</div>
 
 		<div class="actions">
-			{#if secret}
-				<Button onclick={() => (shown = !shown)}>{toggle}</Button>
-				<Button onclick={copy}>Copy</Button>
-			{/if}
 			<RevokeForm id={key.id} />
 		</div>
 	</div>
@@ -83,11 +73,6 @@
 		font-size: 0.82em;
 		color: var(--muted);
 		overflow-wrap: anywhere;
-		transition: color 0.2s ease;
-	}
-
-	.secret.revealed code {
-		color: var(--ink);
 	}
 
 	.actions {

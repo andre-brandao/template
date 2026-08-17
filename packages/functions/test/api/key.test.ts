@@ -17,8 +17,8 @@ describe("key", () => {
 
     const current = keys.find((key) => key.current);
     expect(current).toBeDefined();
-    expect(current!.key).toStartWith("sk-");
-    expect(current!.display).toStartWith("sk-");
+    // Only `create` hands a secret back — the list has a hash and nothing else.
+    expect(current!.key).toBeNull();
   });
 
   test("revoking a key signs that token out", async () => {
@@ -38,7 +38,7 @@ describe("key", () => {
     const response = await validateOpenAPIRoute("post", "/key", undefined, { name: "laptop" });
     expect(response.name).toBe("laptop");
     expect(response.key).toStartWith("sk-");
-    expect(await Key.verify(response.key)).toBe(userID());
+    expect(await Key.verify(response.key!)).toBe(userID());
   });
 
   test("DELETE /key/:id", async () => {

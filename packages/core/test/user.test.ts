@@ -98,6 +98,16 @@ describe("user", () => {
     expect((await User.fromID(userID))?.prefs.zone).toBeNull();
   });
 
+  // `Intl.supportedValuesOf("timeZone")` disagrees across engines — V8 omits these, JSC
+  // lists them — so validating by that list let the server store a zone the browser then
+  // rejected, killing hydration. Every engine's `DateTimeFormat` accepts them.
+  withTestUser("prefs accepts zones the supported-values list leaves out", async ({ userID }) => {
+    for (const name of ["UTC", "Etc/UTC", "Etc/GMT+3"]) {
+      await User.prefs({ zone: name });
+      expect((await User.fromID(userID))?.prefs.zone).toBe(name);
+    }
+  });
+
   withTestUser("prefs rejects a value outside the enum", async ({ userID }) => {
     const bad: any = { theme: "neon" };
     expect(() => User.prefs(bad)).toThrow();

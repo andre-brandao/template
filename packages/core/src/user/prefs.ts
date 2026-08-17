@@ -5,12 +5,21 @@ export const Locales = ["en", "pt-BR", "es", "fr", "de"] as const;
 export const Dates = ["system", "mdy", "dmy", "ymd"] as const;
 export const Times = ["system", "h12", "h24"] as const;
 
-/** The names `Intl` accepts. A stored zone it rejects would throw at render instead. */
-const zones = new Set(Intl.supportedValuesOf("timeZone"));
-const Zone = z
-  .string()
-  .max(64)
-  .refine((name) => zones.has(name), "Unknown time zone");
+/**
+ * Whether `Intl` will format in this zone. Asked by construction, not by membership of
+ * `Intl.supportedValuesOf("timeZone")` — engines disagree on that list (V8 omits `UTC`,
+ * JSC includes it), so a browser would reject the zone its own server just stored.
+ */
+function known(name: string) {
+  try {
+    new Intl.DateTimeFormat("en", { timeZone: name });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+const Zone = z.string().max(64).refine(known, "Unknown time zone");
 
 /**
  * Display preferences. Formatting is done with `Intl`, so the date/time values are

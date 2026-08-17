@@ -1,3 +1,4 @@
+import { redirect } from "@sveltejs/kit";
 import { Actor } from "@template/core/actor";
 import { Feedback } from "$lib/features/feedback/api/feedback";
 import { User } from "@template/core/user";
@@ -19,6 +20,10 @@ export const load: LayoutServerLoad = async (event) => {
 
   const user = await User.fromID(actor.properties.userID);
   if (!user) return { user: null, prefs: DEFAULTS, feedback, rail };
+
+  // `provision` names a fresh account after its address, so a code or OAuth signup arrives
+  // with no real name. Everything else waits behind onboarding until there is one.
+  if (user.name === user.email && event.url.pathname !== "/welcome") redirect(303, "/welcome");
 
   // Realign the cookie with the stored preference, so a first visit from a new browser
   // paints in the right theme rather than defaulting to `system` for one navigation.

@@ -69,7 +69,8 @@
                 "default": null,
                 "anyOf": [
                   {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 64
                   },
                   {
                     "type": "null"
@@ -195,13 +196,20 @@
             "maxLength": 255,
             "description": "Label shown in the key list."
           },
-          "key": {
-            "type": "string",
-            "description": "The secret. Handed back in full so it can be copied."
-          },
           "display": {
             "type": "string",
             "description": "Masked secret, safe to show in a list."
+          },
+          "key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The secret, handed back in full the once so it can be copied. Null everywhere else — the row holds a hash, so a key that wasn't saved has to be replaced."
           },
           "timeUsed": {
             "anyOf": [
@@ -214,7 +222,7 @@
                 "type": "null"
               }
             ],
-            "description": "When the key last authenticated a request."
+            "description": "When the key last authenticated a request, to the hour."
           },
           "expiresAt": {
             "anyOf": [
@@ -234,7 +242,7 @@
             "description": "Whether this is the key authenticating the current request."
           }
         },
-        "required": ["id", "name", "key", "display", "timeUsed", "expiresAt", "current"],
+        "required": ["id", "name", "display", "key", "timeUsed", "expiresAt", "current"],
         "description": "An API key belonging to a user.",
         "example": {
           "id": "key_XXXXXXXXXXXXXXXXXXXXXXXXX",
@@ -702,7 +710,7 @@
         "operationId": "getKey",
         "tags": ["Key"],
         "summary": "List keys",
-        "description": "List the current user's API keys. The key authenticating this request is flagged `current`.",
+        "description": "List the current user's API keys. Secrets are stored hashed, so `key` is null here — only `create` ever returns one. The key authenticating this request is flagged `current`.",
         "responses": {
           "200": {
             "content": {

@@ -31,8 +31,7 @@ export const load: LayoutServerLoad = async (event) => {
 
   // The zone travels the other way, and only once: the browser seeds an empty preference,
   // and from then on it is the user's, so a deliberate choice is never overwritten.
-  const seed = user.prefs.zone ? null : zone.read(event);
-  if (seed) await User.prefs({ zone: seed });
+  const seed = await zone.seed(event, user.prefs.zone);
 
-  return { user, prefs: { ...user.prefs, zone: user.prefs.zone ?? seed }, feedback, rail };
+  return { user, prefs: { ...user.prefs, zone: seed }, feedback, rail };
 };

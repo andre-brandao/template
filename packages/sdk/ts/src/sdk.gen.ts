@@ -128,7 +128,7 @@ export class TemplateSdk extends HeyApiClient {
   /**
    * List keys
    *
-   * List the current user's API keys. The key authenticating this request is flagged `current`.
+   * List the current user's API keys. Secrets are stored hashed, so `key` is null here — only `create` ever returns one. The key authenticating this request is flagged `current`.
    */
   public getKey<ThrowOnError extends boolean = false>(
     options?: Options<never, ThrowOnError>,

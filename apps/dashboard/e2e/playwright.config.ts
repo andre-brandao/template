@@ -47,7 +47,7 @@ export default defineConfig({
     command: "bun run build && bun run preview --port 4173 --strictPort --host 127.0.0.1",
     url: `${base}/healthz`,
     reuseExistingServer: !ci,
-    timeout: 120_000,
+    timeout: 45_000,
     env: { SVELTE_ADAPTER: "node", DATABASE_URL: url },
   },
   projects: [

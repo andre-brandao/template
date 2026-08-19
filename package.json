@@ -75,7 +75,7 @@
   "devDependencies": {
     "@cloudflare/workers-types": "5.20260715.1",
     "@types/bun": "catalog:",
-    "fallow": "^3.6.0",
+    "fallow": "^3.17.0",
     "oxfmt": "^0.59.0",
     "oxlint": "^1.74.0"
   },

@@ -18,7 +18,12 @@
   // Every *.story.svelte colocates its metadata in the module script and is
   // consumed only as a namespace (`import * as button` in ui/src/lib/story.ts),
   // so the shared `story` name is never ambiguous at an import site.
-  "ignoreExports": [{ "file": "**/*.story.svelte", "exports": ["story"] }],
+  "ignoreExports": [
+    {
+      "file": "**/*.story.svelte",
+      "exports": ["story"],
+    },
+  ],
   // infra/*/stage.ts share a small boilerplate header across cloud targets
   // (aws, cf); the overlap is stage-setup wiring, not logic worth extracting.
   // Anything narrower than a directory is waived where it lives, with a
@@ -27,6 +32,7 @@
   // stage shells are meant to read alike, so the overlap is chrome, not logic.
   "duplicates": {
     "ignore": ["infra/**", "apps/*/src/routes/dev/**"],
+    "minOccurrences": 3,
   },
   "health": {
     "maxCrap": 69,

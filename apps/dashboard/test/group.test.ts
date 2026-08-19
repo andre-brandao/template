@@ -19,6 +19,7 @@ const BASE: Todo.Info = {
   dueDate: null,
   timeStarted: null,
   timeDone: null,
+  timeCreated: "2026-06-07T00:00:00.000Z",
 };
 
 const make = (over: Partial<Todo.Info>) => ({ ...BASE, ...over });

@@ -102,9 +102,15 @@
               }
             ],
             "description": "When the account was disabled. Null while it is active."
+          },
+          "timeCreated": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+            "description": "When the account was created."
           }
         },
-        "required": ["id", "name", "email", "image", "role", "prefs", "timeDeleted"],
+        "required": ["id", "name", "email", "image", "role", "prefs", "timeDeleted", "timeCreated"],
         "description": "A user account.",
         "example": {
           "id": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX",
@@ -120,7 +126,8 @@
             "date": "system",
             "time": "system"
           },
-          "timeDeleted": null
+          "timeDeleted": null,
+          "timeCreated": "2026-06-07T00:00:00.000Z"
         }
       },
       "ErrorResponse": {
@@ -427,6 +434,12 @@
               }
             ],
             "description": "When it went `done`. Null while it is unfinished."
+          },
+          "timeCreated": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+            "description": "When it was created."
           }
         },
         "required": [
@@ -444,7 +457,8 @@
           "startDate",
           "dueDate",
           "timeStarted",
-          "timeDone"
+          "timeDone",
+          "timeCreated"
         ],
         "description": "A unit of work, owned by whatever entity created it.",
         "example": {
@@ -466,7 +480,8 @@
           "startDate": "2026-06-07T00:00:00.000Z",
           "dueDate": "2026-06-14T00:00:00.000Z",
           "timeStarted": "2026-06-07T09:12:00.000Z",
-          "timeDone": null
+          "timeDone": null,
+          "timeCreated": "2026-06-07T00:00:00.000Z"
         }
       },
       "Stage": {
@@ -549,16 +564,23 @@
               }
             ],
             "description": "Cover image URL, or null for none."
+          },
+          "timeCreated": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+            "description": "When it was created."
           }
         },
-        "required": ["id", "createdBy", "name", "description", "image"],
+        "required": ["id", "createdBy", "name", "description", "image", "timeCreated"],
         "description": "A container for todos. Todos point at it through source/sourceID.",
         "example": {
           "id": "prj_XXXXXXXXXXXXXXXXXXXXXXXXX",
           "createdBy": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX",
           "name": "Quarterly close",
           "description": null,
-          "image": null
+          "image": null,
+          "timeCreated": "2026-06-07T00:00:00.000Z"
         }
       },
       "FileMeta": {
@@ -666,7 +688,8 @@
                     "date": "system",
                     "time": "system"
                   },
-                  "timeDeleted": null
+                  "timeDeleted": null,
+                  "timeCreated": "2026-06-07T00:00:00.000Z"
                 }
               }
             },
@@ -1010,11 +1033,16 @@
                     },
                     "page": {
                       "type": "number",
-                      "description": "Page number returned."
+                      "minimum": 1,
+                      "description": "Page number returned.",
+                      "example": 1
                     },
                     "pageSize": {
                       "type": "number",
-                      "description": "Number of entities per page."
+                      "minimum": 1,
+                      "maximum": 100,
+                      "description": "Number of entities per page.",
+                      "example": 10
                     },
                     "total": {
                       "type": "number",
@@ -1044,7 +1072,8 @@
                         "startDate": "2026-06-07T00:00:00.000Z",
                         "dueDate": "2026-06-14T00:00:00.000Z",
                         "timeStarted": "2026-06-07T09:12:00.000Z",
-                        "timeDone": null
+                        "timeDone": null,
+                        "timeCreated": "2026-06-07T00:00:00.000Z"
                       }
                     ],
                     "page": 1,
@@ -1073,7 +1102,8 @@
                       "startDate": "2026-06-07T00:00:00.000Z",
                       "dueDate": "2026-06-14T00:00:00.000Z",
                       "timeStarted": "2026-06-07T09:12:00.000Z",
-                      "timeDone": null
+                      "timeDone": null,
+                      "timeCreated": "2026-06-07T00:00:00.000Z"
                     }
                   ],
                   "page": 1,
@@ -1182,7 +1212,7 @@
             "in": "query",
             "name": "sort",
             "schema": {
-              "example": ["-dueDate"],
+              "example": ["-title"],
               "maxItems": 3,
               "type": "array",
               "items": {
@@ -1205,7 +1235,7 @@
                 ]
               }
             },
-            "description": "Sort keys in priority order. Prefix with `-` for descending."
+            "description": "Sort keys in priority order, one of: title, status, stage, assignee, startDate, dueDate, timeCreated. Prefix with `-` for descending."
           },
           {
             "in": "query",
@@ -1296,7 +1326,8 @@
                   "startDate": "2026-06-07T00:00:00.000Z",
                   "dueDate": "2026-06-14T00:00:00.000Z",
                   "timeStarted": "2026-06-07T09:12:00.000Z",
-                  "timeDone": null
+                  "timeDone": null,
+                  "timeCreated": "2026-06-07T00:00:00.000Z"
                 }
               }
             },
@@ -1632,7 +1663,8 @@
                   "startDate": "2026-06-07T00:00:00.000Z",
                   "dueDate": "2026-06-14T00:00:00.000Z",
                   "timeStarted": "2026-06-07T09:12:00.000Z",
-                  "timeDone": null
+                  "timeDone": null,
+                  "timeCreated": "2026-06-07T00:00:00.000Z"
                 }
               }
             },
@@ -1767,7 +1799,8 @@
                   "startDate": "2026-06-07T00:00:00.000Z",
                   "dueDate": "2026-06-14T00:00:00.000Z",
                   "timeStarted": "2026-06-07T09:12:00.000Z",
-                  "timeDone": null
+                  "timeDone": null,
+                  "timeCreated": "2026-06-07T00:00:00.000Z"
                 }
               }
             },
@@ -2114,11 +2147,16 @@
                     },
                     "page": {
                       "type": "number",
-                      "description": "Page number returned."
+                      "minimum": 1,
+                      "description": "Page number returned.",
+                      "example": 1
                     },
                     "pageSize": {
                       "type": "number",
-                      "description": "Number of entities per page."
+                      "minimum": 1,
+                      "maximum": 100,
+                      "description": "Number of entities per page.",
+                      "example": 10
                     },
                     "total": {
                       "type": "number",
@@ -2134,7 +2172,8 @@
                         "createdBy": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX",
                         "name": "Quarterly close",
                         "description": null,
-                        "image": null
+                        "image": null,
+                        "timeCreated": "2026-06-07T00:00:00.000Z"
                       }
                     ],
                     "page": 1,
@@ -2149,7 +2188,8 @@
                       "createdBy": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX",
                       "name": "Quarterly close",
                       "description": null,
-                      "image": null
+                      "image": null,
+                      "timeCreated": "2026-06-07T00:00:00.000Z"
                     }
                   ],
                   "page": 1,
@@ -2258,7 +2298,7 @@
             "in": "query",
             "name": "sort",
             "schema": {
-              "example": ["-dueDate"],
+              "example": ["-name"],
               "maxItems": 3,
               "type": "array",
               "items": {
@@ -2266,7 +2306,7 @@
                 "enum": ["name", "-name", "timeCreated", "-timeCreated"]
               }
             },
-            "description": "Sort keys in priority order. Prefix with `-` for descending."
+            "description": "Sort keys in priority order, one of: name, timeCreated. Prefix with `-` for descending."
           },
           {
             "in": "query",
@@ -2294,7 +2334,8 @@
                   "createdBy": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX",
                   "name": "Quarterly close",
                   "description": null,
-                  "image": null
+                  "image": null,
+                  "timeCreated": "2026-06-07T00:00:00.000Z"
                 }
               }
             },
@@ -2421,7 +2462,8 @@
                   "createdBy": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX",
                   "name": "Quarterly close",
                   "description": null,
-                  "image": null
+                  "image": null,
+                  "timeCreated": "2026-06-07T00:00:00.000Z"
                 }
               }
             },
@@ -2542,7 +2584,8 @@
                   "createdBy": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX",
                   "name": "Quarterly close",
                   "description": null,
-                  "image": null
+                  "image": null,
+                  "timeCreated": "2026-06-07T00:00:00.000Z"
                 }
               }
             },

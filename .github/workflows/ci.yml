@@ -105,13 +105,13 @@ jobs:
       - uses: oven-sh/setup-bun@v2
       - run: bun install --frozen-lockfile
       - run: bun run gen
-      - run: bun run fmt
+      # - run: bun run fmt
       - name: Check for spec drift
         id: drift
         run: |
           git diff --stat packages/sdk > drift.txt
           git diff --exit-code packages/sdk || {
-            echo "::error::openapi.json or the generated SDK is stale. Run 'bun run gen && bun run fmt' and commit the result."
+            echo "::error::openapi.json or the generated SDK is stale. Run 'bun run gen' and commit the result."
             exit 1
           }
       - name: Comment on PR

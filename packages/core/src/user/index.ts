@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { and, asc, eq, ilike, isNull, sql } from "drizzle-orm";
+import { and, asc, eq, ilike, isNull, sql, type SQLWrapper } from "drizzle-orm";
 import { Assert } from "../util/assert";
 import { fn } from "../util/fn";
 import { iso } from "../util/fmt";
@@ -11,6 +11,7 @@ import { Event } from "../platform/event";
 import { Examples } from "../examples";
 import { Identifier } from "../identifier";
 import { Permission } from "../permission";
+import { sortable } from "../drizzle/order";
 import { UserTable } from "./user.sql";
 import { Patch, Prefs } from "./prefs";
 import { ProviderIds, ProviderTable } from "./provider.sql";
@@ -40,6 +41,7 @@ export namespace User {
         .datetime()
         .nullable()
         .meta({ description: "When the account was disabled. Null while it is active." }),
+      timeCreated: z.iso.datetime().meta({ description: "When the account was created." }),
     })
     .meta({
       ref: "User",
@@ -47,6 +49,18 @@ export namespace User {
       example: Examples.User,
     });
   export type Info = z.infer<typeof Info>;
+
+  /** Sortable keys mapped to what each orders by — also the allowlist. */
+  export const SortableColumns = sortable(
+    {
+      name: UserTable.name,
+      email: UserTable.email,
+      role: UserTable.role,
+      timeCreated: UserTable.timeCreated,
+    } satisfies Partial<Record<keyof Info, SQLWrapper>>,
+    UserTable.id,
+    asc(UserTable.name),
+  );
 
   /** A login provider, connected or not. Not in the HTTP API — the dashboard reads core directly. */
   export const Provider = z.object({
@@ -264,6 +278,7 @@ export namespace User {
       // that key, and the column's `$type` would claim otherwise.
       prefs: Prefs.parse(row.prefs),
       timeDeleted: iso(row.timeDeleted),
+      timeCreated: row.timeCreated.toISOString(),
     };
   }
 }

@@ -47,6 +47,10 @@ export type User = {
    * When the account was disabled. Null while it is active.
    */
   timeDeleted: string | null;
+  /**
+   * When the account was created.
+   */
+  timeCreated: string;
 };
 
 /**
@@ -193,6 +197,10 @@ export type Todo = {
    * When it went `done`. Null while it is unfinished.
    */
   timeDone: string | null;
+  /**
+   * When it was created.
+   */
+  timeCreated: string;
 };
 
 /**
@@ -231,6 +239,10 @@ export type Project = {
    * Cover image URL, or null for none.
    */
   image: string | null;
+  /**
+   * When it was created.
+   */
+  timeCreated: string;
 };
 
 /**
@@ -405,7 +417,7 @@ export type GetTodoData = {
      */
     pageSize?: number;
     /**
-     * Sort keys in priority order. Prefix with `-` for descending.
+     * Sort keys in priority order, one of: title, status, stage, assignee, startDate, dueDate, timeCreated. Prefix with `-` for descending.
      */
     sort?: Array<
       | "title"
@@ -790,7 +802,7 @@ export type GetProjectData = {
      */
     pageSize?: number;
     /**
-     * Sort keys in priority order. Prefix with `-` for descending.
+     * Sort keys in priority order, one of: name, timeCreated. Prefix with `-` for descending.
      */
     sort?: Array<"name" | "-name" | "timeCreated" | "-timeCreated">;
     search?: string;

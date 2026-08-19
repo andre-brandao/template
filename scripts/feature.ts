@@ -69,7 +69,7 @@ export const ${pascal}Table = table(
 await Bun.write(
   targets.core,
   `import { z } from "zod";
-import { and, count, desc, eq, ilike, isNull } from "drizzle-orm";
+import { and, count, desc, eq, ilike, isNull, type SQLWrapper } from "drizzle-orm";
 import { fn } from "../util/fn";
 import { found } from "../error";
 import { Database } from "../drizzle";
@@ -77,7 +77,7 @@ import { Actor } from "../actor";
 import { Common } from "../common";
 import { Examples } from "../examples";
 import { Identifier } from "../identifier";
-import { orderBy } from "../drizzle/order";
+import { sortable } from "../drizzle/order";
 import { ${pascal}Table } from "./${name}.sql";
 
 export namespace ${pascal} {
@@ -93,6 +93,16 @@ export namespace ${pascal} {
       example: Examples.${pascal},
     });
   export type Info = z.infer<typeof Info>;
+
+  /** Sortable keys mapped to what each orders by — also the allowlist. */
+  export const SortableColumns = sortable(
+    {
+      title: ${pascal}Table.title,
+      timeCreated: ${pascal}Table.timeCreated,
+    } satisfies Partial<Record<keyof Info, SQLWrapper>>,
+    ${pascal}Table.id,
+    desc(${pascal}Table.timeCreated),
+  );
 
   export const create = fn(z.object({ title: Info.shape.title.min(1) }), (input) =>
     Database.use((tx) =>
@@ -110,7 +120,7 @@ export namespace ${pascal} {
   );
 
   export const list = fn(
-    Common.Query(["title", "timeCreated"]).extend({ search: z.string().optional() }),
+    Common.Query({ sort: SortableColumns.schema, search: z.string().optional() }),
     (input) => {
       const { page, pageSize, limit, offset } = Common.page(input);
       const conditions = [
@@ -125,7 +135,7 @@ export namespace ${pascal} {
             .select()
             .from(${pascal}Table)
             .where(where)
-            .orderBy(...orderBy(${pascal}Table, input.sort, desc(${pascal}Table.timeCreated)))
+            .orderBy(...SortableColumns.orderBy(input.sort))
             .limit(limit)
             .offset(offset),
           tx.select({ total: count() }).from(${pascal}Table).where(where),

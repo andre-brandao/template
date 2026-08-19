@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { and, asc, count, eq, ilike, isNull } from "drizzle-orm";
+import { and, asc, count, eq, ilike, isNull, type SQLWrapper } from "drizzle-orm";
 import { Assert } from "../util/assert";
 import { fn } from "../util/fn";
 import { Database } from "../drizzle";
@@ -7,7 +7,7 @@ import { Actor } from "../actor";
 import { Common } from "../common";
 import { Examples } from "../examples";
 import { Identifier } from "../identifier";
-import { orderBy } from "../drizzle/order";
+import { sortable } from "../drizzle/order";
 import { Event } from "../platform/event";
 import { ProjectTable } from "./project.sql";
 
@@ -21,6 +21,7 @@ export namespace Project {
       name: z.string().min(1).max(200).meta({ description: "Display name." }),
       description: z.string().max(2000).nullable().meta({ description: "What it is for." }),
       image: z.string().nullable().meta({ description: "Cover image URL, or null for none." }),
+      timeCreated: z.iso.datetime().meta({ description: "When it was created." }),
     })
     .meta({
       ref: "Project",
@@ -30,6 +31,16 @@ export namespace Project {
   export type Info = z.infer<typeof Info>;
 
   const Patch = Info.pick({ name: true, description: true, image: true }).partial();
+
+  /** Sortable keys mapped to what each orders by — also the allowlist. */
+  export const SortableColumns = sortable(
+    {
+      name: ProjectTable.name,
+      timeCreated: ProjectTable.timeCreated,
+    } satisfies Partial<Record<keyof Info, SQLWrapper>>,
+    ProjectTable.id,
+    asc(ProjectTable.name),
+  );
 
   export const create = fn(
     z.object({ name: Info.shape.name, description: Info.shape.description.optional() }),
@@ -58,7 +69,7 @@ export namespace Project {
   );
 
   export const list = fn(
-    Common.Query(["name", "timeCreated"]).extend({ search: z.string().optional() }),
+    Common.Query({ sort: SortableColumns.schema, search: z.string().optional() }),
     (input) => {
       Actor.check({ project: ["read"] });
       const { page, pageSize, limit, offset } = Common.page(input);
@@ -71,7 +82,7 @@ export namespace Project {
             .select()
             .from(ProjectTable)
             .where(where)
-            .orderBy(...orderBy(ProjectTable, input.sort, asc(ProjectTable.name)))
+            .orderBy(...SortableColumns.orderBy(input.sort))
             .limit(limit)
             .offset(offset),
           tx.select({ total: count() }).from(ProjectTable).where(where),
@@ -164,6 +175,7 @@ export namespace Project {
       name: row.name,
       description: row.description,
       image: row.image,
+      timeCreated: row.timeCreated.toISOString(),
     };
   }
 }

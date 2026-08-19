@@ -1,11 +1,10 @@
 import { z } from "zod";
-import { and, asc, count, ilike, isNotNull, isNull, or, sql, type SQL } from "drizzle-orm";
+import { and, count, ilike, isNotNull, isNull, or, sql, type SQL } from "drizzle-orm";
 import { fn } from "../../util/fn";
 import { iso } from "../../util/fmt";
 import { Actor } from "../../actor";
 import { Common } from "../../common";
 import { Database } from "../../drizzle";
-import { orderBy } from "../../drizzle/order";
 import { ProjectTable } from "../../project/project.sql";
 import { JobTable } from "../../lib/queue/queue.sql";
 import { TodoTable } from "../../todo/todo.sql";
@@ -16,7 +15,8 @@ import { UserTable } from "../../user/user.sql";
 export namespace Admin {
   /** Every account, paginated. Carries the role, and can surface disabled ones. */
   export const users = fn(
-    Common.Query(["name", "email", "role", "timeCreated"]).extend({
+    Common.Query({
+      sort: User.SortableColumns.schema,
       search: z.string().optional(),
       /** Include disabled accounts, which are hidden by default like every other soft delete. */
       deleted: z.boolean().optional(),
@@ -39,7 +39,7 @@ export namespace Admin {
             .select()
             .from(UserTable)
             .where(where)
-            .orderBy(...orderBy(UserTable, input.sort, asc(UserTable.name)))
+            .orderBy(...User.SortableColumns.orderBy(input.sort))
             .limit(limit)
             .offset(offset),
           tx.select({ total: count() }).from(UserTable).where(where),

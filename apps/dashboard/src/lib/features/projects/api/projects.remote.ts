@@ -1,4 +1,3 @@
-import { error } from "@sveltejs/kit";
 import { z } from "zod";
 import { Project } from "@template/core/project";
 import { remote } from "$lib/server/remote";
@@ -8,11 +7,9 @@ export const getProjects = remote.query(z.object({ q: z.string().optional() }), 
   return data;
 });
 
-export const getProject = remote.query(Project.Info.shape.id, async (id) => {
-  const project = await Project.fromID(id);
-  if (!project) error(404, "Project not found");
-  return project;
-});
+export const getProject = remote.query(Project.Info.shape.id, (id) =>
+  Project.assert.exists(Project.fromID(id)),
+);
 
 export const createProject = remote.form(
   Project.create.schema.extend({

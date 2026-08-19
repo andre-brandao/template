@@ -2,13 +2,13 @@ import { z } from "zod";
 import { and, arrayContains, desc, eq, inArray, isNull, or, sql } from "drizzle-orm";
 import { fn } from "../../util/fn";
 import { iso } from "../../util/fmt";
-import { found } from "../../error";
 import { Actor } from "../../actor";
 import { Common } from "../../common";
 import { Database } from "../../drizzle";
 import { Examples } from "../../examples";
 import { Identifier } from "../../identifier";
 import { Queue } from "../../lib/queue";
+import { Assert } from "../../util/assert";
 import { Log } from "../../util/log";
 import { sign } from "../../util/sign";
 import { token } from "../../util/token";
@@ -26,6 +26,7 @@ const NAME = "webhook.deliver";
  */
 export namespace Webhook {
   const log = Log.create({ namespace: "core.webhook" });
+  const assert = Assert.create("Webhook");
 
   export const types = Types;
 
@@ -97,9 +98,8 @@ export namespace Webhook {
   /** Re-enabling clears the failure count, so a fixed endpoint doesn't trip the limit again. */
   export const update = fn(Patch.extend({ id: Info.shape.id }), async ({ id, ...patch }) => {
     Actor.check({ webhook: ["update"] });
-    found(
-      "Webhook",
-      await Database.use((tx) =>
+    await assert.exists(
+      Database.use((tx) =>
         tx
           .update(WebhookTable)
           .set({ ...patch, timeUpdated: new Date(), ...(patch.enabled ? { failures: 0 } : {}) })
@@ -112,9 +112,8 @@ export namespace Webhook {
 
   export const remove = fn(Info.shape.id, async (id) => {
     Actor.check({ webhook: ["delete"] });
-    found(
-      "Webhook",
-      await Database.use((tx) =>
+    await assert.exists(
+      Database.use((tx) =>
         tx
           .update(WebhookTable)
           .set({ timeDeleted: new Date() })

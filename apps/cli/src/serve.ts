@@ -6,7 +6,7 @@ import { app as mcpApp } from "@template/functions/mcp";
 import { createAuth } from "@template/functions/auth";
 
 const dash = `${import.meta.dir}/../../dashboard`;
-const db = Database.create();
+const db = Database.connect();
 
 /**
  * One pool for the process, mirroring the dashboard's `hooks.server.ts`. Dev backends

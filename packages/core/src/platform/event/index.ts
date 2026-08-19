@@ -1,5 +1,16 @@
 import { z } from "zod";
-import { and, arrayOverlaps, asc, count, desc, eq, ilike, or, type SQL } from "drizzle-orm";
+import {
+  and,
+  arrayOverlaps,
+  asc,
+  count,
+  desc,
+  eq,
+  ilike,
+  or,
+  type SQL,
+  type SQLWrapper,
+} from "drizzle-orm";
 import { fn } from "../../util/fn";
 import { Database } from "../../drizzle";
 import { Actor } from "../../actor";
@@ -8,7 +19,7 @@ import { Examples } from "../../examples";
 import { Identifier } from "../../identifier";
 import { clean, Tags } from "../../util/tag";
 import { UserTable } from "../../user/user.sql";
-import { order } from "../../drizzle/order";
+import { sortable } from "../../drizzle/order";
 import { Webhook } from "../webhook";
 import { EventTable } from "./event.sql";
 
@@ -53,6 +64,19 @@ export namespace Event {
       example: Examples.Event,
     });
   export type Info = z.infer<typeof Info>;
+
+  /** Sortable keys mapped to what each orders by — also the allowlist. */
+  export const SortableColumns = sortable(
+    {
+      type: EventTable.type,
+      source: EventTable.source,
+      // No column of its own — the log sorts by the joined user's name.
+      user: UserTable.name,
+      timeCreated: EventTable.timeCreated,
+    } satisfies Partial<Record<keyof Info, SQLWrapper>>,
+    EventTable.id,
+    desc(EventTable.timeCreated),
+  );
 
   function actor() {
     const info = Actor.use();
@@ -121,7 +145,8 @@ export namespace Event {
   );
 
   export const list = fn(
-    Common.Query(["type", "source", "user", "timeCreated"]).extend({
+    Common.Query({
+      sort: SortableColumns.schema,
       type: Info.shape.type.optional(),
       source: Info.shape.source.unwrap().optional(),
       sourceID: Info.shape.sourceID.unwrap().optional(),
@@ -162,11 +187,7 @@ export namespace Event {
             .from(EventTable)
             .leftJoin(UserTable, eq(UserTable.id, EventTable.userID))
             .where(where)
-            .orderBy(
-              ...order(EventTable, input.sort, desc(EventTable.timeCreated), {
-                user: UserTable.name,
-              }),
-            )
+            .orderBy(...SortableColumns.orderBy(input.sort))
             .limit(limit)
             .offset(offset),
           tx.select({ total: count() }).from(EventTable).where(where),

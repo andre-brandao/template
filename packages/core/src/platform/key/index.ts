@@ -2,7 +2,7 @@ import { z } from "zod";
 import { and, desc, eq, gt, isNull, or } from "drizzle-orm";
 import { fn } from "../../util/fn";
 import { iso } from "../../util/fmt";
-import { found } from "../../error";
+import { Assert } from "../../util/assert";
 import { Actor } from "../../actor";
 import { Common } from "../../common";
 import { Database } from "../../drizzle";
@@ -13,6 +13,8 @@ import { token } from "../../util/token";
 import { KeyTable } from "./key.sql";
 
 export namespace Key {
+  const assert = Assert.create("Key");
+
   export const Info = z
     .object({
       id: z.string().meta({ description: Common.IdDescription, example: Examples.Key.id }),
@@ -147,9 +149,8 @@ export namespace Key {
   export const remove = fn(
     Info.shape.id,
     async (id) =>
-      found(
-        "Key",
-        await Database.use((tx) =>
+      assert.exists(
+        Database.use((tx) =>
           tx
             .update(KeyTable)
             .set({ timeDeleted: new Date() })

@@ -59,7 +59,7 @@
     "fallow:json": "bunx fallow health --hotspots --top 3 --format json --quiet && bunx fallow dead-code --format json --quiet && bunx fallow dupes --format json --quiet",
     "fmt": "oxfmt",
     "fmt:check": "oxfmt --check",
-    "gen": "bun run --filter '@template/functions' gen:spec && bun run --filter '@template/sdk' gen",
+    "gen": "bun run --filter '@template/functions' gen:spec && bun run --filter '@template/sdk' gen && bun run fmt",
     "lint": "oxlint",
     "lint:ci": "oxlint -f github",
     "lint:fix": "oxlint --fix",
@@ -75,7 +75,7 @@
   "devDependencies": {
     "@cloudflare/workers-types": "5.20260715.1",
     "@types/bun": "catalog:",
-    "fallow": "^3.6.0",
+    "fallow": "^3.17.0",
     "oxfmt": "^0.59.0",
     "oxlint": "^1.74.0"
   },

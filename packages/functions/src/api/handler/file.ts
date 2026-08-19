@@ -8,12 +8,15 @@ import { Signing } from "@template/core/key/signing";
 import { Storage } from "@template/core/storage";
 import { check } from "@template/core/storage/adapter/serve";
 import { Examples } from "@template/core/examples";
-import { found, VisibleError, ErrorCodes } from "@template/core/error";
+import { VisibleError, ErrorCodes } from "@template/core/error";
+import { Assert } from "@template/core/util/assert";
 
 export namespace FileApi {
   const MAX = 20 * 1024 * 1024;
 
   const doc = describe("File");
+
+  const assert = Assert.create("File");
 
   /** `Storage.Entry` on the wire — what `list` can report about an object. */
   const Info = z
@@ -104,7 +107,7 @@ export namespace FileApi {
           new Uint8Array(await file.arrayBuffer()),
           file.type || "application/octet-stream",
         );
-        return c.json(found("File", await Storage.disk().head(at)), 200);
+        return c.json(await assert.exists(Storage.disk().head(at)), 200);
       },
     )
     .get(
@@ -159,7 +162,7 @@ export namespace FileApi {
             "This link is invalid or has expired",
           );
 
-        const object = found("File", await Storage.disk().get(query.key));
+        const object = await assert.exists(Storage.disk().get(query.key));
         return new Response(new Blob([new Uint8Array(object.bytes)]), {
           status: 200,
           headers: { "Content-Type": object.contentType },
@@ -187,7 +190,7 @@ export namespace FileApi {
         const url = await Storage.disk().temporaryUrl(at);
         if (url) return c.redirect(url, 302);
 
-        const object = found("File", await Storage.disk().get(at));
+        const object = await assert.exists(Storage.disk().get(at));
         return new Response(new Blob([new Uint8Array(object.bytes)]), {
           status: 200,
           headers: { "Content-Type": object.contentType },
@@ -212,9 +215,9 @@ export namespace FileApi {
       async (c) => {
         const from = key(c.req.valid("param").name);
         const to = key(c.req.valid("json").name);
-        found("File", await Storage.disk().head(from));
+        await assert.exists(Storage.disk().head(from));
         await Storage.disk().move(from, to);
-        return c.json(found("File", await Storage.disk().head(to)), 200);
+        return c.json(await assert.exists(Storage.disk().head(to)), 200);
       },
     )
     .delete(

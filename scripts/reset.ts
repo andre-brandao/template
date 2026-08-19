@@ -3,7 +3,7 @@
 import { Database, sql } from "@template/core/drizzle";
 
 // Drops every table/type in the database so the next db:push rebuilds from scratch.
-const db = Database.create();
+const db = Database.connect();
 
 await Database.provide(db, () =>
   Database.use((tx) =>

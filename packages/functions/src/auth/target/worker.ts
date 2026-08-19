@@ -13,7 +13,7 @@ export default {
     if (!app) app = createAuth(CloudflareStorage({ namespace: env.AuthKv }));
     return Context.withProviders(
       () => app!.fetch(request, env, ctx),
-      Database.provider(Database.create(env.Hyperdrive.connectionString)),
+      Database.provider(Database.connect(env.Hyperdrive.connectionString)),
       Email.provider(Email.Providers.cloudflare(env.SEND_EMAIL)),
     );
   },

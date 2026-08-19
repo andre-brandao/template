@@ -38,7 +38,7 @@ export namespace Database {
    * request — a client per request leaks a pool per request. Workers are the exception:
    * they forbid reusing a socket across requests, so they create one each time.
    */
-  export function create(
+  export function connect(
     url = process.env.DATABASE_URL ?? DEFAULT_URL,
     opts: pg.Options<{}> = {},
   ): Client {
@@ -82,7 +82,7 @@ export namespace Database {
       }
 
       log.warn("no database context, falling back to env");
-      fallback ??= create();
+      fallback ??= connect();
       return fallback.db;
     }
   }

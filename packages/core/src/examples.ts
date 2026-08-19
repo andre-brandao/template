@@ -14,6 +14,7 @@ export namespace Examples {
     role: "member",
     prefs: DEFAULTS,
     timeDeleted: null,
+    timeCreated: "2026-06-07T00:00:00.000Z",
   } as const;
 
   export const Project = {
@@ -22,6 +23,7 @@ export namespace Examples {
     name: "Quarterly close",
     description: null,
     image: null,
+    timeCreated: "2026-06-07T00:00:00.000Z",
   } as const;
 
   export const Todo = {
@@ -40,6 +42,7 @@ export namespace Examples {
     dueDate: "2026-06-14T00:00:00.000Z",
     timeStarted: "2026-06-07T09:12:00.000Z",
     timeDone: null,
+    timeCreated: "2026-06-07T00:00:00.000Z",
   } as const;
 
   export const Key = {

@@ -12,7 +12,7 @@ const dir = fileURLToPath(new URL("../../../../packages/core/migrations", import
 export default async function () {
   await ensure();
   // Released so global setup doesn't hold a connection for the whole run.
-  const client = Database.create(url);
+  const client = Database.connect(url);
   await Database.provide(client, async () => {
     await run(sql`drop schema public cascade`);
     await run(sql`create schema public`);
@@ -23,7 +23,7 @@ export default async function () {
 
 /** Create the dedicated e2e database if it isn't there yet (CREATE DATABASE can't be conditional). */
 async function ensure() {
-  const client = Database.create(`${base}/postgres`);
+  const client = Database.connect(`${base}/postgres`);
   await Database.provide(client, () =>
     Database.use(async (tx) => {
       const rows = await tx.execute(

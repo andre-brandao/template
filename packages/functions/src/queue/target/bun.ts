@@ -22,7 +22,7 @@ process.on("SIGTERM", bye);
 
 await Context.withProviders(
   () => Queue.work({ signal: abort.signal, run }),
-  Database.provider(Database.create()),
+  Database.provider(Database.connect()),
   Storage.provider(Storage.fromEnv(process.env)),
   Email.provider(Email.fromEnv(process.env)),
   Queue.provider(Queue.Providers.db({ use: Database.use })),

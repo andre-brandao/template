@@ -18,31 +18,23 @@ The format and length of IDs may change over time.`;
   export type Paginated = z.infer<typeof Paginated>;
 
   /**
-   * Input for a paginated, sortable list — the counterpart to `Common.Page`. Page and
-   * pageSize are optional here, defaulted via `Common.page()`. Sort keys are per-namespace
-   * and applied in priority order; a leading `-` means descending.
+   * Input for a paginated list — the counterpart to `Common.Page`. Page and pageSize are
+   * optional here, defaulted via `Common.page()`; everything else is the caller's filters.
    */
-  export function Query<K extends string>(keys: readonly [K, ...K[]]) {
-    const signed = keys.flatMap((k) => [k, `-${k}`]) as [K | `-${K}`, ...(K | `-${K}`)[]];
-    return Paginated.partial().extend({
-      sort: z
-        .enum(signed)
-        .array()
-        .max(3)
-        .optional()
-        .meta({
-          description: "Sort keys in priority order. Prefix with `-` for descending.",
-          example: ["-dueDate"],
-        }),
-    });
+  export function Query<S extends z.ZodRawShape>(shape: S) {
+    return Paginated.partial().extend(shape);
   }
 
   export function Page<T extends z.ZodType>(item: T) {
     return z
       .object({
         data: z.array(item),
-        page: z.number().meta({ description: "Page number returned." }),
-        pageSize: z.number().meta({ description: "Number of entities per page." }),
+        page: Paginated.shape.page
+          .unwrap()
+          .meta({ description: "Page number returned.", example: 1 }),
+        pageSize: Paginated.shape.pageSize
+          .unwrap()
+          .meta({ description: "Number of entities per page.", example: 10 }),
         total: z
           .number()
           .meta({ description: "Total number of matching entities across all pages." }),

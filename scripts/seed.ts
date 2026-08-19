@@ -196,7 +196,7 @@ async function seed() {
 
 // Fixtures publish events like any other write, so a queue port has to exist. Memory
 // discards the jobs: nobody wants 260 seeded todos POSTed at the target's webhooks.
-const result = await Database.provide(Database.create(), () =>
+const result = await Database.provide(Database.connect(), () =>
   Queue.provide(Queue.Providers.memory(), seed),
 );
 

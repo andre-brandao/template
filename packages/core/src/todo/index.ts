@@ -1,13 +1,26 @@
 import { z } from "zod";
-import { and, asc, count, desc, eq, ilike, isNotNull, isNull, max, min, sql } from "drizzle-orm";
+import {
+  and,
+  asc,
+  count,
+  desc,
+  eq,
+  ilike,
+  isNotNull,
+  isNull,
+  max,
+  min,
+  sql,
+  type SQLWrapper,
+} from "drizzle-orm";
+import { Assert } from "../util/assert";
 import { fn } from "../util/fn";
-import { found } from "../error";
 import { Database } from "../drizzle";
 import { Actor } from "../actor";
 import { Common } from "../common";
 import { Examples } from "../examples";
 import { Identifier } from "../identifier";
-import { order } from "../drizzle/order";
+import { sortable } from "../drizzle/order";
 import { date, iso, trim } from "../util/fmt";
 import { clean, Tags } from "../util/tag";
 import { Event } from "../platform/event";
@@ -17,6 +30,8 @@ import { rank, StatusValues, TodoTable } from "./todo.sql";
 export { Insights } from "./insights";
 
 export namespace Todo {
+  export const assert = Assert.create("Todo");
+
   export const Status = z.enum(StatusValues);
   export type Status = z.infer<typeof Status>;
 
@@ -71,6 +86,7 @@ export namespace Todo {
         .datetime()
         .nullable()
         .meta({ description: "When it went `done`. Null while it is unfinished." }),
+      timeCreated: z.iso.datetime().meta({ description: "When it was created." }),
     })
     .meta({
       ref: "Todo",
@@ -109,7 +125,22 @@ export namespace Todo {
   type Patch = z.infer<typeof Patch>;
 
   /** The assignee columns worth joining — never the whole user row. */
-  const assignee = { id: UserTable.id, name: UserTable.name, image: UserTable.image };
+  const AssigneeColumns = { id: UserTable.id, name: UserTable.name, image: UserTable.image };
+
+  /** Sortable keys mapped to what each orders by — also the allowlist. */
+  export const SortableColumns = sortable(
+    {
+      title: TodoTable.title,
+      status: rank,
+      stage: TodoTable.stage,
+      assignee: AssigneeColumns.name,
+      startDate: TodoTable.startDate,
+      dueDate: TodoTable.dueDate,
+      timeCreated: TodoTable.timeCreated,
+    } satisfies Partial<Record<keyof Info, SQLWrapper>>,
+    TodoTable.id,
+    desc(TodoTable.timeCreated),
+  );
 
   export const create = fn(
     z.object({
@@ -146,7 +177,7 @@ export namespace Todo {
           dueDate: date(input.dueDate),
           ...times(status, null),
         });
-        const todo = found("Todo", await fromID.force(id));
+        const todo = await assert.exists(fromID.force(id));
         await Event.publish({
           type: "todo.created",
           source: "todo",
@@ -173,15 +204,8 @@ export namespace Todo {
   );
 
   export const list = fn(
-    Common.Query([
-      "title",
-      "status",
-      "stage",
-      "assignee",
-      "startDate",
-      "dueDate",
-      "timeCreated",
-    ]).extend({
+    Common.Query({
+      sort: SortableColumns.schema,
       status: Status.optional(),
       assignee: z.string().optional().meta({ description: 'A user id, or "none" for unassigned.' }),
       stage: Info.shape.stage
@@ -219,16 +243,11 @@ export namespace Todo {
       return Database.use(async (tx) => {
         const [rows, totalRows] = await Promise.all([
           tx
-            .select({ todo: TodoTable, user: assignee })
+            .select({ todo: TodoTable, user: AssigneeColumns })
             .from(TodoTable)
             .leftJoin(UserTable, eq(TodoTable.assignee, UserTable.id))
             .where(where)
-            .orderBy(
-              ...order(TodoTable, input.sort, desc(TodoTable.timeCreated), {
-                assignee: assignee.name,
-                status: rank,
-              }),
-            )
+            .orderBy(...SortableColumns.orderBy(input.sort))
             .limit(limit)
             .offset(offset),
           tx.select({ total: count() }).from(TodoTable).where(where),
@@ -322,7 +341,7 @@ export namespace Todo {
       Actor.check({ todo: ["read"] });
       return Database.use((tx) =>
         tx
-          .select({ todo: TodoTable, user: assignee })
+          .select({ todo: TodoTable, user: AssigneeColumns })
           .from(TodoTable)
           .leftJoin(UserTable, eq(TodoTable.assignee, UserTable.id))
           .where(and(eq(TodoTable.id, id), isNull(TodoTable.timeDeleted)))
@@ -335,7 +354,7 @@ export namespace Todo {
   export const update = fn(
     Patch.extend({ id: Info.shape.id }),
     async ({ id, ...patch }) => {
-      const before = found("Todo", await fromID.force(id));
+      const before = await assert.exists(fromID.force(id));
       Actor.check({ todo: ["update"] }, before.createdBy);
       const next = {
         ...patch,
@@ -358,7 +377,7 @@ export namespace Todo {
   export const remove = fn(
     Info.shape.id,
     async (id) => {
-      const before = found("Todo", await fromID.force(id));
+      const before = await assert.exists(fromID.force(id));
       Actor.check({ todo: ["delete"] }, before.createdBy);
 
       return Database.transaction(async (tx) => {
@@ -393,6 +412,7 @@ export namespace Todo {
       dueDate: iso(row.todo.dueDate),
       timeStarted: iso(row.todo.timeStarted),
       timeDone: iso(row.todo.timeDone),
+      timeCreated: row.todo.timeCreated.toISOString(),
     };
   }
 
@@ -510,7 +530,7 @@ export namespace Todo {
       sourceID: id,
       tags,
       data: changed,
-      state: found("Todo", await fromID.force(id)),
+      state: await assert.exists(fromID.force(id)),
     });
   }
 }

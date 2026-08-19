@@ -3,7 +3,6 @@ import { Hono } from "hono";
 import { validator, PaginatedQuery, authRequired } from "../common";
 import { describe } from "../doc";
 import { Project } from "@template/core/project";
-import { found } from "@template/core/error";
 
 export namespace ProjectApi {
   const doc = describe("Project");
@@ -28,7 +27,8 @@ export namespace ProjectApi {
       }),
       authRequired,
       validator("param", id),
-      async (c) => c.json(found("Project", await Project.fromID(c.req.valid("param").id)), 200),
+      async (c) =>
+        c.json(await Project.assert.exists(Project.fromID(c.req.valid("param").id)), 200),
     )
     .post(
       "/",

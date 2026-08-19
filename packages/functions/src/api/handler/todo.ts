@@ -3,11 +3,10 @@ import { Hono } from "hono";
 import { validator, PaginatedQuery, authRequired } from "../common";
 import { describe } from "../doc";
 import { Todo } from "@template/core/todo";
-import { found } from "@template/core/error";
 
 export namespace TodoApi {
   const doc = describe("Todo");
-  const id = z.object({ id: Todo.Info.shape.id });
+  const Identifier = z.object({ id: Todo.Info.shape.id });
 
   export const route = new Hono()
     .get(
@@ -37,8 +36,8 @@ export namespace TodoApi {
         ...doc.errors(400, 401, 403, 404, 500),
       }),
       authRequired,
-      validator("param", id),
-      async (c) => c.json(found("Todo", await Todo.fromID(c.req.valid("param").id)), 200),
+      validator("param", Identifier),
+      async (c) => c.json(await Todo.assert.exists(Todo.fromID(c.req.valid("param").id)), 200),
     )
     .post(
       "/",
@@ -57,12 +56,12 @@ export namespace TodoApi {
         ...doc.errors(400, 401, 403, 404, 500),
       }),
       authRequired,
-      validator("param", id),
+      validator("param", Identifier),
       validator("json", Todo.update.schema.omit({ id: true })),
       async (c) => {
         const { id } = c.req.valid("param");
         await Todo.update({ id, ...c.req.valid("json") });
-        return c.json(await Todo.fromID(id), 200);
+        return c.json(await Todo.assert.exists(Todo.fromID.force(id)), 200);
       },
     )
     .delete(
@@ -72,7 +71,7 @@ export namespace TodoApi {
         ...doc.errors(400, 401, 403, 404, 500),
       }),
       authRequired,
-      validator("param", id),
+      validator("param", Identifier),
       async (c) => {
         await Todo.remove(c.req.valid("param").id);
         return c.json("ok" as const, 200);

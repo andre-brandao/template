@@ -77,7 +77,7 @@ import { Actor } from "../actor";
 import { Common } from "../common";
 import { Examples } from "../examples";
 import { Identifier } from "../identifier";
-import { order } from "../drizzle/order";
+import { orderBy } from "../drizzle/order";
 import { ${pascal}Table } from "./${name}.sql";
 
 export namespace ${pascal} {
@@ -125,7 +125,7 @@ export namespace ${pascal} {
             .select()
             .from(${pascal}Table)
             .where(where)
-            .orderBy(...order(${pascal}Table, input.sort, desc(${pascal}Table.timeCreated)))
+            .orderBy(...orderBy(${pascal}Table, input.sort, desc(${pascal}Table.timeCreated)))
             .limit(limit)
             .offset(offset),
           tx.select({ total: count() }).from(${pascal}Table).where(where),

@@ -7,7 +7,7 @@ import { Actor } from "../actor";
 import { Common } from "../common";
 import { Examples } from "../examples";
 import { Identifier } from "../identifier";
-import { order } from "../drizzle/order";
+import { orderBy } from "../drizzle/order";
 import { date, iso, trim } from "../util/fmt";
 import { clean, Tags } from "../util/tag";
 import { Event } from "../platform/event";
@@ -224,7 +224,7 @@ export namespace Todo {
             .leftJoin(UserTable, eq(TodoTable.assignee, UserTable.id))
             .where(where)
             .orderBy(
-              ...order(TodoTable, input.sort, desc(TodoTable.timeCreated), {
+              ...orderBy(TodoTable, input.sort, desc(TodoTable.timeCreated), {
                 assignee: assignee.name,
                 status: rank,
               }),

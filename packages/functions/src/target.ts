@@ -17,7 +17,7 @@ export function worker(app: App, ...extra: Context.Provider<Res>[]) {
       return Context.withProviders(
         () => app.fetch(request, env, ctx),
         // Fresh pool per request: Workers forbid reusing a socket across them.
-        Database.provider(Database.create(env.Hyperdrive.connectionString)),
+        Database.provider(Database.connect(env.Hyperdrive.connectionString)),
         ...extra,
       );
     },
@@ -30,7 +30,7 @@ export function lambda<E extends HonoEnv, S extends Schema, P extends string>(
   ...extra: Context.Provider<Promise<void>>[]
 ) {
   const aws = new Hono()
-    .use(providers(Database.provider(Database.create()), ...extra))
+    .use(providers(Database.provider(Database.connect()), ...extra))
     .route("/", app);
   return process.env.SST_LIVE ? handle(aws) : streamHandle(aws);
 }
@@ -41,11 +41,11 @@ export function lambda<E extends HonoEnv, S extends Schema, P extends string>(
  * auth) need it back. `scripts/dev.ts` sets it for the pglite driver.
  */
 export function bun(app: App, port: number, ...extra: Context.Provider<Res>[]) {
-  const shared = process.env.PG_RELEASE === "true" ? undefined : Database.create();
+  const shared = process.env.PG_RELEASE === "true" ? undefined : Database.connect();
   return {
     port,
     fetch: async (req: Request) => {
-      const db = shared ?? Database.create();
+      const db = shared ?? Database.connect();
       try {
         return await Context.withProviders(() => app.fetch(req), Database.provider(db), ...extra);
       } finally {

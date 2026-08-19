@@ -31,7 +31,7 @@ async function handle(msg: Message<Job>, env: Env) {
     .then(() =>
       Context.withProviders(
         () => run(job),
-        Database.provider(Database.create(env.Hyperdrive.connectionString)),
+        Database.provider(Database.connect(env.Hyperdrive.connectionString)),
         Storage.provider(Storage.Providers.r2(env.Files)),
         Email.provider(Email.Providers.cloudflare(env.SEND_EMAIL)),
         Queue.provider(Queue.Providers.cloudflare(env.Jobs)),

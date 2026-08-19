@@ -5,7 +5,7 @@ import { iso } from "../../util/fmt";
 import { Actor } from "../../actor";
 import { Common } from "../../common";
 import { Database } from "../../drizzle";
-import { order } from "../../drizzle/order";
+import { orderBy } from "../../drizzle/order";
 import { ProjectTable } from "../../project/project.sql";
 import { JobTable } from "../../lib/queue/queue.sql";
 import { TodoTable } from "../../todo/todo.sql";
@@ -39,7 +39,7 @@ export namespace Admin {
             .select()
             .from(UserTable)
             .where(where)
-            .orderBy(...order(UserTable, input.sort, asc(UserTable.name)))
+            .orderBy(...orderBy(UserTable, input.sort, asc(UserTable.name)))
             .limit(limit)
             .offset(offset),
           tx.select({ total: count() }).from(UserTable).where(where),

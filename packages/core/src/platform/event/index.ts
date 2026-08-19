@@ -8,7 +8,7 @@ import { Examples } from "../../examples";
 import { Identifier } from "../../identifier";
 import { clean, Tags } from "../../util/tag";
 import { UserTable } from "../../user/user.sql";
-import { order } from "../../drizzle/order";
+import { orderBy } from "../../drizzle/order";
 import { Webhook } from "../webhook";
 import { EventTable } from "./event.sql";
 
@@ -163,7 +163,7 @@ export namespace Event {
             .leftJoin(UserTable, eq(UserTable.id, EventTable.userID))
             .where(where)
             .orderBy(
-              ...order(EventTable, input.sort, desc(EventTable.timeCreated), {
+              ...orderBy(EventTable, input.sort, desc(EventTable.timeCreated), {
                 user: UserTable.name,
               }),
             )

@@ -7,7 +7,7 @@ import { Actor } from "../actor";
 import { Common } from "../common";
 import { Examples } from "../examples";
 import { Identifier } from "../identifier";
-import { order } from "../drizzle/order";
+import { orderBy } from "../drizzle/order";
 import { Event } from "../platform/event";
 import { ProjectTable } from "./project.sql";
 
@@ -69,7 +69,7 @@ export namespace Project {
             .select()
             .from(ProjectTable)
             .where(where)
-            .orderBy(...order(ProjectTable, input.sort, asc(ProjectTable.name)))
+            .orderBy(...orderBy(ProjectTable, input.sort, asc(ProjectTable.name)))
             .limit(limit)
             .offset(offset),
           tx.select({ total: count() }).from(ProjectTable).where(where),

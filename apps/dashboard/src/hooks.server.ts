@@ -25,7 +25,7 @@ const worker: Handle = ({ event, resolve }) => {
   return Context.withProviders(
     () => resolve(event),
     // Fresh pool per request: Workers forbid reusing a socket across them.
-    Database.provider(Database.create(cf.Hyperdrive.connectionString)),
+    Database.provider(Database.connect(cf.Hyperdrive.connectionString)),
     Storage.provider(Storage.Providers.r2(cf.Files)),
     Queue.provider(Queue.Providers.cloudflare(cf.Jobs)),
   );
@@ -35,7 +35,7 @@ function fromEnv(): Handle {
   // One pool for the process, built here rather than per request — a pool per request
   // exhausts the server's connections and every query starts failing. PG_RELEASE marks a
   // single-connection backend (pglite), where holding it idle locks out the api/auth processes.
-  const db = Database.create(
+  const db = Database.connect(
     env.DATABASE_URL ?? Database.DEFAULT_URL,
     env.PG_RELEASE === "true" ? { idle_timeout: 1 } : {},
   );

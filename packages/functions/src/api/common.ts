@@ -13,12 +13,12 @@ const arr = (v: unknown) => (typeof v === "string" ? [v] : v);
  * single `?sort=` arrives unwrapped rather than as a one-element array. Only the encoding
  * is patched here — the constraints, defaults and docs stay core's.
  */
-export function PaginatedQuery<T extends z.ZodObject<any>>(schema: T) {
+export function PaginatedQuery<T extends z.ZodObject<any>>(schema: T): T {
   return schema.extend({
     page: z.preprocess(num, schema.shape.page),
     pageSize: z.preprocess(num, schema.shape.pageSize),
     sort: z.preprocess(arr, schema.shape.sort),
-  });
+  }) as any;
 }
 
 export const noop: MiddlewareHandler = (_c, next) => next();

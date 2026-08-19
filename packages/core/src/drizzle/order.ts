@@ -13,7 +13,7 @@ import {
  * strings `Common.Query` validates — a leading `-` means descending. Always tiebroken by
  * id: LIMIT/OFFSET over a non-unique sort otherwise repeats and drops rows between pages.
  */
-export function order<T extends Table & { id: Column }>(
+export function orderBy<T extends Table & { id: Column }>(
   table: T,
   sort: readonly string[] | undefined,
   fallback: SQL,

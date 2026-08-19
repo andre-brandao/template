@@ -92,6 +92,47 @@ jobs:
       - run: bun install --frozen-lockfile
       - run: bun run fmt:check
 
+  openapi:
+    # Regenerating rewrites the tree, so this runs on PRs only — a push to a protected
+    # branch has already passed it.
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v7
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+      - run: bun run gen
+      - run: bun run fmt
+      - name: Check for spec drift
+        id: drift
+        run: |
+          git diff --stat packages/sdk > drift.txt
+          git diff --exit-code packages/sdk || {
+            echo "::error::openapi.json or the generated SDK is stale. Run 'bun run gen && bun run fmt' and commit the result."
+            exit 1
+          }
+      - name: Comment on PR
+        if: failure() && steps.drift.outcome == 'failure'
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const body = [
+              '<!-- spec-drift -->',
+              '## Spec drift',
+              '',
+              '`packages/sdk` is stale — regenerating from the current routes changed it.',
+              '',
+              '```',
+              require('fs').readFileSync('drift.txt', 'utf8').trim(),
+              '```',
+              '',
+              'Run `bun run gen && bun run fmt` and commit the result.',
+            ].join('\n');
+            await require('./.github/comment.cjs')({ github, context, body });
+
   trivy:
     runs-on: ubuntu-latest
     permissions:
@@ -197,12 +238,14 @@ jobs:
 
   report:
     runs-on: ubuntu-latest
-    needs: [typecheck, test, fallow, lint, format, trivy, build, e2e]
+    needs: [typecheck, test, fallow, lint, format, openapi, trivy, build, e2e]
     if: always()
     permissions:
       contents: read
       actions: read
+      pull-requests: write
     steps:
+      - uses: actions/checkout@v7
       - name: Summarize results
         uses: actions/github-script@v9
         with:
@@ -231,19 +274,36 @@ jobs:
             const fail = jobs.some(
               (j) => j.conclusion !== "success" && j.conclusion !== "skipped",
             );
+            const rows = jobs.map((j) => [
+              j.name,
+              `${icon(j.conclusion)} ${j.conclusion ?? "running"}`,
+              j.started_at && j.completed_at ? dur(j.started_at, j.completed_at) : "—",
+            ]);
+            const time = `**Total:** ${Math.floor(total / 60)}m ${total % 60}s`;
             core.summary
               .addHeading("CI summary", 2)
               .addTable([
                 ["Job", "Result", "Duration"].map((data) => ({ data, header: true })),
-                ...jobs.map((j) => [
-                  j.name,
-                  `${icon(j.conclusion)} ${j.conclusion ?? "running"}`,
-                  j.started_at && j.completed_at ? dur(j.started_at, j.completed_at) : "—",
-                ]),
+                ...rows,
               ])
-              .addRaw(`**Total:** ${Math.floor(total / 60)}m ${total % 60}s`);
-            if (fail) {
-              core.summary.addRaw("\n\n> One or more jobs failed.");
-              core.setFailed("One or more jobs failed.");
-            }
+              .addRaw(time);
+            if (fail) core.summary.addRaw("\n\n> One or more jobs failed.");
             await core.summary.write();
+            if (context.eventName === "pull_request") {
+              const body = [
+                "<!-- ci:summary -->",
+                "## CI summary",
+                "",
+                "| Job | Result | Duration |",
+                "| --- | --- | --- |",
+                ...rows.map((r) => `| ${r.join(" | ")} |`),
+                "",
+                time,
+                ...(fail
+                  ? ["", `> One or more jobs failed. [View run](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})`]
+                  : []),
+              ].join("\n");
+              await require("./.github/comment.cjs")({ github, context, body });
+            }
+            // Last: setFailed doesn't stop the script, but the comment should post regardless.
+            if (fail) core.setFailed("One or more jobs failed.");

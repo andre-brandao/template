@@ -5,7 +5,7 @@ import { decode, digest, encode, equal } from "../util/hash";
 import { Password } from "../util/password";
 import { Actor } from "../actor";
 import { Database } from "../drizzle";
-import { ErrorCodes, found, VisibleError } from "../error";
+import { ErrorCodes, VisibleError } from "../error";
 import { Examples } from "../examples";
 import { Identifier } from "../identifier";
 import { Template } from "../lib/email/template";
@@ -140,7 +140,7 @@ export namespace Auth {
         password: z.string().min(8).meta({ description: "At least 8 characters." }),
       }),
       async (input) => {
-        const me = found("user", await User.fromID(Actor.userID()));
+        const me = await User.assert.exists(User.fromID(Actor.userID()));
 
         const hash = await Password.hash(input.password);
         await Database.use((tx) =>

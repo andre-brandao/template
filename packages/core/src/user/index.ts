@@ -1,11 +1,12 @@
 import { z } from "zod";
 import { and, asc, eq, ilike, isNull, sql } from "drizzle-orm";
+import { Assert } from "../util/assert";
 import { fn } from "../util/fn";
 import { iso } from "../util/fmt";
 import { Database } from "../drizzle";
 import { Actor } from "../actor";
 import { Common } from "../common";
-import { ErrorCodes, found, VisibleError } from "../error";
+import { ErrorCodes, VisibleError } from "../error";
 import { Event } from "../platform/event";
 import { Examples } from "../examples";
 import { Identifier } from "../identifier";
@@ -15,6 +16,8 @@ import { Patch, Prefs } from "./prefs";
 import { ProviderIds, ProviderTable } from "./provider.sql";
 
 export namespace User {
+  export const assert = Assert.create("User");
+
   export const Info = z
     .object({
       id: z.string().meta({ description: Common.IdDescription, example: Examples.User.id }),
@@ -194,7 +197,7 @@ export namespace User {
     async (input) => {
       Actor.check({ user: ["assign"] });
       other(input.id);
-      const before = found("User", await target(input.id));
+      const before = await assert.exists(target(input.id));
       if (before.role === input.role) return;
 
       return Database.transaction(async (tx) => {
@@ -216,7 +219,7 @@ export namespace User {
   export const remove = fn(Info.shape.id, async (id) => {
     Actor.check({ user: ["delete"] });
     other(id);
-    const before = found("User", await target(id));
+    const before = await assert.exists(target(id));
     if (before.timeDeleted) return;
 
     return Database.transaction(async (tx) => {
@@ -232,7 +235,7 @@ export namespace User {
 
   export const restore = fn(Info.shape.id, async (id) => {
     Actor.check({ user: ["delete"] });
-    const before = found("User", await target(id));
+    const before = await assert.exists(target(id));
     if (!before.timeDeleted) return;
 
     return Database.transaction(async (tx) => {

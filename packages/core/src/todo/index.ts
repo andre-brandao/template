@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { and, asc, count, desc, eq, ilike, isNotNull, isNull, max, min, sql } from "drizzle-orm";
+import { Assert } from "../util/assert";
 import { fn } from "../util/fn";
-import { found } from "../error";
 import { Database } from "../drizzle";
 import { Actor } from "../actor";
 import { Common } from "../common";
@@ -17,6 +17,8 @@ import { rank, StatusValues, TodoTable } from "./todo.sql";
 export { Insights } from "./insights";
 
 export namespace Todo {
+  export const assert = Assert.create("Todo");
+
   export const Status = z.enum(StatusValues);
   export type Status = z.infer<typeof Status>;
 
@@ -109,7 +111,7 @@ export namespace Todo {
   type Patch = z.infer<typeof Patch>;
 
   /** The assignee columns worth joining — never the whole user row. */
-  const assignee = { id: UserTable.id, name: UserTable.name, image: UserTable.image };
+  const AssigneeColumns = { id: UserTable.id, name: UserTable.name, image: UserTable.image };
 
   export const create = fn(
     z.object({
@@ -146,7 +148,7 @@ export namespace Todo {
           dueDate: date(input.dueDate),
           ...times(status, null),
         });
-        const todo = found("Todo", await fromID.force(id));
+        const todo = await assert.exists(fromID.force(id));
         await Event.publish({
           type: "todo.created",
           source: "todo",
@@ -219,13 +221,13 @@ export namespace Todo {
       return Database.use(async (tx) => {
         const [rows, totalRows] = await Promise.all([
           tx
-            .select({ todo: TodoTable, user: assignee })
+            .select({ todo: TodoTable, user: AssigneeColumns })
             .from(TodoTable)
             .leftJoin(UserTable, eq(TodoTable.assignee, UserTable.id))
             .where(where)
             .orderBy(
               ...orderBy(TodoTable, input.sort, desc(TodoTable.timeCreated), {
-                assignee: assignee.name,
+                assignee: AssigneeColumns.name,
                 status: rank,
               }),
             )
@@ -322,7 +324,7 @@ export namespace Todo {
       Actor.check({ todo: ["read"] });
       return Database.use((tx) =>
         tx
-          .select({ todo: TodoTable, user: assignee })
+          .select({ todo: TodoTable, user: AssigneeColumns })
           .from(TodoTable)
           .leftJoin(UserTable, eq(TodoTable.assignee, UserTable.id))
           .where(and(eq(TodoTable.id, id), isNull(TodoTable.timeDeleted)))
@@ -335,7 +337,7 @@ export namespace Todo {
   export const update = fn(
     Patch.extend({ id: Info.shape.id }),
     async ({ id, ...patch }) => {
-      const before = found("Todo", await fromID.force(id));
+      const before = await assert.exists(fromID.force(id));
       Actor.check({ todo: ["update"] }, before.createdBy);
       const next = {
         ...patch,
@@ -358,7 +360,7 @@ export namespace Todo {
   export const remove = fn(
     Info.shape.id,
     async (id) => {
-      const before = found("Todo", await fromID.force(id));
+      const before = await assert.exists(fromID.force(id));
       Actor.check({ todo: ["delete"] }, before.createdBy);
 
       return Database.transaction(async (tx) => {
@@ -510,7 +512,7 @@ export namespace Todo {
       sourceID: id,
       tags,
       data: changed,
-      state: found("Todo", await fromID.force(id)),
+      state: await assert.exists(fromID.force(id)),
     });
   }
 }

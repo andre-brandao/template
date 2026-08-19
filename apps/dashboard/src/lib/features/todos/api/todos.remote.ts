@@ -1,4 +1,3 @@
-import { error } from "@sveltejs/kit";
 import { z } from "zod";
 import { Todo } from "@template/core/todo";
 import { User } from "@template/core/user";
@@ -42,11 +41,9 @@ export const getStages = remote.core(Todo.stages).query();
 
 export const getUsers = remote.core(User.list).query();
 
-export const getTodo = remote.query(Todo.Info.shape.id, async (id) => {
-  const todo = await Todo.fromID(id);
-  if (!todo) error(404, "Todo not found");
-  return todo;
-});
+export const getTodo = remote.query(Todo.Info.shape.id, (id) =>
+  Todo.assert.exists(Todo.fromID(id)),
+);
 
 export const createTodo = remote.form(
   Todo.create.schema.extend({

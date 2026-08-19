@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { and, asc, count, eq, ilike, isNull } from "drizzle-orm";
+import { Assert } from "../util/assert";
 import { fn } from "../util/fn";
-import { found } from "../error";
 import { Database } from "../drizzle";
 import { Actor } from "../actor";
 import { Common } from "../common";
@@ -12,6 +12,8 @@ import { Event } from "../platform/event";
 import { ProjectTable } from "./project.sql";
 
 export namespace Project {
+  export const assert = Assert.create("Project");
+
   export const Info = z
     .object({
       id: z.string().meta({ description: Common.IdDescription, example: Examples.Project.id }),
@@ -41,7 +43,7 @@ export namespace Project {
           name: input.name,
           description: input.description ?? null,
         });
-        const project = found("Project", await fromID.force(id));
+        const project = await assert.exists(fromID.force(id));
         await Event.publish({
           type: "project.created",
           source: "project",
@@ -105,7 +107,7 @@ export namespace Project {
   export const update = fn(
     Patch.extend({ id: Info.shape.id }),
     async ({ id, ...patch }) => {
-      const before = found("Project", await fromID.force(id));
+      const before = await assert.exists(fromID.force(id));
       Actor.check({ project: ["update"] }, before.createdBy);
 
       return Database.transaction(async (tx) => {
@@ -132,7 +134,7 @@ export namespace Project {
   export const remove = fn(
     Info.shape.id,
     async (id) => {
-      const before = found("Project", await fromID.force(id));
+      const before = await assert.exists(fromID.force(id));
       Actor.check({ project: ["delete"] }, before.createdBy);
 
       return Database.transaction(async (tx) => {

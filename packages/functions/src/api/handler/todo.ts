@@ -3,7 +3,6 @@ import { Hono } from "hono";
 import { validator, PaginatedQuery, authRequired } from "../common";
 import { describe } from "../doc";
 import { Todo } from "@template/core/todo";
-import { found } from "@template/core/error";
 
 export namespace TodoApi {
   const doc = describe("Todo");
@@ -38,7 +37,7 @@ export namespace TodoApi {
       }),
       authRequired,
       validator("param", Identifier),
-      async (c) => c.json(found("Todo", await Todo.fromID(c.req.valid("param").id)), 200),
+      async (c) => c.json(await Todo.assert.exists(Todo.fromID(c.req.valid("param").id)), 200),
     )
     .post(
       "/",
@@ -62,7 +61,7 @@ export namespace TodoApi {
       async (c) => {
         const { id } = c.req.valid("param");
         await Todo.update({ id, ...c.req.valid("json") });
-        return c.json(await Todo.fromID.force(id), 200);
+        return c.json(await Todo.assert.exists(Todo.fromID.force(id)), 200);
       },
     )
     .delete(

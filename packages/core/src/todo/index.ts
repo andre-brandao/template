@@ -450,10 +450,10 @@ export namespace Todo {
       // A transition drops the old reason unless this patch carries a new one.
       ...(patch.status !== undefined
         ? {
-          status: patch.status,
-          reason: patch.reason ?? null,
-          ...times(patch.status, before.timeStarted),
-        }
+            status: patch.status,
+            reason: patch.reason ?? null,
+            ...times(patch.status, before.timeStarted),
+          }
         : {}),
       timeUpdated: new Date(),
     };

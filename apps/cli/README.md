@@ -17,7 +17,7 @@ template-cli serve dashboard   # SvelteKit prod build on PORT (auto-builds if mi
 ```
 
 `serve api`/`serve mcp` reuse a single DB connection per request (like the dashboard's
-`hooks.server.ts`), so they work against the local pglite dev DB as well as postgres.
+`hooks/server/providers.ts`), so they work against the local pglite dev DB as well as postgres.
 They read `DATABASE_URL` (falling back to `Database.DEFAULT_URL`). For a local DB, start
 one with `bun dev` or `bun scripts/pglite.ts`.
 

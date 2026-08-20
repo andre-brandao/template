@@ -9,7 +9,7 @@ const dash = `${import.meta.dir}/../../dashboard`;
 const db = Database.connect();
 
 /**
- * One pool for the process, mirroring the dashboard's `hooks.server.ts`. Dev backends
+ * One pool for the process, mirroring the dashboard's `hooks/server/providers.ts`. Dev backends
  * like pglite accept only a single active connection, so a client per request can't
  * run against them.
  */

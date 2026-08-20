@@ -1,5 +1,5 @@
 import { describe, it, expect } from "bun:test";
-import { handleError } from "../src/hooks.server";
+import { handleError } from "../src/hooks/server/error";
 import { VisibleError } from "@template/core/error";
 
 const event = { url: new URL("http://localhost/todos") };

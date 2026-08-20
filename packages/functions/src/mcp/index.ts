@@ -5,6 +5,7 @@ import { VisibleError, ErrorCodes, type ErrorResponseType } from "@template/core
 import { auth } from "../api/middleware";
 import { authRequired } from "../api/common";
 import { todo } from "./tool/todo";
+import { health } from "../health";
 
 /** One server per request — the streamable HTTP transport is stateless. */
 function server() {
@@ -14,7 +15,7 @@ function server() {
 }
 
 export const app = new Hono()
-  .get("/healthz", (c) => c.json({ status: "ok" }))
+  .route("/", health)
   .use(auth)
   .all("/mcp", authRequired, async (c) => {
     const transport = new StreamableHTTPTransport();

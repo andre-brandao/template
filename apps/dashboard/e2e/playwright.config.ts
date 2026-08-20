@@ -45,7 +45,8 @@ export default defineConfig({
   },
   webServer: {
     command: "bun run build && bun run preview --port 4173 --strictPort --host 127.0.0.1",
-    url: `${base}/healthz`,
+    // Readiness, not liveness — the suite needs the database behind the server, too.
+    url: `${base}/readyz`,
     reuseExistingServer: !ci,
     timeout: 45_000,
     env: { SVELTE_ADAPTER: "node", DATABASE_URL: url },

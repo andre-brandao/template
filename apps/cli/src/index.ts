@@ -2,12 +2,14 @@
 
 import { api } from "./api";
 import { login, logout, whoami } from "./auth";
+import { health } from "./health";
 import { serve } from "./serve";
 
 const help = `template-cli — run and talk to the template
 
 Usage:
   template-cli serve <api|mcp|auth|dashboard>  Serve a surface
+  template-cli health <target> [--probe]       Probe it: ready (default), live or start
   template-cli api [method] [args]             Call the API via the built-in SDK
   template-cli login [--issuer --url]          Log in via browser (PKCE) and save tokens
   template-cli logout                          Forget the saved tokens
@@ -18,6 +20,7 @@ Note: "serve api", "serve mcp" and "serve auth" need a reachable DATABASE_URL (u
 
 const commands: Record<string, (rest: string[]) => unknown> = {
   serve,
+  health,
   api,
   login,
   logout,

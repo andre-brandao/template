@@ -21,6 +21,22 @@ template-cli serve dashboard   # SvelteKit prod build on PORT (auto-builds if mi
 They read `DATABASE_URL` (falling back to `Database.DEFAULT_URL`). For a local DB, start
 one with `bun dev` or `bun scripts/pglite.ts`.
 
+## Health
+
+```sh
+template-cli health api                  # readiness (/readyz) on API_PORT — exit 0 or 1
+template-cli health dashboard --probe live    # liveness (/healthz) on PORT
+template-cli health auth --probe start        # startup (/startupz) on PORT
+template-cli health --url https://api.example.com   # any base url, no target needed
+```
+
+The exit code is the answer, so it is the probe itself: Compose runs
+`["CMD", "template-cli", "health", "<target>"]`, and a Kubernetes `exec` probe takes the
+same line. Ports come from the same env vars `serve` binds (`API_PORT`, `MCP_PORT`,
+`PORT`), so a probe can't drift from its server. The response body is printed either way —
+Docker keeps it in `docker inspect` → `State.Health.Log`, which is where a 503's cause
+shows up. What the three probes mean: `infra/docker/README.md`.
+
 ## API (built-in SDK)
 
 The `api` command reflects the generated `@template/sdk`, so every endpoint is callable and

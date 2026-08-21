@@ -218,7 +218,7 @@ export namespace Auth {
         });
       });
 
-      await Template.sendLoginCode(input.email, code);
+      await Template.Send.loginCode(input.email, code);
     });
 
     export const verify = fn(

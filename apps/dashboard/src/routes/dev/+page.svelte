@@ -2,6 +2,7 @@
 	import Braces from '@lucide/svelte/icons/braces';
 	import Component from '@lucide/svelte/icons/component';
 	import FileCode from '@lucide/svelte/icons/file-code';
+	import Mail from '@lucide/svelte/icons/mail';
 	import Plug from '@lucide/svelte/icons/plug';
 	import { Badge, Card } from '@template/ui';
 	import { stories } from '@template/ui/story';
@@ -26,6 +27,13 @@
 			icon: FileCode,
 			title: 'Prototypes',
 			blurb: 'Read the docs under docs/prototype/ with their mockups live in iframes.',
+			ready: true
+		},
+		{
+			href: '/dev/mail',
+			icon: Mail,
+			title: 'Mail',
+			blurb: 'Every email template rendered against stand-in props, html and text side by side.',
 			ready: true
 		},
 		{

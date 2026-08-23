@@ -27,6 +27,8 @@
     "./health": "./src/platform/health/index.ts",
     "./key": "./src/platform/key/index.ts",
     "./key/*": "./src/platform/key/*.ts",
+    "./mail": "./src/platform/mail/index.ts",
+    "./mail/*": "./src/platform/mail/*.ts",
     "./webhook": "./src/platform/webhook/index.ts",
     "./webhook/*": "./src/platform/webhook/*.ts",
     "./util/*": "./src/util/*.ts"
@@ -41,6 +43,7 @@
   "dependencies": {
     "aws4fetch": "^1.0.20",
     "drizzle-orm": "catalog:",
+    "postal-mime": "^2.7.4",
     "postgres": "catalog:",
     "ulid": "catalog:",
     "zod": "catalog:"

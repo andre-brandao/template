@@ -9,9 +9,13 @@ export type Attachment = {
 export type Message = {
   from: string;
   to: string | string[];
+  cc?: string[];
+  bcc?: string[];
   subject: string;
   body: string;
   html?: string;
+  /** Extra headers verbatim — `In-Reply-To`/`References`, so a reply threads for the recipient. */
+  headers?: Record<string, string>;
   attachments?: Attachment[];
 };
 

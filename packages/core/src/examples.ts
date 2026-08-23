@@ -92,4 +92,48 @@ export namespace Examples {
     data: { title: "Write the quarterly report" },
     timeCreated: "2026-06-07T00:00:00.000Z",
   } as const;
+
+  export const Mail = {
+    id: Id("mail"),
+    thread: Id("mail"),
+    mailbox: "support@developing.company",
+    direction: "in",
+    messageID: "CADq3xV@mail.example.com",
+    inReplyTo: null,
+    refs: [] as string[],
+    from: "jane@acme.io",
+    to: ["support@developing.company"],
+    cc: [] as string[],
+    bcc: [] as string[],
+    subject: "SSO is looping on login",
+    body: "Since this morning every SSO attempt bounces back to the login screen.",
+    html: null,
+    snippet: "Since this morning every SSO attempt bounces back to the login screen.",
+    tags: [] as string[],
+    source: null,
+    sourceID: null,
+    createdBy: null,
+    attachments: [],
+    timeSent: "2026-06-07T09:12:00.000Z",
+    timeRead: null,
+    timeCreated: "2026-06-07T09:12:03.000Z",
+  } as const;
+
+  export const MailThread = {
+    id: Mail.thread,
+    message: Mail.id,
+    mailbox: Mail.mailbox,
+    from: Mail.from,
+    subject: Mail.subject,
+    snippet: Mail.snippet,
+    tags: [] as string[],
+    source: null,
+    sourceID: null,
+    count: 3,
+    unread: true,
+    draft: false,
+    files: false,
+    timeSent: Mail.timeSent,
+    timeCreated: Mail.timeCreated,
+  } as const;
 }

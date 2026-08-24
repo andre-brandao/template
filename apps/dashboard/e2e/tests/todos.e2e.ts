@@ -7,6 +7,8 @@ import { seed } from "../util/seed";
 test("creating a todo through the form shows it in the list", async ({ page, as }) => {
   await as();
   await page.goto("/todos");
+  // The drawer opens from client state, so a click that lands pre-hydration does nothing.
+  await page.waitForLoadState("networkidle");
 
   // Unique per attempt: todos are workspace-wide and the database lives for the whole
   // run, so a fixed title accumulates copies across browser projects and retries.
@@ -57,6 +59,8 @@ test("starting a todo records it as active", async ({ page, as }) => {
   const project = await seed(session.userID, ["Start me"]);
 
   await page.goto(`/projects/${project}/todos`);
+  // The status menu opens from client state, so a pre-hydration click does nothing.
+  await page.waitForLoadState("networkidle");
   // Scoped to the row — the filter tabs carry the same status labels.
   const row = page.getByRole("row", { name: "Start me" });
   await row.getByRole("button", { name: "Backlog" }).click();

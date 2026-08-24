@@ -15,6 +15,7 @@ The one entrypoint that runs and talks to the template. Bun-only, no build step 
 | --------------- | -------------------------------------------------------------------- |
 | `src/index.ts`  | Command table + help text. Every command is one entry in `commands`. |
 | `src/serve.ts`  | `serve api\|mcp\|auth\|dashboard`                                    |
+| `src/health.ts` | `health <target>` — probe a surface, exit code as the answer         |
 | `src/api.ts`    | SDK reflection, param parsing, result printing                       |
 | `src/auth.ts`   | `login` (browser PKCE), `logout`, `whoami`                           |
 | `src/config.ts` | `~/.config/template/config.json` read/write + token/url resolution   |
@@ -27,7 +28,8 @@ The one entrypoint that runs and talks to the template. Bun-only, no build step 
   command surface should require zero edits here.
 - **Adding a command** = add one function and one entry in `commands` in `index.ts`,
   then update the `help` string in the same file. Commands take `rest: string[]`.
-- **Adding a serve target** = add one entry to `targets` in `serve.ts`.
+- **Adding a serve target** = one entry in `targets` in `serve.ts`, plus its port in
+  `ports` in `health.ts` so the probe resolves the port the server binds.
 - Resolution order is defined once in `config.ts` and must stay that way:
   token is `--token` › `TEMPLATE_TOKEN` › saved `sk-` key › OAuth access (auto-refreshed);
   url is `--url` › `API_URL` › saved config › `http://localhost:3000`.

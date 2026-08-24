@@ -41,7 +41,7 @@ const dashboard = new sst.cloudflare.Worker("Dashboard", {
   build: {
 
   },
-  // Also a runtime var, not just a build one: `hooks.server.ts` picks its provider set
+  // Also a runtime var, not just a build one: `hooks/server/providers.ts` picks its provider set
   // from it, since the Hyperdrive/R2 bindings are per-request on this target alone.
   environment: { ...environment, SVELTE_ADAPTER: "cloudflare" },
   link: [

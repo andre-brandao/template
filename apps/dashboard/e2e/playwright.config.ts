@@ -40,14 +40,21 @@ export default defineConfig({
   globalSetup: "./util/setup.ts",
   use: {
     baseURL: base,
+    // Pinned: the settings suite picks UTC from a zone list Chromium's Intl only
+    // offers when the browser is standing in it. CI runners are UTC, dev machines aren't.
+    timezoneId: "UTC",
     trace: "on-first-retry",
     screenshot: "only-on-failure",
   },
   webServer: {
     command: "bun run build && bun run preview --port 4173 --strictPort --host 127.0.0.1",
+    // Liveness, not readiness: Playwright boots the server before globalSetup, so on a
+    // fresh machine the database it needs doesn't exist yet. globalSetup creates and
+    // migrates it before any test runs.
     url: `${base}/healthz`,
     reuseExistingServer: !ci,
-    timeout: 45_000,
+    // Covers a cold build (~40s on CI) plus boot.
+    timeout: 120_000,
     env: { SVELTE_ADAPTER: "node", DATABASE_URL: url },
   },
   projects: [

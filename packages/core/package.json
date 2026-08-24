@@ -24,6 +24,7 @@
     "./user/*": "./src/user/*.ts",
     "./admin": "./src/platform/admin/index.ts",
     "./event": "./src/platform/event/index.ts",
+    "./health": "./src/platform/health/index.ts",
     "./key": "./src/platform/key/index.ts",
     "./key/*": "./src/platform/key/*.ts",
     "./webhook": "./src/platform/webhook/index.ts",

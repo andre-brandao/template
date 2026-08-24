@@ -7,7 +7,7 @@ import { db } from "./db";
 
 // Creates a real user in the same database the app reads, then opens a session row the
 // same way /callback does — so a browser carrying the `auth` cookie is authenticated
-// (hooks.server.ts → read → Actor). No login UI, no issuer.
+// (hooks/server/auth.ts → read → Actor). No login UI, no issuer.
 export function mint(
   role: Permission.Role = "member",
   opts: { email?: string; name?: string } = {},

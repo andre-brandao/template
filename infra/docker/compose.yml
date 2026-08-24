@@ -1,6 +1,6 @@
 name: template
 
-# Shared config for the three app services that run off the one app image.
+# Shared config for the four app services that run off the one app image.
 x-app: &app
   build:
     context: ../..
@@ -9,6 +9,18 @@ x-app: &app
   image: template-app
   env_file: .env
   restart: unless-stopped
+
+# Docker runs one probe per container, so it gets readiness — the question
+# `depends_on: service_healthy` asks. `template-cli health <target>` defaults to it and
+# resolves the port from the same env var the server binds. `start_period` is the startup probe — a
+# failure inside it costs no retry, and the first success ends it. Liveness (`/healthz`)
+# has no place to hang here: Docker never restarts a container for going unhealthy.
+x-probe: &probe
+  interval: 30s
+  timeout: 5s
+  retries: 3
+  start_period: 60s
+  start_interval: 2s
 
 services:
   postgres:
@@ -24,9 +36,11 @@ services:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-postgres}"]
-      interval: 5s
+      interval: 30s
       timeout: 5s
-      retries: 10
+      retries: 3
+      start_period: 30s
+      start_interval: 1s
 
   # One-shot: runs `drizzle-kit migrate`, then exits. Own image (adds Node,
   # which drizzle-kit needs for node:sqlite); entrypoint set in the Dockerfile.
@@ -55,14 +69,8 @@ services:
       migrate:
         condition: service_completed_successfully
     healthcheck:
-      test:
-        - CMD
-        - bun
-        - -e
-        - "await fetch('http://localhost:3000/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      <<: *probe
+      test: ["CMD", "template-cli", "health", "api"]
 
   mcp:
     <<: *app
@@ -75,14 +83,8 @@ services:
       migrate:
         condition: service_completed_successfully
     healthcheck:
-      test:
-        - CMD
-        - bun
-        - -e
-        - "await fetch('http://localhost:3001/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      <<: *probe
+      test: ["CMD", "template-cli", "health", "mcp"]
 
   auth:
     <<: *app
@@ -99,14 +101,8 @@ services:
       migrate:
         condition: service_completed_successfully
     healthcheck:
-      test:
-        - CMD
-        - bun
-        - -e
-        - "await fetch('http://localhost:3002/.well-known/jwks.json').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      <<: *probe
+      test: ["CMD", "template-cli", "health", "auth"]
 
   dashboard:
     <<: *app
@@ -123,14 +119,8 @@ services:
       auth:
         condition: service_healthy
     healthcheck:
-      test:
-        - CMD
-        - bun
-        - -e
-        - "await fetch('http://localhost:3000/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      <<: *probe
+      test: ["CMD", "template-cli", "health", "dashboard"]
 
 volumes:
   pgdata:

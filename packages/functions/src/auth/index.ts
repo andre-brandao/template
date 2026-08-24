@@ -1,3 +1,4 @@
+import { Hono } from "hono";
 import { issuer } from "@openauthjs/openauth/issuer";
 import { GithubProvider } from "@openauthjs/openauth/provider/github";
 import { GoogleProvider } from "@openauthjs/openauth/provider/google";
@@ -6,6 +7,7 @@ import type { StorageAdapter } from "@openauthjs/openauth/storage/storage";
 import type { Provider } from "@openauthjs/openauth/provider/provider";
 import { Auth } from "@template/core/user/auth";
 import { subjects } from "./subject";
+import { health } from "../health";
 
 /**
  * OAuth only. Password and emailed-code logins are the dashboard's, straight against the
@@ -68,7 +70,9 @@ function mint(set: { access: string; refresh: string; expiry: number }): Auth.To
 }
 
 export function createAuth(storage: StorageAdapter) {
-  return issuer({
+  // The issuer is mounted behind the probes so ops can ask this service the same three
+  // questions as the others; its own routes are all deeper paths.
+  const app = issuer({
     subjects,
     storage,
     theme: THEME_OPENAUTH,
@@ -129,4 +133,6 @@ export function createAuth(storage: StorageAdapter) {
       throw new Error("Unsupported provider");
     },
   });
+
+  return new Hono().route("/", health).route("/", app);
 }

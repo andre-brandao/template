@@ -35,5 +35,9 @@ RUN bun run --filter dashboard build
 FROM build AS runtime
 ENV NODE_ENV=production
 WORKDIR /app
+# HEALTHCHECK and `docker exec` both bypass ENTRYPOINT, so the CLI needs a name on PATH
+# for `template-cli health <target>` to be the probe.
+RUN printf '#!/bin/sh\nexec bun run /app/apps/cli/src/index.ts "$@"\n' > /usr/local/bin/template-cli \
+  && chmod +x /usr/local/bin/template-cli
 ENTRYPOINT ["bun", "run", "apps/cli/src/index.ts"]
 CMD ["serve", "dashboard"]

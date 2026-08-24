@@ -1,6 +1,7 @@
-import { describe, expect, it, mock } from "bun:test";
+import { afterAll, describe, expect, it, mock } from "bun:test";
 import { methods, output, params, sdk } from "../src/api";
 import { strip, value } from "../src/args";
+import { probe } from "../src/health";
 
 describe("methods", () => {
   it("reflects SDK methods off the prototype", () => {
@@ -133,5 +134,59 @@ describe("output", () => {
     output({ data: { id: "todo_1", done: false } });
     console.log = log;
     expect(spy).toHaveBeenCalledWith(JSON.stringify({ id: "todo_1", done: false }, null, 2));
+  });
+});
+
+describe("health", () => {
+  it("resolves a probe url from flags and env ports", () => {
+    process.env.API_PORT = "4000";
+    expect(probe(["api"])).toBe("http://localhost:4000/readyz");
+    expect(probe(["api", "--probe", "live"])).toBe("http://localhost:4000/healthz");
+    expect(probe(["--url", "http://x", "--probe", "start"])).toBe("http://x/startupz");
+    expect(probe(["nope"])).toBeUndefined();
+    expect(probe(["api", "--probe", "nope"])).toBeUndefined();
+    delete process.env.API_PORT;
+  });
+
+  // Spawned rather than called: the command's answer is its exit code, and it exits.
+  const cli = `${import.meta.dir}/../src/index.ts`;
+  const run = (args: string[]) =>
+    Bun.spawn(["bun", "run", cli, "health", ...args], { stdout: "pipe", stderr: "pipe" }).exited;
+
+  const server = Bun.serve({
+    port: 0,
+    fetch: (req) =>
+      new URL(req.url).pathname === "/healthz"
+        ? Response.json({ status: "ok" })
+        : Response.json({ status: "degraded" }, { status: 503 }),
+  });
+  const url = `http://localhost:${server.port}`;
+
+  afterAll(() => server.stop(true));
+
+  it("exits 0 on a probe that answers ok", async () => {
+    expect(await run(["--url", url, "--probe", "live"])).toBe(0);
+  });
+
+  it("exits 1 on a probe that reports degraded", async () => {
+    expect(await run(["--url", url])).toBe(1);
+  });
+
+  it("exits 1 when the server is unreachable", async () => {
+    expect(await run(["--url", "http://127.0.0.1:1"])).toBe(1);
+  });
+
+  it("exits 1 on an unknown target or probe", async () => {
+    expect(await run(["nope"])).toBe(1);
+    expect(await run(["--url", url, "--probe", "nope"])).toBe(1);
+  });
+
+  it("resolves a target's port from the env var its server binds", async () => {
+    const proc = Bun.spawn(["bun", "run", cli, "health", "api", "--probe", "live"], {
+      env: { ...process.env, API_PORT: String(server.port) },
+      stdout: "pipe",
+    });
+    expect(await proc.exited).toBe(0);
+    expect(await new Response(proc.stdout).text()).toContain('"status":"ok"');
   });
 });

@@ -10,6 +10,7 @@
     "./api/spec": "./src/api/spec.ts",
     "./auth": "./src/auth/index.ts",
     "./auth/*": "./src/auth/*.ts",
+    "./health": "./src/health.ts",
     "./mcp": "./src/mcp/index.ts"
   },
   "scripts": {

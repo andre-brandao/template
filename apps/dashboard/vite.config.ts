@@ -31,6 +31,8 @@ function cloudflaredPg(): PluginOption {
   };
 }
 
+const sha = child_process.spawnSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" });
+
 const adapter = await (async () => {
   const map = {
     cloudflare: async () => {
@@ -63,7 +65,9 @@ export default defineConfig({
     tailwindcss(),
     sveltekit({
       version: {
-        name: child_process.execSync("git rev-parse HEAD").toString().trim(),
+        // No git in the image build (`.git` is dockerignored), so fall back to
+        // kit's own default rather than failing the build.
+        name: sha.status === 0 ? sha.stdout.trim() : Date.now().toString(),
       },
       compilerOptions: {
         // Force runes mode for the project, except for libraries. Can be removed in svelte 6.

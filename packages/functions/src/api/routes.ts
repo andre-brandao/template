@@ -9,20 +9,14 @@ import { TodoApi } from "./handler/todo";
 import { ProjectApi } from "./handler/project";
 import { FileApi } from "./handler/file";
 import { auth } from "./middleware";
+import { health } from "../health";
 
 const log = Log.create({ namespace: "api" });
 
 export const app = new Hono();
 
-// Registered before logger/auth so probes don't spam request logs or provide an actor.
-app.get("/healthz", async (c) => {
-  const { Database } = await import("@template/core/drizzle");
-  const check = await Database.healthcheck();
-  return c.json(
-    { status: check.status, db: check.message, cause: check.cause },
-    check.status === "ok" ? 200 : 503,
-  );
-});
+// Mounted before logger/auth so probes don't spam request logs or provide an actor.
+app.route("/", health);
 
 app
   .use(logger())

@@ -1,6 +1,7 @@
 import { afterAll, describe, expect, it, mock } from "bun:test";
 import { methods, output, params, sdk } from "../src/api";
 import { strip, value } from "../src/args";
+import { probe } from "../src/health";
 
 describe("methods", () => {
   it("reflects SDK methods off the prototype", () => {
@@ -137,6 +138,16 @@ describe("output", () => {
 });
 
 describe("health", () => {
+  it("resolves a probe url from flags and env ports", () => {
+    process.env.API_PORT = "4000";
+    expect(probe(["api"])).toBe("http://localhost:4000/readyz");
+    expect(probe(["api", "--probe", "live"])).toBe("http://localhost:4000/healthz");
+    expect(probe(["--url", "http://x", "--probe", "start"])).toBe("http://x/startupz");
+    expect(probe(["nope"])).toBeUndefined();
+    expect(probe(["api", "--probe", "nope"])).toBeUndefined();
+    delete process.env.API_PORT;
+  });
+
   // Spawned rather than called: the command's answer is its exit code, and it exits.
   const cli = `${import.meta.dir}/../src/index.ts`;
   const run = (args: string[]) =>

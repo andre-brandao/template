@@ -5,5 +5,6 @@ export * as queue from "./queue";
 export * as auth from "./auth";
 export * as api from "./api";
 export * as mcp from "./mcp";
+export * as mail from "./mail";
 export * as secrets from "./secrets";
 export * as stage from "./stage";

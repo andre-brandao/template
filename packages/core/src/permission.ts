@@ -13,6 +13,7 @@ export namespace Permission {
     todo: ["read", "create", "update", "delete"],
     key: ["read", "create", "update", "delete"],
     webhook: ["read", "create", "update", "delete"],
+    mail: ["read", "create", "update", "delete"],
   } as const;
 
   type Res = keyof typeof Statement;
@@ -33,12 +34,14 @@ export namespace Permission {
       todo: ["read", "create", "update", "delete"],
       key: ["read", "create", "update", "delete"],
       webhook: ["read", "create", "update", "delete"],
+      mail: ["read", "create", "update", "delete"],
     },
     member: {
       user: ["read", "update:own"],
       project: ["read", "create", "update", "delete"],
       todo: ["read", "create", "update", "delete"],
       key: ["read:own", "create", "delete:own"],
+      mail: ["read", "create", "update", "delete"],
     },
   } as const satisfies Record<string, Held>;
 

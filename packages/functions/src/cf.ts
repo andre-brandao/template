@@ -23,6 +23,12 @@ export interface EmailEnv extends Env {
   SEND_EMAIL: SendEmail;
 }
 
+/**
+ * The mail receiver. Storing a message writes a row and an audit event and nothing else,
+ * so it needs the database and the bucket — no queue.
+ */
+export type MailEnv = Env;
+
 /** Auth worker extra: OpenAuth's storage KV. */
 export interface AuthEnv extends EmailEnv {
   AuthKv: KVNamespace;

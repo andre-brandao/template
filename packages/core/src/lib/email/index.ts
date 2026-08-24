@@ -54,9 +54,12 @@ export namespace Email {
     z.object({
       from: z.string().optional(),
       to: z.union([z.string(), z.string().array()]),
+      cc: z.string().array().optional(),
+      bcc: z.string().array().optional(),
       subject: z.string(),
       body: z.string(),
       html: z.string().optional(),
+      headers: z.record(z.string(), z.string()).optional(),
       // Mirrors `Attachment` — anything missing here is stripped by `parse` on push.
       attachments: z
         .object({

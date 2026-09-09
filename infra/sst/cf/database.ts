@@ -1,4 +1,4 @@
-/// <reference path="../../.sst/platform/config.d.ts" />
+/// <reference path="../../../.sst/platform/config.d.ts" />
 import { readdirSync, readFileSync } from "fs"
 import { isPermanentStage } from "./stage"
 

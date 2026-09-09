@@ -1,16 +1,19 @@
-/// <reference path="../../.sst/platform/config.d.ts" />
+/// <reference path="../../../.sst/platform/config.d.ts" />
 import { database, hyperdrive } from "./database";
-import { files } from "./storage";
-import { jobs } from "./queue";
 import { environment } from "./secrets";
 import { subdomain } from "./stage";
 
-const api = new sst.cloudflare.Worker("Api", {
-  handler: "./packages/functions/src/api/target/worker.ts",
-  domain: subdomain("api"),
+const authKv = new sst.cloudflare.Kv("AuthKv");
+
+const auth = new sst.cloudflare.Worker("Auth", {
+  handler: "./packages/functions/src/auth/target/worker.ts",
+  domain: subdomain("auth"),
   url: true,
   environment,
-  link: [database, hyperdrive, files, jobs],
+  link: [database, hyperdrive, authKv],
+  build: {
+    loader: { ".css": "text" },
+  },
   placement: {
     region: "aws:sa-east-1",
   },
@@ -18,6 +21,10 @@ const api = new sst.cloudflare.Worker("Api", {
     worker: (args) => {
       args.compatibilityDate = "2026-03-19";
       args.compatibilityFlags = ["nodejs_compat"];
+      args.bindings = $resolve(args.bindings ?? []).apply((bindings) => [
+        ...bindings,
+        { type: "send_email", name: "SEND_EMAIL" },
+      ]);
       args.observability = {
         enabled: true,
         headSamplingRate: 1,
@@ -28,5 +35,5 @@ const api = new sst.cloudflare.Worker("Api", {
 });
 
 export const outputs = {
-  api: api.url,
+  auth: auth.url,
 };

@@ -32,16 +32,16 @@ Two things that surprise people:
 
 ## Who owns what
 
-| Path                 | Owns                                                                |
-| -------------------- | ------------------------------------------------------------------- |
-| `packages/core`      | Domain logic, Drizzle schema, migrations. All business rules.       |
-| `packages/functions` | Hono services: `api`, `mcp`, `auth`, `queue`. Transport only.       |
-| `apps/dashboard`     | SvelteKit UI, remote functions, routes.                             |
-| `apps/cli`           | The one entrypoint that runs and talks to the stack.                |
-| `packages/ui`        | Presentational Svelte components. No app imports, no IO.            |
-| `packages/sdk/ts`    | Generated from `openapi.json`. Never hand-edited.                   |
-| `scripts`            | `dev`, `seed`, `reset`, feature scaffold.                           |
-| `infra`              | SST 4 (`infra/cf` live, `infra/aws` alternate) plus `infra/docker`. |
+| Path                 | Owns                                                                                       |
+| -------------------- | ------------------------------------------------------------------------------------------ |
+| `packages/core`      | Domain logic, Drizzle schema, migrations. All business rules.                              |
+| `packages/functions` | Hono services: `api`, `mcp`, `auth`, `queue`. Transport only.                              |
+| `apps/dashboard`     | SvelteKit UI, remote functions, routes.                                                    |
+| `apps/cli`           | The one entrypoint that runs and talks to the stack.                                       |
+| `packages/ui`        | Presentational Svelte components. No app imports, no IO.                                   |
+| `packages/sdk/ts`    | Generated from `openapi.json`. Never hand-edited.                                          |
+| `scripts`            | `dev`, `seed`, `reset`, feature scaffold.                                                  |
+| `infra`              | SST 4 (`infra/sst/cf` live, `infra/sst/aws` alternate), `infra/terraform`, `infra/docker`. |
 
 ## Generation chain
 

@@ -30,11 +30,11 @@ And core never reads a header: everything it needs about the caller comes from `
 `packages/functions/src/target.ts` has one function per environment, and each service has
 a `target/` directory that picks one:
 
-| Target   | Database                          | Used by                     |
-| -------- | --------------------------------- | --------------------------- |
-| `bun`    | One pool per process              | `bun dev`, Docker           |
-| `lambda` | Pool from env, streamed responses | `infra/aws`                 |
-| `worker` | Fresh pool per request            | `infra/cf` (via Hyperdrive) |
+| Target   | Database                          | Used by                                            |
+| -------- | --------------------------------- | -------------------------------------------------- |
+| `bun`    | One pool per process              | `bun dev`, Docker                                  |
+| `lambda` | Pool from env, streamed responses | `infra/sst/aws`                                    |
+| `worker` | Fresh pool per request            | `infra/sst/cf`, `infra/terraform` (via Hyperdrive) |
 
 The worker's per-request pool isn't an oversight — Workers forbid reusing a socket across
 requests. Likewise `bun` cycles its pool when `PG_RELEASE=true`, because dev pglite allows
@@ -44,12 +44,16 @@ exactly one live connection and the dashboard needs it back.
 
 ```mermaid
 graph LR
-  sst["sst.config.ts"] --> cf["infra/cf<br/><i>live</i>"]
-  sst -.-> aws["infra/aws"]
+  sst["sst.config.ts"] --> cf["infra/sst/cf<br/><i>live</i>"]
+  sst -.-> aws["infra/sst/aws"]
+  tofu["infra/terraform<br/>opentofu"] --> worker["worker targets"]
+  cf --> worker
   docker["infra/docker<br/>compose"] --> bun["bun targets"]
 ```
 
-`sst.config.ts` imports `infra/cf`; `infra/aws` is the alternate wiring. `infra/docker`
+`sst.config.ts` imports `infra/sst/cf`; `infra/sst/aws` is the alternate wiring.
+`infra/terraform` deploys the same Cloudflare stack as `infra/sst/cf` without SST — it has
+its own state and its own `tf.` domain, so the two can coexist. `infra/docker`
 runs the same `bun` targets under Compose — note its migrate step copies a real Node
 binary, because `drizzle-kit` needs `node:sqlite`, which Bun doesn't have.
 

@@ -15,10 +15,10 @@ const worker: Handle = ({ event, resolve }) => {
 
   return Context.withProviders(
     () => resolve(event),
-    // Fresh pool per request: Workers forbid reusing a socket across them.
     Database.provider(Database.connect(cf.Hyperdrive.connectionString)),
     Storage.provider(Storage.Providers.r2(cf.Files)),
     Queue.provider(Queue.Providers.cloudflare(cf.Jobs)),
+    Email.provider(Email.Providers.queue()),
   );
 };
 
@@ -40,7 +40,6 @@ function fromEnv(): Handle {
       Database.provider(db),
       Storage.provider(disks),
       Email.provider(email),
-      // QUEUE_DRIVER=db needs the transaction runner, so it can't come from the env fallback.
       Queue.provider(q),
     );
 }

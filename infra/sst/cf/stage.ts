@@ -1,4 +1,4 @@
-/// <reference path="../../.sst/platform/config.d.ts" />
+/// <reference path="../../../.sst/platform/config.d.ts" />
 export const isPermanentStage = ["prod", "dev"].includes($app.stage);
 
 export const baseDomain = "template.developing.company"

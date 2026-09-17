@@ -92,6 +92,25 @@ jobs:
       - run: bun install --frozen-lockfile
       - run: bun run fmt:check
 
+  # terraform:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v7
+  #     - uses: opentofu/setup-opentofu@v1
+  #       with:
+  #         tofu_version: 1.12.5
+  #     - name: Check formatting
+  #       run: tofu fmt -recursive -check -diff infra/terraform
+  #     # -backend=false: validation needs no state and no credentials.
+  #     - name: Validate every root module
+  #       run: |
+  #         for env in infra/terraform/envs/*/; do
+  #           echo "::group::$env"
+  #           tofu -chdir="$env" init -backend=false -input=false
+  #           tofu -chdir="$env" validate
+  #           echo "::endgroup::"
+  #         done
+
   openapi:
     # Regenerating rewrites the tree, so this runs on PRs only — a push to a protected
     # branch has already passed it.
@@ -238,7 +257,18 @@ jobs:
 
   report:
     runs-on: ubuntu-latest
-    needs: [typecheck, test, fallow, lint, format, openapi, trivy, build, e2e]
+    needs: [
+        typecheck,
+        test,
+        fallow,
+        lint,
+        format,
+        # terraform,
+        openapi,
+        trivy,
+        build,
+        e2e,
+      ]
     if: always()
     permissions:
       contents: read

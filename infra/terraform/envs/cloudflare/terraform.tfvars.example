@@ -1,0 +1,39 @@
+# envs/cloudflare/terraform.tfvars.example
+# cp terraform.tfvars.example terraform.tfvars, then fill in.
+# Nothing here is required for a normal deploy — these are overrides.
+#
+# Credentials and secrets come from the environment, not this file:
+#   export CLOUDFLARE_API_TOKEN=...            # provider auth
+#   export TF_VAR_account_id="$CLOUDFLARE_DEFAULT_ACCOUNT_ID"
+#   export PLANETSCALE_SERVICE_TOKEN_ID=...
+#   export PLANETSCALE_SERVICE_TOKEN=...
+#   export TF_VAR_session_secret=...           # required
+#   export TF_VAR_github_client_id=...         # optional
+#   export TF_VAR_github_client_secret=...
+#   export TF_VAR_google_client_id=...
+#   export TF_VAR_google_client_secret=...
+#   export TF_VAR_auth_providers=...
+#   export TF_VAR_example_secret=...
+
+# Keep `project` distinct from the SST app name: queue, R2, KV and Hyperdrive
+# names are account-global and are NOT namespaced by the domain.
+# project = "template-tf"
+
+# Hostnames are <subdomain>.<environment domain>, e.g.
+# api.dev.tf.template.developing.company. Override either half:
+# base_domain = "tf.template.developing.company"
+# zone_name   = "developing.company"
+# api_subdomain       = "api"
+# mcp_subdomain       = "mcp"
+# auth_subdomain      = "auth"
+# dashboard_subdomain = "dashboard"
+
+# Also publish on *.workers.dev:
+# workers_dev = true
+
+# Skip the drizzle migration run (needs a real `node` on PATH):
+# run_migrations = false
+
+# queue_batch_size       = 10
+# queue_max_retries      = 3
+# queue_max_wait_time_ms = 5000

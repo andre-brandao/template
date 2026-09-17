@@ -27,7 +27,7 @@ export default $config({
     },
   },
   async run() {
-    const infra = await import("./infra/cf");
+    const infra = await import("./infra/sst/cf");
     const outputs = {};
     for (const mod of Object.values(infra))
       if ("outputs" in mod) Object.assign(outputs, mod.outputs);

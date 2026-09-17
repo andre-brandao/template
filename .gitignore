@@ -49,3 +49,12 @@ junit.xml
 .sst
 
 sst-env.d.ts
+
+# terraform / opentofu
+# .terraform.lock.hcl is deliberately NOT ignored — it is committed.
+.terraform/
+*.tfstate
+*.tfstate.*
+terraform.tfstate.d/
+terraform.tfvars
+infra/terraform/envs/*/.build/

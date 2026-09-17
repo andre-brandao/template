@@ -134,3 +134,128 @@ jobs:
               '```',
             ].join('\n');
             await require('./.github/comment.cjs')({ github, context, body });
+
+  # ---------------------------------------------------------------------------
+  # OpenTofu target (infra/terraform). Commented out on purpose: it deploys the
+  # same app to the same Cloudflare account as the SST jobs above, and running
+  # both on one event means two systems reconciling one set of resources.
+  #
+  # Uncomment only once you have decided which path owns a deploy. They do not
+  # collide on hostnames (infra/terraform lives under `tf.`) nor on
+  # account-scoped names (var.project defaults to "template-tf"), so they CAN
+  # coexist — but they should not both run unattended off the same push.
+  #
+  # Needs a shared backend: uncomment the `backend "s3"` block in
+  # infra/terraform/envs/cloudflare/versions.tf. With local state the runner
+  # starts empty every run, so `remove` finds nothing and the environment leaks.
+  #
+  # Required secrets on top of the SST ones: APP_SESSION_SECRET.
+  # ---------------------------------------------------------------------------
+  #
+  # deploy-tofu:
+  #   if: github.event.action != 'closed'
+  #   runs-on: ubuntu-latest
+  #   permissions:
+  #     contents: read
+  #     pull-requests: write
+  #   env:
+  #     ENVIRONMENT: ${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || github.ref_name }}
+  #   steps:
+  #     - uses: actions/checkout@v7
+  #       with:
+  #         ref: ${{ github.event.pull_request.head.ref || github.ref }}
+  #     - uses: oven-sh/setup-bun@v2
+  #     # drizzle-kit needs node:sqlite, which Bun does not provide.
+  #     - uses: actions/setup-node@v4
+  #       with:
+  #         node-version: 24
+  #     - uses: opentofu/setup-opentofu@v1
+  #       with:
+  #         tofu_version: 1.12.5
+  #     - run: bun install --frozen-lockfile
+  #     # Built here rather than inside tofu, so a broken bundle fails the job
+  #     # before anything touches infrastructure. The apply then runs with
+  #     # -var build=false and just uploads what this step produced.
+  #     - name: Build dashboard
+  #       run: bun run --filter dashboard build
+  #       env:
+  #         SVELTE_ADAPTER: cloudflare
+  #     - name: Build workers
+  #       working-directory: packages/functions
+  #       run: |
+  #         for svc in api mcp auth queue; do
+  #           bun run ../../infra/terraform/build.ts \
+  #             --entry="src/$svc/target/worker.ts" \
+  #             --outfile="dist/$svc/worker.js" \
+  #             --external='node:*' --external='cloudflare:*' \
+  #             $([ "$svc" = auth ] && echo --loader=.css:text)
+  #         done
+  #     - name: Deploy
+  #       working-directory: infra/terraform/envs/cloudflare
+  #       env:
+  #         CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+  #         TF_VAR_account_id: ${{ secrets.CLOUDFLARE_DEFAULT_ACCOUNT_ID }}
+  #         PLANETSCALE_SERVICE_TOKEN_ID: ${{ secrets.PLANETSCALE_SERVICE_TOKEN_ID }}
+  #         PLANETSCALE_SERVICE_TOKEN: ${{ secrets.PLANETSCALE_SERVICE_TOKEN }}
+  #         TF_VAR_session_secret: ${{ secrets.APP_SESSION_SECRET }}
+  #       run: |
+  #         tofu init -input=false
+  #         tofu workspace select -or-create=true "$ENVIRONMENT"
+  #         tofu apply -auto-approve -input=false -var build=false
+  #         echo "Deployed \`$ENVIRONMENT\` to $(tofu output -raw dashboard)" >> "$GITHUB_STEP_SUMMARY"
+  #
+  # # Only ever removes ephemeral `pr-<number>` environments — never prod/dev.
+  # remove-tofu:
+  #   if: github.event_name == 'pull_request' && github.event.action == 'closed'
+  #   runs-on: ubuntu-latest
+  #   permissions:
+  #     contents: read
+  #   env:
+  #     ENVIRONMENT: pr-${{ github.event.pull_request.number }}
+  #   steps:
+  #     - uses: actions/checkout@v7
+  #     - uses: oven-sh/setup-bun@v2
+  #     - uses: opentofu/setup-opentofu@v1
+  #       with:
+  #         tofu_version: 1.12.5
+  #     - run: bun install --frozen-lockfile
+  #     # The bundles have to exist even to tear down: data.local_file reads them
+  #     # during the destroy refresh, and a missing file fails the whole job.
+  #     - name: Build dashboard
+  #       run: bun run --filter dashboard build
+  #       env:
+  #         SVELTE_ADAPTER: cloudflare
+  #     - name: Build workers
+  #       working-directory: packages/functions
+  #       run: |
+  #         for svc in api mcp auth queue; do
+  #           bun run ../../infra/terraform/build.ts \
+  #             --entry="src/$svc/target/worker.ts" \
+  #             --outfile="dist/$svc/worker.js" \
+  #             --external='node:*' --external='cloudflare:*' \
+  #             $([ "$svc" = auth ] && echo --loader=.css:text)
+  #         done
+  #     - name: Remove
+  #       working-directory: infra/terraform/envs/cloudflare
+  #       env:
+  #         CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+  #         TF_VAR_account_id: ${{ secrets.CLOUDFLARE_DEFAULT_ACCOUNT_ID }}
+  #         PLANETSCALE_SERVICE_TOKEN_ID: ${{ secrets.PLANETSCALE_SERVICE_TOKEN_ID }}
+  #         PLANETSCALE_SERVICE_TOKEN: ${{ secrets.PLANETSCALE_SERVICE_TOKEN }}
+  #         TF_VAR_session_secret: ${{ secrets.APP_SESSION_SECRET }}
+  #       run: |
+  #         # Belt and braces: the job condition already restricts this to pull
+  #         # requests, but destroy is unforgiving enough to check the name too.
+  #         case "$ENVIRONMENT" in
+  #           pr-*) ;;
+  #           *) echo "::error::refusing to destroy non-ephemeral environment $ENVIRONMENT"; exit 1 ;;
+  #         esac
+  #
+  #         tofu init -input=false
+  #         if ! tofu workspace select "$ENVIRONMENT"; then
+  #           echo "No workspace $ENVIRONMENT — nothing to tear down."
+  #           exit 0
+  #         fi
+  #         tofu destroy -auto-approve -input=false -var build=false
+  #         tofu workspace select default
+  #         tofu workspace delete "$ENVIRONMENT"

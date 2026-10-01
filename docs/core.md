@@ -6,7 +6,7 @@ visible as directories.
 ```mermaid
 graph TD
   domain["<b>the product</b><br/>project · todo · user"]
-  platform["<b>platform/</b><br/>admin · key · webhook · event"]
+  platform["<b>platform/</b><br/>admin · key · webhook · event · bus"]
   lib["<b>lib/</b><br/>queue · storage · email"]
   kernel["<b>kernel</b><br/>actor · context · error · permission · drizzle · util"]
 
@@ -42,6 +42,14 @@ Grouping is a disk concern, invisible to consumers: `@template/core/key`, not
 The `"./*"` wildcard in `package.json` only covers top-level directories, so **a grouped
 module needs an explicit `exports` entry**. The Drizzle glob is `./src/**/*.sql.ts`, so
 nesting never affects migrations.
+
+## Events
+
+A slice declares its events with `Bus.define` (`Todo.Event.Created`) and publishes them
+inside its transaction; the audit row lands with the write, delivery waits for the commit.
+The envelope is CloudEvents 1.0. Each type gets at most one `Bus.subscribe` handler, listed
+in `src/subscribers.ts`; fan-out is left to a broker adapter. Types in the webhook catalog
+(`platform/webhook/types.ts`) also go out to webhooks.
 
 ## Known exceptions
 

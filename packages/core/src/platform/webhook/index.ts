@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { CloudEvent, HTTP } from "cloudevents";
 import { and, arrayContains, desc, eq, inArray, isNull, or, sql } from "drizzle-orm";
 import { fn } from "../../util/fn";
 import { iso } from "../../util/fmt";
@@ -21,8 +22,8 @@ const LIMIT = 20;
 const NAME = "webhook.deliver";
 
 /**
- * Outbound HTTP subscriptions, fed by `Event.publish`. Delivery runs in the queue worker,
- * never on the request path, and retries re-push only the endpoints that actually failed.
+ * Outbound HTTP subscriptions, fed by `Bus` for every public event type. Delivery runs in
+ * the queue worker, never on the request path, and retries re-push only the failed endpoints.
  */
 export namespace Webhook {
   const log = Log.create({ namespace: "core.webhook" });
@@ -124,19 +125,8 @@ export namespace Webhook {
     );
   });
 
-  /**
-   * What a subscriber receives: which event fired, what it happened to, and that thing's
-   * state afterwards. `data` is the publisher's `state` — carried by the job, never stored.
-   * The event's own `data` is the audit diff and stays internal.
-   */
-  export const Payload = z.object({
-    id: z.string(),
-    type: z.enum(Types),
-    source: z.string().nullable().optional(),
-    sourceID: z.string().nullable().optional(),
-    data: z.record(z.string(), z.unknown()).optional(),
-    timeCreated: z.iso.datetime(),
-  });
+  /** What a subscriber receives: the event's CloudEvents envelope, as JSON. */
+  export const Payload = z.record(z.string(), z.unknown());
   export type Payload = z.infer<typeof Payload>;
 
   /**
@@ -161,7 +151,7 @@ export namespace Webhook {
                 ? inArray(WebhookTable.id, input.ids)
                 : or(
                     sql`cardinality(${WebhookTable.types}) = 0`,
-                    arrayContains(WebhookTable.types, [input.event.type]),
+                    arrayContains(WebhookTable.types, [String(input.event.type)]),
                   ),
             ),
           ),
@@ -182,14 +172,16 @@ export namespace Webhook {
 
   /** Returns the id on failure and null on success, so one bad endpoint can't abort the rest. */
   async function post(row: typeof WebhookTable.$inferSelect, event: Payload) {
-    const body = JSON.stringify(event);
+    // Structured mode: the whole envelope is the body, typed `application/cloudevents+json`.
+    const msg = HTTP.structured(new CloudEvent(event));
+    const body = String(msg.body);
     const time = Math.floor(Date.now() / 1000);
     const res = await fetch(row.url, {
       method: "POST",
       headers: {
-        "content-type": "application/json",
+        ...(msg.headers as Record<string, string>),
         // The event id is stable across retries, so receivers can dedupe on it.
-        "x-webhook-id": event.id,
+        "x-webhook-id": String(event.id),
         "x-webhook-timestamp": String(time),
         "x-webhook-signature": await sign(row.secret, body, time),
       },

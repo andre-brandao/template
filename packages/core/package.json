@@ -23,6 +23,7 @@
     "./storage/*": "./src/lib/storage/*.ts",
     "./user/*": "./src/user/*.ts",
     "./admin": "./src/platform/admin/index.ts",
+    "./bus": "./src/platform/bus/index.ts",
     "./event": "./src/platform/event/index.ts",
     "./health": "./src/platform/health/index.ts",
     "./key": "./src/platform/key/index.ts",
@@ -40,6 +41,7 @@
   },
   "dependencies": {
     "aws4fetch": "^1.0.20",
+    "cloudevents": "^10.0.0",
     "drizzle-orm": "catalog:",
     "postgres": "catalog:",
     "ulid": "catalog:",

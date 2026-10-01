@@ -16,6 +16,9 @@ export namespace Bus {
   /** A CloudEvents 1.0 envelope whose `data` is always present. */
   export type CloudEvent<T> = Envelope<T> & { data: T };
 
+  /** Names this app in every event's `source` (`template/todo`). A fork renames it. */
+  export const app = "template";
+
   const defs = new Map<string, z.ZodType>();
   const subs = new Map<string, (event: any) => Promise<unknown>>();
 
@@ -36,7 +39,7 @@ export namespace Bus {
         // The SDK rejects undefined attributes, so optional ones are spread in.
         const event = new Envelope({
           id: Identifier.create("event"),
-          source: `/${source}`,
+          source: `${app}/${source}`,
           type,
           datacontenttype: "application/json",
           data: schema.parse(data) as z.infer<S>,

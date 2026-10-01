@@ -45,11 +45,7 @@ nesting never affects migrations.
 
 ## Events
 
-A slice declares its events with `Bus.define` (`Todo.Event.Created`) and publishes them
-inside its transaction; the audit row lands with the write, delivery waits for the commit.
-The envelope is CloudEvents 1.0. Each type gets at most one `Bus.subscribe` handler, listed
-in `src/subscribers.ts`; fan-out is left to a broker adapter. Types in the webhook catalog
-(`platform/webhook/types.ts`) also go out to webhooks.
+Slices declare and publish typed events through `platform/bus`. See [events.md](events.md).
 
 ## Known exceptions
 

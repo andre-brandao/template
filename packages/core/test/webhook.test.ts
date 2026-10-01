@@ -1,6 +1,7 @@
 import { afterEach, describe, expect } from "bun:test";
 import { eq } from "drizzle-orm";
 import { Database } from "../src/drizzle";
+import { Bus } from "../src/platform/bus";
 import { Event } from "../src/platform/event";
 import { Identifier } from "../src/identifier";
 import { Queue } from "../src/lib/queue";
@@ -51,7 +52,7 @@ describe("webhook", () => {
       expect(body).toMatchObject({
         specversion: "1.0",
         type: "todo.created",
-        source: "/todo",
+        source: `${Bus.app}/todo`,
         subject: todo.id,
         authtype: "user",
         authid: userID,

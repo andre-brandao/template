@@ -37,7 +37,7 @@ describe("bus", () => {
     await Queue.provide(memory(), async () => {
       const event = await Ping.publish({ n: 1 }, { subject: at });
       expect(event.specversion).toBe("1.0");
-      expect(event.source).toBe("/test");
+      expect(event.source).toBe(`${Bus.app}/test`);
       await work();
     });
     expect(seen).toEqual([{ n: 1, subject: at, actor: userID }]);

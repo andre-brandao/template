@@ -59,7 +59,7 @@ export class CloudEvent<T = unknown> {
 }
 
 /** A transport message, as the SDK's `Message`. */
-export type Message = { headers: Record<string, string>; body: string };
+type Message = { headers: Record<string, string>; body: string };
 
 export const HTTP = {
   /** Structured mode: the whole envelope is the body. */

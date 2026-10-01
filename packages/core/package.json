@@ -41,7 +41,6 @@
   },
   "dependencies": {
     "aws4fetch": "^1.0.20",
-    "cloudevents": "^10.0.0",
     "drizzle-orm": "catalog:",
     "postgres": "catalog:",
     "ulid": "catalog:",

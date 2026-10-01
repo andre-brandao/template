@@ -1,7 +1,7 @@
 import { z } from "zod";
-import { CloudEvent, HTTP } from "cloudevents";
 import { and, arrayContains, desc, eq, inArray, isNull, or, sql } from "drizzle-orm";
 import { fn } from "../../util/fn";
+import { CloudEvent, HTTP } from "../bus/cloudevent";
 import { iso } from "../../util/fmt";
 import { Actor } from "../../actor";
 import { Common } from "../../common";
@@ -126,7 +126,7 @@ export namespace Webhook {
   });
 
   /** What a subscriber receives: the event's CloudEvents envelope, as JSON. */
-  export const Payload = z.record(z.string(), z.unknown());
+  export const Payload = CloudEvent.schema;
   export type Payload = z.infer<typeof Payload>;
 
   /**
@@ -151,7 +151,7 @@ export namespace Webhook {
                 ? inArray(WebhookTable.id, input.ids)
                 : or(
                     sql`cardinality(${WebhookTable.types}) = 0`,
-                    arrayContains(WebhookTable.types, [String(input.event.type)]),
+                    arrayContains(WebhookTable.types, [input.event.type]),
                   ),
             ),
           ),
@@ -172,20 +172,18 @@ export namespace Webhook {
 
   /** Returns the id on failure and null on success, so one bad endpoint can't abort the rest. */
   async function post(row: typeof WebhookTable.$inferSelect, event: Payload) {
-    // Structured mode: the whole envelope is the body, typed `application/cloudevents+json`.
     const msg = HTTP.structured(new CloudEvent(event));
-    const body = String(msg.body);
     const time = Math.floor(Date.now() / 1000);
     const res = await fetch(row.url, {
       method: "POST",
       headers: {
-        ...(msg.headers as Record<string, string>),
+        ...msg.headers,
         // The event id is stable across retries, so receivers can dedupe on it.
-        "x-webhook-id": String(event.id),
+        "x-webhook-id": event.id,
         "x-webhook-timestamp": String(time),
-        "x-webhook-signature": await sign(row.secret, body, time),
+        "x-webhook-signature": await sign(row.secret, msg.body, time),
       },
-      body,
+      body: msg.body,
       // The queue has no per-job timeout, so a hung endpoint would stall the whole worker.
       signal: AbortSignal.timeout(10_000),
     }).catch(() => null);

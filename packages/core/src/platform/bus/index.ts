@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { CloudEvent as Envelope } from "cloudevents";
+import { CloudEvent as Envelope } from "./cloudevent";
 import { Actor } from "../../actor";
 import { Database } from "../../drizzle";
 import { Identifier } from "../../identifier";
@@ -13,8 +13,7 @@ import { EventTable } from "../event/event.sql";
  * them; a handler elsewhere subscribes. One subscriber per type — fan-out is a broker's job.
  */
 export namespace Bus {
-  /** A CloudEvents 1.0 envelope whose `data` is always present. */
-  export type CloudEvent<T> = Envelope<T> & { data: T };
+  export type CloudEvent<T = unknown> = Envelope<T>;
 
   /** Names this app in every event's `source` (`template/todo`). A fork renames it. */
   export const app = "template";
@@ -36,18 +35,16 @@ export namespace Bus {
       async publish(data: z.input<S>, opts: { subject?: string; tags?: string[] } = {}) {
         const actor = Actor.use();
         const userID = actor.type === "user" ? actor.properties.userID : undefined;
-        // The SDK rejects undefined attributes, so optional ones are spread in.
         const event = new Envelope({
           id: Identifier.create("event"),
           source: `${app}/${source}`,
           type,
-          datacontenttype: "application/json",
+          subject: opts.subject,
           data: schema.parse(data) as z.infer<S>,
-          ...(opts.subject ? { subject: opts.subject } : {}),
           // The spec's Auth Context extension: who triggered it.
           authtype: actor.type === "public" ? "unauthenticated" : actor.type,
           ...(userID ? { authid: userID } : {}),
-        }) as CloudEvent<z.infer<S>>;
+        });
         await Database.use((tx) =>
           tx.insert(EventTable).values({
             id: event.id,
@@ -57,7 +54,7 @@ export namespace Bus {
             sourceID: opts.subject,
             tags: clean([`actor:${actor.type}`, ...(opts.tags ?? [])]),
             data: event.data as Record<string, unknown>,
-            timeCreated: new Date(event.time!),
+            timeCreated: new Date(event.time),
           }),
         );
         // After the caller's transaction commits, so a rolled-back write emits nothing.
@@ -81,14 +78,10 @@ export namespace Bus {
   }
 
   /** Every event gets one; the publisher can't know whether a subscriber exists. */
-  export const job = Queue.define(
-    "bus.dispatch",
-    z.record(z.string(), z.unknown()),
-    async (payload) => {
-      const cb = subs.get(String(payload.type));
-      if (!cb) return;
-      const event = new Envelope(payload);
-      await cb(event.cloneWith({ data: defs.get(event.type)!.parse(event.data) }));
-    },
-  );
+  export const job = Queue.define("bus.dispatch", Envelope.schema, async (payload) => {
+    const cb = subs.get(payload.type);
+    if (!cb) return;
+    const event = new Envelope(payload);
+    await cb(event.cloneWith({ data: defs.get(event.type)!.parse(event.data) }));
+  });
 }

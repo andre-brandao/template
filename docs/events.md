@@ -125,7 +125,9 @@ Use `db` or `cloudflare` anywhere a subscriber must run. `sync` and `memory` are
 | `data`                | the payload, validated against the declared schema                 |
 | `authtype` / `authid` | [Auth Context extension][auth]; `public` maps to `unauthenticated` |
 
-Built with the [`cloudevents`][sdk] SDK, which validates the spec on construction.
+Built with `platform/bus/cloudevent.ts`, a vendored slice of the [`cloudevents`][sdk] SDK
+(`CloudEvent`, `cloneWith`, `toJSON`, `HTTP.structured`). The SDK itself requires Node
+built-ins and breaks the Cloudflare bundles; the names match, so swapping back is an import.
 
 ## Who sees what
 

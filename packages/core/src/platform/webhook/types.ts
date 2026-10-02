@@ -1,7 +1,7 @@
 /**
- * The public API contract. Only these types reach a webhook — anything recorded with
- * `Event.create` instead of `Event.publish` stays internal. No imports here on purpose,
- * so the browser can read the catalog without pulling in the database.
+ * The public API contract. Only these types reach a webhook; every other `Bus` event stays
+ * internal. No imports here on purpose, so the browser can read the catalog without pulling
+ * in the database.
  */
 export const Types = [
   "todo.created",

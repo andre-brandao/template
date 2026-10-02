@@ -8,5 +8,6 @@ package's `AGENTS.md`.
 | [architecture.md](architecture.md) | What are the packages, and who calls whom?                  |
 | [core.md](core.md)                 | How is `packages/core` layered, and where does new code go? |
 | [runtime.md](runtime.md)           | How does one request run, and how does it deploy?           |
+| [events.md](events.md)             | How are events declared, delivered, and subscribed to?      |
 
 `prototype/` holds per-feature specs and mockups, written by the `/prototype` skill.

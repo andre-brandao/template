@@ -3,11 +3,14 @@ import { Email } from "./lib/email";
 import { Queue } from "./lib/queue";
 import { User } from "./user";
 import { zone } from "./user/prefs";
+import { Bus } from "./platform/bus";
 import { Webhook } from "./platform/webhook";
 
 /** Every job in one import, so a worker process resolves all handlers. Push via `jobs.email.push`. */
 export const email = Email.job;
 export const webhook = Webhook.job;
+export const bus = Bus.job;
+export { subscribers } from "./subscribers";
 
 /**
  * Runs one job as its pushing actor (no pusher → system). Lives in the barrel on

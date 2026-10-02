@@ -23,7 +23,7 @@ import { Identifier } from "../identifier";
 import { sortable } from "../drizzle/order";
 import { date, iso, trim } from "../util/fmt";
 import { clean, Tags } from "../util/tag";
-import { Event } from "../platform/event";
+import { Bus } from "../platform/bus";
 import { UserTable } from "../user/user.sql";
 import { rank, StatusValues, TodoTable } from "./todo.sql";
 
@@ -124,6 +124,27 @@ export namespace Todo {
     .partial();
   type Patch = z.infer<typeof Patch>;
 
+  /** Status and assignee moves stay internal; `Updated` is the public one and reports them too. */
+  export const Event = {
+    Created: Bus.define("todo.created", Info),
+    Updated: Bus.define(
+      "todo.updated",
+      z.object({
+        todo: Info,
+        changes: z.record(z.string(), z.object({ before: z.unknown(), after: z.unknown() })),
+      }),
+    ),
+    Removed: Bus.define("todo.removed", Info),
+    Status: Bus.define(
+      "todo.status",
+      z.object({ from: Status, to: Status, reason: z.string().nullable() }),
+    ),
+    Assigned: Bus.define(
+      "todo.assigned",
+      z.object({ from: z.string().nullable(), to: z.string().nullable() }),
+    ),
+  };
+
   /** The assignee columns worth joining — never the whole user row. */
   const AssigneeColumns = { id: UserTable.id, name: UserTable.name, image: UserTable.image };
 
@@ -178,21 +199,7 @@ export namespace Todo {
           ...times(status, null),
         });
         const todo = await assert.exists(fromID.force(id));
-        await Event.publish({
-          type: "todo.created",
-          source: "todo",
-          sourceID: id,
-          tags,
-          data: {
-            title: input.title,
-            status,
-            stage,
-            assignee: input.assignee ?? null,
-            startDate: input.startDate ?? null,
-            dueDate: input.dueDate ?? null,
-          },
-          state: todo,
-        });
+        await Event.Created.publish(todo, { subject: id, tags });
         return todo;
       });
     },
@@ -382,14 +389,7 @@ export namespace Todo {
 
       return Database.transaction(async (tx) => {
         await tx.update(TodoTable).set({ timeDeleted: new Date() }).where(eq(TodoTable.id, id));
-        await Event.publish({
-          type: "todo.removed",
-          source: "todo",
-          sourceID: id,
-          tags: before.tags,
-          data: { title: before.title, status: before.status, tags: before.tags },
-          state: before,
-        });
+        await Event.Removed.publish(before, { subject: id, tags: before.tags });
       });
     },
     { title: "Delete todo", description: "Soft-delete a todo." },
@@ -479,25 +479,16 @@ export namespace Todo {
 
   async function moved(id: string, before: Info, next: Patch, tags: string[]) {
     if (next.status === undefined || next.status === before.status) return;
-    await Event.create({
-      type: "todo.status",
-      source: "todo",
-      sourceID: id,
-      tags,
-      data: { from: before.status, to: next.status, reason: next.reason ?? null },
-    });
+    await Event.Status.publish(
+      { from: before.status, to: next.status, reason: next.reason ?? null },
+      { subject: id, tags },
+    );
   }
 
   async function assigned(id: string, before: Info, next: Patch, tags: string[]) {
     const prev = before.assignee?.id ?? null;
     if (next.assignee === undefined || next.assignee === prev) return;
-    await Event.create({
-      type: "todo.assigned",
-      source: "todo",
-      sourceID: id,
-      tags,
-      data: { from: prev, to: next.assignee },
-    });
+    await Event.Assigned.publish({ from: prev, to: next.assignee }, { subject: id, tags });
   }
 
   /** Status and assignee moves, shaped like `diff` so the public update carries them too. */
@@ -524,13 +515,9 @@ export namespace Todo {
 
     const changed = { ...diff(before, next), ...moves(before, next) };
     if (!Object.keys(changed).length) return;
-    await Event.publish({
-      type: "todo.updated",
-      source: "todo",
-      sourceID: id,
-      tags,
-      data: changed,
-      state: await assert.exists(fromID.force(id)),
-    });
+    await Event.Updated.publish(
+      { todo: await assert.exists(fromID.force(id)), changes: changed },
+      { subject: id, tags },
+    );
   }
 }

@@ -1,11 +1,14 @@
 import { afterEach, describe, expect } from "bun:test";
 import { eq } from "drizzle-orm";
 import { Database } from "../src/drizzle";
+import { Bus } from "../src/platform/bus";
 import { Event } from "../src/platform/event";
 import { Identifier } from "../src/identifier";
 import { Queue } from "../src/lib/queue";
 import { memory } from "../src/lib/queue/adapter/memory";
+import { Project } from "../src/project";
 import { Todo } from "../src/todo";
+import { User } from "../src/user";
 import { sign } from "../src/util/sign";
 import { Webhook } from "../src/platform/webhook";
 import { WebhookTable } from "../src/platform/webhook/webhook.sql";
@@ -31,38 +34,39 @@ afterEach(() => Database.use((tx) => tx.update(WebhookTable).set({ timeDeleted: 
 
 describe("webhook", () => {
   withTestUser(
-    "delivers a published event, signed, with the state the event never stored",
-    async () => {
-      const at = Identifier.create("todo");
+    "delivers a published event as a signed CloudEvent",
+    async ({ userID }) => {
       const to = receiver();
       const hook = await Webhook.create({ url: to.url, types: ["todo.created"] });
 
-      await Queue.provide(memory(), async () => {
-        await Event.publish({
-          type: "todo.created",
-          source: "todo",
-          sourceID: at,
-          data: { title: "Write the report" },
-          state: { id: at, title: "Write the report", status: "backlog" },
-        });
+      const todo = await Queue.provide(memory(), async () => {
+        const todo = await Todo.create({ title: "Write the report" });
         await Queue.drain();
+        return todo;
       });
 
       expect(to.hits).toHaveLength(1);
       const hit = to.hits[0]!;
       const body = JSON.parse(hit.body);
-      expect(body.type).toBe("todo.created");
+      expect(hit.headers.get("content-type")).toStartWith("application/cloudevents+json");
+      expect(body).toMatchObject({
+        specversion: "1.0",
+        type: "todo.created",
+        source: `${Bus.app}/todo`,
+        subject: todo.id,
+        authtype: "user",
+        authid: userID,
+      });
       expect(body.data.status).toBe("backlog");
 
       const time = Number(hit.headers.get("x-webhook-timestamp"));
       expect(hit.headers.get("x-webhook-signature")).toBe(await sign(hook.secret, hit.body, time));
       expect(hit.headers.get("x-webhook-id")).toBe(body.id);
 
-      // The state rides on the job only, and it is all the subscriber gets — the audit
-      // row keeps its slim `data`, which never leaves the building.
-      expect(body.data).toEqual({ id: at, title: "Write the report", status: "backlog" });
-      const row = (await Event.list({ source: "todo", sourceID: at })).data[0]!;
-      expect(row.data).toEqual({ title: "Write the report" });
+      // The log stores exactly what the subscriber got.
+      const row = (await Event.list({ source: "todo", sourceID: todo.id })).data[0]!;
+      expect(row.id).toBe(body.id);
+      expect(row.data).toEqual(body.data);
       to.stop();
     },
     "admin",
@@ -76,11 +80,10 @@ describe("webhook", () => {
       await Webhook.create({ url: to.url, types: [] });
 
       await Queue.provide(memory(), async () => {
-        await Event.create({
-          type: "user.removed",
-          source: "user",
-          sourceID: Identifier.create("user"),
-        });
+        await User.Event.Removed.publish(
+          { email: "gone@example.com" },
+          { subject: Identifier.create("user") },
+        );
         await Queue.drain();
       });
 
@@ -104,8 +107,8 @@ describe("webhook", () => {
 
       expect(to.hits).toHaveLength(1);
       const body = JSON.parse(to.hits[0]!.body);
-      // The audit diff stays internal — subscribers get the todo as it now stands.
-      expect(body.data.status).toBe("active");
+      expect(body.data.todo.status).toBe("active");
+      expect(body.data.changes.status).toEqual({ before: "backlog", after: "active" });
       to.stop();
     },
     "admin",
@@ -118,11 +121,7 @@ describe("webhook", () => {
       await Webhook.create({ url: to.url, types: ["todo.updated"] });
 
       await Queue.provide(memory(), async () => {
-        await Event.publish({
-          type: "project.created",
-          source: "project",
-          sourceID: Identifier.create("project"),
-        });
+        await Project.create({ name: "Elsewhere" });
         await Queue.drain();
       });
 
@@ -139,14 +138,11 @@ describe("webhook", () => {
       const bad = receiver(500);
       await Webhook.create({ url: good.url, types: ["todo.updated"] });
       const broken = await Webhook.create({ url: bad.url, types: ["todo.updated"] });
+      const { id } = await Todo.create({ title: "Ship it" });
 
       const queue = memory();
       await Queue.provide(queue, async () => {
-        await Event.publish({
-          type: "todo.updated",
-          source: "todo",
-          sourceID: Identifier.create("todo"),
-        });
+        await Todo.update({ id, title: "Ship it now" });
         await Queue.drain();
       });
 
@@ -174,13 +170,10 @@ describe("webhook", () => {
       await Database.use((tx) =>
         tx.update(WebhookTable).set({ failures: 19 }).where(eq(WebhookTable.id, hook.id)),
       );
+      const { id } = await Todo.create({ title: "Doomed" });
 
       await Queue.provide(memory(), async () => {
-        await Event.publish({
-          type: "todo.removed",
-          source: "todo",
-          sourceID: Identifier.create("todo"),
-        });
+        await Todo.remove(id);
         await Queue.drain();
       });
 
@@ -197,13 +190,10 @@ describe("webhook", () => {
     async () => {
       const to = receiver();
       const hook = await Webhook.create({ url: to.url, types: ["todo.removed"] });
+      const { id } = await Todo.create({ title: "Doomed" });
 
       await Queue.provide(memory(), async () => {
-        await Event.publish({
-          type: "todo.removed",
-          source: "todo",
-          sourceID: Identifier.create("todo"),
-        });
+        await Todo.remove(id);
         await Webhook.remove(hook.id);
         await Queue.drain();
       });

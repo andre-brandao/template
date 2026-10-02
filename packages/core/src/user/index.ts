@@ -7,7 +7,7 @@ import { Database } from "../drizzle";
 import { Actor } from "../actor";
 import { Common } from "../common";
 import { ErrorCodes, VisibleError } from "../error";
-import { Event } from "../platform/event";
+import { Bus } from "../platform/bus";
 import { Examples } from "../examples";
 import { Identifier } from "../identifier";
 import { Permission } from "../permission";
@@ -49,6 +49,12 @@ export namespace User {
       example: Examples.User,
     });
   export type Info = z.infer<typeof Info>;
+
+  export const Event = {
+    Assigned: Bus.define("user.assigned", z.object({ from: Info.shape.role, to: Info.shape.role })),
+    Removed: Bus.define("user.removed", Info.pick({ email: true })),
+    Restored: Bus.define("user.restored", Info.pick({ email: true })),
+  };
 
   /** Sortable keys mapped to what each orders by — also the allowlist. */
   export const SortableColumns = sortable(
@@ -219,12 +225,7 @@ export namespace User {
           .update(UserTable)
           .set({ role: input.role, timeUpdated: new Date() })
           .where(eq(UserTable.id, input.id));
-        await Event.create({
-          type: "user.assigned",
-          source: "user",
-          sourceID: input.id,
-          data: { from: before.role, to: input.role },
-        });
+        await Event.Assigned.publish({ from: before.role, to: input.role }, { subject: input.id });
       });
     },
   );
@@ -238,12 +239,7 @@ export namespace User {
 
     return Database.transaction(async (tx) => {
       await tx.update(UserTable).set({ timeDeleted: new Date() }).where(eq(UserTable.id, id));
-      await Event.create({
-        type: "user.removed",
-        source: "user",
-        sourceID: id,
-        data: { email: before.email },
-      });
+      await Event.Removed.publish({ email: before.email }, { subject: id });
     });
   });
 
@@ -257,12 +253,7 @@ export namespace User {
         .update(UserTable)
         .set({ timeDeleted: null, timeUpdated: new Date() })
         .where(eq(UserTable.id, id));
-      await Event.create({
-        type: "user.restored",
-        source: "user",
-        sourceID: id,
-        data: { email: before.email },
-      });
+      await Event.Restored.publish({ email: before.email }, { subject: id });
     });
   });
 

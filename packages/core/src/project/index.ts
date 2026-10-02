@@ -8,7 +8,7 @@ import { Common } from "../common";
 import { Examples } from "../examples";
 import { Identifier } from "../identifier";
 import { sortable } from "../drizzle/order";
-import { Event } from "../platform/event";
+import { Bus } from "../platform/bus";
 import { ProjectTable } from "./project.sql";
 
 export namespace Project {
@@ -31,6 +31,12 @@ export namespace Project {
   export type Info = z.infer<typeof Info>;
 
   const Patch = Info.pick({ name: true, description: true, image: true }).partial();
+
+  export const Event = {
+    Created: Bus.define("project.created", Info),
+    Updated: Bus.define("project.updated", z.object({ project: Info, changes: Patch })),
+    Removed: Bus.define("project.removed", Info),
+  };
 
   /** Sortable keys mapped to what each orders by — also the allowlist. */
   export const SortableColumns = sortable(
@@ -55,13 +61,7 @@ export namespace Project {
           description: input.description ?? null,
         });
         const project = await assert.exists(fromID.force(id));
-        await Event.publish({
-          type: "project.created",
-          source: "project",
-          sourceID: id,
-          data: { name: input.name },
-          state: project,
-        });
+        await Event.Created.publish(project, { subject: id });
         return project;
       });
     },
@@ -126,13 +126,10 @@ export namespace Project {
           .update(ProjectTable)
           .set({ ...patch, timeUpdated: new Date() })
           .where(eq(ProjectTable.id, id));
-        await Event.publish({
-          type: "project.updated",
-          source: "project",
-          sourceID: id,
-          data: { name: patch.name ?? before.name },
-          state: { ...before, ...patch },
-        });
+        await Event.Updated.publish(
+          { project: { ...before, ...patch }, changes: patch },
+          { subject: id },
+        );
       });
     },
     { title: "Update project", description: "Update a project's name, description or image." },
@@ -153,13 +150,7 @@ export namespace Project {
           .update(ProjectTable)
           .set({ timeDeleted: new Date() })
           .where(eq(ProjectTable.id, id));
-        await Event.publish({
-          type: "project.removed",
-          source: "project",
-          sourceID: id,
-          data: { name: before.name },
-          state: before,
-        });
+        await Event.Removed.publish(before, { subject: id });
       });
     },
     {

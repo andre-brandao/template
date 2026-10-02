@@ -1,20 +1,27 @@
 import { describe, expect } from "bun:test";
+import { z } from "zod";
 import { Actor } from "../src/actor";
+import { Bus } from "../src/platform/bus";
 import { Event } from "../src/platform/event";
 import { Identifier } from "../src/identifier";
 import { Todo } from "../src/todo";
 import { User } from "../src/user";
 import { testEmail, withTestUser } from "./util";
 
+const Thing = Bus.define("test.thing", z.object({}));
+const A = Bus.define("test.a", z.object({}));
+// Unique per run, so the type filter can count exactly one row.
+const B = Bus.define(`test.b.${crypto.randomUUID()}`, z.object({}));
+
 describe("event", () => {
   // The log is global now, so every assertion has to pin itself to a marker no other test
   // can produce — a shared `sourceID` or tag would match another file's rows.
-  withTestUser("create stores actor tag and userID", async ({ userID }) => {
+  withTestUser("publish stores actor tag and userID", async ({ userID }) => {
     // `source_id` is char(30), so the marker has to be id-shaped rather than a raw uuid.
     const at = Identifier.create("event");
-    const id = await Event.create({ type: "test.thing", source: "test", sourceID: at });
+    const event = await Thing.publish({}, { subject: at });
     const events = (await Event.list({ source: "test", sourceID: at })).data;
-    expect(events[0]?.id).toBe(id);
+    expect(events[0]?.id).toBe(event.id);
     expect(events[0]?.userID).toBe(userID);
     expect(events[0]?.user?.id).toBe(userID);
     expect(events[0]?.tags).toContain("actor:user");
@@ -24,12 +31,11 @@ describe("event", () => {
     "list filters by type and tags",
     async () => {
       const tag = crypto.randomUUID();
-      const type = `test.b.${crypto.randomUUID()}`;
-      await Event.create({ type: "test.a", tags: [tag] });
-      await Event.create({ type, tags: ["chill"] });
+      await A.publish({}, { tags: [tag] });
+      await B.publish({}, { tags: ["chill"] });
       const urgent = await Event.list({ tags: [tag] });
       expect(urgent.data.every((e) => e.type === "test.a")).toBe(true);
-      const byType = await Event.list({ type });
+      const byType = await Event.list({ type: B.type });
       expect(byType.total).toBe(1);
     },
     // Unpinned from a `sourceID`, so it needs the back-office grant.
@@ -77,5 +83,8 @@ describe("event", () => {
       ].sort(),
     );
     expect(events.every((e) => e.tags.includes("work"))).toBe(true);
+    // The stored data is the declared payload, the same thing a webhook receives.
+    const removed = events.find((e) => e.type === "todo.removed")!;
+    expect(removed.data).toMatchObject({ id, title: "Ship it", status: "done" });
   });
 });

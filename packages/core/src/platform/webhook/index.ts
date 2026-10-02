@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { and, arrayContains, desc, eq, inArray, isNull, or, sql } from "drizzle-orm";
 import { fn } from "../../util/fn";
+import { CloudEvent, HTTP } from "../bus/cloudevent";
 import { iso } from "../../util/fmt";
 import { Actor } from "../../actor";
 import { Common } from "../../common";
@@ -21,8 +22,8 @@ const LIMIT = 20;
 const NAME = "webhook.deliver";
 
 /**
- * Outbound HTTP subscriptions, fed by `Event.publish`. Delivery runs in the queue worker,
- * never on the request path, and retries re-push only the endpoints that actually failed.
+ * Outbound HTTP subscriptions, fed by `Bus` for every public event type. Delivery runs in
+ * the queue worker, never on the request path, and retries re-push only the failed endpoints.
  */
 export namespace Webhook {
   const log = Log.create({ namespace: "core.webhook" });
@@ -124,19 +125,8 @@ export namespace Webhook {
     );
   });
 
-  /**
-   * What a subscriber receives: which event fired, what it happened to, and that thing's
-   * state afterwards. `data` is the publisher's `state` — carried by the job, never stored.
-   * The event's own `data` is the audit diff and stays internal.
-   */
-  export const Payload = z.object({
-    id: z.string(),
-    type: z.enum(Types),
-    source: z.string().nullable().optional(),
-    sourceID: z.string().nullable().optional(),
-    data: z.record(z.string(), z.unknown()).optional(),
-    timeCreated: z.iso.datetime(),
-  });
+  /** What a subscriber receives: the event's CloudEvents envelope, as JSON. */
+  export const Payload = CloudEvent.schema;
   export type Payload = z.infer<typeof Payload>;
 
   /**
@@ -182,18 +172,18 @@ export namespace Webhook {
 
   /** Returns the id on failure and null on success, so one bad endpoint can't abort the rest. */
   async function post(row: typeof WebhookTable.$inferSelect, event: Payload) {
-    const body = JSON.stringify(event);
+    const msg = HTTP.structured(new CloudEvent(event));
     const time = Math.floor(Date.now() / 1000);
     const res = await fetch(row.url, {
       method: "POST",
       headers: {
-        "content-type": "application/json",
+        ...msg.headers,
         // The event id is stable across retries, so receivers can dedupe on it.
         "x-webhook-id": event.id,
         "x-webhook-timestamp": String(time),
-        "x-webhook-signature": await sign(row.secret, body, time),
+        "x-webhook-signature": await sign(row.secret, msg.body, time),
       },
-      body,
+      body: msg.body,
       // The queue has no per-job timeout, so a hung endpoint would stall the whole worker.
       signal: AbortSignal.timeout(10_000),
     }).catch(() => null);

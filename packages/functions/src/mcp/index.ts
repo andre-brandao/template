@@ -1,6 +1,5 @@
 import { Hono } from "hono";
-import { StreamableHTTPTransport } from "@hono/mcp";
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { McpServer, createMcpHandler } from "@modelcontextprotocol/server";
 import { VisibleError, ErrorCodes, type ErrorResponseType } from "@template/core/error";
 import { auth } from "../api/middleware";
 import { authRequired } from "../api/common";
@@ -14,14 +13,12 @@ function server() {
   return s;
 }
 
+const handler = createMcpHandler(server);
+
 export const app = new Hono()
   .route("/", health)
   .use(auth)
-  .all("/mcp", authRequired, async (c) => {
-    const transport = new StreamableHTTPTransport();
-    await server().connect(transport);
-    return transport.handleRequest(c);
-  })
+  .all("/mcp", authRequired, (c) => handler.fetch(c.req.raw))
   .onError((error, c) => {
     if (error instanceof VisibleError) {
       return c.json<ErrorResponseType>(error.toResponse(), error.statusCode());

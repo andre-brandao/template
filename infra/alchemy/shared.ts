@@ -1,12 +1,13 @@
 import * as Config from "effect/Config";
-import { host } from "./stage";
+import path from "node:path";
 
-// Read from the deployer's env (or `.env`) at deploy time and bound as `secret_text`.
+// Paths resolve from the repo root, not the deployer's cwd.
+export const root = path.join(import.meta.dirname, "../..");
+
+// The app secrets every target shares, read from the deployer's env (or `.env`) at deploy time.
 const optional = (key: string) => Config.String(key).pipe(Config.withDefault(""));
 
-export const environment = (stage: string) => ({
-  NO_COLOR: stage === "prod" ? "1" : "",
-  AUTH_URL: `https://${host("auth", stage)}`,
+export const secrets = {
   EXAMPLE_SECRET: optional("EXAMPLE_SECRET"),
   SESSION_SECRET: Config.Redacted("SESSION_SECRET"),
   GITHUB_CLIENT_ID: optional("GITHUB_CLIENT_ID"),
@@ -14,4 +15,4 @@ export const environment = (stage: string) => ({
   GOOGLE_CLIENT_ID: optional("GOOGLE_CLIENT_ID"),
   GOOGLE_CLIENT_SECRET: optional("GOOGLE_CLIENT_SECRET"),
   AUTH_PROVIDERS: optional("AUTH_PROVIDERS"),
-});
+};

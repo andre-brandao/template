@@ -4,13 +4,12 @@ import * as Output from "alchemy/Output";
 import { Stack } from "alchemy/Stack";
 import path from "node:path";
 import * as Effect from "effect/Effect";
+import { root } from "../shared";
 import { Hyperdrive } from "./database";
 import { AuthKv, Dlq, Email, Files, Jobs } from "./resources";
 import { environment } from "./secrets";
 import { host } from "./stage";
 
-// Paths resolve from the repo root, not the deployer's cwd.
-const root = path.join(import.meta.dirname, "../..");
 
 export const workers = Effect.gen(function* () {
   const stack = yield* Stack;

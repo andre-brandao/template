@@ -23,6 +23,6 @@
     "noPropertyAccessFromIndexSignature": false
   },
   "include": [
-    "*.ts"
+    "**/*.ts"
   ]
 }

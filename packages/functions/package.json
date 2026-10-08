@@ -23,9 +23,8 @@
     "gen:spec": "bun run scripts/gen-spec.ts"
   },
   "dependencies": {
-    "@hono/mcp": "^0.3.1",
     "@hono/standard-validator": "^0.4.0",
-    "@modelcontextprotocol/sdk": "^1.30.0",
+    "@modelcontextprotocol/server": "^2.3.1",
     "@openauthjs/openauth": "catalog:",
     "@template/core": "workspace:*",
     "hono": "catalog:",
@@ -34,6 +33,7 @@
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@modelcontextprotocol/client": "^2.3.1",
     "@types/bun": "catalog:"
   },
   "peerDependencies": {

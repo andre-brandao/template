@@ -6,6 +6,7 @@ import { Stack } from "alchemy/Stack";
 import path from "node:path";
 import * as Effect from "effect/Effect";
 import * as Redacted from "effect/Redacted";
+import { root } from "../shared";
 import { permanent } from "./stage";
 
 const DB = "testing-alc";
@@ -20,9 +21,6 @@ const Role = Planetscale.PostgresRole("DatabaseRole", {
   branch,
   inheritedRoles: ["pg_read_all_data", "pg_write_all_data"],
 });
-
-// Paths resolve from the repo root, not the deployer's cwd.
-const root = path.join(import.meta.dirname, "../..");
 
 export const Hyperdrive = Effect.gen(function* () {
   const role = yield* Role;

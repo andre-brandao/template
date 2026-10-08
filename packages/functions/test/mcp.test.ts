@@ -1,6 +1,5 @@
 import { beforeAll, describe, expect, it, mock } from "bun:test";
-import { Client } from "@modelcontextprotocol/sdk/client/index.js";
-import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
+import { Client, StreamableHTTPClientTransport } from "@modelcontextprotocol/client";
 import { User } from "@template/core/user";
 import { Key } from "@template/core/key";
 import { Todo } from "@template/core/todo";

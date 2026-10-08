@@ -297,7 +297,7 @@ export namespace ${pascal}Api {
 
 await Bun.write(
   targets.mcp,
-  `import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+  `import type { McpServer } from "@modelcontextprotocol/server";
 import { ${pascal} } from "@template/core/${name}";
 import { tools } from "../common";
 

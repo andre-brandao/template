@@ -1,5 +1,5 @@
-import type { z } from "zod";
-import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { z } from "zod";
+import type { McpServer } from "@modelcontextprotocol/server";
 import type { Meta } from "@template/core/util/fn";
 
 /** Wraps data as an MCP text result — every tool returns through this. */
@@ -20,8 +20,10 @@ export function tools(server: McpServer) {
     op: Op<S>,
     run?: (input: z.infer<S>) => unknown,
   ) =>
-    server.registerTool(name, { ...op.meta, inputSchema: op.schema.shape }, async (input) =>
-      text(await (run ?? op)(input as z.infer<S>)),
+    server.registerTool(
+      name,
+      { ...op.meta, inputSchema: op.schema as z.ZodObject<z.ZodRawShape> },
+      async (input) => text(await (run ?? op)(input as z.infer<S>)),
     );
 
   /** Ops keyed by a bare id, whose schema is a string rather than an object to spread. */
@@ -29,12 +31,12 @@ export function tools(server: McpServer) {
     name: string,
     op: ((id: string) => unknown) & { meta: Meta; schema: z.ZodString },
     run?: (id: string) => unknown,
-  ) => {
-    const shape: z.ZodRawShape = { id: op.schema };
-    return server.registerTool(name, { ...op.meta, inputSchema: shape }, async (input) =>
-      text(await (run ?? op)(input.id as string)),
+  ) =>
+    server.registerTool(
+      name,
+      { ...op.meta, inputSchema: z.object({ id: op.schema }) },
+      async (input) => text(await (run ?? op)(input.id)),
     );
-  };
 
   return tool;
 }

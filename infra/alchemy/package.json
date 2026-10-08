@@ -1,0 +1,16 @@
+{
+  "name": "@template/infra-alchemy",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@effect/platform-bun": "4.0.2",
+    "@effect/platform-node": "4.0.2",
+    "@types/bun": "catalog:",
+    "alchemy": "2.0.0-beta.81",
+    "effect": "4.0.2",
+    "typescript": "catalog:"
+  }
+}

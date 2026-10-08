@@ -40,7 +40,8 @@
       "packages/*",
       "packages/sdk/ts",
       "apps/*",
-      "scripts"
+      "scripts",
+      "infra/alchemy"
     ]
   },
   "type": "module",

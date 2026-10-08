@@ -49,7 +49,8 @@ export function db(cfg: Config & { use: Runner }): Port {
         tx
           .update(JobTable)
           .set({
-            timeReserved: sql`now()`,
+            // The column keeps ms and rounds; truncate so a stamp never lands after now().
+            timeReserved: sql`date_trunc('milliseconds', now())`,
             timeUpdated: sql`now()`,
             attempts: sql`${JobTable.attempts} + 1`,
           })

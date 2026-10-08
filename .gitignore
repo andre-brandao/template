@@ -50,6 +50,9 @@ junit.xml
 
 sst-env.d.ts
 
+# alchemy
+.alchemy
+
 # terraform / opentofu
 # .terraform.lock.hcl is deliberately NOT ignored — it is committed.
 .terraform/

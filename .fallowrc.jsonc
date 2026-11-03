@@ -31,7 +31,7 @@
   // /dev is a local-only playground, 404'd in production: its index screens and
   // stage shells are meant to read alike, so the overlap is chrome, not logic.
   "duplicates": {
-    "ignore": ["infra/**", "apps/*/src/routes/dev/**"],
+    "ignore": ["infra/**", "apps/*/src/routes/dev/**", "docs/**"],
     "minOccurrences": 3,
   },
   "health": {

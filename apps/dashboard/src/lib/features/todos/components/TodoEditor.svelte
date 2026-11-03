@@ -10,6 +10,7 @@
 	import TagList from './TagList.svelte';
 	import Facts from './editor/Facts.svelte';
 	import Description from './editor/Description.svelte';
+	import SubIssues from './editor/SubIssues.svelte';
 	import { color } from '../status';
 
 	let { id, onremove }: { id: string; onremove: () => void } = $props();
@@ -65,6 +66,8 @@
 
 				<Description {todo} {update} onsaved={saved} />
 			</Card>
+
+			<SubIssues {todo} />
 		</div>
 
 		<aside class="side">
@@ -149,6 +152,9 @@
 	.main {
 		grid-area: main;
 		min-width: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 1.25em;
 	}
 
 	.side {

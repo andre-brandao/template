@@ -16,6 +16,11 @@ export function todo(server: McpServer) {
     return Todo.fromID(input.id);
   });
 
+  tool("todo_move", Todo.move, async (input) => {
+    await Todo.move(input);
+    return Todo.fromID(input.id);
+  });
+
   tool("todo_rename_stage", Todo.rename, async (input) => {
     await Todo.rename(input);
     return Todo.stages(input);

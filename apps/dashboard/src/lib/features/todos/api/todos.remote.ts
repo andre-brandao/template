@@ -131,3 +131,16 @@ export const removeTodo = remote.form(
   z.object({ id: Todo.Info.shape.id }).transform((input) => input.id),
   Todo.remove,
 );
+
+const title = z
+  .string()
+  .max(200)
+  .optional()
+  .transform((s) => s?.trim() || undefined);
+
+export const linkTodo = remote.form(
+  z.object({ id: Todo.Info.shape.id, url: z.url(), title }),
+  Todo.link,
+);
+
+export const unlinkTodo = remote.form(Todo.unlink.schema, Todo.unlink);

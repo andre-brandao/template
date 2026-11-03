@@ -27,6 +27,11 @@ export async function read(event: RequestEvent) {
   return me;
 }
 
+/** The raw session token, for forwarding as a bearer (the copilot's MCP calls). Unverified. */
+export function token(event: RequestEvent) {
+  return event.cookies.get(COOKIE);
+}
+
 export async function write(event: RequestEvent, user: string) {
   event.cookies.set(COOKIE, await Session.create(user), OPTS);
 }

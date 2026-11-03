@@ -1,5 +1,7 @@
 <script lang="ts">
-	import { Button, Card, Input, Issue } from '@template/ui';
+	import Issues from '$lib/components/Issues.svelte';
+	import { resets } from '$lib/utils/form';
+	import { Button, Card, Input } from '@template/ui';
 	import type { Todo } from '@template/core/todo';
 	import { createTodo, getTodo, getTodos } from '../../api/todos.remote';
 	import StatusPicker from '../StatusPicker.svelte';
@@ -38,17 +40,11 @@
 		{/each}
 	</ul>
 
-	{#each add.fields.allIssues() ?? [] as issue, i (i)}
-		<Issue>{issue.message}</Issue>
-	{/each}
+	<Issues issues={add.fields.allIssues()} />
 
 	<form
 		class="add"
-		{...add.enhance(async (f) => {
-			await f.submit();
-			f.element.reset();
-			await kids.refresh();
-		})}
+		{...add.enhance(resets(() => kids.refresh()))}
 	>
 		<input {...add.fields.parentID.as('hidden', todo.id)} />
 		<Input placeholder="Add a sub-issue" {...add.fields.title.as('text')} />

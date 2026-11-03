@@ -230,6 +230,20 @@ describe("todo", () => {
     expect(todo?.metadata.annotations).toEqual({ "example.com/b": "2" });
   });
 
+  withTestUser("concurrent link edits all land; a repeated url retitles", async () => {
+    const { id } = await Todo.create({ title: "Linked" });
+    await Promise.all(
+      ["a", "b", "c"].map((name) => Todo.link({ id, url: `https://${name}.dev` })),
+    );
+    await Todo.link({ id, url: "https://b.dev", title: "B" });
+    const after = await Todo.unlink({ id, url: "https://a.dev" });
+    expect(after.metadata.links.map((item) => item.url).sort()).toEqual([
+      "https://b.dev",
+      "https://c.dev",
+    ]);
+    expect(after.metadata.links.find((item) => item.url === "https://b.dev")?.title).toBe("B");
+  });
+
   withTestUser("github annotations belong to the sync engine, one todo per issue", async () => {
     const { id } = await Todo.create({ title: "Mirrored" });
     await expect(Todo.annotate({ id, set: { "github.com/issue": "acme/api#1" } })).rejects.toThrow(

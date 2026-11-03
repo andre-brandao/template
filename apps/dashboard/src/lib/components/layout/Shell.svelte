@@ -13,7 +13,7 @@
 	import { sidebar } from './rail.svelte';
 	import Topbar from './Topbar.svelte';
 
-	let { nav, children }: { nav: Config; children: Snippet } = $props();
+	let { nav, side, children }: { nav: Config; side?: Snippet; children: Snippet } = $props();
 
 	const me = user();
 	const rail = sidebar();
@@ -80,6 +80,8 @@
 		<main>{@render children()}</main>
 		<Footer />
 	</div>
+	<!-- A column beside the content that a route composes in, e.g. the assistant. -->
+	{@render side?.()}
 </div>
 
 <!-- Same menu, off canvas — the sidebar is too narrow to keep on a phone. -->

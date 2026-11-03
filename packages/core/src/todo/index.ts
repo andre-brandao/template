@@ -26,7 +26,16 @@ import { Identifier } from "../identifier";
 import { sortable } from "../drizzle/order";
 import { date, iso, trim } from "../util/fmt";
 import { clean, Tags } from "../util/tag";
-import { Annotate, Links, Metadata, annotate as merge, relink } from "../util/meta";
+import {
+  Annotate,
+  Link,
+  Links,
+  Metadata,
+  annotate as merge,
+  link as append,
+  relink,
+  unlink as detach,
+} from "../util/meta";
 import { Bus } from "../platform/bus";
 import { UserTable } from "../user/user.sql";
 import { rank, StatusValues, TodoTable } from "./todo.sql";
@@ -466,6 +475,57 @@ export namespace Todo {
       description:
         "Nest a todo under another (a sub-issue) or back to the top level with parentID null, at a position among its new siblings. The parent must share its owner and can't sit beneath it.",
     },
+  );
+
+  /** Adds a link, retitling one already at that url. One statement, so concurrent edits all land. */
+  export const link = fn(
+    Link.extend({ id: Info.shape.id }),
+    async (input) => {
+      const before = await assert.exists(fromID.force(input.id));
+      Actor.check({ todo: ["update"] }, before.createdBy);
+      const links = before.metadata.links;
+      if (links.length >= 50 && !links.some((item) => item.url === input.url))
+        throw new VisibleError(
+          "validation",
+          ErrorCodes.Validation.INVALID_PARAMETER,
+          "A todo holds at most 50 links",
+          "url",
+        );
+      await Database.use((tx) =>
+        tx
+          .update(TodoTable)
+          .set({
+            metadata: append(TodoTable.metadata, {
+              url: input.url,
+              title: input.title,
+              type: input.type,
+            }),
+            timeUpdated: new Date(),
+          })
+          .where(eq(TodoTable.id, input.id)),
+      );
+      return assert.exists(fromID.force(input.id));
+    },
+    {
+      title: "Link todo",
+      description: "Attach an outside link to a todo, or retitle the one at that url.",
+    },
+  );
+
+  export const unlink = fn(
+    z.object({ id: Info.shape.id, url: z.string().meta({ description: "The link to drop." }) }),
+    async (input) => {
+      const before = await assert.exists(fromID.force(input.id));
+      Actor.check({ todo: ["update"] }, before.createdBy);
+      await Database.use((tx) =>
+        tx
+          .update(TodoTable)
+          .set({ metadata: detach(TodoTable.metadata, input.url), timeUpdated: new Date() })
+          .where(eq(TodoTable.id, input.id)),
+      );
+      return assert.exists(fromID.force(input.id));
+    },
+    { title: "Unlink todo", description: "Drop the link at a url from a todo." },
   );
 
   /** Annotations stay out of `update` and its events: a sync engine writing one isn't an edit. */

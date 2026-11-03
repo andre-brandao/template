@@ -30,6 +30,7 @@
     "./key/*": "./src/platform/key/*.ts",
     "./webhook": "./src/platform/webhook/index.ts",
     "./webhook/*": "./src/platform/webhook/*.ts",
+    "./conversation/*": "./src/platform/conversation/*.ts",
     "./util/*": "./src/util/*.ts"
   },
   "scripts": {
@@ -41,6 +42,7 @@
   },
   "dependencies": {
     "aws4fetch": "^1.0.20",
+    "octokit": "^5.0.3",
     "drizzle-orm": "catalog:",
     "postgres": "catalog:",
     "ulid": "catalog:",

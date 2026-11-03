@@ -10,6 +10,8 @@
 	import Shell from '$lib/components/layout/Shell.svelte';
 	import { createRail } from '$lib/components/layout/rail.svelte';
 	import { createUser } from '$lib/utils/context';
+	import { createAgent } from '$lib/features/agent/agent.svelte';
+	import Dock from '$lib/features/agent/components/Dock.svelte';
 
 	let { data, children } = $props();
 
@@ -25,6 +27,9 @@
 		},
 		can: (grants, owned) => Permission.can(data.user?.role, grants, owned)
 	});
+
+	// Here rather than in the Shell, so the conversation survives a move between sections.
+	createAgent();
 
 	// TODO: use to reload app when new version comes out
 	// import { beforeNavigate } from '$app/navigation';
@@ -51,7 +56,12 @@
      the routes that want no chrome — `/`, auth, errors — simply don't. -->
 <div class="shell">
 	{#if page.data.nav}
-		<Shell nav={page.data.nav}>{@render children()}</Shell>
+		<Shell nav={page.data.nav}>
+			{#snippet side()}
+				{#if data.user}<Dock />{/if}
+			{/snippet}
+			{@render children()}
+		</Shell>
 	{:else}
 		{@render children()}
 	{/if}

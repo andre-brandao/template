@@ -70,3 +70,18 @@ export function annotate(column: SQLWrapper, input: z.infer<typeof Annotate>) {
 export function relink(column: SQLWrapper, links: Link[]) {
   return sql`jsonb_set(${column}, '{links}', ${JSON.stringify(links)}::jsonb)`;
 }
+
+/** The link list without `url`, as SQL — the base both link edits build on. */
+function without(column: SQLWrapper, url: string) {
+  return sql`coalesce((select jsonb_agg(item) from jsonb_array_elements(${column} -> 'links') item where item ->> 'url' <> ${url}), '[]'::jsonb)`;
+}
+
+/** Adds `link`, replacing one with the same url, in one statement so concurrent edits keep each other. */
+export function link(column: SQLWrapper, link: Link) {
+  return sql`jsonb_set(${column}, '{links}', ${without(column, link.url)} || jsonb_build_array(${JSON.stringify(link)}::jsonb))`;
+}
+
+/** Drops the link pointing at `url`. */
+export function unlink(column: SQLWrapper, url: string) {
+  return sql`jsonb_set(${column}, '{links}', ${without(column, url)})`;
+}

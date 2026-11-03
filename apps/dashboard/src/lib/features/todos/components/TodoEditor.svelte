@@ -1,7 +1,14 @@
 <script lang="ts">
 	import { Button, Card, Input, Issue } from '@template/ui';
 	import type { Event } from '@template/core/event';
-	import { getTodo, planTodo, removeTodo, updateTodo } from '../api/todos.remote';
+	import {
+		getTodo,
+		linkTodo,
+		planTodo,
+		removeTodo,
+		unlinkTodo,
+		updateTodo
+	} from '../api/todos.remote';
 	import Timeline from '$lib/features/events/components/Timeline.svelte';
 	import StatusPill from './StatusPill.svelte';
 	import StatusPicker from './StatusPicker.svelte';
@@ -11,6 +18,9 @@
 	import Facts from './editor/Facts.svelte';
 	import Description from './editor/Description.svelte';
 	import SubIssues from './editor/SubIssues.svelte';
+	import Links from '$lib/components/Links.svelte';
+	import Annotations from './editor/Annotations.svelte';
+	import GithubBadge from './GithubBadge.svelte';
 	import { color } from '../status';
 
 	let { id, onremove }: { id: string; onremove: () => void } = $props();
@@ -59,7 +69,10 @@
 			<Card accent={color(todo.status)}>
 				<div class="head">
 					<h1>{todo.title}</h1>
-					<StatusPill status={todo.status} reason={todo.reason} />
+					<div class="pills">
+						<GithubBadge annotations={todo.metadata.annotations} />
+						<StatusPill status={todo.status} reason={todo.reason} />
+					</div>
 				</div>
 
 				<TagList tags={todo.tags} />
@@ -124,6 +137,18 @@
 					</form>
 				</div>
 			</Card>
+
+			<Card>
+				<Links
+					heading="Links"
+					id={todo.id}
+					links={todo.metadata.links}
+					add={linkTodo.for(`${todo.id}:editor`)}
+					drop={(url) => unlinkTodo.for(`${todo.id}:${url}`)}
+					onsaved={saved}
+				/>
+				<Annotations annotations={todo.metadata.annotations} />
+			</Card>
 		</aside>
 
 		<div class="logs">
@@ -160,6 +185,9 @@
 	.side {
 		grid-area: side;
 		min-width: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 1.25em;
 	}
 
 	.logs {
@@ -182,6 +210,13 @@
 		justify-content: space-between;
 		gap: 0.75em;
 		margin-bottom: 0.6em;
+	}
+
+	.pills {
+		display: flex;
+		align-items: center;
+		gap: 0.5em;
+		flex: none;
 	}
 
 	h1 {

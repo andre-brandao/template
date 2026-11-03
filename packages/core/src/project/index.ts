@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { and, asc, count, eq, ilike, isNull, type SQLWrapper } from "drizzle-orm";
 import { Assert } from "../util/assert";
+import { ErrorCodes, VisibleError } from "../error";
 import { fn } from "../util/fn";
 import { Database } from "../drizzle";
 import { Actor } from "../actor";
@@ -9,7 +10,16 @@ import { Examples } from "../examples";
 import { Identifier } from "../identifier";
 import { sortable } from "../drizzle/order";
 import { Bus } from "../platform/bus";
-import { Annotate, Links, Metadata, annotate as merge, relink } from "../util/meta";
+import {
+  Annotate,
+  Link,
+  Links,
+  Metadata,
+  annotate as merge,
+  link as append,
+  relink,
+  unlink as detach,
+} from "../util/meta";
 import { ProjectTable } from "./project.sql";
 
 export namespace Project {
@@ -146,6 +156,57 @@ export namespace Project {
       title: "Update project",
       description: "Update a project's name, description, image or links.",
     },
+  );
+
+  /** Adds a link, retitling one already at that url. One statement, so concurrent edits all land. */
+  export const link = fn(
+    Link.extend({ id: Info.shape.id }),
+    async (input) => {
+      const before = await assert.exists(fromID.force(input.id));
+      Actor.check({ project: ["update"] }, before.createdBy);
+      const links = before.metadata.links;
+      if (links.length >= 50 && !links.some((item) => item.url === input.url))
+        throw new VisibleError(
+          "validation",
+          ErrorCodes.Validation.INVALID_PARAMETER,
+          "A project holds at most 50 links",
+          "url",
+        );
+      await Database.use((tx) =>
+        tx
+          .update(ProjectTable)
+          .set({
+            metadata: append(ProjectTable.metadata, {
+              url: input.url,
+              title: input.title,
+              type: input.type,
+            }),
+            timeUpdated: new Date(),
+          })
+          .where(eq(ProjectTable.id, input.id)),
+      );
+      return assert.exists(fromID.force(input.id));
+    },
+    {
+      title: "Link project",
+      description: "Attach an outside link to a project, or retitle the one at that url.",
+    },
+  );
+
+  export const unlink = fn(
+    z.object({ id: Info.shape.id, url: z.string().meta({ description: "The link to drop." }) }),
+    async (input) => {
+      const before = await assert.exists(fromID.force(input.id));
+      Actor.check({ project: ["update"] }, before.createdBy);
+      await Database.use((tx) =>
+        tx
+          .update(ProjectTable)
+          .set({ metadata: detach(ProjectTable.metadata, input.url), timeUpdated: new Date() })
+          .where(eq(ProjectTable.id, input.id)),
+      );
+      return assert.exists(fromID.force(input.id));
+    },
+    { title: "Unlink project", description: "Drop the link at a url from a project." },
   );
 
   /** Annotations stay out of `update` and its events: a sync engine writing one isn't an edit. */

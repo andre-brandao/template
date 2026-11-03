@@ -25,6 +25,11 @@ export namespace Agent {
   /** For a run whose MCP didn't come up. */
   export const offline = `The data tools are unavailable right now. If the question depends on the app's data, say so instead of answering from memory.`;
 
+  /** Whether the LLM proxy is set; without it the dock stays hidden instead of throwing. */
+  export function ready(env: Env = process.env) {
+    return !!(env.LLM_URL && env.LLM_KEY && env.LLM_MODEL);
+  }
+
   /** The LLM proxy and the MCP. Without `MCP_URL` the agent gets no MCP. */
   export function config(env: Env = process.env) {
     if (!env.LLM_URL || !env.LLM_KEY || !env.LLM_MODEL)

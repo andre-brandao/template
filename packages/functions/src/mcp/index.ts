@@ -4,12 +4,14 @@ import { VisibleError, ErrorCodes, type ErrorResponseType } from "@template/core
 import { auth } from "../api/middleware";
 import { authRequired } from "../api/common";
 import { todo } from "./tool/todo";
+import { feedback } from "./tool/feedback";
 import { health } from "../health";
 
 /** One server per request — the streamable HTTP transport is stateless. */
 function server() {
   const s = new McpServer({ name: "template", version: "1.0.0" });
   todo(s);
+  feedback(s);
   return s;
 }
 

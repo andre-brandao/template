@@ -78,11 +78,12 @@
 	textarea {
 		padding: 0.5em 0.7em;
 		border: 1px solid var(--border);
-		border-radius: var(--radius);
+		border-radius: var(--radius-sm);
 		background: var(--surface);
 		color: var(--ink);
 		font: inherit;
 		resize: none;
+		box-shadow: var(--shadow-1);
 	}
 
 	.row {
@@ -97,8 +98,8 @@
 		max-width: 70%;
 		padding: 0.25em 0.4em;
 		border: 1px solid var(--border);
-		border-radius: var(--radius);
-		background: var(--surface-2);
+		border-radius: var(--radius-sm);
+		background: var(--surface);
 		color: var(--muted);
 		font: inherit;
 		font-size: 0.8em;

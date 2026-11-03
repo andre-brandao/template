@@ -1,21 +1,28 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import type { Event } from '@template/core/event';
-	import Header from '$lib/components/Header.svelte';
+	import { Section } from '@template/ui';
+	import * as Header from '$lib/components/header';
 	import Timeline from '$lib/features/events/components/Timeline.svelte';
 	import { getProject, linkProject, unlinkProject } from '../api/projects.remote';
 	import Links from '$lib/components/Links.svelte';
+	import Annotations from '$lib/components/Annotations.svelte';
 	import GithubMark from '$lib/components/GithubMark.svelte';
+	import { fmt } from '$lib/utils/fmt';
 	import { repos } from '../github';
 
-	// The stages/todos sections come in as snippets so this slice never imports
-	// the todos feature — the route composes the two.
+	// The stages/todos sections and their header facts come in as snippets so this slice
+	// never imports the todos feature — the route composes the two.
 	let {
 		id,
 		stages,
 		todos,
+		facts,
 		github
-	}: { id: string; stages: Snippet; todos: Snippet; github?: Snippet } = $props();
+	}: { id: string; stages: Snippet; todos: Snippet; facts?: Snippet; github?: Snippet } =
+		$props();
+
+	const f = fmt();
 
 	const eventLabels: Record<string, string> = {
 		'project.created': 'Created',
@@ -24,9 +31,26 @@
 	};
 </script>
 
+{#snippet back()}<a href="/projects">Projects</a>{/snippet}
+
 <svelte:boundary>
+	{#snippet pending()}<Header.Root title="Project" eyebrow={back} />{/snippet}
 	{@const project = await getProject(id)}
-	<Header title={project.name}>{project.description}</Header>
+	{@const list = repos(project.metadata.annotations)}
+	<Header.Root title={project.name} eyebrow={back} lead={project.description ?? undefined}>
+		{@render facts?.()}
+		{#if list.length}
+			<Header.Item label="Repos">
+				{#each list as repo (repo.name)}
+					<a class="repo" href={repo.url} target="_blank" rel="noopener noreferrer">
+						<GithubMark />
+						{repo.name}
+					</a>
+				{/each}
+			</Header.Item>
+		{/if}
+		<Header.Item label="Created">{f.date(project.timeCreated)}</Header.Item>
+	</Header.Root>
 </svelte:boundary>
 
 <!--
@@ -35,10 +59,9 @@
 -->
 <div class="split">
 	<div class="col">
-		<section>
-			<h2>Stages</h2>
+		<Section wide title="Stages">
 			{@render stages()}
-		</section>
+		</Section>
 	</div>
 
 	<div class="col">
@@ -46,26 +69,7 @@
 
 		<svelte:boundary>
 			{@const project = await getProject(id)}
-			{@const list = repos(project.metadata.annotations)}
-			{@const notes = Object.entries(project.metadata.annotations)}
-			{#if list.length}
-				<section>
-					<h2>Repositories</h2>
-					<ul class="repos">
-						{#each list as repo (repo.name)}
-							<li>
-								<a href={repo.url} target="_blank" rel="noopener noreferrer">
-									<GithubMark />
-									{repo.name}
-								</a>
-							</li>
-						{/each}
-					</ul>
-				</section>
-			{/if}
-
-			<section>
-				<h2>Links</h2>
+			<Section wide title="Links">
 				<Links
 					id={project.id}
 					links={project.metadata.links}
@@ -73,52 +77,31 @@
 					drop={(url) => unlinkProject.for(`${project.id}:${url}`)}
 					onsaved={() => getProject(project.id).refresh()}
 				/>
-			</section>
+			</Section>
 
-			{#if notes.length}
-				<section>
-					<h2>Annotations</h2>
-					<dl>
-						{#each notes as [key, value] (key)}
-							<div>
-								<dt>{key}</dt>
-								<dd>{value}</dd>
-							</div>
-						{/each}
-					</dl>
-				</section>
+			{#if Object.keys(project.metadata.annotations).length}
+				<Section wide title="Annotations">
+					<Annotations annotations={project.metadata.annotations} />
+				</Section>
 			{/if}
 		</svelte:boundary>
 
-		<section>
-			<h2>Recent todos</h2>
+		<Section wide title="Recent todos">
 			{@render todos()}
-		</section>
+		</Section>
 
-		<!-- Heading lives here rather than Timeline's `title`, so it shares the page's
-		     scoped h2 style with the two lists above it. -->
-		<section>
-			<h2>Logs</h2>
+		<!-- Heading lives here rather than Timeline's `title`, so it matches the sections above. -->
+		<Section wide title="Logs">
 			<Timeline source="project" sourceID={id}>
 				{#snippet label(event: Event.Info)}
 					{eventLabels[event.type] ?? event.type}
 				{/snippet}
 			</Timeline>
-		</section>
+		</Section>
 	</div>
 </div>
 
 <style>
-	h2 {
-		margin: 0 0 0.75em;
-		font-size: 0.78em;
-		font-family: var(--font-mono);
-		font-weight: 500;
-		letter-spacing: 0.08em;
-		text-transform: uppercase;
-		color: var(--dim);
-	}
-
 	/* Golden section: the long column is φ (1.618) times the short one. */
 	.split {
 		display: grid;
@@ -134,50 +117,21 @@
 		gap: 2.25em;
 	}
 
-	.repos {
-		list-style: none;
-		margin: 0;
-		padding: 0;
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.4em;
-	}
-
-	.repos a {
+	.repo {
 		display: inline-flex;
 		align-items: center;
 		gap: 0.35em;
-		border: 1px solid var(--border);
 		background: var(--surface-2);
 		border-radius: 999px;
-		padding: 0.2em 0.65em;
-		font-family: var(--font-mono);
-		font-size: 0.75em;
+		padding: 0.15em 0.65em;
+		font-size: 0.86em;
+		font-weight: 400;
 		color: var(--ink);
 		text-decoration: none;
 	}
 
-	.repos a:hover {
+	.repo:hover {
 		color: var(--accent);
-	}
-
-	dl {
-		margin: 0;
-		display: flex;
-		flex-direction: column;
-		gap: 0.5em;
-		font-family: var(--font-mono);
-		font-size: 0.78em;
-	}
-
-	dt {
-		color: var(--dim);
-	}
-
-	dd {
-		margin: 0.1em 0 0;
-		color: var(--muted);
-		word-break: break-all;
 	}
 
 	@media (max-width: 900px) {

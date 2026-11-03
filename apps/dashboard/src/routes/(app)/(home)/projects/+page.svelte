@@ -3,14 +3,6 @@
 	import Import from '$lib/features/github/components/Import.svelte';
 </script>
 
-<ProjectsPage />
-
-<div class="github">
-	<Import />
-</div>
-
-<style>
-	.github {
-		margin-top: 2em;
-	}
-</style>
+<ProjectsPage>
+	{#snippet extra()}<Import />{/snippet}
+</ProjectsPage>

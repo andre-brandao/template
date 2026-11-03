@@ -80,7 +80,8 @@
 		scrollbar-width: thin;
 		max-height: 65vh;
 		border: 1px solid var(--border);
-		border-radius: 8px;
+		border-radius: var(--radius);
+		background: var(--surface);
 	}
 
 	table {
@@ -94,13 +95,12 @@
 		top: 0;
 		z-index: 1;
 		text-align: left;
-		font-family: var(--font-mono);
-		font-size: 0.72em;
-		text-transform: uppercase;
-		letter-spacing: 0.04em;
+		font-size: 0.93em;
+		font-weight: 500;
 		color: var(--muted);
-		background: var(--surface-2);
-		padding: 0.6em 0.9em;
+		background: var(--surface);
+		padding: 0.55em 0.9em;
+		white-space: nowrap;
 		border-bottom: 1px solid var(--border);
 	}
 
@@ -146,7 +146,7 @@
 	}
 
 	tbody tr:hover {
-		background: color-mix(in srgb, var(--ink) 4%, transparent);
+		background: var(--hover, color-mix(in srgb, var(--ink) 4%, transparent));
 	}
 
 	/* The drawer belongs to the row above it, so it neither hovers nor pads on its own. */

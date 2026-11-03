@@ -175,8 +175,7 @@
 <style>
 	.dim {
 		color: var(--muted);
-		font-family: var(--font-mono);
-		font-size: 0.8em;
+		font-variant-numeric: tabular-nums;
 		white-space: nowrap;
 	}
 

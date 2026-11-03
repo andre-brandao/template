@@ -232,9 +232,7 @@ describe("todo", () => {
 
   withTestUser("concurrent link edits all land; a repeated url retitles", async () => {
     const { id } = await Todo.create({ title: "Linked" });
-    await Promise.all(
-      ["a", "b", "c"].map((name) => Todo.link({ id, url: `https://${name}.dev` })),
-    );
+    await Promise.all(["a", "b", "c"].map((name) => Todo.link({ id, url: `https://${name}.dev` })));
     await Todo.link({ id, url: "https://b.dev", title: "B" });
     const after = await Todo.unlink({ id, url: "https://a.dev" });
     expect(after.metadata.links.map((item) => item.url).sort()).toEqual([

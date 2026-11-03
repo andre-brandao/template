@@ -64,10 +64,7 @@
 	}
 
 	.sub {
-		font-family: var(--font-mono);
-		font-size: 0.72em;
-		text-transform: uppercase;
-		letter-spacing: 0.06em;
+		font-size: 0.86em;
 		color: var(--dim);
 	}
 

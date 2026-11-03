@@ -55,7 +55,7 @@
 
 	.title {
 		font-weight: 600;
-		color: var(--accent);
+		color: var(--ink);
 	}
 
 	.actions {

@@ -19,9 +19,20 @@
   // consumed only as a namespace (`import * as button` in ui/src/lib/story.ts),
   // so the shared `story` name is never ambiguous at an import site.
   "ignoreExports": [
+    // Each swappable backend names its contract `Adapter` in its own port.ts, read via its namespace.
+    {
+      "file": "packages/core/src/**/port.ts",
+      "exports": ["Adapter"],
+    },
     {
       "file": "**/*.story.svelte",
       "exports": ["story"],
+    },
+    // The agent's two json-render catalogs (`ask`, `panel`) are parallel modules with the
+    // same surface, imported as namespaces (`* as ask`, `* as panel`) where both meet.
+    {
+      "file": "apps/*/src/lib/features/agent/{ask,panel}/catalog.ts",
+      "exports": ["Block", "catalog", "instructions", "shape", "verify"],
     },
   ],
   // infra/*/stage.ts share a small boilerplate header across cloud targets

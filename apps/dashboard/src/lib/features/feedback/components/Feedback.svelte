@@ -1,81 +1,60 @@
 <!--
-	The topbar's feedback affordance: a quiet trigger and the drawer it opens. Files an
-	issue in the tracker configured by env; the page the user was on rides along hidden.
+	The feedback affordance, in the rail footer or a rail-less topbar: a quiet trigger and the
+	drawer it opens. Feedback and support are separate forms on the same tracker; "Mine" lists
+	what was filed.
 -->
 <script lang="ts">
-	import { page } from '$app/state';
 	import MessageSquare from '@lucide/svelte/icons/message-square';
-	import { Button, Drawer, Field, FormBoundary, Issue } from '@template/ui';
-	import { send } from '../api/feedback.remote';
+	import { Drawer, Tabs } from '@template/ui';
+	import { getMine } from '../api/feedback.remote';
+	import Form from './Form.svelte';
+	import Mine from './Mine.svelte';
+
+	// `slim`: the collapsed rail, icon only. `fill`: the rail footer, full width and left-aligned.
+	let { slim = false, fill = false }: { slim?: boolean; fill?: boolean } = $props();
 
 	let open = $state(false);
-	let body = $state('');
-	// The value is submitted by the hidden mirror below, so the textarea carries an id
-	// rather than a name — a second `body` field would post the value twice.
-	const id = $props.id();
-	const result = $derived(send.result as any);
+	let tab = $state<'feedback' | 'support' | 'mine'>('feedback');
+
+	async function sent() {
+		tab = 'mine';
+		await getMine().refresh();
+	}
 </script>
 
-<button class="trigger" type="button" onclick={() => (open = true)}>
+<button
+	class={['trigger', { slim, fill }]}
+	type="button"
+	aria-label={slim ? 'Feedback and support' : undefined}
+	title={slim ? 'Feedback and support' : undefined}
+	onclick={() => (open = true)}
+>
 	<MessageSquare size={15} strokeWidth={1.75} />
-	Feedback
+	{#if !slim}Feedback and support{/if}
 </button>
 
-<Drawer bind:open onclose={() => (body = '')}>
-	<h2>Feedback</h2>
-	<p class="sub">Tell us what's broken or missing — it goes straight to the issue tracker.</p>
+<Drawer bind:open>
+	<h2>Feedback and support</h2>
+	<p class="sub">
+		Tell us what's broken, what's missing, or ask for help. It goes straight to the team.
+	</p>
 
-	<FormBoundary>
-		{#if result}
-			<p class="done">
-				Thanks — <a href={result.url} target="_blank" rel="noreferrer">view the issue</a>.
-			</p>
-			<Button onclick={() => (open = false)}>Done</Button>
+	<Tabs.Root style="margin-bottom: 1.25em">
+		<Tabs.Item active={tab === 'feedback'} onclick={() => (tab = 'feedback')}>Feedback</Tabs.Item>
+		<Tabs.Item active={tab === 'support'} onclick={() => (tab = 'support')}>Support</Tabs.Item>
+		<Tabs.Item active={tab === 'mine'} onclick={() => (tab = 'mine')}>Mine</Tabs.Item>
+	</Tabs.Root>
+
+	<!-- Mounted while open only: the forms read the browser's context as they render. -->
+	{#if open}
+		{#if tab === 'mine'}
+			<Mine />
 		{:else}
-			{#each send.fields.allIssues() ?? [] as issue, i (i)}
-				<Issue>{issue.message}</Issue>
-			{/each}
-
-			<form
-				{...send.enhance(async (f) => {
-					await f.submit();
-				})}
-			>
-				<div class="pair">
-					<Field label="Type">
-						<select {...send.fields.tag.as('select')}>
-							<option value="bug">Bug</option>
-							<option value="feature">Feature</option>
-						</select>
-					</Field>
-
-					<Field label="Urgency">
-						<select {...send.fields.urgency.as('select')}>
-							<option value="low">Low</option>
-							<option value="medium">Medium</option>
-							<option value="high">High</option>
-						</select>
-					</Field>
-				</div>
-
-				<Field label="Details">
-					<textarea
-						{id}
-						rows="6"
-						placeholder="What happened? Steps, context, anything useful"
-						bind:value={body}
-					></textarea>
-					<input {...send.fields.body.as('hidden', body)} />
-				</Field>
-
-				<input {...send.fields.page.as('hidden', page.url.pathname + page.url.search)} />
-
-				<div class="foot">
-					<Button type="submit" pending={!!send.pending}>Send</Button>
-				</div>
-			</form>
+			{#key tab}
+				<Form kind={tab} onsent={sent} onclose={() => (open = false)} />
+			{/key}
 		{/if}
-	</FormBoundary>
+	{/if}
 </Drawer>
 
 <style>
@@ -88,8 +67,8 @@
 		background: none;
 		padding: 0.3em 0.5em;
 		border-radius: var(--radius);
-		font-family: var(--font-mono);
-		font-size: 0.82em;
+		font-size: 0.92em;
+		white-space: nowrap;
 		color: var(--muted);
 		cursor: pointer;
 	}
@@ -97,6 +76,21 @@
 	.trigger:hover {
 		color: var(--ink);
 		background: var(--surface-2);
+	}
+
+	.trigger:focus-visible {
+		outline: 2px solid var(--accent);
+		outline-offset: 1px;
+	}
+
+	.fill {
+		width: 100%;
+		padding: 0.45em 0.6em;
+	}
+
+	.slim {
+		justify-content: center;
+		padding: 0.45em;
 	}
 
 	h2 {
@@ -108,40 +102,5 @@
 		margin: 0 0 1.25em;
 		font-size: 0.85em;
 		color: var(--muted);
-	}
-
-	form {
-		display: flex;
-		flex-direction: column;
-		gap: 1em;
-	}
-
-	.pair {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(9em, 1fr));
-		gap: 1em;
-	}
-
-	select,
-	textarea {
-		font: inherit;
-		padding: 0.5em 0.7em;
-		border: 1px solid var(--border);
-		border-radius: var(--radius);
-		background: var(--surface);
-		color: var(--ink);
-	}
-
-	textarea {
-		resize: vertical;
-	}
-
-	.foot {
-		display: flex;
-		justify-content: flex-end;
-	}
-
-	.done a {
-		color: var(--accent);
 	}
 </style>

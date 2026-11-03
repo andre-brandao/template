@@ -16,7 +16,8 @@
 	aria-current={at(item)}
 	title={slim ? item.label : undefined}
 >
-	{#if Icon}<Icon size={16} strokeWidth={1.75} />{/if}
+	<!-- The accent only on the link you stand on: "where am I" is the one state a sidebar has. -->
+	{#if Icon}<Icon size={16} strokeWidth={1.75} color={at(item) ? 'var(--accent)' : undefined} />{/if}
 	{#if !slim}<span class="label">{item.label}</span>{/if}
 </a>
 
@@ -24,19 +25,19 @@
 	.navlink {
 		display: flex;
 		align-items: center;
-		gap: 0.6em;
-		padding: 0.5em 0.7em;
-		border-radius: var(--radius);
+		gap: 0.625em;
+		height: 2.25em;
+		padding: 0 0.625em;
+		border-radius: var(--radius-sm);
 		color: var(--muted);
-		font-family: var(--font-mono);
-		font-size: 0.82em;
+		font-size: 0.95em;
 		text-decoration: none;
 	}
 
 	.navlink:hover,
 	.navlink[aria-current='page'] {
 		color: var(--ink);
-		background: var(--surface-2);
+		background: var(--hover);
 	}
 
 	.slim {
@@ -51,6 +52,7 @@
 	.navlink[aria-current='page'] {
 		position: relative;
 		background: none;
+		font-weight: 500;
 	}
 
 	.navlink[aria-current='page']::before {
@@ -58,8 +60,12 @@
 		position: absolute;
 		inset: 0;
 		z-index: -1;
-		border-radius: var(--radius);
-		background: var(--surface-2);
+		border-radius: var(--radius-sm);
+		/* A raised paper chip on the page-toned rail. */
+		background: var(--surface);
+		box-shadow:
+			0 0 0 1px var(--border),
+			var(--shadow-1);
 		view-transition-name: active;
 	}
 

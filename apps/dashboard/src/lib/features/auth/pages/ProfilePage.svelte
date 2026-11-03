@@ -1,5 +1,6 @@
 <script lang="ts">
-	import Header from '$lib/components/Header.svelte';
+	import { Section } from '@template/ui';
+	import * as Header from '$lib/components/header';
 	import { getMe, getProviders } from '../api/profile.remote';
 	import PasswordForm from '../components/PasswordForm.svelte';
 	import ProfileForm from '../components/ProfileForm.svelte';
@@ -10,38 +11,26 @@
 	const set = $derived(providers.some((one) => one.id === 'password' && one.connected));
 </script>
 
-<Header title="Profile" />
+<Header.Root title="Profile" lead="How you appear to others and how you sign in." />
 
-<ProfileForm {user} />
+<Section title="Account" description="Your avatar and the name shown on todos and comments.">
+	<ProfileForm {user} />
+</Section>
 
-<h2>Login providers</h2>
+<Section
+	divider
+	title="Login providers"
+	description="An emailed code or an OAuth provider makes the account; a password is optional."
+>
+	<ProviderList {providers} />
+</Section>
 
-<p class="lead">
-	How you sign in. An account is made by emailed code or by an OAuth provider; a password is
-	something you add here afterwards.
-</p>
-
-<ProviderList {providers} />
-
-<h2>{set ? 'Change your password' : 'Add a password'}</h2>
-
-<p class="lead">
-	{set
-		? 'Replaces the one you have. The old password stops working immediately.'
-		: 'Lets you sign in without waiting for a code. Optional — the code always works.'}
-</p>
-
-<PasswordForm {set} />
-
-<style>
-	h2 {
-		margin: 2.25em 0 0.4em;
-		font-size: 1.1em;
-	}
-
-	.lead {
-		margin: 0 0 1.25em;
-		color: var(--muted);
-		max-width: 60ch;
-	}
-</style>
+<Section
+	divider
+	title={set ? 'Change password' : 'Add a password'}
+	description={set
+		? 'The old password stops working immediately.'
+		: 'Sign in without waiting for a code. The code always works.'}
+>
+	<PasswordForm {set} />
+</Section>

@@ -49,12 +49,11 @@
 		gap: 0.45em;
 		width: 100%;
 		font: inherit;
-		font-family: var(--font-mono, monospace);
-		font-size: 0.8em;
+		font-size: 0.9em;
 		text-align: left;
 		padding: 0.5em 0.55em;
 		border: none;
-		border-radius: var(--radius, 6px);
+		border-radius: var(--radius-sm, 6px);
 		background: none;
 		color: var(--muted, #666);
 		text-decoration: none;

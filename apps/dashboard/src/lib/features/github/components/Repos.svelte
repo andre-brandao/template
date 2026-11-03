@@ -66,13 +66,9 @@
 		display: flex;
 		align-items: center;
 		gap: 0.45em;
-		margin: 0 0 0.75em;
-		font-size: 0.78em;
-		font-family: var(--font-mono);
-		font-weight: 500;
-		letter-spacing: 0.08em;
-		text-transform: uppercase;
-		color: var(--dim);
+		margin: 0 0 1.25em;
+		font-size: 0.95em;
+		color: var(--ink);
 	}
 
 	p {

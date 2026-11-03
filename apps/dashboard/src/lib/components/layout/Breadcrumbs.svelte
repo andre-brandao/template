@@ -29,20 +29,19 @@
 	ol {
 		display: flex;
 		align-items: center;
-		gap: 0.55em;
+		gap: 0.5em;
 		min-width: 0;
 		margin: 0;
 		padding: 0;
 		list-style: none;
-		font-family: var(--font-mono);
-		font-size: 0.74em;
+		font-size: 0.93em;
 		color: var(--dim);
 	}
 
 	li {
 		display: flex;
 		align-items: center;
-		gap: 0.55em;
+		gap: 0.5em;
 		min-width: 0;
 	}
 

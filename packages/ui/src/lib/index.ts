@@ -33,10 +33,12 @@ export { default as Modals } from "./modal/Modals.svelte";
 export { modal, type Ask } from "./modal/modal.svelte";
 export { default as Pagination } from "./pagination/Pagination.svelte";
 export { default as Scroll } from "./pane/Scroll.svelte";
+export { default as Section } from "./section/Section.svelte";
 export { default as Skeleton } from "./skeleton/Skeleton.svelte";
 export { default as Spinner } from "./spinner/Spinner.svelte";
 // A container and its items, so it lands as a namespace like Combobox.
 export * as Tabs from "./tabs";
 export { default as Toaster } from "./toast/Toaster.svelte";
+export { default as Toggle } from "./toggle/Toggle.svelte";
 export { toast, type Kind, type Opts } from "./toast/toast.svelte";
 export { default as Tooltip, type Place } from "./tooltip/Tooltip.svelte";

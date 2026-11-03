@@ -14,7 +14,7 @@
 		place-items: center;
 		padding: 0.4em;
 		border: none;
-		border-radius: var(--radius);
+		border-radius: var(--radius-sm);
 		background: none;
 		color: var(--muted);
 		cursor: pointer;
@@ -22,7 +22,7 @@
 
 	button:hover:not(:disabled),
 	button[aria-pressed='true'] {
-		background: var(--surface-2);
+		background: var(--hover);
 		color: var(--ink);
 	}
 

@@ -58,7 +58,8 @@
 	{#if page.data.nav}
 		<Shell nav={page.data.nav}>
 			{#snippet side()}
-				{#if data.user}<Dock />{/if}
+				<!-- No LLM env, no dock: its model list would throw on every page. -->
+				{#if data.user && data.agent}<Dock />{/if}
 			{/snippet}
 			{@render children()}
 		</Shell>

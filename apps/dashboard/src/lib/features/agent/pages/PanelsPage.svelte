@@ -1,7 +1,7 @@
 <!-- The panels the assistant built and someone saved, newest first. -->
 <script lang="ts">
-	import { Button, Empty, modal, toast } from '@template/ui';
-	import Header from '$lib/components/Header.svelte';
+	import { Button, Empty, Input, Toggle, modal, toast } from '@template/ui';
+	import * as Header from '$lib/components/header';
 	import { user } from '$lib/utils/context';
 	import { getPanels, removePanel } from '../api/panel.remote';
 	import { failure } from '../failure';
@@ -10,27 +10,65 @@
 	const panels = $derived(await getPanels());
 	const when = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' });
 
+	let search = $state('');
+	let mine = $state(false);
+
+	// The list arrives whole and stays small, so narrowing it is a client-side filter.
+	const shown = $derived(
+		panels.filter(
+			(row) =>
+				(!mine || row.createdBy === me.current?.id) &&
+				`${row.title} ${row.author}`.toLowerCase().includes(search.trim().toLowerCase())
+		)
+	);
+
 	async function remove(row: { id: string; title: string }) {
 		const ok = await modal.confirm({ title: `Delete "${row.title}"`, action: 'Delete', body: warning });
 		if (!ok) return;
-		await removePanel(row.id).catch((err) =>
-			toast.error(failure(err))
-		);
+		await removePanel(row.id).catch((err) => toast.error(failure(err)));
 	}
 </script>
 
 {#snippet warning()}The panel's spec is deleted; its data stays where it is.{/snippet}
 
-<Header title="Panels">
-	Built by the assistant from read-only SQL and saved from the chat. Each one reruns its
-	queries as whoever opens it.
-</Header>
+<Header.Root title="Panels" lead="Saved from the assistant; each reruns its queries as the viewer.">
+	<Header.Item label="Saved">{panels.length}</Header.Item>
+	{#snippet strip()}
+		<Header.Group>
+			<Input
+				type="search"
+				aria-label="Search panels"
+				placeholder="Search title or author"
+				value={search}
+				oninput={(e) => (search = e.currentTarget.value)}
+			/>
+		</Header.Group>
+		<Header.Group label="Author">
+			<Toggle bind:pressed={mine}>Only mine</Toggle>
+		</Header.Group>
+		{#if search || mine}
+			<Header.Group end>
+				<Button
+					variant="ghost"
+					onclick={() => {
+						search = '';
+						mine = false;
+					}}
+				>
+					Clear filters
+				</Button>
+			</Header.Group>
+		{/if}
+	{/snippet}
+</Header.Root>
 
 {#if panels.length === 0}
 	<Empty>No saved panels yet. Ask the assistant to build one, then save it.</Empty>
+{:else if shown.length === 0}
+	<Empty>No panels match these filters.</Empty>
 {:else}
 	<ul>
-		{#each panels as row (row.id)}
+		{#each shown as row (row.id)}
 			<li>
 				<a href="/admin/panels/{row.id}">{row.title}</a>
 				<small>{row.author || 'Unknown'} · {when.format(new Date(row.timeUpdated))}</small>

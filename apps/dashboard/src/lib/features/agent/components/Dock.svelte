@@ -69,5 +69,6 @@
 
 	.open:hover {
 		background: var(--surface-2);
+		color: var(--ink);
 	}
 </style>

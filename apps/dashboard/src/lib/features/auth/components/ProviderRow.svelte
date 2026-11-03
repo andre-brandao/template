@@ -66,10 +66,7 @@
 
 	.pill {
 		margin-left: auto;
-		font-family: var(--font-mono);
 		font-size: 0.7em;
-		text-transform: uppercase;
-		letter-spacing: 0.06em;
 		padding: 0.25em 0.6em;
 		border-radius: var(--radius);
 		white-space: nowrap;

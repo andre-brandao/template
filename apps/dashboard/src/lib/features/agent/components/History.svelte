@@ -98,12 +98,15 @@
 	li {
 		display: flex;
 		align-items: center;
-		border-radius: var(--radius);
+		border-radius: var(--radius-sm);
 	}
 
-	li:hover,
+	li:hover {
+		background: var(--hover);
+	}
+
 	li.current {
-		background: var(--surface-2);
+		background: var(--selected);
 	}
 
 	.open {

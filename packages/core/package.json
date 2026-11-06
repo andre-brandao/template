@@ -43,6 +43,7 @@
   "dependencies": {
     "aws4fetch": "^1.0.20",
     "drizzle-orm": "catalog:",
+    "octokit": "^5.0.3",
     "postgres": "catalog:",
     "ulid": "catalog:",
     "zod": "catalog:"

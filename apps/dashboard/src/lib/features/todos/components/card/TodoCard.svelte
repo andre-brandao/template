@@ -5,6 +5,7 @@
 	import StatusPill from '../StatusPill.svelte';
 	import StatusPicker from '../StatusPicker.svelte';
 	import TagList from '../TagList.svelte';
+	import GithubBadge from '../GithubBadge.svelte';
 	import { color, late } from '../../status';
 	import { peek } from '$lib/utils/peek';
 	import { fmt } from '$lib/utils/fmt';
@@ -39,6 +40,7 @@
 	<div class="head">
 		<a class="title" href="/todos/{todo.id}" onclick={peek({ selected: todo.id })}>{todo.title}</a>
 		<div class="pills">
+			<GithubBadge annotations={todo.metadata.annotations} />
 			<StatusPill status={todo.status} reason={todo.reason} />
 		</div>
 	</div>

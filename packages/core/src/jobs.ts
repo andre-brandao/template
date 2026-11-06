@@ -1,5 +1,6 @@
 import { Actor } from "./actor";
 import { Email } from "./lib/email";
+import { Github } from "./github";
 import { Queue } from "./lib/queue";
 import { User } from "./user";
 import { zone } from "./user/prefs";
@@ -10,6 +11,7 @@ import { Webhook } from "./platform/webhook";
 export const email = Email.job;
 export const webhook = Webhook.job;
 export const bus = Bus.job;
+export const github = Github.Webhook.job;
 export { subscribers } from "./subscribers";
 
 /**

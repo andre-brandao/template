@@ -7,7 +7,9 @@
 	import { getProject, linkProject, unlinkProject } from '../api/projects.remote';
 	import Links from '$lib/components/Links.svelte';
 	import Annotations from '$lib/components/Annotations.svelte';
+	import GithubMark from '$lib/components/GithubMark.svelte';
 	import { fmt } from '$lib/utils/fmt';
+	import { repos } from '../github';
 
 	// The stages/todos sections and their header facts come in as snippets so this slice
 	// never imports the todos feature — the route composes the two.
@@ -15,8 +17,10 @@
 		id,
 		stages,
 		todos,
-		facts
-	}: { id: string; stages: Snippet; todos: Snippet; facts?: Snippet } = $props();
+		facts,
+		github
+	}: { id: string; stages: Snippet; todos: Snippet; facts?: Snippet; github?: Snippet } =
+		$props();
 
 	const f = fmt();
 
@@ -32,8 +36,19 @@
 <svelte:boundary>
 	{#snippet pending()}<Header.Root title="Project" eyebrow={back} />{/snippet}
 	{@const project = await getProject(id)}
+	{@const list = repos(project.metadata.annotations)}
 	<Header.Root title={project.name} eyebrow={back} lead={project.description ?? undefined}>
 		{@render facts?.()}
+		{#if list.length}
+			<Header.Item label="Repos">
+				{#each list as repo (repo.name)}
+					<a class="repo" href={repo.url} target="_blank" rel="noopener noreferrer">
+						<GithubMark />
+						{repo.name}
+					</a>
+				{/each}
+			</Header.Item>
+		{/if}
 		<Header.Item label="Created">{f.date(project.timeCreated)}</Header.Item>
 	</Header.Root>
 </svelte:boundary>
@@ -50,6 +65,8 @@
 	</div>
 
 	<div class="col">
+		{@render github?.()}
+
 		<svelte:boundary>
 			{@const project = await getProject(id)}
 			<Section wide title="Links">
@@ -98,6 +115,23 @@
 		display: flex;
 		flex-direction: column;
 		gap: 2.25em;
+	}
+
+	.repo {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.35em;
+		background: var(--surface-2);
+		border-radius: 999px;
+		padding: 0.15em 0.65em;
+		font-size: 0.86em;
+		font-weight: 400;
+		color: var(--ink);
+		text-decoration: none;
+	}
+
+	.repo:hover {
+		color: var(--accent);
 	}
 
 	@media (max-width: 900px) {

@@ -54,8 +54,8 @@
 
 <!-- The rail's quiet footer: feedback, out of the topbar. -->
 {#snippet foot(slim: boolean)}
-	{#if me.current && page.data.feedback}
-		<div class={['foot', { slim }]}><Feedback /></div>
+	{#if me.current}
+		<div class={['foot', { slim }]}><Feedback {slim} fill={!slim} /></div>
 	{/if}
 {/snippet}
 

@@ -21,7 +21,8 @@ const build: Record<string, () => Provider | null> = {
     return GithubProvider({
       clientID: id,
       clientSecret: secret,
-      scopes: ["user:email", "read:user"],
+      // `repo` writes issues back; `read:project` reads Project v2 boards for import.
+      scopes: ["user:email", "read:user", "repo", "read:project"],
     });
   },
   google: () => {

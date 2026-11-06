@@ -23,6 +23,7 @@
 	import SubIssues from './editor/SubIssues.svelte';
 	import Links from '$lib/components/Links.svelte';
 	import Annotations from '$lib/components/Annotations.svelte';
+	import GithubBadge from './GithubBadge.svelte';
 	import { color, late } from '../status';
 
 	let {
@@ -88,6 +89,7 @@
 
 {#if page}
 	<Header.Root title={todo.title} eyebrow={parent}>
+		{#snippet actions()}<GithubBadge annotations={todo.metadata.annotations} />{/snippet}
 		<Header.Item label="Status"><StatusPill status={todo.status} reason={todo.reason} /></Header.Item>
 		<Header.Item label="Assignee">{todo.assignee?.name ?? 'Unassigned'}</Header.Item>
 		<Header.Item label="Stage">{todo.stage ?? '—'}</Header.Item>
@@ -105,6 +107,7 @@
 				<header class="head">
 					<h1>{todo.title}</h1>
 					<div class="pills">
+						<GithubBadge annotations={todo.metadata.annotations} />
 						<StatusPill status={todo.status} reason={todo.reason} />
 					</div>
 				</header>

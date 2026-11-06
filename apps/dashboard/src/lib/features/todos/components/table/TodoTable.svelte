@@ -11,6 +11,7 @@
 	import { fmt } from '$lib/utils/fmt';
 	import StatusPicker from '../StatusPicker.svelte';
 	import TagList from '../TagList.svelte';
+	import GithubBadge from '../GithubBadge.svelte';
 	import { late } from '../../status';
 	import { moveTodo, removeTodo } from '../../api/todos.remote';
 	import { moves, tree, visible, type Node } from '../../tree';
@@ -119,6 +120,7 @@
 		<a class="title" href="/todos/{node.id}" onclick={peek({ selected: node.id })}>
 			{node.title}
 		</a>
+		<GithubBadge annotations={node.metadata.annotations} />
 		{#if node.total}
 			<span class="dim">{node.done}/{node.total}</span>
 		{/if}

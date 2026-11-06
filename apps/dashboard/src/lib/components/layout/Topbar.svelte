@@ -1,7 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import { dev } from '$app/environment';
-	import { page } from '$app/state';
 	import { resolve } from '$app/paths';
 	import PanelLeft from '@lucide/svelte/icons/panel-left';
 	import type { User } from '@template/core/user';
@@ -44,7 +43,7 @@
 
 	<!-- The right cluster, Cloudflare-style: utilities first, then the account. -->
 	<div class="tail">
-		{#if user && !onmenu && page.data.feedback}<Feedback />{/if}
+		{#if user && !onmenu}<Feedback />{/if}
 		<Me {user} />
 	</div>
 </header>

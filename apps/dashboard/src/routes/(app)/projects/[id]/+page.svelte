@@ -4,6 +4,7 @@
 	import Stages from '$lib/features/todos/components/Stages.svelte';
 	import Recent from '$lib/features/todos/components/Recent.svelte';
 	import { getStages, getTodos } from '$lib/features/todos/api/todos.remote';
+	import Repos from '$lib/features/github/components/Repos.svelte';
 
 	let { params } = $props();
 
@@ -42,6 +43,9 @@
 		{/snippet}
 		{#snippet todos()}
 			<Recent {scope} />
+		{/snippet}
+		{#snippet github()}
+			<Repos id={params.id} />
 		{/snippet}
 	</ProjectPage>
 {/if}

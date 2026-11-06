@@ -26,14 +26,14 @@
 		gap: 0.5em;
 		width: 100%;
 		min-width: 0;
+		min-height: 2.25em;
 		font: inherit;
-		font-family: var(--font-mono, monospace);
-		font-size: 0.8em;
 		text-align: left;
-		padding: 0.5em 0.6em;
-		border: 1px solid var(--border, #333);
-		border-radius: var(--radius, 8px);
-		background: var(--surface-2, #eee);
+		padding: 0.4em 0.7em;
+		border: 1px solid var(--border, #ddd);
+		border-radius: var(--radius-sm, 6px);
+		background: var(--surface, #fff);
+		box-shadow: var(--shadow-1, 0 1px 2px rgb(0 0 0 / 0.05));
 		color: var(--ink, #111);
 		cursor: pointer;
 	}

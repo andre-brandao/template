@@ -81,9 +81,7 @@
 		border-radius: var(--radius, 6px);
 		background: var(--surface-2);
 		color: var(--muted);
-		font-family: var(--font-mono);
 		font-size: 0.7em;
-		text-transform: uppercase;
 		overflow: hidden;
 	}
 

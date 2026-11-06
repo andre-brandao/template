@@ -25,6 +25,7 @@ import * as scroll from "./pane/Scroll.story.svelte";
 import * as skeleton from "./skeleton/Skeleton.story.svelte";
 import * as spinner from "./spinner/Spinner.story.svelte";
 import * as tabs from "./tabs/Tabs.story.svelte";
+import * as toggle from "./toggle/Toggle.story.svelte";
 import * as toaster from "./toast/Toaster.story.svelte";
 import * as tooltip from "./tooltip/Tooltip.story.svelte";
 
@@ -96,6 +97,7 @@ export const stories = [
   { slug: "spinner", story: spinner.story, demo: spinner.default },
   { slug: "tabs", story: tabs.story, demo: tabs.default },
   { slug: "toaster", story: toaster.story, demo: toaster.default },
+  { slug: "toggle", story: toggle.story, demo: toggle.default },
   { slug: "tooltip", story: tooltip.story, demo: tooltip.default },
 ]
   .map((one) => ({ ...one, src: src[one.slug] ?? "" }))

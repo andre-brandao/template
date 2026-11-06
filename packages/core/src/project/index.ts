@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { and, asc, count, eq, ilike, isNull, type SQLWrapper } from "drizzle-orm";
 import { Assert } from "../util/assert";
+import { ErrorCodes, VisibleError } from "../error";
 import { fn } from "../util/fn";
 import { Database } from "../drizzle";
 import { Actor } from "../actor";
@@ -9,6 +10,16 @@ import { Examples } from "../examples";
 import { Identifier } from "../identifier";
 import { sortable } from "../drizzle/order";
 import { Bus } from "../platform/bus";
+import {
+  Annotate,
+  Link,
+  Links,
+  Metadata,
+  annotate as merge,
+  link as append,
+  relink,
+  unlink as detach,
+} from "../util/meta";
 import { ProjectTable } from "./project.sql";
 
 export namespace Project {
@@ -21,6 +32,7 @@ export namespace Project {
       name: z.string().min(1).max(200).meta({ description: "Display name." }),
       description: z.string().max(2000).nullable().meta({ description: "What it is for." }),
       image: z.string().nullable().meta({ description: "Cover image URL, or null for none." }),
+      metadata: Metadata,
       timeCreated: z.iso.datetime().meta({ description: "When it was created." }),
     })
     .meta({
@@ -30,7 +42,9 @@ export namespace Project {
     });
   export type Info = z.infer<typeof Info>;
 
-  const Patch = Info.pick({ name: true, description: true, image: true }).partial();
+  const Patch = Info.pick({ name: true, description: true, image: true })
+    .extend({ links: Links })
+    .partial();
 
   export const Event = {
     Created: Bus.define("project.created", Info),
@@ -124,15 +138,96 @@ export namespace Project {
       return Database.transaction(async (tx) => {
         await tx
           .update(ProjectTable)
-          .set({ ...patch, timeUpdated: new Date() })
+          .set({
+            name: patch.name,
+            description: patch.description,
+            image: patch.image,
+            ...(patch.links ? { metadata: relink(ProjectTable.metadata, patch.links) } : {}),
+            timeUpdated: new Date(),
+          })
           .where(eq(ProjectTable.id, id));
         await Event.Updated.publish(
-          { project: { ...before, ...patch }, changes: patch },
+          { project: await assert.exists(fromID.force(id)), changes: patch },
           { subject: id },
         );
       });
     },
-    { title: "Update project", description: "Update a project's name, description or image." },
+    {
+      title: "Update project",
+      description: "Update a project's name, description, image or links.",
+    },
+  );
+
+  /** Adds a link, retitling one already at that url. One statement, so concurrent edits all land. */
+  export const link = fn(
+    Link.extend({ id: Info.shape.id }),
+    async (input) => {
+      const before = await assert.exists(fromID.force(input.id));
+      Actor.check({ project: ["update"] }, before.createdBy);
+      const links = before.metadata.links;
+      if (links.length >= 50 && !links.some((item) => item.url === input.url))
+        throw new VisibleError(
+          "validation",
+          ErrorCodes.Validation.INVALID_PARAMETER,
+          "A project holds at most 50 links",
+          "url",
+        );
+      await Database.use((tx) =>
+        tx
+          .update(ProjectTable)
+          .set({
+            metadata: append(ProjectTable.metadata, {
+              url: input.url,
+              title: input.title,
+              type: input.type,
+            }),
+            timeUpdated: new Date(),
+          })
+          .where(eq(ProjectTable.id, input.id)),
+      );
+      return assert.exists(fromID.force(input.id));
+    },
+    {
+      title: "Link project",
+      description: "Attach an outside link to a project, or retitle the one at that url.",
+    },
+  );
+
+  export const unlink = fn(
+    z.object({ id: Info.shape.id, url: z.string().meta({ description: "The link to drop." }) }),
+    async (input) => {
+      const before = await assert.exists(fromID.force(input.id));
+      Actor.check({ project: ["update"] }, before.createdBy);
+      await Database.use((tx) =>
+        tx
+          .update(ProjectTable)
+          .set({ metadata: detach(ProjectTable.metadata, input.url), timeUpdated: new Date() })
+          .where(eq(ProjectTable.id, input.id)),
+      );
+      return assert.exists(fromID.force(input.id));
+    },
+    { title: "Unlink project", description: "Drop the link at a url from a project." },
+  );
+
+  /** Annotations stay out of `update` and its events: a sync engine writing one isn't an edit. */
+  export const annotate = fn(
+    Annotate.extend({ id: Info.shape.id }),
+    async (input) => {
+      const before = await assert.exists(fromID.force(input.id));
+      Actor.check({ project: ["update"] }, before.createdBy);
+      await Database.use((tx) =>
+        tx
+          .update(ProjectTable)
+          .set({ metadata: merge(ProjectTable.metadata, input), timeUpdated: new Date() })
+          .where(eq(ProjectTable.id, input.id)),
+      );
+      return assert.exists(fromID.force(input.id));
+    },
+    {
+      title: "Annotate project",
+      description:
+        "Set or drop namespaced annotation keys on a project. Keys under `github.com/` belong to the GitHub sync and are read-only.",
+    },
   );
 
   /**
@@ -166,6 +261,7 @@ export namespace Project {
       name: row.name,
       description: row.description,
       image: row.image,
+      metadata: row.metadata,
       timeCreated: row.timeCreated.toISOString(),
     };
   }

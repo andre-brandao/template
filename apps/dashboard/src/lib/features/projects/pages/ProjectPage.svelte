@@ -1,13 +1,24 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import type { Event } from '@template/core/event';
-	import Header from '$lib/components/Header.svelte';
+	import { Section } from '@template/ui';
+	import * as Header from '$lib/components/header';
 	import Timeline from '$lib/features/events/components/Timeline.svelte';
-	import { getProject } from '../api/projects.remote';
+	import { getProject, linkProject, unlinkProject } from '../api/projects.remote';
+	import Links from '$lib/components/Links.svelte';
+	import Annotations from '$lib/components/Annotations.svelte';
+	import { fmt } from '$lib/utils/fmt';
 
-	// The stages/todos sections come in as snippets so this slice never imports
-	// the todos feature — the route composes the two.
-	let { id, stages, todos }: { id: string; stages: Snippet; todos: Snippet } = $props();
+	// The stages/todos sections and their header facts come in as snippets so this slice
+	// never imports the todos feature — the route composes the two.
+	let {
+		id,
+		stages,
+		todos,
+		facts
+	}: { id: string; stages: Snippet; todos: Snippet; facts?: Snippet } = $props();
+
+	const f = fmt();
 
 	const eventLabels: Record<string, string> = {
 		'project.created': 'Created',
@@ -16,9 +27,15 @@
 	};
 </script>
 
+{#snippet back()}<a href="/projects">Projects</a>{/snippet}
+
 <svelte:boundary>
+	{#snippet pending()}<Header.Root title="Project" eyebrow={back} />{/snippet}
 	{@const project = await getProject(id)}
-	<Header title={project.name}>{project.description}</Header>
+	<Header.Root title={project.name} eyebrow={back} lead={project.description ?? undefined}>
+		{@render facts?.()}
+		<Header.Item label="Created">{f.date(project.timeCreated)}</Header.Item>
+	</Header.Root>
 </svelte:boundary>
 
 <!--
@@ -27,42 +44,47 @@
 -->
 <div class="split">
 	<div class="col">
-		<section>
-			<h2>Stages</h2>
+		<Section wide title="Stages">
 			{@render stages()}
-		</section>
+		</Section>
 	</div>
 
 	<div class="col">
-		<section>
-			<h2>Recent todos</h2>
-			{@render todos()}
-		</section>
+		<svelte:boundary>
+			{@const project = await getProject(id)}
+			<Section wide title="Links">
+				<Links
+					id={project.id}
+					links={project.metadata.links}
+					add={linkProject.for(project.id)}
+					drop={(url) => unlinkProject.for(`${project.id}:${url}`)}
+					onsaved={() => getProject(project.id).refresh()}
+				/>
+			</Section>
 
-		<!-- Heading lives here rather than Timeline's `title`, so it shares the page's
-		     scoped h2 style with the two lists above it. -->
-		<section class="logs">
-			<h2>Logs</h2>
+			{#if Object.keys(project.metadata.annotations).length}
+				<Section wide title="Annotations">
+					<Annotations annotations={project.metadata.annotations} />
+				</Section>
+			{/if}
+		</svelte:boundary>
+
+		<Section wide title="Recent todos">
+			{@render todos()}
+		</Section>
+
+		<!-- Heading lives here rather than Timeline's `title`, so it matches the sections above. -->
+		<Section wide title="Logs">
 			<Timeline source="project" sourceID={id}>
 				{#snippet label(event: Event.Info)}
 					{eventLabels[event.type] ?? event.type}
 				{/snippet}
 			</Timeline>
-		</section>
+		</Section>
 	</div>
 </div>
 
 <style>
-	h2 {
-		margin: 0 0 0.75em;
-		font-size: 0.78em;
-		font-family: var(--font-mono);
-		font-weight: 500;
-		letter-spacing: 0.08em;
-		text-transform: uppercase;
-		color: var(--dim);
-	}
-
 	/* Golden section: the long column is φ (1.618) times the short one. */
 	.split {
 		display: grid;
@@ -73,11 +95,9 @@
 
 	.col {
 		min-width: 0;
-	}
-
-	.logs {
-		display: block;
-		margin-top: 2.25em;
+		display: flex;
+		flex-direction: column;
+		gap: 2.25em;
 	}
 
 	@media (max-width: 900px) {

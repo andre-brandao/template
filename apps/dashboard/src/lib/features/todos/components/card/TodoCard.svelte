@@ -38,7 +38,9 @@
 
 	<div class="head">
 		<a class="title" href="/todos/{todo.id}" onclick={peek({ selected: todo.id })}>{todo.title}</a>
-		<StatusPill status={todo.status} reason={todo.reason} />
+		<div class="pills">
+			<StatusPill status={todo.status} reason={todo.reason} />
+		</div>
 	</div>
 
 	{#if preview}
@@ -83,6 +85,13 @@
 		color: var(--accent);
 	}
 
+	.pills {
+		display: flex;
+		align-items: center;
+		gap: 0.4em;
+		flex: none;
+	}
+
 	.preview {
 		color: var(--muted);
 		font-size: 0.85em;
@@ -105,10 +114,7 @@
 	.stage {
 		border: 1px solid var(--border-bright);
 		border-radius: 4px;
-		font-family: var(--font-mono);
 		font-size: 0.7em;
-		text-transform: uppercase;
-		letter-spacing: 0.04em;
 		color: var(--muted);
 		padding: 0.2em 0.5em;
 	}

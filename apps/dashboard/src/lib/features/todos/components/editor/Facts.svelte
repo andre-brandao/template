@@ -38,17 +38,13 @@
 	}
 
 	dt {
-		font-family: var(--font-mono);
-		font-size: 0.68em;
-		text-transform: uppercase;
-		letter-spacing: 0.04em;
-		color: var(--dim);
+		color: var(--muted);
 	}
 
 	dd {
-		margin: 0.2em 0 0;
-		font-size: 0.88em;
-		color: var(--muted);
+		margin: 0.15em 0 0;
+		font-weight: 500;
+		color: var(--ink);
 	}
 
 	dd.late {

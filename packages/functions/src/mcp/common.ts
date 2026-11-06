@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { McpServer } from "@modelcontextprotocol/server";
+import type { McpServer, ToolAnnotations } from "@modelcontextprotocol/server";
 import type { Meta } from "@template/core/util/fn";
 
 /** Wraps data as an MCP text result — every tool returns through this. */
@@ -13,8 +13,9 @@ type Op<S extends z.ZodType> = ((input: z.infer<S>) => unknown) & { meta: Meta; 
  * Registers tools against one server. Title, description and input schema all come off the
  * core op, so a tool can never document itself differently from the route over the same op.
  * `run` is only needed when the tool reports something other than the op's own return.
+ * `annotations` go on every tool it registers, e.g. `{ readOnlyHint: true }` for the reads.
  */
-export function tools(server: McpServer) {
+export function tools(server: McpServer, annotations?: ToolAnnotations) {
   const tool = <S extends z.ZodObject<z.ZodRawShape>>(
     name: string,
     op: Op<S>,
@@ -22,7 +23,7 @@ export function tools(server: McpServer) {
   ) =>
     server.registerTool(
       name,
-      { ...op.meta, inputSchema: op.schema as z.ZodObject<z.ZodRawShape> },
+      { ...op.meta, inputSchema: op.schema as z.ZodObject<z.ZodRawShape>, annotations },
       async (input) => text(await (run ?? op)(input as z.infer<S>)),
     );
 
@@ -34,7 +35,7 @@ export function tools(server: McpServer) {
   ) =>
     server.registerTool(
       name,
-      { ...op.meta, inputSchema: z.object({ id: op.schema }) },
+      { ...op.meta, inputSchema: z.object({ id: op.schema }), annotations },
       async (input) => text(await (run ?? op)(input.id)),
     );
 

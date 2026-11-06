@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { z } from 'zod';
-	import { Button, Fill, Input, LazySelect, Pagination, Scroll } from '@template/ui';
-	import Header from '$lib/components/Header.svelte';
+	import { Button, Fill, Input, LazySelect, Pagination, Scroll, Toggle } from '@template/ui';
+	import * as Header from '$lib/components/header';
 	import { debounce } from '$lib/utils/debounce';
 	import { query } from '$lib/utils/params';
 	import { getEvents, getFacets } from '../api/admin.remote';
@@ -47,44 +47,51 @@
 <!-- Header, filters and pagination hold still; only the list scrolls. A log is read by
      narrowing it, so the controls that narrow it have to stay in reach. -->
 <Fill>
-	<Header title="Logs">
-		Every audit entry this instance has recorded, newest first. Entries are written by core as
-		side effects of the actions themselves, so they cannot be edited or deleted from here.
-	</Header>
-
-	<div class="bar">
-		<Input
-			type="search"
-			placeholder="Search type or source id"
-			value={params.q}
-			oninput={(e) => commit(e.currentTarget.value)}
-		/>
-		<LazySelect
-			value={params.type}
-			options={[{ value: '', label: 'All types' }]}
-			load={list('types')}
-			onchange={(e) => pick({ type: e.currentTarget.value })}
-		/>
-		<LazySelect
-			value={params.source}
-			options={[{ value: '', label: 'All sources' }]}
-			load={list('sources')}
-			onchange={(e) => pick({ source: e.currentTarget.value })}
-		/>
-		{#if filtered}
-			<Button variant="ghost" onclick={() => pick({ q: '', type: '', source: '', user: '' })}>
-				Clear
-			</Button>
-		{/if}
-	</div>
-
-	{#if params.user}
-		<p class="scope">
-			Showing one user's activity. <button type="button" onclick={() => pick({ user: '' })}>
-				Show everyone
-			</button>
-		</p>
-	{/if}
+	<Header.Root title="Logs" lead="Every audit entry, newest first. Written by core; read-only here.">
+		<Header.Item label="Entries">{log.total.toLocaleString()}</Header.Item>
+		{#snippet strip()}
+			<Header.Group>
+				<Input
+					type="search"
+					aria-label="Search logs"
+					placeholder="Search type or source id"
+					value={params.q}
+					oninput={(e) => commit(e.currentTarget.value)}
+				/>
+			</Header.Group>
+			<Header.Group label="Type">
+				<LazySelect
+					aria-label="Type"
+					value={params.type}
+					options={[{ value: '', label: 'All types' }]}
+					load={list('types')}
+					onchange={(e) => pick({ type: e.currentTarget.value })}
+				/>
+			</Header.Group>
+			<Header.Group label="Source">
+				<LazySelect
+					aria-label="Source"
+					value={params.source}
+					options={[{ value: '', label: 'All sources' }]}
+					load={list('sources')}
+					onchange={(e) => pick({ source: e.currentTarget.value })}
+				/>
+			</Header.Group>
+			{#if params.user}
+				<!-- Set from a row's user link; unpressing it is how the scope goes away. -->
+				<Header.Group label="User">
+					<Toggle pressed onclick={() => pick({ user: '' })}>One user ×</Toggle>
+				</Header.Group>
+			{/if}
+			{#if filtered}
+				<Header.Group end>
+					<Button variant="ghost" onclick={() => pick({ q: '', type: '', source: '', user: '' })}>
+						Clear filters
+					</Button>
+				</Header.Group>
+			{/if}
+		{/snippet}
+	</Header.Root>
 
 	<Scroll fill>
 		<LogsTable
@@ -97,29 +104,3 @@
 
 	<Pagination of={log} onchange={(page) => params.update({ page })} />
 </Fill>
-
-<style>
-	.bar {
-		display: flex;
-		flex-wrap: wrap;
-		align-items: center;
-		gap: 0.6em;
-		margin-bottom: 1em;
-	}
-
-	.scope {
-		margin: 0 0 1em;
-		font-size: 0.9em;
-		color: var(--muted);
-	}
-
-	.scope button {
-		padding: 0;
-		border: 0;
-		background: none;
-		font: inherit;
-		color: var(--accent);
-		cursor: pointer;
-	}
-
-</style>

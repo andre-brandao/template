@@ -64,6 +64,21 @@ export namespace TodoApi {
         return c.json(await Todo.assert.exists(Todo.fromID.force(id)), 200);
       },
     )
+    .post(
+      "/:id/move",
+      doc(Todo.move.meta, {
+        200: doc.json(Todo.Info),
+        ...doc.errors(400, 401, 403, 404, 500),
+      }),
+      authRequired,
+      validator("param", Identifier),
+      validator("json", Todo.move.schema.omit({ id: true })),
+      async (c) => {
+        const { id } = c.req.valid("param");
+        await Todo.move({ id, ...c.req.valid("json") });
+        return c.json(await Todo.assert.exists(Todo.fromID.force(id)), 200);
+      },
+    )
     .delete(
       "/:id",
       doc(Todo.remove.meta, {

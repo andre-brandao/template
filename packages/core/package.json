@@ -30,6 +30,7 @@
     "./key/*": "./src/platform/key/*.ts",
     "./webhook": "./src/platform/webhook/index.ts",
     "./webhook/*": "./src/platform/webhook/*.ts",
+    "./conversation/*": "./src/platform/conversation/*.ts",
     "./util/*": "./src/util/*.ts"
   },
   "scripts": {

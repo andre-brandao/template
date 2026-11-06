@@ -23,19 +23,14 @@
 	<div class="side">
 		<Menu align="end">
 			{#snippet trigger(attrs)}
-				<button class="me" type="button" {...attrs}>
+				<!-- Just the face: the menu it opens says who. -->
+				<button class="me" type="button" aria-label="Account of {user.name}" {...attrs}>
 					<Avatar name={user.name} image={user.image} />
-					<span class="meta">
-						<span class="name">{user.name}</span>
-						<span class="email">{user.email}</span>
-					</span>
-					<span class="caret" aria-hidden="true">▾</span>
 				</button>
 			{/snippet}
 			{#snippet children(close)}
 				<div class="sheet">
-					<!-- The bar hides name and email on small screens; the menu carries them instead. -->
-					<div class="who">
+						<div class="who">
 						<span class="name">{user.name}</span>
 						<span class="email">{user.email}</span>
 					</div>
@@ -68,13 +63,11 @@
 		margin-left: auto;
 	}
 
-	/* `header` stretches its children, so without this the link fills the bar's
-	   height and its text rides the top edge. */
+	/* `header` stretches its children, so without this the link rides the top edge. */
 	.login {
 		align-self: center;
 		margin-left: auto;
-		font-family: var(--font-mono);
-		font-size: 0.82em;
+		font-size: 0.93em;
 		color: var(--muted);
 		text-decoration: none;
 	}
@@ -86,30 +79,22 @@
 	.me {
 		display: inline-flex;
 		align-items: center;
-		gap: 0.6em;
-		padding: 0.25em 0.5em;
-		margin: -0.25em -0.5em;
+		padding: 0.2em;
 		border: none;
-		border-radius: var(--radius);
+		border-radius: 999px;
 		background: none;
 		font: inherit;
-		text-align: left;
 		color: var(--ink);
 		cursor: pointer;
 	}
 
 	.me:hover,
 	.me[aria-expanded='true'] {
-		background: var(--surface-2);
-	}
-
-	.caret {
-		font-size: 0.7em;
-		color: var(--dim);
+		background: var(--hover);
 	}
 
 	.sheet {
-		min-width: 13em;
+		min-width: 14em;
 		padding: 0.35em;
 	}
 
@@ -124,16 +109,15 @@
 
 	.item {
 		display: block;
-		padding: 0.5em 0.65em;
-		border-radius: calc(var(--radius) - 3px);
-		font-size: 0.88em;
+		padding: 0.45em 0.65em;
+		border-radius: var(--radius-sm);
 		color: var(--ink);
 		text-decoration: none;
 	}
 
 	.item:hover,
 	.item[aria-current='page'] {
-		background: var(--surface-2);
+		background: var(--hover);
 	}
 
 	.leave {
@@ -145,27 +129,13 @@
 		background: color-mix(in srgb, var(--danger) 8%, transparent);
 	}
 
-	.meta {
-		display: flex;
-		flex-direction: column;
-		line-height: 1.25;
-	}
-
 	.name {
-		font-size: 0.85em;
 		font-weight: 600;
 		color: var(--ink);
 	}
 
 	.email {
-		font-family: var(--font-mono);
-		font-size: 0.7em;
+		font-size: 0.86em;
 		color: var(--dim);
-	}
-
-	@media (max-width: 700px) {
-		.meta {
-			display: none;
-		}
 	}
 </style>

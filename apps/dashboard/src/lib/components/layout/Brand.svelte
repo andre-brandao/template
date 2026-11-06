@@ -17,10 +17,9 @@
 		align-items: center;
 		gap: 0.55em;
 		flex-shrink: 0;
-		font-family: var(--font-mono);
-		font-size: 0.85em;
-		letter-spacing: 0.04em;
-		text-transform: uppercase;
+		font-size: 1.05em;
+		font-weight: 600;
+		letter-spacing: -0.011em;
 		color: var(--ink);
 		text-decoration: none;
 	}

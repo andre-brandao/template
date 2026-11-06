@@ -60,6 +60,7 @@
 		flex-direction: column;
 		gap: 0.8em;
 		max-width: 64em;
+		container-type: inline-size;
 	}
 
 	.tail {
@@ -101,10 +102,7 @@
 	}
 
 	dt {
-		font-family: var(--font-mono);
-		font-size: 0.68em;
-		letter-spacing: 0.06em;
-		text-transform: uppercase;
+		font-size: 0.86em;
 		color: var(--dim);
 		overflow: hidden;
 		text-overflow: ellipsis;
@@ -128,9 +126,9 @@
 		white-space: normal;
 	}
 
-	/* The bar still reads at phone width — proportion is the point and 6px needs no room.
-	   Only the legend gives up its columns, each item keeping its colour as a left edge. */
-	@media (max-width: 640px) {
+	/* Sized by its own box, so a narrow card stacks too: five 6.5em floors need ~36em. The bar
+	   keeps reading; only the legend gives up its columns, each keeping its colour as an edge. */
+	@container (max-width: 36em) {
 		.legend {
 			display: flex;
 			flex-direction: column;

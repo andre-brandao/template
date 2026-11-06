@@ -28,7 +28,6 @@
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
-		font-family: var(--font-mono, monospace);
 		font-size: calc(var(--size) * 0.42);
 		font-weight: 600;
 		color: var(--ink, #111);

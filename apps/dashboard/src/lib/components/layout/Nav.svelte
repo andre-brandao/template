@@ -58,7 +58,7 @@
 	nav {
 		display: flex;
 		flex-direction: column;
-		gap: 1.5em;
+		gap: 1.25em;
 		/* Fills the rail so the bottom group's auto margin has room to push. */
 		flex: 1;
 	}
@@ -73,17 +73,15 @@
 	.section {
 		display: flex;
 		flex-direction: column;
-		gap: 0.25em;
+		gap: 1px;
 	}
 
 	.title {
-		font-family: var(--font-mono);
-		font-size: 0.68em;
-		letter-spacing: 0.08em;
-		text-transform: uppercase;
+		font-size: 0.82em;
+		font-weight: 500;
 		color: var(--dim);
-		padding: 0 0.7em;
-		margin-bottom: 0.35em;
+		padding: 0 0.75em;
+		margin-bottom: 0.25em;
 	}
 
 	/* Sits where the title sat, so the rhythm between sections doesn't change with the rail. */
@@ -99,11 +97,10 @@
 		display: flex;
 		align-items: center;
 		gap: 0.6em;
-		font-family: var(--font-mono);
-		font-size: 0.82em;
+		font-size: 0.93em;
 		color: var(--muted);
 		text-decoration: none;
-		padding: 0 0.7em;
+		padding: 0 0.625em;
 	}
 
 	.back:hover {
@@ -115,8 +112,8 @@
 		padding-inline: 0;
 	}
 
+	/* overflow already lets this flex item shrink below its text. */
 	.label {
-		min-width: 0;
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;

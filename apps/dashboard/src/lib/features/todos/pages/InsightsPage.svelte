@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { z } from 'zod';
 	import { query } from '$lib/utils/params';
-	import Header from '$lib/components/Header.svelte';
+	import * as Header from '$lib/components/header';
 	import { RangePicker, Skeleton, last, valid, type Range } from '@template/ui';
 	import { debounce } from '$lib/utils/debounce';
 	import StatsSection from '../components/insights/StatsSection.svelte';
@@ -28,17 +28,23 @@
 	const commit = debounce(params.update, 250);
 </script>
 
-<Header>
-	{#snippet title()}<Source {source} {sourceID} fallback="Insights" />{/snippet}
-	{#snippet actions()}
-		<div class="toolbar">
-			{#if $effect.pending()}<span class="updating">updating…</span>{/if}
-			<RangePicker range={picked} onchange={commit} />
-		</div>
-	{/snippet}
-</Header>
+<!-- Scoped to a project, the project rides above the title as the way back. -->
+{#snippet parent()}
+	<a href="/projects/{sourceID}"><Source {source} {sourceID} fallback="Project" /></a>
+{/snippet}
 
-<div class="sections" class:stale={$effect.pending()}>
+<Header.Root title="Insights" eyebrow={source && sourceID ? parent : undefined}>
+	{#snippet strip()}
+		<Header.Group label="Period">
+			<RangePicker range={picked} onchange={commit} />
+		</Header.Group>
+		{#if $effect.pending()}
+			<Header.Group end><span class="updating">updating…</span></Header.Group>
+		{/if}
+	{/snippet}
+</Header.Root>
+
+<div class={['sections', { stale: $effect.pending() }]}>
 	<div class="span">
 		<svelte:boundary>
 			<StatsSection {range} />
@@ -75,14 +81,6 @@
 </div>
 
 <style>
-	.toolbar {
-		display: flex;
-		align-items: center;
-		flex-wrap: wrap;
-		justify-content: flex-end;
-		gap: 0.75em;
-	}
-
 	.sections {
 		display: grid;
 		grid-template-columns: 1fr;

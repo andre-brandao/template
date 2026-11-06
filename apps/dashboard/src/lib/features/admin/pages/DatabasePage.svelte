@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Empty } from '@template/ui';
-	import Header from '$lib/components/Header.svelte';
+	import * as Header from '$lib/components/header';
 	import { fmt } from '$lib/utils/fmt';
 	import { size } from '$lib/utils/size';
 	import { getStats } from '../api/admin.remote';
@@ -8,16 +8,37 @@
 
 	const stats = $derived(await getStats());
 	const f = fmt();
+	const load = $derived(stats.server.connections / Math.max(1, stats.server.max));
 
 	// Row counts come from the planner's live-tuple estimate, so the widest bar is a
 	// proportion of the largest table rather than an exact share of anything.
 	const widest = $derived(Math.max(...stats.tables.tables.map((t) => t.bytes), 1));
 </script>
 
-<Header title="Database">
-	Live figures, read straight from Postgres each time this page loads. Nothing here is stored
-	or cached.
-</Header>
+<!-- Queue and server are single figures, so they ride the facts band; the sections below
+     keep what needs room: row counts and the per-table breakdown. -->
+<Header.Root title="Database">
+	<Header.Item label="On disk">{size(stats.tables.bytes)}</Header.Item>
+	<Header.Item label="Queue">
+		{stats.queue.pending} pending
+		{#if stats.queue.running}<small>{stats.queue.running} running</small>{/if}
+		{#if stats.queue.failed > 0}<span class="failed">{stats.queue.failed} failed</span>{/if}
+		{#if stats.queue.oldest}<small>oldest {f.ago(stats.queue.oldest)}</small>{/if}
+	</Header.Item>
+	<Header.Item label="Connections">
+		<span class={['meter', { high: load > 0.8 }]} aria-hidden="true">
+			<i style:width="{Math.min(1, load) * 100}%"></i>
+		</span>
+		{stats.server.connections}
+		<small>of {stats.server.max}</small>
+	</Header.Item>
+	<Header.Item label="Postgres">{stats.server.version}</Header.Item>
+	<Header.Item label="Up">
+		<span title={stats.server.started ? f.stamp(stats.server.started) : undefined}>
+			{stats.server.started ? f.ago(stats.server.started) : '—'}
+		</span>
+	</Header.Item>
+</Header.Root>
 
 <section>
 	<h2>Instance</h2>
@@ -25,37 +46,6 @@
 		<Stat label="Users" value={stats.counts.users} note={`${stats.counts.disabled} disabled`} />
 		<Stat label="Projects" value={stats.counts.projects} />
 		<Stat label="Todos" value={stats.counts.todos} note={`${stats.counts.done} done`} />
-		<Stat label="Database" value={size(stats.tables.bytes)} note="total on disk" />
-	</div>
-</section>
-
-<section>
-	<h2>Queue</h2>
-	<div class="stats">
-		<Stat
-			label="Pending"
-			value={stats.queue.pending}
-			note={stats.queue.oldest ? `oldest ${f.ago(stats.queue.oldest)}` : 'nothing waiting'}
-		/>
-		<Stat label="Running" value={stats.queue.running} />
-		<Stat label="Failed" value={stats.queue.failed} note="buried, kept for inspection" />
-	</div>
-</section>
-
-<section>
-	<h2>Server</h2>
-	<div class="stats">
-		<Stat label="Postgres" value={stats.server.version} />
-		<Stat
-			label="Connections"
-			value={`${stats.server.connections} / ${stats.server.max}`}
-			note="in use vs max_connections"
-		/>
-		<Stat
-			label="Up since"
-			value={stats.server.started ? f.ago(stats.server.started) : '—'}
-			note={stats.server.started ? f.stamp(stats.server.started) : undefined}
-		/>
 	</div>
 </section>
 
@@ -80,6 +70,35 @@
 </section>
 
 <style>
+	small {
+		font-weight: 400;
+		color: var(--dim);
+	}
+
+	.failed {
+		color: var(--danger);
+	}
+
+	.meter {
+		flex: none;
+		display: block;
+		width: 4em;
+		height: 0.4em;
+		border-radius: 2px;
+		background: var(--border);
+		overflow: hidden;
+	}
+
+	.meter i {
+		display: block;
+		height: 100%;
+		background: var(--done);
+	}
+
+	.meter.high i {
+		background: var(--danger);
+	}
+
 	section {
 		margin-bottom: 2em;
 	}

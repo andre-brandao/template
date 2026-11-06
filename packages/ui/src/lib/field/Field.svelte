@@ -32,13 +32,13 @@
 		display: flex;
 		flex-direction: column;
 		gap: 0.4em;
+		/* Lets a field shrink inside a grid or flex row instead of overflowing it. */
+		min-width: 0;
 	}
 
 	span {
-		font-family: var(--font-mono, monospace);
-		font-size: 0.72em;
-		letter-spacing: 0.06em;
-		text-transform: uppercase;
-		color: var(--dim, #888);
+		font-size: 0.93em;
+		font-weight: 500;
+		color: var(--ink, #111);
 	}
 </style>

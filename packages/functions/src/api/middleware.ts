@@ -2,12 +2,13 @@ import { type MiddlewareHandler, type Next } from "hono";
 import { VisibleError, ErrorCodes } from "@template/core/error";
 import { Actor } from "@template/core/actor";
 import { Key } from "@template/core/key";
+import { Session } from "@template/core/key/session";
 import { User } from "@template/core/user";
 import { zone } from "@template/core/user/prefs";
 import { subjects } from "../auth/subject";
 import { client } from "./auth";
 
-// Both token kinds resolve to a bare user id. The role always comes from the row, so an
+// Every token kind resolves to a bare user id. The role always comes from the row, so an
 // API key can never outlive the permissions of the user who minted it.
 async function actor(userID: string, next: Next) {
   const row = await User.fromID(userID);
@@ -32,6 +33,19 @@ export const auth: MiddlewareHandler = async (c, next) => {
       "Bearer token not found or improperly formatted",
     );
   const token = match[1];
+
+  // A dashboard session (`<id>.ses-…`), forwarded server-to-server by the dashboard agent so
+  // its MCP calls run as the signed-in user. Collapses to the same user actor.
+  if (token.includes(".ses-")) {
+    const me = await Session.verify(token);
+    if (!me)
+      throw new VisibleError(
+        "authentication",
+        ErrorCodes.Authentication.INVALID_TOKEN,
+        "Invalid or expired session",
+      );
+    return actor(me.userID, next);
+  }
 
   // `sk-` secrets are user-minted API keys, resolved in Postgres. Anything else
   // is a JWT from the OpenAuth issuer, verified statelessly against its JWKS.

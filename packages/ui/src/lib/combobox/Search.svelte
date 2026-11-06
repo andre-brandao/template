@@ -23,9 +23,4 @@
 		display: flex;
 		padding: 0.15em 0.15em 0.45em;
 	}
-
-	.search :global(input) {
-		font-family: var(--font-mono, monospace);
-		font-size: 0.8em;
-	}
 </style>

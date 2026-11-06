@@ -110,7 +110,7 @@
 	}
 
 	dialog::backdrop {
-		background: rgb(0 0 0 / 0.45);
+		background: rgb(0 0 0 / 0.32);
 		opacity: 1;
 		transition:
 			opacity 0.25s ease,
@@ -138,11 +138,11 @@
 		line-height: 1;
 		color: var(--muted, #666);
 		cursor: pointer;
-		border-radius: var(--radius, 6px);
+		border-radius: var(--radius-sm, 6px);
 	}
 
 	.close:hover {
 		color: var(--ink, #111);
-		background: var(--surface-2, #eee);
+		background: var(--hover, #eee);
 	}
 </style>

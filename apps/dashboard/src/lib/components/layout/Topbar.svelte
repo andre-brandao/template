@@ -1,8 +1,8 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import { dev } from '$app/environment';
-	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
+	import { resolve } from '$app/paths';
 	import PanelLeft from '@lucide/svelte/icons/panel-left';
 	import type { User } from '@template/core/user';
 	import Feedback from '$lib/features/feedback/components/Feedback.svelte';
@@ -32,7 +32,7 @@
 		</button>
 	{/if}
 
-	<div class="lead" class:tucked={!!onmenu}>
+	<div class={['lead', { tucked: !!onmenu }]}>
 		<Brand word={!head} />{@render head?.(false)}
 	</div>
 
@@ -44,7 +44,7 @@
 
 	<!-- The right cluster, Cloudflare-style: utilities first, then the account. -->
 	<div class="tail">
-		{#if user && page.data.feedback}<Feedback />{/if}
+		{#if user && !onmenu && page.data.feedback}<Feedback />{/if}
 		<Me {user} />
 	</div>
 </header>
@@ -61,9 +61,10 @@
 		gap: 1em;
 		/* Fixed, so a taller control in the bar can't grow it. */
 		height: var(--topbar);
-		padding-inline: 1.25em;
+		padding-inline: 2em 1em;
 		border-bottom: 1px solid var(--border);
-		background: var(--surface);
+		background: color-mix(in oklab, var(--surface) 88%, transparent);
+		backdrop-filter: blur(12px);
 	}
 
 	.menu {
@@ -73,14 +74,14 @@
 		align-items: center;
 		padding: 0.4em;
 		border: none;
-		border-radius: var(--radius);
+		border-radius: var(--radius-sm);
 		background: none;
 		color: var(--muted);
 		cursor: pointer;
 	}
 
 	.menu:hover {
-		background: var(--surface-2);
+		background: var(--hover);
 		color: var(--ink);
 	}
 
@@ -103,15 +104,11 @@
 		flex-shrink: 0;
 		text-decoration: none;
 		align-self: center;
-		padding: 0.15em 0.5em;
-		font-family: var(--font-mono);
-		font-size: 0.66em;
+		padding: 0.2em 0.65em;
+		font-size: 0.8em;
 		font-weight: 600;
-		letter-spacing: 0.1em;
-		text-transform: uppercase;
-		border-radius: var(--radius);
-		border: 1px solid color-mix(in oklab, var(--progress) 45%, transparent);
-		background: color-mix(in oklab, var(--progress) 16%, var(--surface));
+		border-radius: 999px;
+		background: color-mix(in oklab, var(--progress) 14%, transparent);
 		color: var(--progress);
 	}
 
@@ -123,6 +120,10 @@
 	}
 
 	@media (max-width: 700px) {
+		header {
+			padding-inline: 1em;
+		}
+
 		.menu,
 		.tucked {
 			display: flex;

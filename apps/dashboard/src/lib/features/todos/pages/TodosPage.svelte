@@ -3,7 +3,7 @@
 	import { page } from '$app/state';
 	import { query } from '$lib/utils/params';
 	import { sort } from '../sort';
-	import Header from '$lib/components/Header.svelte';
+	import * as Header from '$lib/components/header';
 	import { Button, Drawer } from '@template/ui';
 	import { getTodos } from '../api/todos.remote';
 	import Source from '$lib/features/events/components/Source.svelte';
@@ -45,38 +45,39 @@
 	let adding = $state(false);
 </script>
 
-<Header>
-	{#snippet title()}<Source {source} {sourceID} fallback="Todos" />{/snippet}
+<!-- Scoped to a project, the project rides above the title as the way back. -->
+{#snippet parent()}
+	<a href="/projects/{sourceID}"><Source {source} {sourceID} fallback="Project" /></a>
+{/snippet}
+
+<Header.Root title="Todos" eyebrow={source && sourceID ? parent : undefined}>
 	{#snippet actions()}
+		<ViewSelector view={params.view} onchange={(view) => params.update({ view })} />
 		<Button onclick={() => (adding = true)}>New todo</Button>
 	{/snippet}
-</Header>
-
-<div class="toolbar">
-	<TodoFilters
-		{scope}
-		filters={{
-			status: params.status,
-			assignee: params.assignee,
-			stage: params.stage,
-			search: params.q
-		}}
-		onchange={(next) =>
-			params.update({
-				status: next.status,
-				assignee: next.assignee,
-				stage: next.stage,
-				q: next.search
-			})}
-	>
-		{#snippet tools()}
+	{#snippet strip()}
+		<TodoFilters
+			{scope}
+			filters={{
+				status: params.status,
+				assignee: params.assignee,
+				stage: params.stage,
+				search: params.q
+			}}
+			onchange={(next) =>
+				params.update({
+					status: next.status,
+					assignee: next.assignee,
+					stage: next.stage,
+					q: next.search
+				})}
+		>
 			{#if params.view === 'board' || params.view === 'timeline'}
 				<GroupSelector by={params.group} onchange={(group) => params.update({ group })} />
 			{/if}
-			<ViewSelector view={params.view} onchange={(view) => params.update({ view })} />
-		{/snippet}
-	</TodoFilters>
-</div>
+		</TodoFilters>
+	{/snippet}
+</Header.Root>
 
 <Drawer bind:open={adding}>
 	<h2>New todo</h2>
@@ -96,10 +97,6 @@
 <TodosView {todos} view={params.view} by={params.group} />
 
 <style>
-	.toolbar {
-		margin-bottom: 1.25em;
-	}
-
 	h2 {
 		margin: 0 0 1em;
 		font-size: 1.15em;

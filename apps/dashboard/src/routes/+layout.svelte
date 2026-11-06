@@ -12,6 +12,7 @@
 	import { createUser } from '$lib/utils/context';
 	import { createAgent } from '$lib/features/agent/agent.svelte';
 	import Dock from '$lib/features/agent/components/Dock.svelte';
+	import Toggle from '$lib/features/agent/components/Toggle.svelte';
 
 	let { data, children } = $props();
 
@@ -57,6 +58,9 @@
 <div class="shell">
 	{#if page.data.nav}
 		<Shell nav={page.data.nav}>
+			{#snippet tools()}
+				{#if data.user && data.agent}<Toggle />{/if}
+			{/snippet}
 			{#snippet side()}
 				<!-- No LLM env, no dock: its model list would throw on every page. -->
 				{#if data.user && data.agent}<Dock />{/if}

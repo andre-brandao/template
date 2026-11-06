@@ -1,8 +1,9 @@
 <!-- The open conversation: its messages, what the agent is doing, and the last error. -->
 <script lang="ts">
 	import type { Attachment } from 'svelte/attachments';
-	import { Scroll, Spinner } from '@template/ui';
+	import { Scroll } from '@template/ui';
 	import { agent } from '../agent.svelte';
+	import Avatar from './Avatar.svelte';
 	import Message from './Message.svelte';
 
 	const ctx = agent();
@@ -17,11 +18,18 @@
 
 <Scroll fill>
 	<ol>
-		{#each ctx.chat.messages as item (item.id)}
-			<Message message={item} loading={ctx.chat.isLoading} />
+		{#each ctx.chat.messages as item, i (item.id)}
+			<Message
+				message={item}
+				loading={ctx.chat.isLoading}
+				writing={activity.state === 'writing' && i === ctx.chat.messages.length - 1}
+			/>
 		{/each}
 		{#if activity.state === 'thinking'}
-			<li class="thinking"><Spinner /> {activity.tool ? `Running ${activity.tool}…` : 'Thinking…'}</li>
+			<li class="thinking">
+				<Avatar size={24} state="thinking" />
+				{activity.tool ? `Running ${activity.tool}…` : 'Thinking…'}
+			</li>
 		{/if}
 	</ol>
 	{#if ctx.chat.error}
@@ -45,7 +53,7 @@
 	.thinking {
 		display: inline-flex;
 		align-items: center;
-		gap: 0.4em;
+		gap: 0.65em;
 		color: var(--muted);
 		font-size: 0.85em;
 	}

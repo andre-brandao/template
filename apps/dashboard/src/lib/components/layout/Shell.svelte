@@ -14,7 +14,12 @@
 	import { sidebar } from './rail.svelte';
 	import Topbar from './Topbar.svelte';
 
-	let { nav, side, children }: { nav: Config; side?: Snippet; children: Snippet } = $props();
+	let {
+		nav,
+		tools,
+		side,
+		children
+	}: { nav: Config; tools?: Snippet; side?: Snippet; children: Snippet } = $props();
 
 	const me = user();
 	const rail = sidebar();
@@ -85,7 +90,13 @@
 	<!-- Header and footer both inside the column so they start where the sidebar ends;
 	     `main`'s flex pushes the footer to the viewport bottom when the page is short. -->
 	<div class="content">
-		<Topbar user={me.current} head={nav.head && crest} crumbs={trail} onmenu={() => (open = true)} />
+		<Topbar
+			user={me.current}
+			head={nav.head && crest}
+			crumbs={trail}
+			{tools}
+			onmenu={() => (open = true)}
+		/>
 		<main>{@render children()}</main>
 		<Footer />
 	</div>

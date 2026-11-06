@@ -16,12 +16,15 @@
 		user,
 		onmenu,
 		head,
-		crumbs
+		crumbs,
+		tools
 	}: {
 		user: User.Info | null;
 		onmenu?: () => void;
 		head?: Snippet<[boolean]>;
 		crumbs?: { href?: string; label: string }[];
+		/** Utilities a route composes in, before the account, e.g. the assistant toggle. */
+		tools?: Snippet;
 	} = $props();
 </script>
 
@@ -45,6 +48,7 @@
 	<!-- The right cluster, Cloudflare-style: utilities first, then the account. -->
 	<div class="tail">
 		{#if user && !onmenu && page.data.feedback}<Feedback />{/if}
+		{@render tools?.()}
 		<Me {user} />
 	</div>
 </header>

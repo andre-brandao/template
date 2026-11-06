@@ -23,6 +23,28 @@ const registry = new SvelteSet<AnyClientTool>();
 /** Views the mounted pages bring for their own tools, by tool name. */
 export const views = new SvelteMap<string, Component<ViewProps>>();
 
+// The dock's width in px when nothing is saved.
+const fallback = 400;
+const key = "agent-width";
+
+// Storage can throw (private window, blocked site data); then the width lives for this visit.
+function saved() {
+  try {
+    return Number(localStorage.getItem(key)) || undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+function save(width: number | undefined) {
+  try {
+    if (!width) return localStorage.removeItem(key);
+    localStorage.setItem(key, String(width));
+  } catch {
+    // Not saved; the width still holds for this visit.
+  }
+}
+
 /** Call once, in the root layout. */
 export function createAgent() {
   set(create());
@@ -46,6 +68,8 @@ export function pageTools(list: AnyClientTool[], extra: Record<string, Component
 function create() {
   let open = $state(false);
   let full = $state(false);
+  // Desktop dock width in px, undefined for the default. The dock clamps it to the viewport.
+  let width = $state<number>();
   let model = $state<string>();
   let tab = $state<"chat" | "history">("chat");
   // Keys the recorded conversation. Only the browser sends, so SSR can leave it empty.
@@ -64,6 +88,16 @@ function create() {
     },
     toggle() {
       open = !open;
+      // Read on first open: the dock starts closed, so SSR never needs the width.
+      width ??= open ? saved() : undefined;
+    },
+    get width(): number {
+      return width ?? fallback;
+    },
+    /** `undefined` resets to the default. */
+    set width(value: number | undefined) {
+      width = value && Math.round(value);
+      save(width);
     },
     close() {
       open = false;

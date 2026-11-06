@@ -7,6 +7,7 @@
 	import Minimize from '@lucide/svelte/icons/minimize-2';
 	import History from '@lucide/svelte/icons/history';
 	import { agent } from '../agent.svelte';
+	import Avatar from './Avatar.svelte';
 	import Icon from './Icon.svelte';
 
 	const ctx = agent();
@@ -17,7 +18,7 @@
 </script>
 
 <header>
-	<span class="title">Assistant</span>
+	<span class="title"><Avatar size={24} state={ctx.activity.state} />Assistant</span>
 	<span class="actions">
 		<Icon
 			aria-label="History"
@@ -54,6 +55,9 @@
 	}
 
 	.title {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.55em;
 		font-weight: 600;
 		color: var(--ink);
 	}

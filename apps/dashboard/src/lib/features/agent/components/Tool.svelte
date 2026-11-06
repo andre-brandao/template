@@ -2,6 +2,7 @@
 <script lang="ts">
 	import { Code, Spinner } from '@template/ui';
 	import Wrench from '@lucide/svelte/icons/wrench';
+	import Chevron from '@lucide/svelte/icons/chevron-right';
 	import { views } from '../agent.svelte';
 	import type { CallPart, ResultPart } from '../views';
 
@@ -50,6 +51,7 @@
 			{#if done}<Wrench size={12} strokeWidth={1.75} />{:else}<Spinner />{/if}
 			{first.part.name}
 			{#if calls.length > 1}<span class="count">×{calls.length}</span>{/if}
+			<span class="chevron"><Chevron size={12} strokeWidth={1.75} /></span>
 		</summary>
 		<div class="body">
 			{#each calls as call (call.part.id)}
@@ -85,6 +87,19 @@
 
 	.count {
 		opacity: 0.7;
+	}
+
+	.chip:hover {
+		color: var(--ink);
+	}
+
+	.chevron {
+		display: inline-flex;
+		transition: transform 120ms ease;
+	}
+
+	.tool[open] .chevron {
+		transform: rotate(90deg);
 	}
 
 	.body {

@@ -68,10 +68,7 @@
 
 	.title {
 		margin: 0.2em 0.45em 0.45em;
-		font-family: var(--font-mono, monospace);
-		font-size: 0.68em;
-		letter-spacing: 0.06em;
-		text-transform: uppercase;
+		font-size: 0.8em;
 		color: var(--dim, #888);
 	}
 </style>

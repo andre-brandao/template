@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { Admin } from '@template/core/admin';
-	import { Card } from '@template/ui';
-	import Header from '$lib/components/Header.svelte';
+	import { Card, Skeleton } from '@template/ui';
+	import * as Header from '$lib/components/header';
 	import Rule from '$lib/components/Rule.svelte';
 	import { fmt } from '$lib/utils/fmt';
 	import { size } from '$lib/utils/size';
@@ -53,25 +53,42 @@
 	</Card>
 {/snippet}
 
-<Header title="Admin">
-	Live figures, read straight from Postgres each time this page loads. Nothing here is stored or
-	cached.
-</Header>
+<Header.Root title="Admin">
+	<!-- Its own boundary, so the title paints before the stats land. -->
+	<svelte:boundary>
+		{#snippet pending()}<Header.Item label="Tables">—</Header.Item>{/snippet}
+		{@const stats = await getStats()}
+		<!-- "in tables", not "on disk": the Database doorway carries `pg_database_size`, which
+		     counts the catalogs no segment below stands for. -->
+		<Header.Item label="Tables">
+			{stats.tables.tables.length}
+			<small>{size(total(stats.tables.tables))}</small>
+		</Header.Item>
+		<Header.Item label="Queue">
+			{stats.queue.pending} pending
+			{#if stats.queue.running}<small>{stats.queue.running} running</small>{/if}
+			{#if stats.queue.failed > 0}<span class="failed">{stats.queue.failed} failed</span>{/if}
+		</Header.Item>
+		<Header.Item label="Connections">
+			{stats.server.connections}
+			<small>of {stats.server.max}</small>
+		</Header.Item>
+		<Header.Item label="Up">{stats.server.started ? f.ago(stats.server.started) : '—'}</Header.Item>
+		<Header.Item label="Postgres">{stats.server.version}</Header.Item>
+	</svelte:boundary>
+</Header.Root>
 
 <!-- A boundary per query rather than one await for both: the stats read and the log tail are
      independent, so neither waits on the other to paint. `getStats()` is one round trip no
      matter how many boundaries below ask for it. -->
 <svelte:boundary>
-	{#snippet pending()}<div class="skel" style:height="76px"></div>{/snippet}
-	{@const tables = (await getStats()).tables.tables}
-	<!-- "in tables", not "on disk": the card below carries `pg_database_size`, which counts the
-	     catalogs no segment here stands for. The two figures differ, so they are named apart. -->
-	<Rule parts={parts(tables)} tail={`${tables.length} tables · ${size(total(tables))}`} />
+	{#snippet pending()}<Skeleton h="76px" w="min(100%, 64em)" />{/snippet}
+	<Rule parts={parts((await getStats()).tables.tables)} />
 </svelte:boundary>
 
 <nav class="places" aria-label="Back office">
 	<svelte:boundary>
-		{#snippet pending()}<div class="skel" style:height="88px"></div>{/snippet}
+		{#snippet pending()}<Skeleton h="88px" w="min(100%, 64em)" />{/snippet}
 		{@const counts = (await getStats()).counts}
 		{@render place(
 			'/admin/users',
@@ -82,7 +99,7 @@
 	</svelte:boundary>
 
 	<svelte:boundary>
-		{#snippet pending()}<div class="skel" style:height="88px"></div>{/snippet}
+		{#snippet pending()}<Skeleton h="88px" w="min(100%, 64em)" />{/snippet}
 		<!-- One event row is enough for both figures the doorway needs: the count and the
 		     newest stamp. -->
 		{@const events = await getEvents({ page: 1, pageSize: 1 })}
@@ -95,44 +112,29 @@
 	</svelte:boundary>
 
 	<svelte:boundary>
-		{#snippet pending()}<div class="skel" style:height="88px"></div>{/snippet}
+		{#snippet pending()}<Skeleton h="88px" w="min(100%, 64em)" />{/snippet}
 		{@const stats = await getStats()}
 		{@render place('/admin/database', 'Database', size(stats.tables.bytes), 'total on disk')}
 	</svelte:boundary>
 </nav>
 
-<!-- Runs of text rather than three more tiles, so the row above reads as "the three
-     places to go" instead of one stat block among several. -->
-<svelte:boundary>
-	{#snippet pending()}<div class="skel" style:height="56px"></div>{/snippet}
-	{@const stats = await getStats()}
-	<dl class="vitals">
-		<dt>Queue</dt>
-		<dd>
-			{stats.queue.pending} pending · {stats.queue.running} running · {stats.queue.failed} failed ·
-			oldest {stats.queue.oldest ? f.ago(stats.queue.oldest) : '—'}
-		</dd>
-		<dt>Server</dt>
-		<dd>
-			PostgreSQL {stats.server.version} · {stats.server.connections}/{stats.server.max} connections ·
-			up since {stats.server.started ? f.ago(stats.server.started) : '—'}
-		</dd>
-	</dl>
-</svelte:boundary>
-
 <style>
-	/* Same measure as the rule, so the three doorways share its left spine and right edge
-	   instead of running out to the shell's full 1440px on their own. */
-	.places,
-	.vitals,
-	.skel {
-		max-width: 64em;
+	small {
+		font-weight: 400;
+		color: var(--dim);
 	}
 
+	.failed {
+		color: var(--danger);
+	}
+
+	/* Same measure as the rule, so the three doorways share its left spine and right edge
+	   instead of running out to the shell's full 1440px on their own. */
 	.places {
 		display: grid;
 		grid-template-columns: repeat(3, 1fr);
 		gap: 0.75em;
+		max-width: 64em;
 		margin: 3em 0 2.5em;
 	}
 
@@ -143,10 +145,7 @@
 	}
 
 	.label {
-		font-family: var(--font-mono);
-		font-size: 0.68em;
-		letter-spacing: 0.06em;
-		text-transform: uppercase;
+		font-size: 0.86em;
 		color: var(--dim);
 	}
 
@@ -161,54 +160,9 @@
 		color: var(--muted);
 	}
 
-	.vitals {
-		display: grid;
-		grid-template-columns: auto 1fr;
-		gap: 0.5em 1.5em;
-		margin: 0;
-		font-size: 0.85em;
-	}
-
-	.vitals dt {
-		font-family: var(--font-mono);
-		font-size: 0.8em;
-		letter-spacing: 0.06em;
-		text-transform: uppercase;
-		color: var(--dim);
-		padding-top: 0.15em;
-	}
-
-	.vitals dd {
-		margin: 0;
-		color: var(--muted);
-		font-variant-numeric: tabular-nums;
-	}
-
-	.skel {
-		background: var(--surface);
-		border: 1px solid var(--border);
-		border-radius: var(--radius);
-		animation: pulse 1.2s ease-in-out infinite;
-	}
-
-	@keyframes pulse {
-		50% {
-			opacity: 0.45;
-		}
-	}
-
 	@media (max-width: 640px) {
 		.places {
 			grid-template-columns: 1fr;
-		}
-
-		.vitals {
-			grid-template-columns: 1fr;
-			gap: 0.15em;
-		}
-
-		.vitals dt:not(:first-child) {
-			margin-top: 1em;
 		}
 	}
 </style>

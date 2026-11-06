@@ -76,12 +76,12 @@
 	}
 
 	input {
-		font-family: var(--font-mono, monospace);
-		font-size: 0.78em;
+		font: inherit;
+		font-size: 0.9em;
 		padding: 0.4em 0.6em;
-		border: 1px solid var(--border, #333);
-		border-radius: 6px;
-		background: var(--surface-2, #eee);
+		border: 1px solid var(--border, #ddd);
+		border-radius: var(--radius-sm, 6px);
+		background: var(--surface, #fff);
 		color: var(--muted, #666);
 	}
 

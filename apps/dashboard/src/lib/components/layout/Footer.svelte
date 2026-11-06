@@ -29,8 +29,7 @@
 		height: var(--footer);
 		padding-inline: 1.25em;
 		border-top: 1px solid var(--border);
-		font-family: var(--font-mono);
-		font-size: 0.75em;
+		font-size: 0.86em;
 	}
 
 	@media (max-width: 700px) {

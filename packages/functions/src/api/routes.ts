@@ -8,6 +8,7 @@ import { UserApi } from "./handler/user";
 import { TodoApi } from "./handler/todo";
 import { ProjectApi } from "./handler/project";
 import { FileApi } from "./handler/file";
+import { GithubApi } from "./handler/github";
 import { auth } from "./middleware";
 import { health } from "../health";
 
@@ -32,6 +33,7 @@ export const routes = app
   .route("/todo", TodoApi.route)
   .route("/project", ProjectApi.route)
   .route("/file", FileApi.route)
+  .route("/github", GithubApi.route)
   .onError((error, c) => {
     if (error instanceof VisibleError) {
       return c.json<ErrorResponseType>(error.toResponse(), error.statusCode());

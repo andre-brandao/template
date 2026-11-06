@@ -1,9 +1,14 @@
 <script lang="ts">
+	import * as Header from '$lib/components/header';
 	import ProjectPage from '$lib/features/projects/pages/ProjectPage.svelte';
 	import Stages from '$lib/features/todos/components/Stages.svelte';
 	import Recent from '$lib/features/todos/components/Recent.svelte';
+	import { getStages, getTodos } from '$lib/features/todos/api/todos.remote';
+	import Repos from '$lib/features/github/components/Repos.svelte';
 
 	let { params } = $props();
+
+	const today = new Date().toISOString().slice(0, 10);
 </script>
 
 <!--
@@ -13,15 +18,41 @@
 	`id: undefined`, which the remote function rejects on every attempt.
 -->
 {#if params.id}
+	{@const scope = { source: 'project', sourceID: params.id }}
 	<ProjectPage id={params.id}>
+		{#snippet facts()}
+			<!-- The same cached queries Stages and Recent read, so the facts cost no extra trip. -->
+			{@const todos = await getTodos(scope)}
+			{@const stages = await getStages(scope)}
+			{@const stage =
+				stages.find((one) => one.start && one.end && one.start.slice(0, 10) <= today && today <= one.end.slice(0, 10)) ??
+				stages.find((one) => one.done < one.total)}
+			<Header.Item label="Todos">
+				{todos.length >= 100 ? '100+' : todos.length}
+				<span class="muted">{todos.filter((one) => one.status !== 'done').length} open</span>
+			</Header.Item>
+			{#if stage}
+				<Header.Item label="Stage">
+					{stage.name}
+					<span class="muted">{stage.done}/{stage.total} done</span>
+				</Header.Item>
+			{/if}
+		{/snippet}
 		{#snippet stages()}
-			<Stages
-				scope={{ source: 'project', sourceID: params.id }}
-				base="/projects/{params.id}/todos"
-			/>
+			<Stages {scope} base="/projects/{params.id}/todos" />
 		{/snippet}
 		{#snippet todos()}
-			<Recent scope={{ source: 'project', sourceID: params.id }} />
+			<Recent {scope} />
+		{/snippet}
+		{#snippet github()}
+			<Repos id={params.id} />
 		{/snippet}
 	</ProjectPage>
 {/if}
+
+<style>
+	.muted {
+		font-weight: 400;
+		color: var(--muted);
+	}
+</style>

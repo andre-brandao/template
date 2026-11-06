@@ -90,10 +90,7 @@
 		position: absolute;
 		inset: auto 0 0;
 		padding: 0.15em 0;
-		font-family: var(--font-mono);
 		font-size: calc(var(--size) * 0.2);
-		letter-spacing: 0.06em;
-		text-transform: uppercase;
 		text-align: center;
 		color: white;
 		background: rgb(0 0 0 / 0.55);
@@ -110,10 +107,7 @@
 		padding: 0;
 		border: none;
 		background: none;
-		font-family: var(--font-mono);
-		font-size: 0.72em;
-		letter-spacing: 0.06em;
-		text-transform: uppercase;
+		font-size: 0.86em;
 		color: var(--muted);
 		cursor: pointer;
 	}

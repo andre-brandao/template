@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { Button, Field, FormBoundary, Input, Issue } from '@template/ui';
-	import Header from '$lib/components/Header.svelte';
+	import { Button, Field, FormBoundary, Input, Issue, Section } from '@template/ui';
+	import * as Header from '$lib/components/header';
 	import AvatarUpload from '$lib/components/AvatarUpload.svelte';
 	import Can from '$lib/components/Can.svelte';
 	import { getProject, updateProject } from '../api/projects.remote';
@@ -14,110 +14,68 @@
 	let saved = $state(false);
 </script>
 
-<Header title="Settings" />
+{#snippet back()}<a href="/projects/{id}">{project.name}</a>{/snippet}
 
-<!--
-	Label rail on the short side of the golden section, controls on the long one, so
-	each row fills the column instead of leaving the form stranded against one edge.
--->
-<section class="row">
-	<div class="label">
-		<h2>Details</h2>
-		<p>The name and blurb shown on the projects page and in the project switcher.</p>
-	</div>
+<Header.Root title="Settings" eyebrow={back} />
 
-	<div class="controls">
-		<AvatarUpload
-			name={project.name}
-			image={project.image}
-			url="/avatars/project/{id}"
-			onchange={() => getProject(id).refresh()}
-		/>
+<Section
+	title="Details"
+	description="Shown on the projects page and in the project switcher."
+>
+	<AvatarUpload
+		name={project.name}
+		image={project.image}
+		url="/avatars/project/{id}"
+		onchange={() => getProject(id).refresh()}
+	/>
 
-		<FormBoundary>
-			{#each update.fields.allIssues() ?? [] as issue, i (i)}
-				<Issue>{issue.message}</Issue>
-			{/each}
+	<FormBoundary>
+		{#each update.fields.allIssues() ?? [] as issue, i (i)}
+			<Issue>{issue.message}</Issue>
+		{/each}
 
-			<form
-				oninput={() => (saved = false)}
-				{...update.enhance(async (f) => {
-					await f.submit();
-					await getProject(id).refresh();
-					saved = true;
-				})}
-			>
-				<input {...update.fields.id.as('hidden', id)} />
+		<form
+			oninput={() => (saved = false)}
+			{...update.enhance(async (f) => {
+				await f.submit();
+				await getProject(id).refresh();
+				saved = true;
+			})}
+		>
+			<input {...update.fields.id.as('hidden', id)} />
 
-				<Field label="Name">
-					<Input {...update.fields.name.as('text', project.name)} />
-				</Field>
+			<Field label="Name">
+				<Input {...update.fields.name.as('text', project.name)} />
+			</Field>
 
-				<Field label="Description">
-					<Input
-						{...update.fields.description.as('text', project.description ?? '')}
-						placeholder="What is this for?"
-					/>
-				</Field>
+			<Field label="Description">
+				<Input
+					{...update.fields.description.as('text', project.description ?? '')}
+					placeholder="What is this for?"
+				/>
+			</Field>
 
-				<div class="foot">
-					{#if saved}<span class="saved">Saved</span>{/if}
-					<Button type="submit" pending={!!update.pending}>Save changes</Button>
-				</div>
-			</form>
-		</FormBoundary>
-	</div>
-</section>
+			<div class="foot">
+				{#if saved}<span class="saved">Saved</span>{/if}
+				<Button type="submit" pending={!!update.pending}>Save changes</Button>
+			</div>
+		</form>
+	</FormBoundary>
+</Section>
 
 <Can grants={{ project: ['delete'] }} owner={project.createdBy}>
-	<section class="row danger">
-		<div class="label">
-			<h2>Delete project</h2>
-			<p>Deleting a project takes its stages and insights with it. Its todos are kept.</p>
-		</div>
-
-		<div class="controls">
-			<DeleteDialog {id} name={project.name} />
-		</div>
-	</section>
+	<Section
+		danger
+		divider
+		title="Delete project"
+		description="Takes its stages and insights with it. Its todos are kept."
+	>
+		<!-- A block wrapper so the button keeps its own width in the stretched column. -->
+		<div><DeleteDialog {id} name={project.name} /></div>
+	</Section>
 </Can>
 
 <style>
-	h2 {
-		margin: 0 0 0.4em;
-		font-size: 0.95em;
-	}
-
-	.row {
-		display: grid;
-		grid-template-columns: 1fr 1.618fr;
-		align-items: start;
-		gap: 2.5em;
-	}
-
-	.row + .row {
-		margin-top: 2.5em;
-		padding-top: 2.5em;
-		border-top: 1px solid var(--border);
-	}
-
-	.controls {
-		display: flex;
-		flex-direction: column;
-		gap: 1.25em;
-	}
-
-	.label p {
-		margin: 0;
-		color: var(--muted);
-		font-size: 0.88em;
-		line-height: 1.55;
-	}
-
-	.danger h2 {
-		color: var(--danger);
-	}
-
 	form {
 		display: flex;
 		flex-direction: column;
@@ -132,17 +90,8 @@
 	}
 
 	.saved {
-		font-family: var(--font-mono);
-		font-size: 0.72em;
-		letter-spacing: 0.06em;
-		text-transform: uppercase;
+		font-size: 0.93em;
+		font-weight: 500;
 		color: var(--done);
-	}
-
-	@media (max-width: 900px) {
-		.row {
-			grid-template-columns: 1fr;
-			gap: 1.25em;
-		}
 	}
 </style>

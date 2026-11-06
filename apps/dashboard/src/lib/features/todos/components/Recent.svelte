@@ -8,7 +8,8 @@
 	import { late } from '../status';
 	import { fmt } from '$lib/utils/fmt';
 
-	let { scope }: { scope: { source: string; sourceID: string } } = $props();
+	// No scope lists every todo, for the home.
+	let { scope = {} }: { scope?: { source?: string; sourceID?: string } } = $props();
 
 	const f = fmt();
 </script>
@@ -24,7 +25,7 @@
 				<li>
 					<a href="/todos/{todo.id}">{todo.title}</a>
 					<span class="meta">
-						<span class="when" class:late={late(todo)}>
+						<span class={['when', { late: late(todo) }]}>
 							{todo.dueDate ? f.date(todo.dueDate) : '—'}
 						</span>
 						<StatusPill status={todo.status} />

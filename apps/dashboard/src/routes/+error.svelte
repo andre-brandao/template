@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { resolve } from '$app/paths';
+	import { Button } from '@template/ui';
 	import type { LucideIcon } from '@lucide/svelte';
 	import LogIn from '@lucide/svelte/icons/log-in';
 	import SearchX from '@lucide/svelte/icons/search-x';
@@ -45,7 +46,7 @@
 
 <main>
 	<div class="card">
-		<span class="badge" class:bad aria-hidden="true">
+		<span class={['badge', { bad }]} aria-hidden="true">
 			<Icon size={26} strokeWidth={1.5} />
 		</span>
 		<span class="status">{page.status}</span>
@@ -61,7 +62,7 @@
 			{#if page.status === 401}
 				<a class="act" href={resolve('/login')}>Log in</a>
 			{:else}
-				<button class="act" type="button" onclick={() => history.back()}>Go back</button>
+				<Button variant="secondary" onclick={() => history.back()}>Go back</Button>
 			{/if}
 		</div>
 	</div>
@@ -143,28 +144,36 @@
 		margin-top: 1.75em;
 	}
 
-	/* Matches the design system's Button metrics without pulling in a <button> for a link. */
+	/* Button's metrics and primary look, on a link: ui's Button only renders a <button>. */
 	.act {
+		display: inline-flex;
+		align-items: center;
+		min-height: 2.25em;
 		border: 1px solid var(--border);
-		border-radius: var(--radius);
-		padding: 0.45em 1em;
+		border-radius: var(--radius-sm, 6px);
+		padding: 0.35em 0.85em;
 		font: inherit;
-		font-family: var(--font-mono);
-		font-size: 0.85em;
+		font-size: 0.93em;
+		font-weight: 500;
 		text-decoration: none;
 		color: var(--ink);
 		background: var(--surface);
+		box-shadow: var(--shadow-1);
 		cursor: pointer;
 	}
 
 	.act:hover {
-		border-color: var(--border-bright);
+		background: var(--surface-2);
 	}
 
 	.act.primary {
-		border-color: var(--accent);
-		background: var(--accent);
-		color: var(--accent-ink);
+		border-color: var(--primary);
+		background: var(--primary);
+		color: var(--primary-ink);
+	}
+
+	.act.primary:hover {
+		background: color-mix(in oklab, var(--primary) 86%, var(--surface));
 	}
 
 	.act:focus-visible {

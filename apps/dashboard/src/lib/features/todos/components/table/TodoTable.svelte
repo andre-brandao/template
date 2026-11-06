@@ -3,19 +3,38 @@
 	import { createTable, renderSnippet } from '@tanstack/svelte-table';
 	import type { ColumnDef, Row } from '@tanstack/svelte-table';
 	import { Button, DataTable, features } from '@template/ui';
+	import { SvelteSet } from 'svelte/reactivity';
+	import { refreshAll } from '$app/navigation';
 	import type { Todo } from '@template/core/todo';
 	import { query } from '$lib/utils/params';
 	import { peek } from '$lib/utils/peek';
 	import { fmt } from '$lib/utils/fmt';
 	import StatusPicker from '../StatusPicker.svelte';
 	import TagList from '../TagList.svelte';
+	import GithubBadge from '../GithubBadge.svelte';
 	import { late } from '../../status';
-	import { removeTodo } from '../../api/todos.remote';
+	import { moveTodo, removeTodo } from '../../api/todos.remote';
+	import { moves, tree, visible, type Node } from '../../tree';
 	import { sort } from '../../sort';
 
 	let { todos }: { todos: Todo.Info[] } = $props();
 
 	const f = fmt();
+
+	// Collapsed parents. Rows are pre-flattened, so TanStack's expanding stays on `detail`.
+	const closed = new SvelteSet<string>();
+	const nodes = $derived(tree(todos));
+	const rows = $derived(visible(nodes, closed));
+
+	function toggle(id: string) {
+		if (closed.has(id)) closed.delete(id);
+		else closed.add(id);
+	}
+
+	async function move(input: Parameters<typeof moveTodo>[0]) {
+		await moveTodo(input);
+		await refreshAll();
+	}
 
 	const params = query(z.object({ sort: sort.schema }));
 
@@ -32,9 +51,9 @@
 
 	// Cells render through snippets rather than a row component, so the column definition is
 	// the single place a column's header, sort key and markup are declared together.
-	type Cell = Row<typeof features, Todo.Info>;
+	type Cell = Row<typeof features, Node>;
 
-	const cols: ColumnDef<typeof features, Todo.Info>[] = [
+	const cols: ColumnDef<typeof features, Node>[] = [
 		{
 			id: 'title',
 			header: 'Title',
@@ -65,7 +84,7 @@
 		features,
 		columns: cols,
 		get data() {
-			return todos;
+			return rows;
 		},
 		getRowId: (todo) => todo.id,
 		state: {
@@ -85,9 +104,27 @@
 </script>
 
 {#snippet title(row: Cell)}
-	<a class="title" href="/todos/{row.original.id}" onclick={peek({ selected: row.original.id })}>
-		{row.original.title}
-	</a>
+	{@const node = row.original}
+	<span class="tree" style="padding-left: {node.depth * 1.25}em">
+		{#if node.total}
+			<button
+				class="chevron"
+				class:open={!closed.has(node.id)}
+				aria-expanded={!closed.has(node.id)}
+				aria-label={closed.has(node.id) ? 'Expand sub-issues' : 'Collapse sub-issues'}
+				onclick={() => toggle(node.id)}>▸</button
+			>
+		{:else}
+			<span class="chevron"></span>
+		{/if}
+		<a class="title" href="/todos/{node.id}" onclick={peek({ selected: node.id })}>
+			{node.title}
+		</a>
+		<GithubBadge annotations={node.metadata.annotations} />
+		{#if node.total}
+			<span class="dim">{node.done}/{node.total}</span>
+		{/if}
+	</span>
 {/snippet}
 
 {#snippet stage(row: Cell)}
@@ -114,7 +151,20 @@
 
 {#snippet actions(row: Cell)}
 	{@const remove = removeTodo.for(row.original.id)}
+	{@const to = moves(nodes, row.original)}
 	<form class="acts" {...remove}>
+		<Button
+			variant="ghost"
+			type="button"
+			disabled={!to.outdent}
+			onclick={() => to.outdent && move(to.outdent)}>Outdent</Button
+		>
+		<Button
+			variant="ghost"
+			type="button"
+			disabled={!to.indent}
+			onclick={() => to.indent && move(to.indent)}>Indent</Button
+		>
 		<input {...remove.fields.id.as('hidden', row.original.id)} />
 		<Button variant="ghost" type="submit" pending={!!remove.pending}>Delete</Button>
 	</form>
@@ -125,8 +175,7 @@
 <style>
 	.dim {
 		color: var(--muted);
-		font-family: var(--font-mono);
-		font-size: 0.8em;
+		font-variant-numeric: tabular-nums;
 		white-space: nowrap;
 	}
 
@@ -143,6 +192,27 @@
 	.title {
 		color: var(--ink);
 		text-decoration: none;
+	}
+
+	.tree {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4em;
+	}
+
+	.chevron {
+		width: 1.2em;
+		flex: none;
+		padding: 0;
+		border: 0;
+		background: none;
+		color: var(--muted);
+		cursor: pointer;
+		transition: transform 120ms;
+	}
+
+	.chevron.open {
+		transform: rotate(90deg);
 	}
 
 	.title:hover {

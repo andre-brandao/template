@@ -68,7 +68,7 @@
 		</Field>
 	</div>
 
-	<div class="pair">
+	<div class="pair dates">
 		<Field label="Start" as="div">
 			<DatePicker bind:value={start} name="startDate" label="Start" placeholder="No start" time clearable />
 		</Field>
@@ -113,12 +113,17 @@
 		display: flex;
 		flex-direction: column;
 		gap: 1em;
-			}
+	}
 
 	.pair {
 		display: grid;
 		grid-template-columns: repeat(auto-fit, minmax(11em, 1fr));
 		gap: 1em;
+	}
+
+	/* Text, time and two buttons: below ~18em the typed entry collapses to nothing. */
+	.dates {
+		grid-template-columns: repeat(auto-fit, minmax(18em, 1fr));
 	}
 
 	h2 {

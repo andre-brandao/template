@@ -9,7 +9,8 @@
 		href,
 		external = false,
 		label,
-		state = 'idle',
+		// Aliased: a local `state` would shadow the `$state` rune.
+		state: status = 'idle',
 		message,
 		muted = false,
 		lead,
@@ -44,8 +45,7 @@
 	} = $props();
 
 	const name = $derived(label ?? (typeof title === 'string' ? `${title} actions` : 'Actions'));
-	// Held, not reactive: only the right-click handler reads it. (`state` is a prop here.)
-	const ref: { menu?: Menu.Root } = {};
+	let ref = $state.raw<Menu.Root>();
 </script>
 
 {#snippet text()}
@@ -55,9 +55,9 @@
 <!-- Right-click (or Shift+F10 inside the row) opens the same ⋯ menu at the pointer. -->
 <li
 	class={['row', { muted }]}
-	aria-busy={muted || state === 'pending'}
+	aria-busy={muted || status === 'pending'}
 	data-row
-	oncontextmenu={(e) => ref.menu?.at(e)}
+	oncontextmenu={(e) => ref?.at(e)}
 >
 	{#if lead}<span class="lead">{@render lead()}</span>{/if}
 
@@ -75,7 +75,7 @@
 				<!-- A control title is not clipped, so its border and focus ring show. -->
 				<span class={typeof title === 'string' ? 'text' : 'control'}>{@render text()}</span>
 			{/if}
-			{#if state !== 'idle'}<Status {state} {message} />{/if}
+			{#if status !== 'idle'}<Status state={status} {message} />{/if}
 		</span>
 		{#if children}<div class="sub">{@render children()}</div>{/if}
 	</div>
@@ -84,7 +84,7 @@
 	{#if actions}<span class="actions">{@render actions()}</span>{/if}
 
 	{#if menu}
-		<Menu.Root bind:this={ref.menu} label={name} align="end">
+		<Menu.Root bind:this={ref} label={name} align="end">
 			{#snippet trigger(attrs)}
 				<span class="more">
 					<IconButton label={name} size="sm" {...attrs}>

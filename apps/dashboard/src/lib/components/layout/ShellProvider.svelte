@@ -1,6 +1,11 @@
 <script lang="ts">
 	import { untrack, type Snippet } from 'svelte';
+	import { dev } from '$app/environment';
 	import { QueryClientProvider, type QueryClient } from '@tanstack/svelte-query';
+	import { SvelteQueryDevtools } from '@tanstack/svelte-query-devtools';
+	import { HotkeysProvider, type HotkeyPlatform } from '@tanstack/svelte-hotkeys';
+	import { TanStackDevtools } from '@tanstack/svelte-devtools';
+	import { hotkeysDevtoolsPlugin } from '@tanstack/svelte-hotkeys-devtools';
 	import { Permission } from '@template/core/permission';
 	import type { User } from '@template/core/user';
 	import type { Prefs } from '@template/core/user/prefs';
@@ -11,7 +16,13 @@
 		data,
 		children
 	}: {
-		data: { queryClient: QueryClient; rail: boolean; user: User.Info | null; prefs: Prefs };
+		data: {
+			queryClient: QueryClient;
+			rail: boolean;
+			user: User.Info | null;
+			prefs: Prefs;
+			platform: HotkeyPlatform;
+		};
 		children: Snippet;
 	} = $props();
 
@@ -30,5 +41,13 @@
 </script>
 
 <QueryClientProvider client={data.queryClient}>
-	{@render children()}
+	<!-- The request's platform, so server-rendered Kbd labels already read ⌘ or Ctrl. -->
+	<HotkeysProvider defaultOptions={{ platform: data.platform }}>
+		{@render children()}
+		<!-- Dev only: `dev` is a build-time constant, so prod drops these imports. -->
+		{#if dev}
+			<TanStackDevtools plugins={[hotkeysDevtoolsPlugin()]} />
+			<SvelteQueryDevtools buttonPosition="bottom-left" />
+		{/if}
+	</HotkeysProvider>
 </QueryClientProvider>

@@ -7,11 +7,12 @@
 	// Every devtools import lives here; ShellProvider mounts it under `{#if dev}`.
 	let { client }: { client: QueryClient } = $props();
 
-	// Bottom-left, beside the Svelte inspector's toggle (vite.config.ts). Alt+D toggles the panel.
+	// Bottom-right, beside the Svelte inspector (vite.config.ts): the one corner no app chrome
+	// uses. Hidden until hovered, so it never sits over content. Alt+D toggles the panel.
 	const tools = {
 		triggerMode: 'fixed',
-		position: 'bottom-left',
-		hideUntilHover: false,
+		position: 'bottom-right',
+		hideUntilHover: true,
 		openHotkey: ['Alt', 'D']
 	} as const;
 
@@ -29,7 +30,7 @@
 		const pill = document.createElement('span');
 		pill.title = 'Devtools (Alt+D)';
 		pill.style.cssText =
-			'display:grid;place-items:center;width:32px;height:32px;margin:0 0 2px 8px;' +
+			'display:grid;place-items:center;width:32px;height:32px;margin:0 8px 2px 0;' +
 			'border:1px solid #ff3e00;border-radius:8px;background:#fff;' +
 			'box-shadow:0 1px 3px rgb(0 0 0 / 0.25);cursor:pointer';
 		const dot = document.createElement('span');
@@ -45,9 +46,8 @@
 />
 
 <style>
-	/* The inspector pins itself 8px from the corner; nudge it right so the two sit side by side
-	   instead of under our trigger's box. This component only mounts in dev. */
+	/* The inspector pins itself 8px from the corner; nudge it left of our trigger's box. */
 	:global(#svelte-inspector-toggle) {
-		left: 56px !important;
+		right: 56px !important;
 	}
 </style>

@@ -1,36 +1,22 @@
-<!-- The signed-in home. The route composes the widget bodies, so this slice imports no other.
-     `frame` lets the route wrap the layouts (an A/B test, say); it gets the props and heading. -->
+<!-- The signed-in home: module tiles, and from 1100px the route's widgets in a column beside them. -->
 <script lang="ts">
-	import type { Snippet } from 'svelte';
-	import type { Permission } from '@template/core/permission';
-	import { page, type Key, type Props, type Widget } from '../modules';
-	import { layouts } from '../layouts';
+	import { user } from '$lib/utils/context';
+	import { modules, type Widget } from '../modules';
+	import Tiles from '../components/Tiles.svelte';
+	import Panel from '../components/Panel.svelte';
 
-	let {
-		name,
-		role,
-		widgets,
-		frame
-	}: {
-		name: string;
-		role: Permission.Role;
-		widgets: Record<Key, Omit<Widget, 'key'>>;
-		frame?: Snippet<[Props, Snippet]>;
-	} = $props();
+	let { name, widgets }: { name: string; widgets: Widget[] } = $props();
 
-	const home = $derived(page(role, widgets));
-	const Layout = layouts.current.component;
+	const me = user();
+	const shown = $derived(modules.filter((one) => !one.grants || me.can(one.grants)));
 </script>
 
-{#snippet heading()}<h1>Welcome back, {name}.</h1>{/snippet}
-
 <div class="home">
-	{#if frame}
-		{@render frame(home, heading)}
-	{:else}
-		{@render heading()}
-		<Layout {...home} />
-	{/if}
+	<h1>Welcome back, {name}.</h1>
+	<div class={['grid', { side: widgets.length > 0 }]}>
+		<Tiles modules={shown} />
+		<Panel {widgets} />
+	</div>
 </div>
 
 <style>
@@ -43,5 +29,18 @@
 	h1 {
 		margin: 0;
 		font-size: 1.5em;
+	}
+
+	.grid {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+		align-items: start;
+		gap: 2em 2.5em;
+	}
+
+	@media (min-width: 1100px) {
+		.side {
+			grid-template-columns: minmax(0, 1fr) minmax(0, 22rem);
+		}
 	}
 </style>

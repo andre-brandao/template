@@ -13,7 +13,7 @@
   --border-bright: light-dark(#d3d1cc, #3b3a37);
   --ink: light-dark(#1c1b19, #ecebe7);
   --muted: light-dark(#64625d, #a3a19b);
-  --dim: light-dark(#8e8c86, #6f6d68);
+  --dim: light-dark(#75736d, #8a8882);
   /* The dark-mode teal fails AA on white, so light mode gets a deeper one — and the
      text that sits *on* the accent flips from near-black to white. */
   --accent: light-dark(#2f7f68, #4fa98f);

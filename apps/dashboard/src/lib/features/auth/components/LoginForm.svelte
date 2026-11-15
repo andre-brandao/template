@@ -7,9 +7,15 @@
 	// for, which leaves the mailed code and the OAuth buttons as the obvious way in. Unmounting
 	// it is also what tells the server which half of `start` to run.
 	let pw = $state(false);
+	// "Change email" sets aside the last result until the next send lands.
+	let change = $state(false);
 
 	const seed = (v: string) => (dev ? v : '');
-	const sent = $derived((await start.result)?.sent);
+	const sent = $derived(change ? undefined : (await start.result)?.sent);
+	const send = start.enhance(async (f) => {
+		await f.submit();
+		change = false;
+	});
 	const issues = $derived([
 		...(start.fields.allIssues() ?? []),
 		...(verify.fields.allIssues() ?? [])
@@ -31,17 +37,25 @@
 					maxlength={6}
 					autocomplete="one-time-code"
 					placeholder="000000"
+					{@attach (el) => el.focus()}
 				/>
 			</Field>
 			<Button type="submit" pending={!!verify.pending}>Log in</Button>
 			<p class="hint">Sent to {sent}. A wrong code retires it — ask for another.</p>
 		</form>
+
+		<form class="alts" {...send}>
+			<input {...start.fields.email.as('hidden', sent)} />
+			<button class="alt" type="submit" disabled={!!start.pending}>Send a new code</button>
+			<button class="alt" type="button" onclick={() => (change = true)}>Use a different email</button>
+		</form>
 	{:else}
-		<form {...start}>
+		<form {...send}>
 			<Field label="Email">
 				<Input
 					{...start.fields.email.as('email', seed('dev@example.com'))}
 					autocomplete="username"
+					{@attach (el) => el.focus()}
 				/>
 			</Field>
 
@@ -79,6 +93,21 @@
 		margin: 0;
 		font-size: 0.8em;
 		color: var(--dim);
+	}
+
+	.alts {
+		flex-direction: row;
+		justify-content: space-between;
+		margin-top: 0.9em;
+	}
+
+	.alts .alt {
+		margin-top: 0;
+	}
+
+	.alt:disabled {
+		opacity: 0.55;
+		cursor: default;
 	}
 
 	.alt {

@@ -1,19 +1,15 @@
 <script lang="ts">
-	import { version } from "$app/environment";
+	import { version } from '$app/environment';
+	import { brand } from '$lib/brand';
 </script>
 
-<!--
-	The content column's floor, Cloudflare-style: a quiet row of links and the © line.
-	Lives inside the column so its left edge starts where the rail ends.
--->
+<!-- The content column's floor; inside the column so its left edge starts where the rail ends. -->
 <footer>
 	<nav>
-		<a href="https://github.com/andre-brandao/template" target="_blank" rel="noreferrer"
-			>GitHub</a
-		>
+		<a href={brand.repo} target="_blank" rel="noreferrer">GitHub</a>
 		<a href="/healthz">Status</a>
 	</nav>
-	<span class="legal">© {new Date().getFullYear()} André Brandão</span>
+	<span class="legal">© {new Date().getFullYear()} {brand.name}</span>
 	<!-- kit's version.name is the full git SHA (vite.config.ts); short form fits the row. -->
 	<span class="version" title={version}>{version.slice(0, 7)}</span>
 </footer>
@@ -24,19 +20,12 @@
 		align-items: center;
 		justify-content: center;
 		flex-wrap: wrap;
-		gap: 1.5em;
+		gap: 0.25em 1.5em;
 		/* Same height as the sidebar's strip, so the two top borders read as one line. */
 		height: var(--footer);
 		padding-inline: 1.25em;
 		border-top: 1px solid var(--border);
 		font-size: 0.86em;
-	}
-
-	@media (max-width: 700px) {
-		footer {
-			height: auto;
-			padding-block: 1em;
-		}
 	}
 
 	nav {

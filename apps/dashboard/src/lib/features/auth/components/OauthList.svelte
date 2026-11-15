@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { Button } from '@template/ui';
 	import type { ProviderId } from '@template/core/auth/provider.sql';
 
 	let { providers }: { providers: ProviderId[] } = $props();
@@ -11,7 +12,9 @@
 		<span class="or">or continue with</span>
 		<div class="row">
 			{#each providers as provider (provider)}
-				<a class="provider" href="/oauth?provider={provider}">{labels[provider] ?? provider}</a>
+				<Button variant="secondary" href="/oauth?provider={provider}"
+					>{labels[provider] ?? provider}</Button
+				>
 			{/each}
 		</div>
 	</div>
@@ -30,26 +33,12 @@
 		color: var(--dim);
 	}
 
+	/* Equal columns, so each provider button stretches to its share. */
 	.row {
-		display: flex;
+		display: grid;
+		grid-auto-flow: column;
+		grid-auto-columns: 1fr;
 		gap: 0.6em;
 		width: 100%;
-	}
-
-	.provider {
-		flex: 1;
-		padding: 0.55em 1em;
-		border: 1px solid var(--border);
-		border-radius: var(--radius);
-		background: var(--surface);
-		color: var(--ink);
-		font-family: var(--font-mono);
-		font-size: 0.85em;
-		text-align: center;
-		text-decoration: none;
-	}
-
-	.provider:hover {
-		border-color: var(--accent);
 	}
 </style>

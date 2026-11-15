@@ -86,7 +86,7 @@ export default defineConfig({
           toggleKeyCombo: "control-shift",
           holdMode: true,
           showToggleButton: "always",
-          toggleButtonPos: "bottom-left",
+          toggleButtonPos: "bottom-right",
         },
       },
     }),

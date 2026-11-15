@@ -44,6 +44,14 @@ export const list = (q: Omit<NonNullable<GetTodoData["query"]>, "pageSize">) => 
   placeholderData: keepPreviousData,
 });
 
+type Filters = Omit<NonNullable<GetTodoData["query"]>, "pageSize" | "from" | "to" | "unscheduled">;
+
+// The calendar's visible window; `from`/`to` are inclusive instants.
+export const between = (q: Filters & { from: string; to: string }) => list(q);
+
+// The calendar tray: todos with neither a start nor a due date.
+export const undated = (q: Filters) => list({ ...q, unscheduled: true });
+
 export const get = (id: string) => getTodoByIdOptions({ path: { id } });
 
 export const stages = (scope: Scope) => getTodoStageOptions({ query: scope });

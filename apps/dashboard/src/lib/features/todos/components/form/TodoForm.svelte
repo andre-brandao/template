@@ -1,4 +1,4 @@
-<!-- Raised through `modal(TodoForm, { scope })`, which passes `close`. -->
+<!-- Raised through `modal(TodoForm, { scope, due })`, which passes `close`. -->
 <script lang="ts">
 	import { Button, Field, Input, Issue, MarkdownEditor } from '@template/ui';
 	import { upload } from '$lib/upload';
@@ -11,8 +11,14 @@
 
 	let {
 		close,
-		scope = {}
-	}: { close: () => void; scope?: { source?: string; sourceID?: string } } = $props();
+		scope = {},
+		due
+	}: {
+		close: () => void;
+		scope?: { source?: string; sourceID?: string };
+		/** A `YYYY-MM-DD` the due field starts on, like a clicked calendar day. */
+		due?: string;
+	} = $props();
 
 	let body = $state('');
 	let tags = $state<string[]>([]);
@@ -65,7 +71,7 @@
 		</Field>
 
 		<Field label="Due">
-			<Input type="date" name="dueDate" />
+			<Input type="date" name="dueDate" value={due} />
 		</Field>
 	</div>
 

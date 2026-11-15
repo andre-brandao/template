@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Button, Markdown, MarkdownEditor } from '@template/ui';
-	import { upload } from '$lib/upload';
+	import { upload } from '#lib/upload.ts';
 	import type { Todo } from '@template/core/todo';
 
 	let {

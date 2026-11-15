@@ -1,5 +1,5 @@
 import { Webhook } from "@template/core/webhook";
-import { remote } from "$lib/server/remote";
+import { remote } from "#lib/server/gate.ts";
 
 // Admin configuration: no API route. `getWebhooks(owner)` narrows to one App's.
 export const getWebhooks = remote.core(Webhook.list).query();

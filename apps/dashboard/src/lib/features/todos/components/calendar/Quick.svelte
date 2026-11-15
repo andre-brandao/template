@@ -1,8 +1,8 @@
 <!-- "New todo" at the pointer for an empty calendar spot: a title, due on that day. -->
 <script lang="ts">
 	import { Button, Input, Popover, Status, format, fromDay, type Day } from '@template/ui';
-	import { user } from '$lib/utils/context';
-	import { fmt } from '$lib/utils/fmt';
+	import { user } from '#lib/utils/context.ts';
+	import { fmt } from '#lib/utils/fmt.ts';
 	import { create } from '../../api/todos.query';
 
 	let {

@@ -3,12 +3,12 @@
 	import { createQuery } from '@tanstack/svelte-query';
 	import type { Event } from '@template/core/event';
 	import { Inline, Section } from '@template/ui';
-	import * as Header from '$lib/components/header';
-	import Timeline from '$lib/features/events/components/Timeline.svelte';
+	import * as Header from '#lib/components/header/index.ts';
+	import Timeline from '#lib/features/events/components/Timeline.svelte';
 	import { get, link, unlink, update } from '../api/projects.query';
-	import Links from '$lib/components/Links.svelte';
-	import Annotations from '$lib/components/Annotations.svelte';
-	import { fmt } from '$lib/utils/fmt';
+	import Links from '#lib/components/Links.svelte';
+	import Annotations from '#lib/components/Annotations.svelte';
+	import { fmt } from '#lib/utils/fmt.ts';
 
 	// The stages/todos sections and their header facts come in as snippets so this slice
 	// never imports the todos feature — the route composes the two.

@@ -4,7 +4,7 @@
 	import type { Todo } from '@template/core/todo';
 	import { create, get, list } from '../../api/todos.query';
 	import StatusPicker from '../StatusPicker.svelte';
-	import { peek } from '$lib/utils/peek';
+	import { peek } from '#lib/utils/peek.ts';
 
 	let { todo }: { todo: Todo.Info } = $props();
 

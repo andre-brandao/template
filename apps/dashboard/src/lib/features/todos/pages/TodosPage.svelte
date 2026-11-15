@@ -1,13 +1,13 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { query } from '$lib/utils/params';
-	import * as Header from '$lib/components/header';
+	import { query } from '#lib/utils/params.ts';
+	import * as Header from '#lib/components/header/index.ts';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { createHotkey } from '@tanstack/svelte-hotkeys';
-	import { hotkeys } from '$lib/hotkeys';
+	import { hotkeys } from '#lib/hotkeys.ts';
 	import { Button, Drawer, Empty, Issue, Kbd, Skeleton, Status, modal } from '@template/ui';
 	import { list } from '../api/todos.query';
-	import Source from '$lib/features/events/components/Source.svelte';
+	import Source from '#lib/features/events/components/Source.svelte';
 	import { keep, schema, where } from '../filter';
 	import TodoForm from '../components/form/TodoForm.svelte';
 	import TodoFilters from '../components/TodoFilters.svelte';

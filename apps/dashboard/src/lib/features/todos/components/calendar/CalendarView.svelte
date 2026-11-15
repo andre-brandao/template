@@ -21,10 +21,10 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
 	import { SvelteMap, SvelteSet } from 'svelte/reactivity';
-	import { goto, pushState } from '$app/navigation';
+	import { goto } from '$app/navigation';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { createHotkey, setHotkeysContext } from '@tanstack/svelte-hotkeys';
-	import { hotkeys } from '$lib/hotkeys';
+	import { hotkeys } from '#lib/hotkeys.ts';
 	import ChevronLeft from '@lucide/svelte/icons/chevron-left';
 	import ChevronRight from '@lucide/svelte/icons/chevron-right';
 	import {
@@ -42,8 +42,8 @@
 		week,
 		weekStart
 	} from '@template/ui';
-	import { user } from '$lib/utils/context';
-	import { fmt } from '$lib/utils/fmt';
+	import { user } from '#lib/utils/context.ts';
+	import { fmt } from '#lib/utils/fmt.ts';
 	import { between, undated, update } from '../../api/todos.query';
 	import TodoForm from '../form/TodoForm.svelte';
 	import Chip from './Chip.svelte';
@@ -139,7 +139,7 @@
 		grab: drag.grab,
 		open: (id) => {
 			if (innerWidth < 640) return goto(`/todos/${id}`);
-			pushState(`/todos/${id}`, { selected: id });
+			goto(`/todos/${id}`, { shallow: true, state: { selected: id } });
 		},
 		mark: (id) =>
 			pending.has(id)

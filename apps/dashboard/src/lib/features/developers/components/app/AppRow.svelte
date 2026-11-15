@@ -3,9 +3,9 @@
 	import { goto } from '$app/navigation';
 	import ArrowDownToLine from '@lucide/svelte/icons/arrow-down-to-line';
 	import { List, Menu, Tooltip, modal } from '@template/ui';
-	import Rename from '$lib/components/Rename.svelte';
-	import { ask } from '$lib/ask';
-	import { fmt } from '$lib/utils/fmt';
+	import Rename from '#lib/components/Rename.svelte';
+	import { ask } from '#lib/ask.ts';
+	import { fmt } from '#lib/utils/fmt.ts';
 	import { remove, rename } from '../../api/apps.query';
 	import KeyForm from '../key/KeyForm.svelte';
 	import { secret } from './secret';

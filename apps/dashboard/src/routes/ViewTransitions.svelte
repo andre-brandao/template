@@ -7,8 +7,7 @@
 	  data-swap        the query keys a same-path navigation changed
 -->
 <script lang="ts">
-	import { onNavigate } from '$app/navigation';
-	import type { OnNavigate } from '@sveltejs/kit';
+	import { onNavigate, type OnNavigate } from '$app/navigation';
 
 	const depth = (url?: URL) => url?.pathname.split('/').filter(Boolean).length ?? 0;
 
@@ -33,20 +32,29 @@
 			.join(' ');
 	};
 
-	// Progressive enhancement: browsers without the API (or users who opted out
-	// of motion) just get the instant swap.
+	// Progressive enhancement: browsers without the API (or users who opted out of motion) just
+	// get the instant swap. Shallow `goto`s only change history state, so nothing moves.
+	const still = (nav: OnNavigate) =>
+		(nav.shallow && nav.type === 'goto') ||
+		!document.startViewTransition ||
+		matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+	// Same path, different query: a filter changed, not the page.
+	const scope = (nav: OnNavigate, local: boolean) => {
+		if (local) return 'filter';
+		return link(nav)?.dataset.transition === 'pane' ? 'pane' : '';
+	};
+
 	onNavigate((nav) => {
-		if (!document.startViewTransition) return;
-		if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+		if (still(nav)) return;
 
 		const root = document.documentElement;
-		// Same path, different query: a filter changed, not the page.
 		const local = nav.to?.url.pathname === nav.from?.url.pathname;
-		const scope = local ? 'filter' : link(nav)?.dataset.transition === 'pane' ? 'pane' : '';
+		const area = scope(nav, local);
 
 		root.dataset.transition = back(nav) ? 'back' : 'forward';
 		// Before the snapshot, so the outgoing frame is captured with the names already applied.
-		if (scope) root.dataset.scope = scope;
+		if (area) root.dataset.scope = area;
 		if (local) root.dataset.swap = keys(nav);
 
 		return new Promise((resolve) => {

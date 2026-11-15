@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
-	import { dev } from '$app/environment';
+	import { dev } from '$app/env';
 	import { resolve } from '$app/paths';
 	import PanelLeft from '@lucide/svelte/icons/panel-left';
 	import type { User } from '@template/core/user';
@@ -45,7 +45,7 @@
 	{#if dev}
 		<a
 			class="env"
-			href={resolve('/dev')}
+			href={resolve('dev')}
 			title="Not production — data here is throwaway. Opens the dev tools.">dev</a
 		>
 	{/if}

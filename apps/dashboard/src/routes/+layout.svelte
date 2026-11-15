@@ -1,18 +1,18 @@
 <script lang="ts">
 	import './layout.css';
-	import favicon from '$lib/assets/favicon.svg';
+	import favicon from '#lib/assets/favicon.svg';
 	import { navigating, page } from '$app/state';
 	import PreLoadingIndicator from './PreLoadingIndicator.svelte';
 	import ViewTransitions from './ViewTransitions.svelte';
 	import { Button, Kbd, Modals, Toaster } from '@template/ui';
 	import Palette from './Palette.svelte';
-	import Shell from '$lib/components/layout/Shell.svelte';
-	import ShellProvider from '$lib/components/layout/ShellProvider.svelte';
-	import { createAgent } from '$lib/features/agent/agent.svelte';
-	import Dock from '$lib/features/agent/components/Dock.svelte';
-	import Toggle from '$lib/features/agent/components/Toggle.svelte';
-	import Feedback from '$lib/features/feedback/components/Feedback.svelte';
-	import ThemeToggle from '$lib/features/settings/components/ThemeToggle.svelte';
+	import Shell from '#lib/components/layout/Shell.svelte';
+	import ShellProvider from '#lib/components/layout/ShellProvider.svelte';
+	import { createAgent } from '#lib/features/agent/agent.svelte.ts';
+	import Dock from '#lib/features/agent/components/Dock.svelte';
+	import Toggle from '#lib/features/agent/components/Toggle.svelte';
+	import Feedback from '#lib/features/feedback/components/Feedback.svelte';
+	import ThemeToggle from '#lib/features/settings/components/ThemeToggle.svelte';
 
 	let { data, children } = $props();
 

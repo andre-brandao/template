@@ -186,8 +186,6 @@ jobs:
             adapter: bun
           - app: dashboard
             adapter: cloudflare
-          - app: dashboard
-            adapter: sst-aws
           - app: cli
     name: build (${{ matrix.app }}${{ matrix.adapter && format(' · {0}', matrix.adapter) }})
     steps:
@@ -203,7 +201,8 @@ jobs:
         working-directory: apps/${{ matrix.app }}
         env:
           SVELTE_ADAPTER: ${{ matrix.adapter }}
-        run: bun run build
+        # adapter-bun calls Bun's build API, so that build must run under the Bun runtime.
+        run: bun run ${{ matrix.adapter == 'bun' && '--bun ' || '' }}build
 
   # Disabled until the e2e suite is green in CI; uncomment and add e2e to report.needs.
   # e2e:

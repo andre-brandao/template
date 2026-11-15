@@ -1,5 +1,5 @@
 import { toolDefinition } from "@tanstack/ai";
-import { message } from "$lib/query";
+import { message } from "#lib/query.ts";
 import { clean } from "../render/spec";
 import { catalog, instructions, shape, verify, type Output } from "./catalog";
 import { wait } from "./pending";

@@ -7,8 +7,8 @@
 	import { createQuery } from '@tanstack/svelte-query';
 	import type { Feedback } from '@template/core/feedback';
 	import { Badge, Combobox, Empty, Issue, Skeleton, Tabs } from '@template/ui';
-	import * as Header from '$lib/components/header';
-	import { query } from '$lib/utils/params';
+	import * as Header from '#lib/components/header/index.ts';
+	import { query } from '#lib/utils/params.ts';
 	import { issues } from '../api/feedback.query';
 	import Line from '../components/Line.svelte';
 	import Lines from '../components/Lines.svelte';

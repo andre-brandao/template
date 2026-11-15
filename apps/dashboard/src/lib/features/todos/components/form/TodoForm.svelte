@@ -11,8 +11,8 @@
 		fromDay,
 		toDay
 	} from '@template/ui';
-	import { upload } from '$lib/upload';
-	import { fmt } from '$lib/utils/fmt';
+	import { upload } from '#lib/upload.ts';
+	import { fmt } from '#lib/utils/fmt.ts';
 	import { create } from '../../api/todos.query';
 	import TagEditor from '../TagEditor.svelte';
 	import AssigneePicker from '../AssigneePicker.svelte';

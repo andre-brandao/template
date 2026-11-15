@@ -2,7 +2,7 @@
 	import { goto } from '$app/navigation';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { Button, Empty, Issue, List, Section, Skeleton, Status, modal } from '@template/ui';
-	import { ask } from '$lib/ask';
+	import { ask } from '#lib/ask.ts';
 	import { get, keys, remove } from '../../api/apps.query';
 	import { list } from '../../api/webhooks.query';
 	import KeyForm from '../key/KeyForm.svelte';

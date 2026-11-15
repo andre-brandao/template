@@ -6,7 +6,7 @@
 	import FileText from '@lucide/svelte/icons/file-text';
 	import Paperclip from '@lucide/svelte/icons/paperclip';
 	import { Field } from '@template/ui';
-	import { size } from '$lib/utils/size';
+	import { size } from '#lib/utils/size.ts';
 
 	const MAX = 3;
 	let files = $state.raw<{ file: File; url?: string }[]>([]);

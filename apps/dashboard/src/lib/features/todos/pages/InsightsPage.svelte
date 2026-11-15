@@ -1,18 +1,18 @@
 <script lang="ts">
-	import { query } from '$lib/utils/params';
-	import * as Header from '$lib/components/header';
+	import { query } from '#lib/utils/params.ts';
+	import * as Header from '#lib/components/header/index.ts';
 	import { useIsFetching } from '@tanstack/svelte-query';
 	import { RangePicker, Status, today } from '@template/ui';
 	import { period, span } from '../filter';
-	import { debounce } from '$lib/utils/debounce';
-	import { fmt } from '$lib/utils/fmt';
+	import { debounce } from '#lib/utils/debounce.ts';
+	import { fmt } from '#lib/utils/fmt.ts';
 	import StatsSection from '../components/insights/StatsSection.svelte';
 	import ActivitySection from '../components/insights/ActivitySection.svelte';
 	import CalendarSection from '../components/insights/CalendarSection.svelte';
 	import DueSection from '../components/insights/DueSection.svelte';
 	import StatusSection from '../components/insights/StatusSection.svelte';
 	import LoadSection from '../components/insights/LoadSection.svelte';
-	import Source from '$lib/features/events/components/Source.svelte';
+	import Source from '#lib/features/events/components/Source.svelte';
 
 	let { source, sourceID }: { source?: string; sourceID?: string } = $props();
 

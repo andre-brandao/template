@@ -11,18 +11,11 @@ declare global {
     }
     interface PageData {
       /** The section's shell nav, contributed by its `+layout.ts`. Absent = no shell. */
-      nav?: import("$lib/components/layout/nav").Nav;
+      nav?: import("#lib/components/layout/nav.ts").Nav;
     }
     interface PageState {
       /** Id a peeked link pushed; the page hosting the link renders it in a drawer. */
       selected?: string;
-    }
-    interface Platform {
-      env?: {
-        Hyperdrive?: { connectionString: string };
-        Files?: import("@cloudflare/workers-types").R2Bucket;
-        Jobs?: import("@cloudflare/workers-types").Queue<import("@template/core/queue/port").Job>;
-      };
     }
   }
 }

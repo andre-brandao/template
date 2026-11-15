@@ -1,5 +1,5 @@
 <script lang="ts">
-	import InsightsPage from '$lib/features/todos/pages/InsightsPage.svelte';
+	import InsightsPage from '#lib/features/todos/pages/InsightsPage.svelte';
 
 	let { params } = $props();
 </script>

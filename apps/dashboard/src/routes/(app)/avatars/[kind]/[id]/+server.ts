@@ -1,4 +1,4 @@
-import { error, json, redirect } from "@sveltejs/kit";
+import { error, redirect } from "@sveltejs/kit";
 import { Identity } from "@template/core/identity";
 import { Storage } from "@template/core/storage";
 import { Project } from "@template/core/project";
@@ -48,7 +48,7 @@ export const GET: RequestHandler = async ({ params }) => {
 
   const { key } = at(params.kind, params.id);
   const url = await Storage.disk().temporaryUrl(key);
-  if (url) redirect(302, url);
+  if (url) redirect(302, url, { external: true });
 
   const object = await Storage.disk().get(key);
   if (!object) error(404, "Not found");
@@ -75,7 +75,7 @@ export const POST: RequestHandler = async ({ params, request }) => {
   await Storage.disk().put(key, new Uint8Array(await file.arrayBuffer()), file.type);
   const url = `/avatars/${kind}/${params.id}?v=${Date.now()}`;
   await save(kind, params.id, url);
-  return json({ url });
+  return Response.json({ url });
 };
 
 export const DELETE: RequestHandler = async ({ params }) => {
@@ -84,5 +84,5 @@ export const DELETE: RequestHandler = async ({ params }) => {
 
   await Storage.disk().delete(key);
   await save(kind, params.id, null);
-  return json({ url: null });
+  return Response.json({ url: null });
 };

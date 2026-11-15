@@ -9,7 +9,7 @@ Deploy paths for the app. None of them is needed for local development (`bun dev
 | ---------------- | ---------------- | ------------------------------------------------------------ |
 | `sst/cf/`        | **Supported**    | Live. SST 4 on Cloudflare Workers + Hyperdrive.              |
 | `docker/`        | **Supported**    | Self-hosting. Compose stack, no SST. See its `README.md`.    |
-| `sst/aws/`       | Experimental     | Lambda + VPC + RDS. Not deployed; no queue consumer.         |
+| `sst/aws/`       | Experimental     | Lambda + VPC + RDS. Not deployed; no queue consumer. Dashboard won't build until `svelte-kit-sst` supports SvelteKit 3. |
 | `terraform/`     | Experimental     | OpenTofu mirror of `sst/cf`. Its CI and deploy jobs are off. |
 | `alchemy/cf/`    | Experimental     | Alchemy v2 (beta) mirror of `sst/cf`.                        |
 | `alchemy/docker/`| Experimental     | Alchemy v2 (beta) mirror of `docker/`.                       |

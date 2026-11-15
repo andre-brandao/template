@@ -6,8 +6,8 @@
 	import { createQuery } from '@tanstack/svelte-query';
 	import ExternalLink from '@lucide/svelte/icons/external-link';
 	import { Badge, Empty, Markdown, Skeleton } from '@template/ui';
-	import * as Header from '$lib/components/header';
-	import { fmt } from '$lib/utils/fmt';
+	import * as Header from '#lib/components/header/index.ts';
+	import { fmt } from '#lib/utils/fmt.ts';
 	import { issue } from '../api/feedback.query';
 	import Image from '../components/Image.svelte';
 	import { states, tags, urgencies } from '../labels';

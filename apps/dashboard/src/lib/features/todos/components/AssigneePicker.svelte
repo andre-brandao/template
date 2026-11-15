@@ -3,7 +3,7 @@
 	import { createQuery } from '@tanstack/svelte-query';
 	import { Avatar, Combobox } from '@template/ui';
 	import UserRound from '@lucide/svelte/icons/user-round';
-	import { user } from '$lib/utils/context';
+	import { user } from '#lib/utils/context.ts';
 	import { users } from '../api/todos.query';
 
 	type Person = { id: string; name: string; email: string; image: string | null };

@@ -1,6 +1,6 @@
 import { error } from "@sveltejs/kit";
 import { Identity } from "@template/core/identity";
-import * as next from "$lib/server/next";
+import * as next from "#lib/server/next.ts";
 import type { LayoutServerLoad } from "./$types";
 
 // Gated once for the back office; core re-checks each read anyway.

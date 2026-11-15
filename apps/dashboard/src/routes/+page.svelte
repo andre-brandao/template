@@ -1,8 +1,8 @@
 <script lang="ts">
-	import Topbar from '$lib/components/layout/Topbar.svelte';
-	import Hero from '$lib/features/home/components/Hero.svelte';
-	import { brand } from '$lib/brand';
-	import ThemeToggle from '$lib/features/settings/components/ThemeToggle.svelte';
+	import Topbar from '#lib/components/layout/Topbar.svelte';
+	import Hero from '#lib/features/home/components/Hero.svelte';
+	import { brand } from '#lib/brand.ts';
+	import ThemeToggle from '#lib/features/settings/components/ThemeToggle.svelte';
 </script>
 
 <svelte:head><title>{brand.name}</title></svelte:head>

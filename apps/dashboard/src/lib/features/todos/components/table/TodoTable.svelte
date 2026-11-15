@@ -5,8 +5,8 @@
 	import { DataTable, Menu, Status, features } from '@template/ui';
 	import { SvelteSet } from 'svelte/reactivity';
 	import type { Todo } from '@template/core/todo';
-	import { query } from '$lib/utils/params';
-	import { peek } from '$lib/utils/peek';
+	import { query } from '#lib/utils/params.ts';
+	import { peek } from '#lib/utils/peek.ts';
 	import Day from '../Day.svelte';
 	import StatusPicker from '../StatusPicker.svelte';
 	import TagList from '../TagList.svelte';

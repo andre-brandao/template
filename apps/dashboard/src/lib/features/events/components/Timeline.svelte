@@ -3,7 +3,7 @@
 	import type { Event } from '@template/core/event';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { Empty, Issue, Skeleton } from '@template/ui';
-	import { fmt } from '$lib/utils/fmt';
+	import { fmt } from '#lib/utils/fmt.ts';
 	import { timeline } from '../api/events.query';
 
 	let {

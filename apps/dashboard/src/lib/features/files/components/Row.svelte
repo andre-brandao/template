@@ -7,10 +7,10 @@
 	import Text from '@lucide/svelte/icons/file-text';
 	import Video from '@lucide/svelte/icons/file-video';
 	import Blank from '@lucide/svelte/icons/file';
-	import Rename from '$lib/components/Rename.svelte';
-	import { ask } from '$lib/ask';
-	import { fmt } from '$lib/utils/fmt';
-	import { size } from '$lib/utils/size';
+	import Rename from '#lib/components/Rename.svelte';
+	import { ask } from '#lib/ask.ts';
+	import { fmt } from '#lib/utils/fmt.ts';
+	import { size } from '#lib/utils/size.ts';
 	import { remove, rename } from '../api/files.query';
 
 	let { file }: { file: Entry } = $props();

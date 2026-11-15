@@ -4,7 +4,7 @@
 	import type { Feedback } from '@template/core/feedback';
 	import MessageSquare from '@lucide/svelte/icons/message-square';
 	import { Badge } from '@template/ui';
-	import { fmt } from '$lib/utils/fmt';
+	import { fmt } from '#lib/utils/fmt.ts';
 	import { states, tags } from '../labels';
 
 	let {

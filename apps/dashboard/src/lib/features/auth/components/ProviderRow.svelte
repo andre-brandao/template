@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { User } from '@template/core/user';
-	import { fmt } from '$lib/utils/fmt';
+	import { fmt } from '#lib/utils/fmt.ts';
 
 	let { provider }: { provider: User.Provider } = $props();
 

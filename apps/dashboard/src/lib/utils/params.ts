@@ -3,7 +3,11 @@ import { page } from "$app/state";
 import type { z } from "zod";
 
 // Repeated keys parse as an array first, then as the first value; anything invalid takes the default.
-function read(field: z.ZodType, url: URL, key: string) {
+function read(
+  field: z.ZodType,
+  url: { searchParams: Pick<URLSearchParams, "getAll"> },
+  key: string,
+) {
   const all = url.searchParams.getAll(key);
   for (const raw of [all, all[0]]) {
     const parsed = field.safeParse(raw);
@@ -36,7 +40,7 @@ export function query<S extends z.ZodObject>(schema: S) {
     });
   }
   function update(next: Partial<z.infer<S>>) {
-    const url = new URL(page.url);
+    const url = new URL(page.url.href);
     for (const [key, value] of Object.entries(next)) {
       url.searchParams.delete(key);
       [value ?? []]
@@ -44,7 +48,7 @@ export function query<S extends z.ZodObject>(schema: S) {
         .filter((v) => v || v === 0)
         .forEach((v) => url.searchParams.append(key, String(v)));
     }
-    goto(url, { replaceState: true, noScroll: true, keepFocus: true });
+    goto(url, { replace: true, reset: false });
   }
   // Non-enumerable so params stays pure data when spread or serialized —
   // remote function args go through devalue, which throws on functions.

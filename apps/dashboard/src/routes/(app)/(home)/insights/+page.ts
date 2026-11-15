@@ -1,5 +1,5 @@
-import { insights } from "$lib/features/todos/api/todos.query";
-import { warm } from "$lib/query";
+import { insights } from "#lib/features/todos/api/todos.query.ts";
+import { warm } from "#lib/query.ts";
 import type { PageLoad } from "./$types";
 
 export const load: PageLoad = async (event) => {

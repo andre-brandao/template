@@ -13,10 +13,10 @@
 		toast
 	} from '@template/ui';
 	import Trash from '@lucide/svelte/icons/trash-2';
-	import * as Header from '$lib/components/header';
-	import { message } from '$lib/query';
-	import { user } from '$lib/utils/context';
-	import { fmt } from '$lib/utils/fmt';
+	import * as Header from '#lib/components/header/index.ts';
+	import { message } from '#lib/query.ts';
+	import { user } from '#lib/utils/context.ts';
+	import { fmt } from '#lib/utils/fmt.ts';
 	import { panels, remove } from '../api/panel.query';
 
 	const me = user();

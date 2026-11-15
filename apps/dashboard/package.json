@@ -3,6 +3,10 @@
   "version": "0.0.1",
   "private": true,
   "type": "module",
+  "imports": {
+    "#lib": "./src/lib/index.js",
+    "#lib/*": "./src/lib/*"
+  },
   "scripts": {
     "dev": "vite dev",
     "build": "vite build",
@@ -38,7 +42,8 @@
   },
   "devDependencies": {
     "@playwright/test": "catalog:testing",
-    "@sveltejs/adapter-cloudflare": "^7.2.10",
+    "@sveltejs/adapter-bun": "^1.0.1",
+    "@sveltejs/adapter-cloudflare": "^8.0.2",
     "@sveltejs/adapter-node": "catalog:frontend",
     "@sveltejs/kit": "catalog:frontend",
     "@sveltejs/vite-plugin-svelte": "catalog:frontend",
@@ -48,10 +53,9 @@
     "@types/bun": "catalog:",
     "@types/d3-scale": "^4.0.9",
     "svelte": "catalog:frontend",
-    "svelte-adapter-bun": "^1.0.2",
     "svelte-check": "catalog:frontend",
-    "svelte-kit-sst": "^2.43.5",
-    "typescript": "^5.9.3",
-    "vite": "catalog:frontend"
+    "typescript": "^6.0.3",
+    "vite": "catalog:frontend",
+    "wrangler": "^4.118.0"
   }
 }

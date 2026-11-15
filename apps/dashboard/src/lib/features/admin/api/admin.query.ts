@@ -1,5 +1,5 @@
 import { keepPreviousData } from "@tanstack/svelte-query";
-import { call } from "$lib/query";
+import { call } from "#lib/query.ts";
 import { getEvents, getFacets, getStats, getUsers } from "./admin.remote";
 
 // Admin data has no API route: remote functions behind plain array keys. The role and

@@ -1,4 +1,4 @@
-import type { Handle } from "@sveltejs/kit";
+import type { Handle } from "@sveltejs/kit/hooks";
 import { embed } from "@template/functions/api";
 
 // Ahead of routing: `/api` never reaches SvelteKit. Runs after `auth`, so the session's

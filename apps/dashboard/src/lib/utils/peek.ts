@@ -1,4 +1,4 @@
-import { pushState } from "$app/navigation";
+import { goto } from "$app/navigation";
 
 /**
  * Shallow-routes a detail link: `state` lands in `page.state` while the page stays
@@ -8,6 +8,6 @@ export function peek(state: App.PageState) {
   return (e: MouseEvent & { currentTarget: HTMLAnchorElement }) => {
     if (innerWidth < 640 || e.shiftKey || e.metaKey || e.ctrlKey || e.altKey) return;
     e.preventDefault();
-    pushState(e.currentTarget.href, state);
+    goto(e.currentTarget.href, { shallow: true, state });
   };
 }

@@ -3,7 +3,7 @@
 	import type { Todo } from '@template/core/todo';
 	import { DatePicker, Status } from '@template/ui';
 	import Calendar from '@lucide/svelte/icons/calendar';
-	import { fmt } from '$lib/utils/fmt';
+	import { fmt } from '#lib/utils/fmt.ts';
 	import { update } from '../api/todos.query';
 	import { late } from '../status';
 

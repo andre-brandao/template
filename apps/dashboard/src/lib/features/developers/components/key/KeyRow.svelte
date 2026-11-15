@@ -3,9 +3,9 @@
 	import ClockAlert from '@lucide/svelte/icons/clock-alert';
 	import CircleOff from '@lucide/svelte/icons/circle-off';
 	import { List, Menu, Tooltip } from '@template/ui';
-	import { ask } from '$lib/ask';
-	import { copy } from '$lib/utils/copy';
-	import { fmt } from '$lib/utils/fmt';
+	import { ask } from '#lib/ask.ts';
+	import { copy } from '#lib/utils/copy.ts';
+	import { fmt } from '#lib/utils/fmt.ts';
 	import { revoke } from '../../api/apps.query';
 	import { remove } from '../../api/keys.query';
 

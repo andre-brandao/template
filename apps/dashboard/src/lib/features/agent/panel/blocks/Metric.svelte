@@ -1,7 +1,7 @@
 <!-- One big number: `column` of the first row, or its first numeric column. -->
 <script lang="ts">
 	import { Stat } from '@template/ui';
-	import { fmt } from '$lib/utils/fmt';
+	import { fmt } from '#lib/utils/fmt.ts';
 	import { limits, type Block } from '../catalog';
 	import { formatter, metric } from '../numbers';
 	import Data from './Data.svelte';

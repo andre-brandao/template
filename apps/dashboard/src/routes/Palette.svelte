@@ -3,25 +3,25 @@
 	comes from the layouts' own `nav` data. Opening it reads only memory, never the network.
 -->
 <script lang="ts">
-	import { dev } from '$app/environment';
+	import { dev } from '$app/env';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { createHotkey } from '@tanstack/svelte-hotkeys';
 	import { useQueryClient } from '@tanstack/svelte-query';
 	import { getProjectQueryKey, type Project } from '@template/sdk/query';
 	import { Command, Kbd, modal, toast, type Action } from '@template/ui';
-	import Keys from '$lib/components/layout/Keys.svelte';
-	import { account, home, type Nav } from '$lib/components/layout/nav';
-	import { sidebar } from '$lib/components/layout/rail.svelte';
-	import { agent } from '$lib/features/agent/agent.svelte';
-	import KeyForm from '$lib/features/developers/components/key/KeyForm.svelte';
-	import { upload } from '$lib/features/files/api/files.query';
-	import ProjectForm from '$lib/features/projects/components/ProjectForm.svelte';
-	import { update } from '$lib/features/settings/api/prefs.query';
-	import { swap } from '$lib/features/settings/theme';
-	import TodoForm from '$lib/features/todos/components/form/TodoForm.svelte';
-	import { hotkeys } from '$lib/hotkeys';
-	import { user } from '$lib/utils/context';
+	import Keys from '#lib/components/layout/Keys.svelte';
+	import { account, home, type Nav } from '#lib/components/layout/nav.ts';
+	import { sidebar } from '#lib/components/layout/rail.svelte.ts';
+	import { agent } from '#lib/features/agent/agent.svelte.ts';
+	import KeyForm from '#lib/features/developers/components/key/KeyForm.svelte';
+	import { upload } from '#lib/features/files/api/files.query.ts';
+	import ProjectForm from '#lib/features/projects/components/ProjectForm.svelte';
+	import { update } from '#lib/features/settings/api/prefs.query.ts';
+	import { swap } from '#lib/features/settings/theme.ts';
+	import TodoForm from '#lib/features/todos/components/form/TodoForm.svelte';
+	import { hotkeys } from '#lib/hotkeys.ts';
+	import { user } from '#lib/utils/context.ts';
 
 	let { open = $bindable(false), assistant }: { open?: boolean; assistant: boolean } = $props();
 

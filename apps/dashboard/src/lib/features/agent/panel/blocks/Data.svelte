@@ -4,7 +4,7 @@
 -->
 <script lang="ts">
 	import type { Snippet } from 'svelte';
-	import { browser } from '$app/environment';
+	import { browser } from '$app/env';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { Button, Issue, Skeleton } from '@template/ui';
 	import { rows, type Rows } from '../../api/panel.query';

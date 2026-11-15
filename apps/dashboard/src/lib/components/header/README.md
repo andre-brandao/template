@@ -12,7 +12,7 @@ content       table / list / sections
 
 ## Components
 
-`import * as Header from '$lib/components/header';`
+`import * as Header from '#lib/components/header';`
 
 | Part           | Props                                                                                                                                                                         |
 | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

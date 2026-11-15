@@ -3,7 +3,7 @@
 	import { IconButton, List } from '@template/ui';
 	import Upload from '@lucide/svelte/icons/upload';
 	import X from '@lucide/svelte/icons/x';
-	import { size } from '$lib/utils/size';
+	import { size } from '#lib/utils/size.ts';
 
 	let { file, error, ondismiss }: { file: File; error?: string; ondismiss: () => void } = $props();
 </script>

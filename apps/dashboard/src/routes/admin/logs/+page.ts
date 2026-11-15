@@ -1,7 +1,7 @@
-import { events } from "$lib/features/admin/api/admin.query";
-import { filters } from "$lib/features/admin/filters";
-import { warm } from "$lib/query";
-import { parse } from "$lib/utils/params";
+import { events } from "#lib/features/admin/api/admin.query.ts";
+import { filters } from "#lib/features/admin/filters.ts";
+import { warm } from "#lib/query.ts";
+import { parse } from "#lib/utils/params.ts";
 import type { PageLoad } from "./$types";
 
 export const load: PageLoad = async (event) => {

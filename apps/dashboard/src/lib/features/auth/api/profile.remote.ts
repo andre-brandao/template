@@ -4,8 +4,8 @@ import { z } from "zod";
 import { User } from "@template/core/user";
 import { Auth } from "@template/core/auth";
 import { Identity } from "@template/core/identity";
-import { remote } from "$lib/server/remote";
-import * as next from "$lib/server/next";
+import { remote } from "#lib/server/gate.ts";
+import * as next from "#lib/server/next.ts";
 
 export const getMe = remote.query(z.void(), async () => {
   const user = await User.fromID(Identity.userID());

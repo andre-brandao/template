@@ -2,7 +2,7 @@ import type { RequestEvent } from "@sveltejs/kit";
 import { Session } from "@template/core/auth/session";
 
 // The cookie is an opaque token; the row behind it carries who, the role and the expiry.
-// `dev` reads NODE_ENV, not $app/environment, so the e2e `mint` helper works outside SvelteKit.
+// `dev` reads NODE_ENV, not $app/env, so the e2e `mint` helper works outside SvelteKit.
 const dev = process.env.NODE_ENV !== "production";
 
 const COOKIE = "auth";

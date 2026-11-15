@@ -3,11 +3,11 @@
 	dated snapshots tucked behind a toggle unless searched for or selected.
 -->
 <script lang="ts">
-	import { browser } from '$app/environment';
+	import { browser } from '$app/env';
 	import { Badge, Combobox, Kbd, Skeleton, type Row } from '@template/ui';
 	import { createHotkey } from '@tanstack/svelte-hotkeys';
 	import { createQuery } from '@tanstack/svelte-query';
-	import { hotkeys } from '$lib/hotkeys';
+	import { hotkeys } from '#lib/hotkeys.ts';
 	import { models } from '../api/agent.query';
 	import { agent } from '../agent.svelte';
 

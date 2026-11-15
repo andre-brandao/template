@@ -1,8 +1,8 @@
 <script lang="ts">
 	import type { Todo } from '@template/core/todo';
 	import { Empty } from '@template/ui';
-	import { user } from '$lib/utils/context';
-	import { fmt } from '$lib/utils/fmt';
+	import { user } from '#lib/utils/context.ts';
+	import { fmt } from '#lib/utils/fmt.ts';
 	import { group, type By } from '../../group';
 	import Axis from './Axis.svelte';
 	import Row from './Row.svelte';

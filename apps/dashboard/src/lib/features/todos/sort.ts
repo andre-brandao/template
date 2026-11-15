@@ -1,5 +1,5 @@
 import type { Todo } from "@template/core/todo";
-import { sorted } from "$lib/utils/sort";
+import { sorted } from "#lib/utils/sort.ts";
 
 /** Mirrored from core, type-only — `satisfies` fails the build if a key is renamed there. */
 type Key = NonNullable<Parameters<typeof Todo.list>[0]["sort"]>[number];

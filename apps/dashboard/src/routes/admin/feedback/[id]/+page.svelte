@@ -1,5 +1,5 @@
 <script lang="ts">
-	import IssuePage from '$lib/features/feedback/pages/IssuePage.svelte';
+	import IssuePage from '#lib/features/feedback/pages/IssuePage.svelte';
 
 	let { params } = $props();
 </script>

@@ -2,7 +2,7 @@ import { z } from "zod";
 import { Admin } from "@template/core/admin";
 import { Event } from "@template/core/event";
 import { User } from "@template/core/user";
-import { remote } from "$lib/server/remote";
+import { remote } from "#lib/server/gate.ts";
 
 export const getUsers = remote.core(Admin.users).query();
 

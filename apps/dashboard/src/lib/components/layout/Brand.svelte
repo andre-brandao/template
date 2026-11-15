@@ -2,15 +2,15 @@
      for the name when nothing else — a collapsed rail, a project switcher — is using it. -->
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import { brand } from '$lib/brand';
-	import { user } from '$lib/utils/context';
+	import { brand } from '#lib/brand.ts';
+	import { user } from '#lib/utils/context.ts';
 
 	let { word = false }: { word?: boolean } = $props();
 
 	const me = user();
 </script>
 
-<a href={resolve(me.current ? '/home' : '/')} class="brand" aria-label="Home">
+<a href={me.current ? resolve('home') : resolve('/')} class="brand" aria-label="Home">
 	<span class="dot"></span>
 	{#if word}<span>{brand.name}</span>{/if}
 </a>

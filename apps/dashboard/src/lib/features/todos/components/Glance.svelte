@@ -2,8 +2,8 @@
 <script lang="ts">
 	import { createQuery } from '@tanstack/svelte-query';
 	import { Issue, last, today } from '@template/ui';
-	import Rule from '$lib/components/Rule.svelte';
-	import { fmt } from '$lib/utils/fmt';
+	import Rule from '#lib/components/Rule.svelte';
+	import { fmt } from '#lib/utils/fmt.ts';
 	import { statuses } from '../api/todos.query';
 	import { color, label, STATUSES } from '../status';
 

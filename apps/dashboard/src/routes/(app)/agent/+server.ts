@@ -1,4 +1,4 @@
-import { serve } from "$lib/features/agent/api/serve";
+import { serve } from "#lib/features/agent/api/serve.ts";
 import type { RequestHandler } from "./$types";
 
 export const POST: RequestHandler = (event) => serve(event);

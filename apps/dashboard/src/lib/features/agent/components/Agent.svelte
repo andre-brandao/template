@@ -10,7 +10,7 @@
 	import ListChecks from '@lucide/svelte/icons/list-checks';
 	import Help from '@lucide/svelte/icons/circle-question-mark';
 	import ChartColumn from '@lucide/svelte/icons/chart-column';
-	import { user } from '$lib/utils/context';
+	import { user } from '#lib/utils/context.ts';
 	import { agent } from '../agent.svelte';
 	import { ask } from '../ask/tool';
 	import AskView from '../ask/View.svelte';

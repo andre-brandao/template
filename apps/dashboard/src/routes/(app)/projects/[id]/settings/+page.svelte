@@ -1,5 +1,5 @@
 <script lang="ts">
-	import ProjectSettings from '$lib/features/projects/pages/ProjectSettings.svelte';
+	import ProjectSettings from '#lib/features/projects/pages/ProjectSettings.svelte';
 
 	let { params } = $props();
 </script>

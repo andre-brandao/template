@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { Project } from "@template/core/project";
-import { remote } from "$lib/server/remote";
+import { remote } from "#lib/server/gate.ts";
 
 /**
  * Resolves a `{source, sourceID}` ref to whatever a page needs to label it,

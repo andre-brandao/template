@@ -1,5 +1,5 @@
 import { error } from "@sveltejs/kit";
-import { dev } from "$app/environment";
+import { dev } from "$app/env";
 import type { LayoutServerLoad } from "./$types";
 
 // 404 rather than 403: a production build shouldn't admit the section exists.

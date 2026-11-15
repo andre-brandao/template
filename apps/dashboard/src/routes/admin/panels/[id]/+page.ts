@@ -1,5 +1,5 @@
-import { panel } from "$lib/features/agent/api/panel.query";
-import { warm } from "$lib/query";
+import { panel } from "#lib/features/agent/api/panel.query.ts";
+import { warm } from "#lib/query.ts";
 import type { PageLoad } from "./$types";
 
 export const load: PageLoad = async (event) => {

@@ -3,7 +3,7 @@ import UserRound from "@lucide/svelte/icons/user-round";
 import Webhook from "@lucide/svelte/icons/webhook";
 import { Permission } from "@template/core/permission";
 import { getUserByIdOptions } from "@template/sdk/query";
-import { section } from "$lib/components/layout/nav";
+import { section } from "#lib/components/layout/nav.ts";
 import type { LayoutLoad } from "./$types";
 
 // An App sits under Developers → Apps; a person has no section, so back goes where they came from.

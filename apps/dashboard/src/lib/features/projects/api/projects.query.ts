@@ -10,7 +10,7 @@ import {
   postProjectByIdLinkMutation,
   postProjectMutation,
 } from "@template/sdk/query";
-import { invalidate, type Ctx, type Opts } from "$lib/query";
+import { invalidate, type Ctx, type Opts } from "#lib/query.ts";
 
 // Lists and rows both carry the tag, so a write to one project refreshes everything showing it.
 // Its Logs timeline sits under `events`, so the new entry shows too.

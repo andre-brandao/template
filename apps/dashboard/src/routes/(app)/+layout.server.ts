@@ -1,4 +1,4 @@
-import * as next from "$lib/server/next";
+import * as next from "#lib/server/next.ts";
 import type { LayoutServerLoad } from "./$types";
 
 // Reads the URL only on the way out, so it never reruns on a navigation.

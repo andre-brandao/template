@@ -4,8 +4,8 @@
 	import { afterNavigate } from '$app/navigation';
 	import { Drawer } from '@template/ui';
 	import PanelLeft from '@lucide/svelte/icons/panel-left';
-	import { brand } from '$lib/brand';
-	import { user } from '$lib/utils/context';
+	import { brand } from '#lib/brand.ts';
+	import { user } from '#lib/utils/context.ts';
 	import Footer from './Footer.svelte';
 	import Nav from './Nav.svelte';
 	import Rail from './Rail.svelte';
@@ -67,7 +67,10 @@
 			.join(' · ')
 	);
 
-	afterNavigate(() => (open = false));
+	afterNavigate((nav) => {
+		if (nav.shallow && nav.type === 'goto') return;
+		open = false;
+	});
 </script>
 
 <svelte:head><title>{title}</title></svelte:head>

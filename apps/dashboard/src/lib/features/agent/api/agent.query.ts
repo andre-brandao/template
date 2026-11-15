@@ -1,5 +1,5 @@
 import { createMutation, infiniteQueryOptions } from "@tanstack/svelte-query";
-import { call, type Done } from "$lib/query";
+import { call, type Done } from "#lib/query.ts";
 import { getConversations, getModels, removeConversation } from "./agent.remote";
 
 // The gateway's model list only changes on a deploy.

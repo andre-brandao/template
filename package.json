@@ -20,9 +20,9 @@
         "@hey-api/openapi-ts": "0.99.0"
       },
       "frontend": {
-        "@sveltejs/adapter-auto": "^7.0.1",
-        "@sveltejs/adapter-node": "^5.5.8",
-        "@sveltejs/kit": "^2.70.4",
+        "@sveltejs/adapter-auto": "^8.0.1",
+        "@sveltejs/adapter-node": "^6.0.2",
+        "@sveltejs/kit": "^3.2.0",
         "@sveltejs/vite-plugin-svelte": "^7.3.1",
         "@tanstack/query-devtools": "5.107.1",
         "@tanstack/svelte-devtools": "0.1.8",

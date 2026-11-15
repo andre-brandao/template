@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { getRequestEvent } from "$app/server";
 import { Feedback } from "@template/core/feedback";
-import { remote } from "$lib/server/remote";
+import { remote } from "#lib/server/gate.ts";
 
 // Kit posts proxied LazyFiles, which Bun's `instanceof File` rejects: check the prototype, then
 // copy each into a real File for core. An untouched picker's one empty File is dropped first.

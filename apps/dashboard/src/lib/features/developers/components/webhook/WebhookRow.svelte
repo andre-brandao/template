@@ -5,9 +5,9 @@
 	import Power from '@lucide/svelte/icons/power';
 	import { IconButton, Inline, List, Menu, Tooltip } from '@template/ui';
 	import type { Webhook } from '@template/core/webhook';
-	import { ask } from '$lib/ask';
-	import { copy } from '$lib/utils/copy';
-	import { fmt } from '$lib/utils/fmt';
+	import { ask } from '#lib/ask.ts';
+	import { copy } from '#lib/utils/copy.ts';
+	import { fmt } from '#lib/utils/fmt.ts';
 	import { remove, update } from '../../api/webhooks.query';
 
 	let { row }: { row: Webhook.Info } = $props();

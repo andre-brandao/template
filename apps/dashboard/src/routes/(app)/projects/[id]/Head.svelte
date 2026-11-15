@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import ProjectNav from '$lib/features/projects/components/ProjectNav.svelte';
+	import ProjectNav from '#lib/features/projects/components/ProjectNav.svelte';
 
 	let { tight }: { tight: boolean } = $props();
 

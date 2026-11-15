@@ -3,8 +3,8 @@
 	import UserX from '@lucide/svelte/icons/user-x';
 	import { Button, FormBoundary, IconButton, Issue, Status, modal } from '@template/ui';
 	import type { User } from '@template/core/user';
-	import { invalidate } from '$lib/query';
-	import { fmt } from '$lib/utils/fmt';
+	import { invalidate } from '#lib/query.ts';
+	import { fmt } from '#lib/utils/fmt.ts';
 	import { disableUser, enableUser } from '../api/admin.remote';
 
 	let { row, self }: { row: User.Info; self: boolean } = $props();

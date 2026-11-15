@@ -1,5 +1,5 @@
 import { Panel } from "@template/core/panel";
-import { remote } from "$lib/server/remote";
+import { remote } from "#lib/server/gate.ts";
 import { Sql } from "./panel/sql";
 
 /** One read-only SELECT as the user: a panel block's rows, straight to the browser. */

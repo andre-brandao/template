@@ -1,8 +1,8 @@
 import { error } from "@sveltejs/kit";
-import { dev } from "$app/environment";
+import { dev } from "$app/env";
 import { z } from "zod";
 import { Identity } from "@template/core/identity";
-import { remote } from "$lib/server/remote";
+import { remote } from "#lib/server/gate.ts";
 import { call, ops } from "./api";
 
 // Remote endpoints are routes of their own, so the section's `+layout.server` guard misses them.

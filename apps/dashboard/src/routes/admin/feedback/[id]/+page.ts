@@ -1,5 +1,5 @@
-import { issue } from "$lib/features/feedback/api/feedback.query";
-import { warm } from "$lib/query";
+import { issue } from "#lib/features/feedback/api/feedback.query.ts";
+import { warm } from "#lib/query.ts";
 import type { PageLoad } from "./$types";
 
 export const load: PageLoad = async (event) => {

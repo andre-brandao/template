@@ -1,7 +1,7 @@
 import AppWindow from "@lucide/svelte/icons/app-window";
 import KeyRound from "@lucide/svelte/icons/key-round";
 import Webhook from "@lucide/svelte/icons/webhook";
-import { section } from "$lib/components/layout/nav";
+import { section } from "#lib/components/layout/nav.ts";
 import type { LayoutLoad } from "./$types";
 
 // `data` is the server load's output: this load shadows it, so it only reaches `page.data` through the spread.

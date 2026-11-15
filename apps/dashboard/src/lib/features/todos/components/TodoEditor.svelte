@@ -3,7 +3,7 @@
 	import { Button, Card, Inline, Issue, Section, Skeleton } from '@template/ui';
 	import type { Event } from '@template/core/event';
 	import { get, link, unlink, update } from '../api/todos.query';
-	import Timeline from '$lib/features/events/components/Timeline.svelte';
+	import Timeline from '#lib/features/events/components/Timeline.svelte';
 	import StatusPill from './StatusPill.svelte';
 	import StatusPicker from './StatusPicker.svelte';
 	import TagList from './TagList.svelte';
@@ -13,8 +13,8 @@
 	import Delete from './Delete.svelte';
 	import Plan from './editor/Plan.svelte';
 	import SubIssues from './editor/SubIssues.svelte';
-	import Links from '$lib/components/Links.svelte';
-	import Annotations from '$lib/components/Annotations.svelte';
+	import Links from '#lib/components/Links.svelte';
+	import Annotations from '#lib/components/Annotations.svelte';
 	import { color } from '../status';
 
 	let {

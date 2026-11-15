@@ -4,7 +4,7 @@ import LayoutDashboard from "@lucide/svelte/icons/layout-dashboard";
 import MessageSquare from "@lucide/svelte/icons/message-square";
 import ScrollText from "@lucide/svelte/icons/scroll-text";
 import UsersRound from "@lucide/svelte/icons/users-round";
-import { section } from "$lib/components/layout/nav";
+import { section } from "#lib/components/layout/nav.ts";
 
 export const load = () => ({
   nav: section("/admin", "Admin", [

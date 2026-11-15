@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { dev } from '$app/environment';
+	import { dev } from '$app/env';
 	import { Button, Field, FormBoundary, Input, Issue } from '@template/ui';
 	import { start, verify } from '../api/login.remote';
 

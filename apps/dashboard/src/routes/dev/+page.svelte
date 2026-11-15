@@ -5,7 +5,7 @@
 	import Mail from '@lucide/svelte/icons/mail';
 	import { Card } from '@template/ui';
 	import { stories } from '@template/ui/story';
-	import * as Header from '$lib/components/header';
+	import * as Header from '#lib/components/header/index.ts';
 
 	const tools = [
 		{

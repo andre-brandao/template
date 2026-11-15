@@ -54,7 +54,9 @@ graph LR
   docker["infra/docker<br/>compose"] --> cli["template-cli serve"]
 ```
 
-`sst.config.ts` imports `infra/sst/cf`; `infra/sst/aws` is the alternate wiring.
+`sst.config.ts` imports `infra/sst/cf`; `infra/sst/aws` is the alternate wiring. Its dashboard
+has no adapter yet: `svelte-kit-sst` has no SvelteKit 3 release (sst/sst#6993), so the
+`sst-aws` adapter target was dropped and can come back once SST ships one.
 `infra/terraform` deploys the same Cloudflare stack as `infra/sst/cf` without SST — it has
 its own state and its own `tf.` domain, so the two can coexist. `infra/alchemy` is a
 third, alternate wiring. `infra/docker` runs one app image under Compose: every service

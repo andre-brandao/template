@@ -1,7 +1,7 @@
 <!-- Raised through `modal(LinkForm, { add })`; the write comes in, so any slice can reuse it. -->
 <script lang="ts">
 	import { Dialog, Field, Input } from '@template/ui';
-	import { message } from '$lib/query';
+	import { message } from '#lib/query.ts';
 
 	let {
 		add,

@@ -39,12 +39,17 @@ export const queryClient = () => shared ?? create();
 export const invalidate = (key: QueryKey) => shared?.invalidateQueries({ queryKey: key });
 
 // A remote function rejects with an `HttpError`, which carries no `message`; the views read one.
+// A remote query read inside an effect stays cached, so a refetch would replay it: `refresh`
+// makes every call hit the server, once (the proxy's `then` reuses that request).
 export const call =
   <I, O>(fn: (input: I) => PromiseLike<O>) =>
-  (input: I) =>
-    Promise.resolve(fn(input)).catch((err) =>
+  (input: I) => {
+    const out = fn(input);
+    if ("refresh" in out && typeof out.refresh === "function") out.refresh();
+    return Promise.resolve(out).catch((err) =>
       Promise.reject(new Error(err?.body?.message ?? String(err))),
     );
+  };
 
 /** What a mutation factory accepts, typed from the remote command behind it. */
 export type Done<T extends (input: never) => PromiseLike<unknown>> = Pick<

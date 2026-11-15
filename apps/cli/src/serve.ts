@@ -1,6 +1,8 @@
 import { MemoryStorage } from "@openauthjs/openauth/storage/memory";
 import { Context } from "@template/core/context";
 import { Database } from "@template/core/drizzle";
+import { Kv } from "@template/core/kv";
+import { redis } from "@template/core/kv/adapter/redis";
 import { Queue } from "@template/core/queue";
 import { Storage } from "@template/core/storage";
 import { app as apiApp } from "@template/functions/api";
@@ -65,12 +67,18 @@ const targets: Record<string, () => void | Promise<void>> = {
       port,
       Storage.provider(Storage.fromEnv(process.env)),
       Queue.provider(Queue.fromEnv(process.env, Database.use)),
+      Kv.provider(Kv.fromEnv(process.env, Database.use, { redis })),
     );
     console.log(`API running at http://localhost:${port}`);
   },
   mcp: () => {
     const port = Number(process.env.MCP_PORT) || 3001;
-    serveApp(mcpApp, port, Queue.provider(Queue.fromEnv(process.env, Database.use)));
+    serveApp(
+      mcpApp,
+      port,
+      Queue.provider(Queue.fromEnv(process.env, Database.use)),
+      Kv.provider(Kv.fromEnv(process.env, Database.use, { redis })),
+    );
     console.log(`MCP running at http://localhost:${port}/mcp`);
   },
   auth: () => {

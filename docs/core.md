@@ -7,7 +7,7 @@ visible as directories.
 graph TD
   domain["<b>the product</b><br/>project · todo · user"]
   platform["<b>platform/</b><br/>admin · key · webhook · event · bus · file · conversation · panel"]
-  lib["<b>lib/</b><br/>queue · storage · email"]
+  lib["<b>lib/</b><br/>queue · storage · email · kv"]
   kernel["<b>kernel</b><br/>identity · context · error · permission · drizzle · util"]
 
   domain --> platform
@@ -51,6 +51,8 @@ Slices declare and publish typed events through `platform/bus`. See [events.md](
 
 - `lib/storage` reaches `platform/key` for `Signing.current`, inside `fromEnv` only — the
   port itself takes the key as an option, so nothing in the port layer knows about it.
+- `lib/kv`'s redis adapter imports `"bun"`, so it stays out of `Kv.Providers` and the Worker
+  bundle; Bun targets import it as `@template/core/kv/adapter/redis`.
 - `platform/event` joins `user/user.sql` to name the actor on a log row. Platform may reach
   `user`, the identity anchor; nothing else in the product.
 - `platform/admin` reads `project` and `todo` tables for its counts — the one arrow that

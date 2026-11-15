@@ -2,6 +2,9 @@ import { gt, isNull, or } from "drizzle-orm";
 import { index, jsonb, snakeCase, text, uniqueIndex, varchar } from "drizzle-orm/pg-core";
 import { id, timestamp, timestamps, ulid } from "../../drizzle/types";
 
+// Plain text in SQL; the union only guards writes and narrows reads.
+const types = ["api", "code", "session", "agent", "signing", "hook"] as const;
+
 /**
  * Every secret the app holds, by `type`; null expiry = never. Hashed, except `signing` and
  * `hook`, which the app has to reproduce.
@@ -14,7 +17,7 @@ export const KeyTable = snakeCase.table(
     userID: ulid(),
     name: varchar({ length: 255 }).notNull(),
     key: varchar({ length: 128 }).notNull(),
-    type: text().notNull().default("api"),
+    type: text().$type<(typeof types)[number]>().notNull().default("api"),
     // Whatever a key's own type wants remembered, like the mask for an `api` key.
     meta: jsonb().notNull().default({}),
     expiresAt: timestamp(),

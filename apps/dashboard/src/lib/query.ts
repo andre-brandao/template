@@ -65,7 +65,6 @@ export const call =
     return Promise.resolve(out).catch((err) => Promise.reject(new Error(message(err))));
   };
 
-
 /** What an SDK mutation factory accepts: `Opts<typeof postProjectMutation>`. */
 export type Opts<T extends () => { onSuccess?: unknown }> = Pick<ReturnType<T>, "onSuccess">;
 

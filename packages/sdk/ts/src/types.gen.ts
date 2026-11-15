@@ -28,7 +28,7 @@ export type UserSummary = {
 };
 
 /**
- * Not found error
+ * Server error
  */
 export type ErrorResponse = {
   /**
@@ -108,11 +108,11 @@ export type User = {
    * Display preferences. Every key has a default, so this is always complete.
    */
   prefs: {
-    theme?: "system" | "light" | "dark";
-    locale?: "en" | "pt-BR" | "es" | "fr" | "de";
-    zone?: string | null;
-    date?: "system" | "mdy" | "dmy" | "ymd";
-    time?: "system" | "h12" | "h24";
+    theme: "system" | "light" | "dark";
+    locale: "en" | "pt-BR" | "es" | "fr" | "de";
+    zone: string | null;
+    date: "system" | "mdy" | "dmy" | "ymd";
+    time: "system" | "h12" | "h24";
   };
   /**
    * When the account was disabled. Null while it is active.
@@ -167,7 +167,7 @@ export type Identity =
   | {
       type: "public";
       properties: {
-        [key: string]: unknown;
+        [key: string]: never;
       };
     }
   | {
@@ -355,7 +355,7 @@ export type Key = {
 /**
  * A plain reference to an outside resource.
  */
-export type Link = {
+export type LinkOutput = {
   /**
    * Where it points.
    */
@@ -383,7 +383,7 @@ export type Metadata = {
   /**
    * Outside references.
    */
-  links: Array<Link>;
+  links: Array<LinkOutput>;
 };
 
 /**
@@ -479,6 +479,24 @@ export type Stage = {
   done: number;
   start: string | null;
   end: string | null;
+};
+
+/**
+ * A plain reference to an outside resource.
+ */
+export type Link = {
+  /**
+   * Where it points.
+   */
+  url: string;
+  /**
+   * Label shown in place of the url.
+   */
+  title?: string;
+  /**
+   * Free kind hint, like `doc` or `design`.
+   */
+  type?: string;
 };
 
 /**
@@ -1304,7 +1322,7 @@ export type GetTodoByIdResponses = {
 export type GetTodoByIdResponse = GetTodoByIdResponses[keyof GetTodoByIdResponses];
 
 export type PatchTodoByIdData = {
-  body: {
+  body?: {
     /**
      * One-line summary.
      */
@@ -2067,7 +2085,7 @@ export type GetProjectByIdResponses = {
 export type GetProjectByIdResponse = GetProjectByIdResponses[keyof GetProjectByIdResponses];
 
 export type PatchProjectByIdData = {
-  body: {
+  body?: {
     /**
      * Display name.
      */

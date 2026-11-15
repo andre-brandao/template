@@ -33,6 +33,7 @@
 		Popover,
 		Status,
 		Tabs,
+		Tooltip,
 		at as instant,
 		format,
 		fromDay,
@@ -42,6 +43,7 @@
 		week,
 		weekStart
 	} from '@template/ui';
+	import Keys from '#lib/components/layout/Keys.svelte';
 	import { user } from '#lib/utils/context.ts';
 	import { fmt } from '#lib/utils/fmt.ts';
 	import { between, undated, update } from '../../api/todos.query';
@@ -231,10 +233,13 @@
 		{#if dated.data && dated.data.total > dated.data.data.length}
 			<span class="note">{dated.data.data.length} of {dated.data.total} shown</span>
 		{/if}
+		<!-- One hint for every key: the `?` sheet lists the calendar's with the rest. -->
 		<span class="keys">
-			<span><Kbd keys="T" /> today</span>
-			<span><Kbd keys="[" /><Kbd keys="]" /> {mode}</span>
-			<span><Kbd keys="M" /><Kbd keys="W" /> mode</span>
+			<Tooltip tip="Keyboard shortcuts">
+				<button type="button" aria-label="Keyboard shortcuts" onclick={() => modal(Keys)}>
+					<Kbd keys="?" />
+				</button>
+			</Tooltip>
 		</span>
 		<Tabs.Root>
 			<Tabs.Item active={mode === 'month'} onclick={() => swap('month')}>Month</Tabs.Item>
@@ -368,16 +373,22 @@
 
 	.keys {
 		display: inline-flex;
-		gap: 0.8rem;
 		margin-left: auto;
-		color: var(--dim);
-		font-size: 0.72rem;
 	}
 
-	.keys span {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.25em;
+	.keys button {
+		display: inline-grid;
+		place-items: center;
+		padding: 0.2rem;
+		border: none;
+		border-radius: var(--radius-sm);
+		background: none;
+		font-size: 0.72rem;
+		cursor: pointer;
+	}
+
+	.keys button:hover {
+		background: var(--hover);
 	}
 
 	.body {

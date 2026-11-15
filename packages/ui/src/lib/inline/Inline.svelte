@@ -39,6 +39,9 @@
 	let shown = $derived(value);
 	let draft = $state('');
 	let editing = $state(false);
+	// The face stays until the box holds focus: removing the focused face would blur to the
+	// body first, which a wrapper's focusout reads as leaving.
+	let live = $state(false);
 	let pending = $state(false);
 	let failed = $state<string>();
 	// The text a failed save rejected, offered again on the next edit.
@@ -60,6 +63,7 @@
 
 	async function leave(refocus: boolean) {
 		editing = false;
+		live = false;
 		if (!refocus) return;
 		await tick();
 		quiet = true;
@@ -109,6 +113,7 @@
 	const focus = (el: HTMLInputElement | HTMLTextAreaElement) => {
 		el.focus();
 		el.select();
+		live = true;
 	};
 </script>
 
@@ -132,7 +137,8 @@
 			onblur={() => save(false)}
 			{@attach focus}
 		/>
-	{:else}
+	{/if}
+	{#if !live}
 		<button
 			type="button"
 			class={['box', 'face', { empty: !shown, multiline }]}

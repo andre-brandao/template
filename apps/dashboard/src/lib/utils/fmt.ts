@@ -53,6 +53,34 @@ export function ago(iso: string, prefs: Prefs) {
 /** The zone the browser resolves — what `zone: null` means in practice. */
 export const local = () => Intl.DateTimeFormat().resolvedOptions().timeZone;
 
+// `YYYY-MM-DD` in the zone; UTC math when this ICU build lacks it.
+function ymd(when: Date, zone: string) {
+  try {
+    const style = { timeZone: zone, year: "numeric", month: "2-digit", day: "2-digit" } as const;
+    const parts = new Intl.DateTimeFormat("en-US", style).formatToParts(when);
+    const part = (type: Intl.DateTimeFormatPartTypes) => parts.find((p) => p.type === type)?.value;
+    return `${part("year")}-${part("month")}-${part("day")}`;
+  } catch {
+    return when.toISOString().slice(0, 10);
+  }
+}
+
+/** A stored date's day in the zone. Legacy values at UTC midnight read as that UTC day. */
+export function day(value: string | Date, zone: string) {
+  const iso = new Date(value).toISOString();
+  if (iso.endsWith("T00:00:00.000Z")) return iso.slice(0, 10);
+  return ymd(new Date(value), zone);
+}
+
+export const today = (zone: string) => ymd(new Date(), zone);
+
+/** The last `days` days through today in the zone, as an insights range. */
+export function last(days: number, zone: string) {
+  const end = today(zone);
+  const start = new Date(Date.parse(end) - (days - 1) * 86_400_000).toISOString().slice(0, 10);
+  return { start, end };
+}
+
 /**
  * Formatters bound to the signed-in user's preferences. Call during component init —
  * it reads context — then use the returned helpers anywhere in the template.
@@ -64,5 +92,8 @@ export function fmt() {
     time: (value: string | Date) => time(value, me.prefs),
     stamp: (value: string | Date) => stamp(value, me.prefs),
     ago: (iso: string) => ago(iso, me.prefs),
+    get zone() {
+      return zone(me.prefs);
+    },
   };
 }

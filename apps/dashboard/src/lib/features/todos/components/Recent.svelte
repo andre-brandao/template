@@ -28,7 +28,7 @@
 			<li>
 				<a href="/todos/{todo.id}">{todo.title}</a>
 				<span class="meta">
-					<span class={['when', { late: late(todo) }]}>
+					<span class={['when', { late: late(todo, f.zone) }]}>
 						{todo.dueDate ? f.date(todo.dueDate) : '—'}
 					</span>
 					<StatusPill status={todo.status} />

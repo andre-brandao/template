@@ -11,7 +11,7 @@
 <dl class="facts">
 	<div>
 		<dt>Planned</dt>
-		<dd class:late={late(todo)}>
+		<dd class:late={late(todo, f.zone)}>
 			{todo.startDate ? f.date(todo.startDate) : '—'} → {todo.dueDate
 				? f.date(todo.dueDate)
 				: '—'}

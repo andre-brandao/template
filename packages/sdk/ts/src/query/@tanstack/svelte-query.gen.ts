@@ -18,18 +18,18 @@ import {
   getFile,
   getFileByNameContent,
   getFileSigned,
+  getInsightsActivity,
+  getInsightsCalendar,
+  getInsightsDue,
+  getInsightsLoad,
+  getInsightsStats,
+  getInsightsStatus,
   getKey,
   getMe,
   getProject,
   getProjectById,
   getTodo,
   getTodoById,
-  getTodoInsightsActivity,
-  getTodoInsightsCalendar,
-  getTodoInsightsDue,
-  getTodoInsightsLoad,
-  getTodoInsightsStats,
-  getTodoInsightsStatus,
   getTodoStage,
   getUser,
   getUserById,
@@ -74,6 +74,24 @@ import type {
   GetFileResponse,
   GetFileSignedData,
   GetFileSignedError,
+  GetInsightsActivityData,
+  GetInsightsActivityError,
+  GetInsightsActivityResponse,
+  GetInsightsCalendarData,
+  GetInsightsCalendarError,
+  GetInsightsCalendarResponse,
+  GetInsightsDueData,
+  GetInsightsDueError,
+  GetInsightsDueResponse,
+  GetInsightsLoadData,
+  GetInsightsLoadError,
+  GetInsightsLoadResponse,
+  GetInsightsStatsData,
+  GetInsightsStatsError,
+  GetInsightsStatsResponse,
+  GetInsightsStatusData,
+  GetInsightsStatusError,
+  GetInsightsStatusResponse,
   GetKeyData,
   GetKeyError,
   GetKeyResponse,
@@ -91,24 +109,6 @@ import type {
   GetTodoByIdResponse,
   GetTodoData,
   GetTodoError,
-  GetTodoInsightsActivityData,
-  GetTodoInsightsActivityError,
-  GetTodoInsightsActivityResponse,
-  GetTodoInsightsCalendarData,
-  GetTodoInsightsCalendarError,
-  GetTodoInsightsCalendarResponse,
-  GetTodoInsightsDueData,
-  GetTodoInsightsDueError,
-  GetTodoInsightsDueResponse,
-  GetTodoInsightsLoadData,
-  GetTodoInsightsLoadError,
-  GetTodoInsightsLoadResponse,
-  GetTodoInsightsStatsData,
-  GetTodoInsightsStatsError,
-  GetTodoInsightsStatsResponse,
-  GetTodoInsightsStatusData,
-  GetTodoInsightsStatusError,
-  GetTodoInsightsStatusResponse,
   GetTodoResponse,
   GetTodoStageData,
   GetTodoStageError,
@@ -371,7 +371,7 @@ export const getTodoQueryKey = (options?: Options<GetTodoData>) =>
 /**
  * List todos
  *
- * List todos, optionally narrowed by status, assignee, stage, owning entity, parent or search. Paginated.
+ * List todos, optionally narrowed by status, assignee, stage, owning entity, parent, search, or a from/to window their planned span overlaps (`unscheduled` for undated ones). Paginated.
  */
 export const getTodoOptions = (options?: Options<GetTodoData>) =>
   queryOptions<GetTodoResponse, GetTodoError, GetTodoResponse, ReturnType<typeof getTodoQueryKey>>({
@@ -428,7 +428,7 @@ export const getTodoInfiniteQueryKey = (
 /**
  * List todos
  *
- * List todos, optionally narrowed by status, assignee, stage, owning entity, parent or search. Paginated.
+ * List todos, optionally narrowed by status, assignee, stage, owning entity, parent, search, or a from/to window their planned span overlaps (`unscheduled` for undated ones). Paginated.
  */
 export const getTodoInfiniteOptions = (options?: Options<GetTodoData>) => {
   const opts = infiniteQueryOptions<
@@ -536,419 +536,6 @@ export const patchTodoStageMutation = (
     },
   };
   return mutationOptions;
-};
-
-export const getTodoInsightsStatsQueryKey = (options: Options<GetTodoInsightsStatsData>) =>
-  createQueryKey("getTodoInsightsStats", options, false, ["Todo"]);
-
-/**
- * Todo stats
- *
- * Created, done, active and blocked counts for a range, plus overdue all time.
- */
-export const getTodoInsightsStatsOptions = (options: Options<GetTodoInsightsStatsData>) =>
-  queryOptions<
-    GetTodoInsightsStatsResponse,
-    GetTodoInsightsStatsError,
-    GetTodoInsightsStatsResponse,
-    ReturnType<typeof getTodoInsightsStatsQueryKey>
-  >({
-    queryFn: async ({ queryKey, signal }) => {
-      const { data } = await getTodoInsightsStats({
-        ...options,
-        ...queryKey[0],
-        signal,
-        throwOnError: true,
-      });
-      return data;
-    },
-    queryKey: getTodoInsightsStatsQueryKey(options),
-  });
-
-export const getTodoInsightsStatsInfiniteQueryKey = (
-  options: Options<GetTodoInsightsStatsData>,
-): QueryKey<Options<GetTodoInsightsStatsData>> =>
-  createQueryKey("getTodoInsightsStats", options, true);
-
-/**
- * Todo stats
- *
- * Created, done, active and blocked counts for a range, plus overdue all time.
- */
-export const getTodoInsightsStatsInfiniteOptions = (options: Options<GetTodoInsightsStatsData>) => {
-  const opts = infiniteQueryOptions<
-    GetTodoInsightsStatsResponse,
-    GetTodoInsightsStatsError,
-    InfiniteData<GetTodoInsightsStatsResponse>,
-    QueryKey<Options<GetTodoInsightsStatsData>>,
-    | string
-    | Pick<QueryKey<Options<GetTodoInsightsStatsData>>[0], "body" | "headers" | "path" | "query">
-  >(
-    // @ts-ignore
-    {
-      queryFn: async ({ pageParam, queryKey, signal }) => {
-        // @ts-ignore
-        const page: Pick<
-          QueryKey<Options<GetTodoInsightsStatsData>>[0],
-          "body" | "headers" | "path" | "query"
-        > =
-          typeof pageParam === "object"
-            ? pageParam
-            : {
-                query: {
-                  start: pageParam,
-                },
-              };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await getTodoInsightsStats({
-          ...options,
-          ...params,
-          signal,
-          throwOnError: true,
-        });
-        return data;
-      },
-      queryKey: getTodoInsightsStatsInfiniteQueryKey(options),
-    },
-  );
-  return opts as Omit<typeof opts, "initialData">;
-};
-
-export const getTodoInsightsStatusQueryKey = (options: Options<GetTodoInsightsStatusData>) =>
-  createQueryKey("getTodoInsightsStatus", options, false, ["Todo"]);
-
-/**
- * Todos by status
- *
- * Todos created in a range, totalled per status in pipeline order.
- */
-export const getTodoInsightsStatusOptions = (options: Options<GetTodoInsightsStatusData>) =>
-  queryOptions<
-    GetTodoInsightsStatusResponse,
-    GetTodoInsightsStatusError,
-    GetTodoInsightsStatusResponse,
-    ReturnType<typeof getTodoInsightsStatusQueryKey>
-  >({
-    queryFn: async ({ queryKey, signal }) => {
-      const { data } = await getTodoInsightsStatus({
-        ...options,
-        ...queryKey[0],
-        signal,
-        throwOnError: true,
-      });
-      return data;
-    },
-    queryKey: getTodoInsightsStatusQueryKey(options),
-  });
-
-export const getTodoInsightsStatusInfiniteQueryKey = (
-  options: Options<GetTodoInsightsStatusData>,
-): QueryKey<Options<GetTodoInsightsStatusData>> =>
-  createQueryKey("getTodoInsightsStatus", options, true);
-
-/**
- * Todos by status
- *
- * Todos created in a range, totalled per status in pipeline order.
- */
-export const getTodoInsightsStatusInfiniteOptions = (
-  options: Options<GetTodoInsightsStatusData>,
-) => {
-  const opts = infiniteQueryOptions<
-    GetTodoInsightsStatusResponse,
-    GetTodoInsightsStatusError,
-    InfiniteData<GetTodoInsightsStatusResponse>,
-    QueryKey<Options<GetTodoInsightsStatusData>>,
-    | string
-    | Pick<QueryKey<Options<GetTodoInsightsStatusData>>[0], "body" | "headers" | "path" | "query">
-  >(
-    // @ts-ignore
-    {
-      queryFn: async ({ pageParam, queryKey, signal }) => {
-        // @ts-ignore
-        const page: Pick<
-          QueryKey<Options<GetTodoInsightsStatusData>>[0],
-          "body" | "headers" | "path" | "query"
-        > =
-          typeof pageParam === "object"
-            ? pageParam
-            : {
-                query: {
-                  start: pageParam,
-                },
-              };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await getTodoInsightsStatus({
-          ...options,
-          ...params,
-          signal,
-          throwOnError: true,
-        });
-        return data;
-      },
-      queryKey: getTodoInsightsStatusInfiniteQueryKey(options),
-    },
-  );
-  return opts as Omit<typeof opts, "initialData">;
-};
-
-export const getTodoInsightsLoadQueryKey = (options: Options<GetTodoInsightsLoadData>) =>
-  createQueryKey("getTodoInsightsLoad", options, false, ["Todo"]);
-
-/**
- * Todos by assignee
- *
- * Todos created in a range, per assignee and status, busiest first.
- */
-export const getTodoInsightsLoadOptions = (options: Options<GetTodoInsightsLoadData>) =>
-  queryOptions<
-    GetTodoInsightsLoadResponse,
-    GetTodoInsightsLoadError,
-    GetTodoInsightsLoadResponse,
-    ReturnType<typeof getTodoInsightsLoadQueryKey>
-  >({
-    queryFn: async ({ queryKey, signal }) => {
-      const { data } = await getTodoInsightsLoad({
-        ...options,
-        ...queryKey[0],
-        signal,
-        throwOnError: true,
-      });
-      return data;
-    },
-    queryKey: getTodoInsightsLoadQueryKey(options),
-  });
-
-export const getTodoInsightsLoadInfiniteQueryKey = (
-  options: Options<GetTodoInsightsLoadData>,
-): QueryKey<Options<GetTodoInsightsLoadData>> =>
-  createQueryKey("getTodoInsightsLoad", options, true);
-
-/**
- * Todos by assignee
- *
- * Todos created in a range, per assignee and status, busiest first.
- */
-export const getTodoInsightsLoadInfiniteOptions = (options: Options<GetTodoInsightsLoadData>) => {
-  const opts = infiniteQueryOptions<
-    GetTodoInsightsLoadResponse,
-    GetTodoInsightsLoadError,
-    InfiniteData<GetTodoInsightsLoadResponse>,
-    QueryKey<Options<GetTodoInsightsLoadData>>,
-    | string
-    | Pick<QueryKey<Options<GetTodoInsightsLoadData>>[0], "body" | "headers" | "path" | "query">
-  >(
-    // @ts-ignore
-    {
-      queryFn: async ({ pageParam, queryKey, signal }) => {
-        // @ts-ignore
-        const page: Pick<
-          QueryKey<Options<GetTodoInsightsLoadData>>[0],
-          "body" | "headers" | "path" | "query"
-        > =
-          typeof pageParam === "object"
-            ? pageParam
-            : {
-                query: {
-                  start: pageParam,
-                },
-              };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await getTodoInsightsLoad({
-          ...options,
-          ...params,
-          signal,
-          throwOnError: true,
-        });
-        return data;
-      },
-      queryKey: getTodoInsightsLoadInfiniteQueryKey(options),
-    },
-  );
-  return opts as Omit<typeof opts, "initialData">;
-};
-
-export const getTodoInsightsDueQueryKey = (options?: Options<GetTodoInsightsDueData>) =>
-  createQueryKey("getTodoInsightsDue", options, false, ["Todo"]);
-
-/**
- * Next due todos
- *
- * The five open todos coming due soonest.
- */
-export const getTodoInsightsDueOptions = (options?: Options<GetTodoInsightsDueData>) =>
-  queryOptions<
-    GetTodoInsightsDueResponse,
-    GetTodoInsightsDueError,
-    GetTodoInsightsDueResponse,
-    ReturnType<typeof getTodoInsightsDueQueryKey>
-  >({
-    queryFn: async ({ queryKey, signal }) => {
-      const { data } = await getTodoInsightsDue({
-        ...options,
-        ...queryKey[0],
-        signal,
-        throwOnError: true,
-      });
-      return data;
-    },
-    queryKey: getTodoInsightsDueQueryKey(options),
-  });
-
-export const getTodoInsightsCalendarQueryKey = (options: Options<GetTodoInsightsCalendarData>) =>
-  createQueryKey("getTodoInsightsCalendar", options, false, ["Todo"]);
-
-/**
- * Todo calendar
- *
- * Todos created per day in a range, in the reader's timezone.
- */
-export const getTodoInsightsCalendarOptions = (options: Options<GetTodoInsightsCalendarData>) =>
-  queryOptions<
-    GetTodoInsightsCalendarResponse,
-    GetTodoInsightsCalendarError,
-    GetTodoInsightsCalendarResponse,
-    ReturnType<typeof getTodoInsightsCalendarQueryKey>
-  >({
-    queryFn: async ({ queryKey, signal }) => {
-      const { data } = await getTodoInsightsCalendar({
-        ...options,
-        ...queryKey[0],
-        signal,
-        throwOnError: true,
-      });
-      return data;
-    },
-    queryKey: getTodoInsightsCalendarQueryKey(options),
-  });
-
-export const getTodoInsightsCalendarInfiniteQueryKey = (
-  options: Options<GetTodoInsightsCalendarData>,
-): QueryKey<Options<GetTodoInsightsCalendarData>> =>
-  createQueryKey("getTodoInsightsCalendar", options, true);
-
-/**
- * Todo calendar
- *
- * Todos created per day in a range, in the reader's timezone.
- */
-export const getTodoInsightsCalendarInfiniteOptions = (
-  options: Options<GetTodoInsightsCalendarData>,
-) => {
-  const opts = infiniteQueryOptions<
-    GetTodoInsightsCalendarResponse,
-    GetTodoInsightsCalendarError,
-    InfiniteData<GetTodoInsightsCalendarResponse>,
-    QueryKey<Options<GetTodoInsightsCalendarData>>,
-    | string
-    | Pick<QueryKey<Options<GetTodoInsightsCalendarData>>[0], "body" | "headers" | "path" | "query">
-  >(
-    // @ts-ignore
-    {
-      queryFn: async ({ pageParam, queryKey, signal }) => {
-        // @ts-ignore
-        const page: Pick<
-          QueryKey<Options<GetTodoInsightsCalendarData>>[0],
-          "body" | "headers" | "path" | "query"
-        > =
-          typeof pageParam === "object"
-            ? pageParam
-            : {
-                query: {
-                  start: pageParam,
-                },
-              };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await getTodoInsightsCalendar({
-          ...options,
-          ...params,
-          signal,
-          throwOnError: true,
-        });
-        return data;
-      },
-      queryKey: getTodoInsightsCalendarInfiniteQueryKey(options),
-    },
-  );
-  return opts as Omit<typeof opts, "initialData">;
-};
-
-export const getTodoInsightsActivityQueryKey = (options: Options<GetTodoInsightsActivityData>) =>
-  createQueryKey("getTodoInsightsActivity", options, false, ["Todo"]);
-
-/**
- * Todo activity
- *
- * Todos created and completed per day, week or month, coarser as the range grows.
- */
-export const getTodoInsightsActivityOptions = (options: Options<GetTodoInsightsActivityData>) =>
-  queryOptions<
-    GetTodoInsightsActivityResponse,
-    GetTodoInsightsActivityError,
-    GetTodoInsightsActivityResponse,
-    ReturnType<typeof getTodoInsightsActivityQueryKey>
-  >({
-    queryFn: async ({ queryKey, signal }) => {
-      const { data } = await getTodoInsightsActivity({
-        ...options,
-        ...queryKey[0],
-        signal,
-        throwOnError: true,
-      });
-      return data;
-    },
-    queryKey: getTodoInsightsActivityQueryKey(options),
-  });
-
-export const getTodoInsightsActivityInfiniteQueryKey = (
-  options: Options<GetTodoInsightsActivityData>,
-): QueryKey<Options<GetTodoInsightsActivityData>> =>
-  createQueryKey("getTodoInsightsActivity", options, true);
-
-/**
- * Todo activity
- *
- * Todos created and completed per day, week or month, coarser as the range grows.
- */
-export const getTodoInsightsActivityInfiniteOptions = (
-  options: Options<GetTodoInsightsActivityData>,
-) => {
-  const opts = infiniteQueryOptions<
-    GetTodoInsightsActivityResponse,
-    GetTodoInsightsActivityError,
-    InfiniteData<GetTodoInsightsActivityResponse>,
-    QueryKey<Options<GetTodoInsightsActivityData>>,
-    | string
-    | Pick<QueryKey<Options<GetTodoInsightsActivityData>>[0], "body" | "headers" | "path" | "query">
-  >(
-    // @ts-ignore
-    {
-      queryFn: async ({ pageParam, queryKey, signal }) => {
-        // @ts-ignore
-        const page: Pick<
-          QueryKey<Options<GetTodoInsightsActivityData>>[0],
-          "body" | "headers" | "path" | "query"
-        > =
-          typeof pageParam === "object"
-            ? pageParam
-            : {
-                query: {
-                  start: pageParam,
-                },
-              };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await getTodoInsightsActivity({
-          ...options,
-          ...params,
-          signal,
-          throwOnError: true,
-        });
-        return data;
-      },
-      queryKey: getTodoInsightsActivityInfiniteQueryKey(options),
-    },
-  );
-  return opts as Omit<typeof opts, "initialData">;
 };
 
 /**
@@ -1113,6 +700,408 @@ export const postTodoByIdLinkMutation = (
     },
   };
   return mutationOptions;
+};
+
+export const getInsightsStatsQueryKey = (options: Options<GetInsightsStatsData>) =>
+  createQueryKey("getInsightsStats", options, false, ["Insights"]);
+
+/**
+ * Todo stats
+ *
+ * Created, done, active and blocked counts for a range, plus overdue all time.
+ */
+export const getInsightsStatsOptions = (options: Options<GetInsightsStatsData>) =>
+  queryOptions<
+    GetInsightsStatsResponse,
+    GetInsightsStatsError,
+    GetInsightsStatsResponse,
+    ReturnType<typeof getInsightsStatsQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await getInsightsStats({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: getInsightsStatsQueryKey(options),
+  });
+
+export const getInsightsStatsInfiniteQueryKey = (
+  options: Options<GetInsightsStatsData>,
+): QueryKey<Options<GetInsightsStatsData>> => createQueryKey("getInsightsStats", options, true);
+
+/**
+ * Todo stats
+ *
+ * Created, done, active and blocked counts for a range, plus overdue all time.
+ */
+export const getInsightsStatsInfiniteOptions = (options: Options<GetInsightsStatsData>) => {
+  const opts = infiniteQueryOptions<
+    GetInsightsStatsResponse,
+    GetInsightsStatsError,
+    InfiniteData<GetInsightsStatsResponse>,
+    QueryKey<Options<GetInsightsStatsData>>,
+    string | Pick<QueryKey<Options<GetInsightsStatsData>>[0], "body" | "headers" | "path" | "query">
+  >(
+    // @ts-ignore
+    {
+      queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<
+          QueryKey<Options<GetInsightsStatsData>>[0],
+          "body" | "headers" | "path" | "query"
+        > =
+          typeof pageParam === "object"
+            ? pageParam
+            : {
+                query: {
+                  start: pageParam,
+                },
+              };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await getInsightsStats({
+          ...options,
+          ...params,
+          signal,
+          throwOnError: true,
+        });
+        return data;
+      },
+      queryKey: getInsightsStatsInfiniteQueryKey(options),
+    },
+  );
+  return opts as Omit<typeof opts, "initialData">;
+};
+
+export const getInsightsStatusQueryKey = (options: Options<GetInsightsStatusData>) =>
+  createQueryKey("getInsightsStatus", options, false, ["Insights"]);
+
+/**
+ * Todos by status
+ *
+ * Todos created in a range, totalled per status in pipeline order.
+ */
+export const getInsightsStatusOptions = (options: Options<GetInsightsStatusData>) =>
+  queryOptions<
+    GetInsightsStatusResponse,
+    GetInsightsStatusError,
+    GetInsightsStatusResponse,
+    ReturnType<typeof getInsightsStatusQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await getInsightsStatus({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: getInsightsStatusQueryKey(options),
+  });
+
+export const getInsightsStatusInfiniteQueryKey = (
+  options: Options<GetInsightsStatusData>,
+): QueryKey<Options<GetInsightsStatusData>> => createQueryKey("getInsightsStatus", options, true);
+
+/**
+ * Todos by status
+ *
+ * Todos created in a range, totalled per status in pipeline order.
+ */
+export const getInsightsStatusInfiniteOptions = (options: Options<GetInsightsStatusData>) => {
+  const opts = infiniteQueryOptions<
+    GetInsightsStatusResponse,
+    GetInsightsStatusError,
+    InfiniteData<GetInsightsStatusResponse>,
+    QueryKey<Options<GetInsightsStatusData>>,
+    | string
+    | Pick<QueryKey<Options<GetInsightsStatusData>>[0], "body" | "headers" | "path" | "query">
+  >(
+    // @ts-ignore
+    {
+      queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<
+          QueryKey<Options<GetInsightsStatusData>>[0],
+          "body" | "headers" | "path" | "query"
+        > =
+          typeof pageParam === "object"
+            ? pageParam
+            : {
+                query: {
+                  start: pageParam,
+                },
+              };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await getInsightsStatus({
+          ...options,
+          ...params,
+          signal,
+          throwOnError: true,
+        });
+        return data;
+      },
+      queryKey: getInsightsStatusInfiniteQueryKey(options),
+    },
+  );
+  return opts as Omit<typeof opts, "initialData">;
+};
+
+export const getInsightsLoadQueryKey = (options: Options<GetInsightsLoadData>) =>
+  createQueryKey("getInsightsLoad", options, false, ["Insights"]);
+
+/**
+ * Todos by assignee
+ *
+ * Todos created in a range, per assignee and status, busiest first.
+ */
+export const getInsightsLoadOptions = (options: Options<GetInsightsLoadData>) =>
+  queryOptions<
+    GetInsightsLoadResponse,
+    GetInsightsLoadError,
+    GetInsightsLoadResponse,
+    ReturnType<typeof getInsightsLoadQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await getInsightsLoad({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: getInsightsLoadQueryKey(options),
+  });
+
+export const getInsightsLoadInfiniteQueryKey = (
+  options: Options<GetInsightsLoadData>,
+): QueryKey<Options<GetInsightsLoadData>> => createQueryKey("getInsightsLoad", options, true);
+
+/**
+ * Todos by assignee
+ *
+ * Todos created in a range, per assignee and status, busiest first.
+ */
+export const getInsightsLoadInfiniteOptions = (options: Options<GetInsightsLoadData>) => {
+  const opts = infiniteQueryOptions<
+    GetInsightsLoadResponse,
+    GetInsightsLoadError,
+    InfiniteData<GetInsightsLoadResponse>,
+    QueryKey<Options<GetInsightsLoadData>>,
+    string | Pick<QueryKey<Options<GetInsightsLoadData>>[0], "body" | "headers" | "path" | "query">
+  >(
+    // @ts-ignore
+    {
+      queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<
+          QueryKey<Options<GetInsightsLoadData>>[0],
+          "body" | "headers" | "path" | "query"
+        > =
+          typeof pageParam === "object"
+            ? pageParam
+            : {
+                query: {
+                  start: pageParam,
+                },
+              };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await getInsightsLoad({
+          ...options,
+          ...params,
+          signal,
+          throwOnError: true,
+        });
+        return data;
+      },
+      queryKey: getInsightsLoadInfiniteQueryKey(options),
+    },
+  );
+  return opts as Omit<typeof opts, "initialData">;
+};
+
+export const getInsightsDueQueryKey = (options?: Options<GetInsightsDueData>) =>
+  createQueryKey("getInsightsDue", options, false, ["Insights"]);
+
+/**
+ * Next due todos
+ *
+ * The five open todos coming due soonest.
+ */
+export const getInsightsDueOptions = (options?: Options<GetInsightsDueData>) =>
+  queryOptions<
+    GetInsightsDueResponse,
+    GetInsightsDueError,
+    GetInsightsDueResponse,
+    ReturnType<typeof getInsightsDueQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await getInsightsDue({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: getInsightsDueQueryKey(options),
+  });
+
+export const getInsightsCalendarQueryKey = (options: Options<GetInsightsCalendarData>) =>
+  createQueryKey("getInsightsCalendar", options, false, ["Insights"]);
+
+/**
+ * Todo calendar
+ *
+ * Todos created per day in a range, in the reader's timezone.
+ */
+export const getInsightsCalendarOptions = (options: Options<GetInsightsCalendarData>) =>
+  queryOptions<
+    GetInsightsCalendarResponse,
+    GetInsightsCalendarError,
+    GetInsightsCalendarResponse,
+    ReturnType<typeof getInsightsCalendarQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await getInsightsCalendar({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: getInsightsCalendarQueryKey(options),
+  });
+
+export const getInsightsCalendarInfiniteQueryKey = (
+  options: Options<GetInsightsCalendarData>,
+): QueryKey<Options<GetInsightsCalendarData>> =>
+  createQueryKey("getInsightsCalendar", options, true);
+
+/**
+ * Todo calendar
+ *
+ * Todos created per day in a range, in the reader's timezone.
+ */
+export const getInsightsCalendarInfiniteOptions = (options: Options<GetInsightsCalendarData>) => {
+  const opts = infiniteQueryOptions<
+    GetInsightsCalendarResponse,
+    GetInsightsCalendarError,
+    InfiniteData<GetInsightsCalendarResponse>,
+    QueryKey<Options<GetInsightsCalendarData>>,
+    | string
+    | Pick<QueryKey<Options<GetInsightsCalendarData>>[0], "body" | "headers" | "path" | "query">
+  >(
+    // @ts-ignore
+    {
+      queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<
+          QueryKey<Options<GetInsightsCalendarData>>[0],
+          "body" | "headers" | "path" | "query"
+        > =
+          typeof pageParam === "object"
+            ? pageParam
+            : {
+                query: {
+                  start: pageParam,
+                },
+              };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await getInsightsCalendar({
+          ...options,
+          ...params,
+          signal,
+          throwOnError: true,
+        });
+        return data;
+      },
+      queryKey: getInsightsCalendarInfiniteQueryKey(options),
+    },
+  );
+  return opts as Omit<typeof opts, "initialData">;
+};
+
+export const getInsightsActivityQueryKey = (options: Options<GetInsightsActivityData>) =>
+  createQueryKey("getInsightsActivity", options, false, ["Insights"]);
+
+/**
+ * Todo activity
+ *
+ * Todos created and completed per day, week or month, coarser as the range grows.
+ */
+export const getInsightsActivityOptions = (options: Options<GetInsightsActivityData>) =>
+  queryOptions<
+    GetInsightsActivityResponse,
+    GetInsightsActivityError,
+    GetInsightsActivityResponse,
+    ReturnType<typeof getInsightsActivityQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await getInsightsActivity({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: getInsightsActivityQueryKey(options),
+  });
+
+export const getInsightsActivityInfiniteQueryKey = (
+  options: Options<GetInsightsActivityData>,
+): QueryKey<Options<GetInsightsActivityData>> =>
+  createQueryKey("getInsightsActivity", options, true);
+
+/**
+ * Todo activity
+ *
+ * Todos created and completed per day, week or month, coarser as the range grows.
+ */
+export const getInsightsActivityInfiniteOptions = (options: Options<GetInsightsActivityData>) => {
+  const opts = infiniteQueryOptions<
+    GetInsightsActivityResponse,
+    GetInsightsActivityError,
+    InfiniteData<GetInsightsActivityResponse>,
+    QueryKey<Options<GetInsightsActivityData>>,
+    | string
+    | Pick<QueryKey<Options<GetInsightsActivityData>>[0], "body" | "headers" | "path" | "query">
+  >(
+    // @ts-ignore
+    {
+      queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<
+          QueryKey<Options<GetInsightsActivityData>>[0],
+          "body" | "headers" | "path" | "query"
+        > =
+          typeof pageParam === "object"
+            ? pageParam
+            : {
+                query: {
+                  start: pageParam,
+                },
+              };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await getInsightsActivity({
+          ...options,
+          ...params,
+          signal,
+          throwOnError: true,
+        });
+        return data;
+      },
+      queryKey: getInsightsActivityInfiniteQueryKey(options),
+    },
+  );
+  return opts as Omit<typeof opts, "initialData">;
 };
 
 export const getProjectQueryKey = (options?: Options<GetProjectData>) =>

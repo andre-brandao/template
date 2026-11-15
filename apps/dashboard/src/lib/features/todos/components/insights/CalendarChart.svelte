@@ -125,6 +125,7 @@
 
 <style>
 	.grid {
+		display: grid;
 		overflow-x: auto;
 	}
 

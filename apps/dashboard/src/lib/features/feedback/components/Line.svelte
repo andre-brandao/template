@@ -38,7 +38,7 @@
 
 <style>
 	li {
-		border-bottom: 1px solid var(--border, #ddd);
+		border-bottom: 1px solid var(--border);
 	}
 
 	li:last-child {
@@ -51,14 +51,14 @@
 		gap: 0.7em;
 		min-height: 2.75em;
 		padding: 0.3em 0.8em;
-		color: var(--ink, #111);
+		color: var(--ink);
 		font-size: 0.9em;
 		text-decoration: none;
 	}
 
 	a.line:hover,
 	a.line:focus-visible {
-		background: var(--hover, #f2f2f2);
+		background: var(--hover);
 	}
 
 	/* Open is in flight, resolved is done: the board's own stage colours. */
@@ -67,11 +67,11 @@
 		width: 0.5em;
 		height: 0.5em;
 		border-radius: 50%;
-		background: var(--progress, #3b82f6);
+		background: var(--progress);
 	}
 
 	.dot.closed {
-		background: var(--done, #3fa66b);
+		background: var(--done);
 	}
 
 	.title {
@@ -87,7 +87,7 @@
 		flex: none;
 		font-size: 0.85em;
 		font-variant-numeric: tabular-nums;
-		color: var(--muted, #666);
+		color: var(--muted);
 	}
 
 	.count {

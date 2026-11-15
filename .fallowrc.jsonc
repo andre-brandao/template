@@ -99,6 +99,8 @@
     // Peers of `alchemy` (infra/alchemy): installed for it, never imported by us.
     "@effect/platform-bun",
     "@effect/platform-node",
+    // Only for bundlers: standard-json 0.4 imports it behind importIfInstalled (zod v3 path).
+    "zod-to-json-schema",
   ],
   "ignoreUnresolvedImports": ["@template/ui"],
   "boundaries": {

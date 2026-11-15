@@ -101,10 +101,10 @@
 	textarea {
 		font: inherit;
 		padding: 0.5em 0.7em;
-		border: 1px solid var(--border, #ddd);
-		border-radius: var(--radius, 6px);
-		background: var(--surface, #fff);
-		color: var(--ink, #111);
+		border: 1px solid var(--border);
+		border-radius: var(--radius);
+		background: var(--surface);
+		color: var(--ink);
 		resize: vertical;
 	}
 
@@ -119,6 +119,6 @@
 	}
 
 	.done a {
-		color: var(--accent, #3b82f6);
+		color: var(--accent);
 	}
 </style>

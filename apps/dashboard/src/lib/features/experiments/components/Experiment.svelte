@@ -198,7 +198,7 @@
 	}
 
 	.votes {
-		color: var(--dim, #888);
+		color: var(--dim);
 		font-size: 0.9em;
 		font-variant-numeric: tabular-nums;
 	}
@@ -211,15 +211,15 @@
 		height: 1.6em;
 		padding: 0;
 		border: 0;
-		border-radius: var(--radius-sm, 4px);
+		border-radius: var(--radius-sm);
 		background: none;
-		color: var(--muted, #666);
+		color: var(--muted);
 		cursor: pointer;
 	}
 
 	.help:hover {
-		color: var(--ink, #111);
-		background: var(--hover, #f2f2f2);
+		color: var(--ink);
+		background: var(--hover);
 	}
 
 	.explain {
@@ -231,13 +231,13 @@
 
 	.explain p {
 		margin: 0.5em 0 0;
-		color: var(--muted, #666);
+		color: var(--muted);
 	}
 
 	.explain a {
 		display: inline-block;
 		margin-top: 0.6em;
-		color: var(--accent, #3b82f6);
+		color: var(--accent);
 	}
 
 	h2 {
@@ -248,7 +248,7 @@
 	.sub {
 		margin: 0 0 1.25em;
 		font-size: 0.85em;
-		color: var(--muted, #666);
+		color: var(--muted);
 	}
 
 	.form {

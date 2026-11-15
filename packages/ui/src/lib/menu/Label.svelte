@@ -20,13 +20,13 @@
 	}
 
 	.text {
-		color: var(--ink, #1c1b19);
+		color: var(--ink);
 		font-weight: 600;
 	}
 
 	.hint {
 		overflow: hidden;
-		color: var(--dim, #75736d);
+		color: var(--dim);
 		font-size: 0.92em;
 		text-overflow: ellipsis;
 		white-space: nowrap;

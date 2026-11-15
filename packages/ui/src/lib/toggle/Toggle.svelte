@@ -32,12 +32,12 @@
 		align-items: center;
 		gap: 0.4em;
 		box-sizing: border-box;
-		height: var(--control, 2.25em);
+		height: var(--control);
 		padding: 0 0.75em;
-		border: 1px solid var(--border, #e6e5e1);
-		border-radius: var(--radius-sm, 6px);
-		background: var(--surface, #fff);
-		color: var(--muted, #64625d);
+		border: 1px solid var(--border);
+		border-radius: var(--radius-sm);
+		background: var(--surface);
+		color: var(--muted);
 		font: inherit;
 		font-size: 0.9em;
 		white-space: nowrap;
@@ -45,14 +45,14 @@
 	}
 
 	.chip:hover:not(:disabled) {
-		border-color: var(--border-bright, #d3d1cc);
-		color: var(--ink, #1c1b19);
+		border-color: var(--border-bright);
+		color: var(--ink);
 	}
 
 	.chip:focus-visible {
 		outline: none;
-		border-color: var(--accent, #2f7f68);
-		box-shadow: var(--ring, 0 0 0 3px color-mix(in oklab, var(--accent, #2f7f68) 16%, transparent));
+		border-color: var(--accent);
+		box-shadow: var(--ring);
 	}
 
 	.chip:disabled {
@@ -61,8 +61,8 @@
 	}
 
 	.chip[aria-pressed='true'] {
-		border-color: color-mix(in oklab, var(--accent, #2f7f68) 45%, var(--border, #e6e5e1));
-		background: color-mix(in oklab, var(--accent, #2f7f68) 12%, var(--surface, #fff));
-		color: var(--ink, #1c1b19);
+		border-color: color-mix(in oklab, var(--accent) 45%, var(--border));
+		background: color-mix(in oklab, var(--accent) 12%, var(--surface));
+		color: var(--ink);
 	}
 </style>

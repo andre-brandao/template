@@ -16,9 +16,9 @@
 		align-items: center;
 		gap: 0.5em;
 		padding: 0.3em 0.6em;
-		border: 1px dashed var(--border-bright, #d3d1cc);
-		border-radius: var(--radius, 8px);
-		color: var(--muted, #64625d);
+		border: 1px dashed var(--border-bright);
+		border-radius: var(--radius);
+		color: var(--muted);
 		font-size: 0.85em;
 	}
 </style>

@@ -31,8 +31,8 @@ Every component is re-exported from `src/lib/index.ts`, and every story is regis
 - Split a collection by destination (`{ top, bottom }`) rather than tagging items with a
   `bottom: true` modifier.
 - CSS lives beside the component, scoped. Never lean on a class the app defines — the
-  only thing crossing the boundary is a token (`--border`, `--radius`), and every one is
-  written with a fallback so the component still reads on its own.
+  only thing crossing the boundary is a token (`--border`, `--radius`), read bare as
+  `var(--border)` with no fallback.
 
 ## Components
 
@@ -49,13 +49,12 @@ Every component is re-exported from `src/lib/index.ts`, and every story is regis
 
 ## Conventions
 
-- **Tokens.** One fallback per token, matching the app's light theme: `--border #e6e5e1`,
-  `--border-bright #d3d1cc`, `--surface #fff`, `--surface-2 #f2f1ee`, `--ink #1c1b19`,
-  `--muted #64625d`, `--dim #75736d`, `--accent #2f7f68`, `--danger #b8452c`,
-  `--hover rgb(0 0 0 / 0.06)`, `--radius 8px`, `--radius-sm 6px`. Don't invent a new one.
+- **Tokens.** Every token has its light/dark default in `src/lib/tokens.css`
+  (`@layer ui.tokens`, `:where(:root)`), which the app imports once and may override from
+  its own `:root`. Components read `var(--x)` bare. Add a token there before using it.
 - **One control height.** Buttons, inputs, selects, toggles and tabs read
-  `var(--control, 2.25em)`; a toolbar lowers it by setting `--control` on its container.
-- **One focus ring.** Boxed controls take `box-shadow: var(--ring, …)` with an accent border;
+  `var(--control)`; a toolbar lowers it by setting `--control` on its container.
+- **One focus ring.** Boxed controls take `box-shadow: var(--ring)` with an accent border;
   borderless items (menu, tabs, list options) draw an inset 2px accent outline.
 - **Buttons.** `Button` defaults to `secondary`; `variant="primary"` is for the one main action
   on a screen. An icon-only control is `IconButton`, whose `label` is required.

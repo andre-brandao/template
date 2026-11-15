@@ -18,8 +18,8 @@
 	const save = update();
 	// The picked value stays up until the refetch lands; a failure falls back to the stored one.
 	const shown = $derived(
-		save.isPending && save.variables?.body[field] !== undefined
-			? save.variables.body[field]
+		save.isPending && save.variables?.body?.[field] !== undefined
+			? save.variables.body?.[field]
 			: todo[field]
 	);
 	const mark = $derived(

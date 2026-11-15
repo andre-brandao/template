@@ -24,32 +24,32 @@
 		font-weight: 500;
 		line-height: 1.5;
 		white-space: nowrap;
-		color: var(--muted, #64625d);
-		background: var(--surface-2, #f2f1ee);
+		color: var(--muted);
+		background: var(--surface-2);
 	}
 
 	.pending {
-		color: var(--pending, #6b6a64);
-		background: color-mix(in oklab, var(--pending, #6b6a64) 11%, transparent);
+		color: var(--pending);
+		background: color-mix(in oklab, var(--pending) 11%, transparent);
 	}
 
 	.progress {
-		color: var(--progress, #a3672a);
-		background: color-mix(in oklab, var(--progress, #a3672a) 11%, transparent);
+		color: var(--progress);
+		background: color-mix(in oklab, var(--progress) 11%, transparent);
 	}
 
 	.done {
-		color: var(--done, #2f7f68);
-		background: color-mix(in oklab, var(--done, #2f7f68) 11%, transparent);
+		color: var(--done);
+		background: color-mix(in oklab, var(--done) 11%, transparent);
 	}
 
 	.danger {
-		color: var(--danger, #b8452c);
-		background: color-mix(in oklab, var(--danger, #b8452c) 11%, transparent);
+		color: var(--danger);
+		background: color-mix(in oklab, var(--danger) 11%, transparent);
 	}
 
 	.accent {
-		color: var(--accent, #2f7f68);
-		background: color-mix(in oklab, var(--accent, #2f7f68) 12%, transparent);
+		color: var(--accent);
+		background: color-mix(in oklab, var(--accent) 12%, transparent);
 	}
 </style>

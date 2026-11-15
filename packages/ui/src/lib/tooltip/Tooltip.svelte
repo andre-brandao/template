@@ -66,9 +66,9 @@
 		margin: 0;
 		padding: 0.35em 0.55em;
 		border: none;
-		border-radius: var(--radius, 8px);
-		background: var(--ink, #1c1b19);
-		color: var(--surface, #fff);
+		border-radius: var(--radius);
+		background: var(--ink);
+		color: var(--surface);
 		font-size: 0.81em;
 		line-height: 1.35;
 		text-align: center;

@@ -1,65 +1,28 @@
-@import "tailwindcss";
+@import "@template/ui/tokens.css";
 
-/* One token list for both themes. `light-dark()` picks a side from `color-scheme`, so
-   the only thing `data-theme` has to do is pin that — see the two rules below. */
+/* The ui tokens live in `@template/ui/tokens.css`; these are the app's own: charts, the
+   contribution ramp and the shell frame. */
 :root {
-  color-scheme: light dark;
-  /* Paper content on a barely-warm frame, and its mirror. Hairlines, not fills, split
-     the layers: the sidebar sits on --bg, the content column on --surface. */
-  --bg: light-dark(#f7f7f5, #111110);
-  --surface: light-dark(#ffffff, #181817);
-  --surface-2: light-dark(#f2f1ee, #222220);
-  --border: light-dark(#e6e5e1, #2a2927);
-  --border-bright: light-dark(#d3d1cc, #3b3a37);
-  --ink: light-dark(#1c1b19, #ecebe7);
-  --muted: light-dark(#64625d, #a3a19b);
-  /* Small meta text, so the lightest grey that still passes AA on both surfaces. */
-  --dim: light-dark(#75736d, #8a8882);
-  /* The dark-mode teal fails AA on white, so light mode gets a deeper one — and the
-     text that sits *on* the accent flips from near-black to white. */
-  --accent: light-dark(#2f7f68, #4fa98f);
-  --accent-ink: light-dark(#ffffff, #0d1110);
-  /* The primary action is ink on paper; the accent stays the one marker of state. */
-  --primary: var(--ink);
-  --primary-ink: light-dark(#ffffff, #111110);
-  /* Row states over any surface: hover lifts with ink, selected is an accent wash. */
-  --hover: color-mix(in oklab, var(--ink) 6%, transparent);
-  --selected: color-mix(in oklab, var(--accent) 14%, transparent);
-  --pending: light-dark(#6b6a64, #8b8a84);
-  --progress: light-dark(#a3672a, #c98a3f);
-  --done: light-dark(#2f7f68, #4fa98f);
-  --danger: light-dark(#b8452c, #d3684f);
   --series-1: light-dark(#b06a1f, #cd8030);
   --series-2: light-dark(#1f8862, #27a87e);
-  /* GitHub-style contribution ramp: 0 = empty, 4 = busiest. Needs no light variant —
-     mixing the accent into a light `--surface-2` produces the pale ramp by itself. */
+  /* GitHub-style contribution ramp: 0 = empty, 4 = busiest. Mixing the accent into a
+     light `--surface-2` produces the pale ramp by itself. */
   --cal-0: var(--surface-2);
   --cal-1: color-mix(in oklab, var(--accent) 28%, var(--surface-2));
   --cal-2: color-mix(in oklab, var(--accent) 52%, var(--surface-2));
   --cal-3: color-mix(in oklab, var(--accent) 76%, var(--surface-2));
   --cal-4: var(--accent);
-  --radius: 8px;
-  --radius-sm: 6px;
-  /* One height for every control (button, input, select, toggle); a toolbar may lower it. */
-  --control: 2.25rem;
-  --ring: 0 0 0 3px color-mix(in oklab, var(--accent) 16%, transparent);
-  /* The app frame. The topbar's left cell and the sidebar share `--rail` so they line
-     up as one column, and `--topbar` is fixed so its contents can't change its height. */
+  /* The topbar's left cell and the sidebar share `--rail` so they line up as one column;
+     `--topbar` is fixed so its contents can't change its height. */
   --rail: 232px;
   --rail-tight: 56px;
-  /* A peeked column widens over the page instead of pushing it — the width grows while the
-     margin shrinks by the same amount on the same curve. Both halves use the pair. */
+  /* A peeked column widens over the page instead of pushing it: the width grows while
+     the margin shrinks by the same amount on the same curve. */
   --peek: calc(var(--rail-tight) - var(--rail));
   --slide: width 160ms ease, margin-right 160ms ease;
   --topbar: 48px;
   /* Sidebar strip and content footer share this so their top borders draw one line. */
   --footer: 52px;
-  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-mono: ui-monospace, "JetBrains Mono", "SF Mono", "Cascadia Code", monospace;
-  --shadow-1: 0 1px 2px light-dark(rgb(0 0 0 / 0.04), rgb(0 0 0 / 0.3));
-  --shadow-2:
-    0 16px 32px -12px light-dark(rgb(0 0 0 / 0.16), rgb(0 0 0 / 0.6)),
-    0 0 0 1px light-dark(rgb(0 0 0 / 0.04), rgb(255 255 255 / 0.04));
 }
 
 /* `system` matches neither rule, so it falls through to `light dark` and follows the OS.
@@ -70,6 +33,156 @@
 
 :root[data-theme="dark"] {
   color-scheme: dark;
+}
+
+/* The reset components are written against (Tailwind's preflight, trimmed). Layered, so
+   any unlayered or scoped rule beats it. */
+@layer reset {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    border: 0 solid;
+  }
+
+  html {
+    line-height: 1.5;
+    -webkit-text-size-adjust: 100%;
+    tab-size: 4;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  hr {
+    height: 0;
+    color: inherit;
+    border-top-width: 1px;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-size: inherit;
+    font-weight: inherit;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: inherit;
+  }
+
+  b,
+  strong {
+    font-weight: bolder;
+  }
+
+  code,
+  kbd,
+  samp,
+  pre {
+    font-family: var(--font-mono);
+    font-size: 1em;
+  }
+
+  small {
+    font-size: 80%;
+  }
+
+  sub,
+  sup {
+    font-size: 75%;
+    line-height: 0;
+    position: relative;
+    vertical-align: baseline;
+  }
+
+  sub {
+    bottom: -0.25em;
+  }
+
+  sup {
+    top: -0.5em;
+  }
+
+  table {
+    text-indent: 0;
+    border-color: inherit;
+    border-collapse: collapse;
+  }
+
+  summary {
+    display: list-item;
+  }
+
+  ol,
+  ul,
+  menu {
+    list-style: none;
+  }
+
+  img,
+  svg,
+  video,
+  canvas,
+  audio,
+  iframe,
+  embed,
+  object {
+    display: block;
+    vertical-align: middle;
+  }
+
+  img,
+  video {
+    max-width: 100%;
+    height: auto;
+  }
+
+  button,
+  input,
+  select,
+  optgroup,
+  textarea,
+  ::file-selector-button {
+    font: inherit;
+    font-feature-settings: inherit;
+    font-variation-settings: inherit;
+    letter-spacing: inherit;
+    color: inherit;
+    border-radius: 0;
+    background-color: transparent;
+    opacity: 1;
+  }
+
+  ::placeholder {
+    opacity: 1;
+    color: color-mix(in oklab, currentcolor 50%, transparent);
+  }
+
+  textarea {
+    resize: vertical;
+  }
+
+  button,
+  input:where([type="button"], [type="reset"], [type="submit"]),
+  ::file-selector-button {
+    appearance: button;
+  }
+
+  ::-webkit-inner-spin-button,
+  ::-webkit-outer-spin-button {
+    height: auto;
+  }
+
+  [hidden]:where(:not([hidden="until-found"])) {
+    display: none !important;
+  }
 }
 
 /* The scrollbar is chrome: thin and on the neutral scale. */

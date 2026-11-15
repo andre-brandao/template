@@ -130,11 +130,11 @@
 		width: min(36em, calc(100vw - 2em));
 		max-width: none;
 		padding: 0;
-		border: 1px solid var(--border, #e6e5e1);
-		border-radius: calc(var(--radius, 8px) + 2px);
-		background: var(--surface, #fff);
-		color: var(--ink, #1c1b19);
-		box-shadow: var(--shadow-2, 0 16px 32px -12px rgb(0 0 0 / 0.16));
+		border: 1px solid var(--border);
+		border-radius: calc(var(--radius) + 2px);
+		background: var(--surface);
+		color: var(--ink);
+		box-shadow: var(--shadow-2);
 		overflow: hidden;
 		opacity: 0;
 		scale: 0.98;
@@ -166,7 +166,7 @@
 		width: 100%;
 		padding: 0.85em 1em;
 		border: none;
-		border-bottom: 1px solid var(--border, #e6e5e1);
+		border-bottom: 1px solid var(--border);
 		background: none;
 		color: inherit;
 		font: inherit;
@@ -174,7 +174,7 @@
 	}
 
 	.search::placeholder {
-		color: var(--dim, #75736d);
+		color: var(--dim);
 	}
 
 	.list {
@@ -186,7 +186,7 @@
 
 	.name {
 		margin: 0.55em 0.6em 0.25em;
-		color: var(--dim, #75736d);
+		color: var(--dim);
 		font-size: 0.75em;
 		font-weight: 500;
 	}
@@ -197,13 +197,13 @@
 		gap: 1em;
 		min-height: 2.2em;
 		padding: 0.35em 0.6em;
-		border-radius: var(--radius-sm, 6px);
+		border-radius: var(--radius-sm);
 		font-size: 0.9em;
 		cursor: pointer;
 	}
 
 	.option[aria-selected='true'] {
-		background: var(--hover, rgb(0 0 0 / 0.06));
+		background: var(--hover);
 	}
 
 	.label {
@@ -215,14 +215,14 @@
 	}
 
 	.hint {
-		color: var(--dim, #75736d);
+		color: var(--dim);
 		font-size: 0.85em;
 	}
 
 	.empty {
 		margin: 0;
 		padding: 1.5em 1em;
-		color: var(--dim, #75736d);
+		color: var(--dim);
 		font-size: 0.9em;
 		text-align: center;
 	}
@@ -233,8 +233,8 @@
 		align-items: center;
 		gap: 0.4em 1em;
 		padding: 0.5em 1em;
-		border-top: 1px solid var(--border, #e6e5e1);
-		color: var(--dim, #75736d);
+		border-top: 1px solid var(--border);
+		color: var(--dim);
 		font-size: 0.78em;
 	}
 

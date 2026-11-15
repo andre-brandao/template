@@ -1,0 +1,43 @@
+/* Every token a component reads, for both themes. `light-dark()` follows `color-scheme`;
+   the layer and `:where()` let any app `:root` rule override a value. */
+@layer ui.tokens {
+  :where(:root) {
+    color-scheme: light dark;
+    /* Paper content on a barely-warm frame, and its mirror. Hairlines, not fills, split
+       the layers. */
+    --bg: light-dark(#f7f7f5, #111110);
+    --surface: light-dark(#ffffff, #181817);
+    --surface-2: light-dark(#f2f1ee, #222220);
+    --border: light-dark(#e6e5e1, #2a2927);
+    --border-bright: light-dark(#d3d1cc, #3b3a37);
+    --ink: light-dark(#1c1b19, #ecebe7);
+    --muted: light-dark(#64625d, #a3a19b);
+    /* Small meta text, so the lightest grey that still passes AA on both surfaces. */
+    --dim: light-dark(#75736d, #8a8882);
+    /* The dark-mode teal fails AA on white, so light mode gets a deeper one, and the
+       text on the accent flips from near-black to white. */
+    --accent: light-dark(#2f7f68, #4fa98f);
+    --accent-ink: light-dark(#ffffff, #0d1110);
+    /* The primary action is ink on paper; the accent stays the one marker of state. */
+    --primary: var(--ink);
+    --primary-ink: light-dark(#ffffff, #111110);
+    /* Row states over any surface: hover lifts with ink, selected is an accent wash. */
+    --hover: color-mix(in oklab, var(--ink) 6%, transparent);
+    --selected: color-mix(in oklab, var(--accent) 14%, transparent);
+    --pending: light-dark(#6b6a64, #8b8a84);
+    --progress: light-dark(#a3672a, #c98a3f);
+    --done: light-dark(#2f7f68, #4fa98f);
+    --danger: light-dark(#b8452c, #d3684f);
+    --radius: 8px;
+    --radius-sm: 6px;
+    /* One height for every control (button, input, select, toggle); a toolbar may lower it. */
+    --control: 2.25rem;
+    --ring: 0 0 0 3px color-mix(in oklab, var(--accent) 16%, transparent);
+    --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    --font-mono: ui-monospace, "JetBrains Mono", "SF Mono", "Cascadia Code", monospace;
+    --shadow-1: 0 1px 2px light-dark(rgb(0 0 0 / 0.04), rgb(0 0 0 / 0.3));
+    --shadow-2:
+      0 16px 32px -12px light-dark(rgb(0 0 0 / 0.16), rgb(0 0 0 / 0.6)),
+      0 0 0 1px light-dark(rgb(0 0 0 / 0.04), rgb(255 255 255 / 0.04));
+  }
+}

@@ -53,9 +53,9 @@
 
 	.box {
 		padding: 1.25em;
-		border: 1px solid var(--border, #e6e5e1);
-		border-radius: var(--radius, 8px);
-		background: var(--surface, #fff);
+		border: 1px solid var(--border);
+		border-radius: var(--radius);
+		background: var(--surface);
 	}
 
 	p {

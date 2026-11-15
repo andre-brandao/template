@@ -34,9 +34,9 @@
 		gap: 0.15em;
 		min-width: 0;
 		padding: 0.75em 0.9em;
-		border: 1px solid var(--border, #e6e5e1);
-		border-radius: var(--radius, 8px);
-		background: var(--surface, #fff);
+		border: 1px solid var(--border);
+		border-radius: var(--radius);
+		background: var(--surface);
 		color: inherit;
 		text-decoration: none;
 	}
@@ -48,32 +48,32 @@
 	}
 
 	.link:hover {
-		border-color: var(--border-bright, #d3d1cc);
-		box-shadow: var(--shadow-1, 0 1px 2px rgb(0 0 0 / 0.04));
+		border-color: var(--border-bright);
+		box-shadow: var(--shadow-1);
 	}
 
 	.link:focus-visible {
 		outline: none;
-		border-color: var(--accent, #2f7f68);
-		box-shadow: var(--ring, 0 0 0 3px color-mix(in oklab, var(--accent, #2f7f68) 16%, transparent));
+		border-color: var(--accent);
+		box-shadow: var(--ring);
 	}
 
 	.label {
-		color: var(--muted, #64625d);
+		color: var(--muted);
 		font-size: 0.8em;
 		overflow-wrap: anywhere;
 	}
 
 	.value {
 		overflow: hidden;
-		color: var(--ink, #1c1b19);
+		color: var(--ink);
 		font-size: 1.3em;
 		font-variant-numeric: tabular-nums;
 		text-overflow: ellipsis;
 	}
 
 	.note {
-		color: var(--dim, #75736d);
+		color: var(--dim);
 		font-size: 0.78em;
 	}
 

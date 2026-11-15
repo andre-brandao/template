@@ -39,7 +39,8 @@
 		outside?: boolean;
 		/** Marks the tab stop `autofocus`, so a popover lands on it. */
 		autofocus?: boolean;
-		onpick?: (day: Day) => void;
+		/** The click comes along, so a caller can open a popover at the pointer. */
+		onpick?: (day: Day, e: MouseEvent) => void;
 		onhover?: (day: Day | undefined) => void;
 		cell?: Snippet<[Cell]>;
 	} = $props();
@@ -115,9 +116,9 @@
 		aria-label={label(info.day)}
 		aria-current={info.today ? 'date' : undefined}
 		aria-disabled={info.disabled}
-		onclick={() => {
+		onclick={(e) => {
 			focus = info.day;
-			if (!info.disabled) onpick?.(info.day);
+			if (!info.disabled) onpick?.(info.day, e);
 		}}
 		onpointerenter={() => onhover?.(info.day)}
 		onfocus={() => onhover?.(info.day)}
@@ -160,7 +161,7 @@
 </table>
 
 <style>
-	/* Size tokens let a page grow it into a full calendar. Not `.grid`: Tailwind owns that. */
+	/* Size tokens let a page grow it into a full calendar. */
 	.days {
 		width: var(--grid-width, auto);
 		border-collapse: collapse;
@@ -170,7 +171,7 @@
 
 	th {
 		height: 2em;
-		color: var(--dim, #8e8c86);
+		color: var(--dim);
 		font-size: 0.85em;
 		font-weight: 500;
 	}
@@ -186,57 +187,57 @@
 		height: var(--day-height, 2.1em);
 		padding: 0;
 		border: none;
-		border-radius: var(--radius-sm, 6px);
+		border-radius: var(--radius-sm);
 		background: none;
-		color: var(--ink, #1c1b19);
+		color: var(--ink);
 		font: inherit;
 		font-variant-numeric: tabular-nums;
 		cursor: pointer;
 	}
 
 	.day:hover {
-		background: var(--hover, #f1f0ed);
+		background: var(--hover);
 	}
 
 	.day:focus-visible {
-		outline: 2px solid var(--accent, #2f7f68);
+		outline: 2px solid var(--accent);
 		outline-offset: -2px;
 	}
 
 	.away {
-		color: var(--dim, #8e8c86);
+		color: var(--dim);
 	}
 
 	.now {
 		font-weight: 600;
-		color: var(--accent, #2f7f68);
+		color: var(--accent);
 	}
 
 	.within {
 		border-radius: 0;
-		background: color-mix(in oklab, var(--accent, #2f7f68) 14%, transparent);
+		background: color-mix(in oklab, var(--accent) 14%, transparent);
 	}
 
 	.start {
-		border-radius: var(--radius-sm, 6px) 0 0 var(--radius-sm, 6px);
+		border-radius: var(--radius-sm) 0 0 var(--radius-sm);
 	}
 
 	.end {
-		border-radius: 0 var(--radius-sm, 6px) var(--radius-sm, 6px) 0;
+		border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
 	}
 
 	.start.end {
-		border-radius: var(--radius-sm, 6px);
+		border-radius: var(--radius-sm);
 	}
 
 	.on,
 	.on:hover {
-		background: var(--accent, #2f7f68);
-		color: var(--on-accent, #fff);
+		background: var(--accent);
+		color: var(--accent-ink);
 	}
 
 	.off {
-		color: var(--dim, #8e8c86);
+		color: var(--dim);
 		text-decoration: line-through;
 		cursor: not-allowed;
 	}

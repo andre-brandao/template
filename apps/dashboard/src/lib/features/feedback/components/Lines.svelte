@@ -15,9 +15,9 @@
 		margin: 0;
 		padding: 0;
 		list-style: none;
-		border: 1px solid var(--border, #ddd);
-		border-radius: var(--radius, 6px);
-		background: var(--surface, #fff);
+		border: 1px solid var(--border);
+		border-radius: var(--radius);
+		background: var(--surface);
 		overflow: hidden;
 	}
 </style>

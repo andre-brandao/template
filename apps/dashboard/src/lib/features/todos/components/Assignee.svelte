@@ -15,7 +15,7 @@
 	const save = update();
 
 	// The pick stays up until the refetch lands; a failure falls back to the stored one.
-	const next = $derived(save.isPending ? save.variables?.body.assignee : undefined);
+	const next = $derived(save.isPending ? save.variables?.body?.assignee : undefined);
 	const shown = $derived(
 		next === undefined ? todo.assignee : people.data?.find((one) => one.id === next) ?? null
 	);

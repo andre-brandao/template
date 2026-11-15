@@ -26,7 +26,7 @@
 		/** Where a drag in flight would land. */
 		preview?: Item;
 		chips: Chips;
-		onpick: (day: Day) => void;
+		onpick: (day: Day, e: MouseEvent) => void;
 	} = $props();
 
 	const days = $derived(Array.from({ length: 7 }, (_, i) => shift(week(focus, start), { days: i })));
@@ -67,7 +67,7 @@
 				aria-label="New todo on {format(day, locale, { dateStyle: 'full' })}"
 				aria-current={day === today(zone) ? 'date' : undefined}
 				onfocus={() => (focus = day)}
-				onclick={() => onpick(day)}
+				onclick={(e) => onpick(day, e)}
 			>
 				<span class="dow">{format(day, locale, { weekday: 'short' })}</span>
 				<span class="num">{Number(day.slice(8))}</span>
@@ -85,7 +85,7 @@
 						class="slot"
 						tabindex="-1"
 						aria-label="New todo on {format(day, locale, { dateStyle: 'full' })}"
-						onclick={() => onpick(day)}
+						onclick={(e) => onpick(day, e)}
 					></button>
 				</div>
 			{/each}
@@ -128,7 +128,7 @@
 			class="slot"
 			tabindex="-1"
 			aria-label="New todo on {format(day, locale, { dateStyle: 'full' })}"
-			onclick={() => onpick(day)}
+			onclick={(e) => onpick(day, e)}
 		></button>
 		{#each hours.get(day) ?? [] as one (one.item.todo.id)}
 			<Chip

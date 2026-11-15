@@ -11,6 +11,7 @@ import { ErrorCodes, VisibleError } from "../error";
 import { Examples } from "../examples";
 import { Identifier } from "../identifier";
 import { Template } from "../lib/email/template";
+import { Limit, Limits } from "../lib/limit";
 import { Key } from "../platform/key";
 import { KeyTable } from "../platform/key/key.sql";
 import { User } from "../user";
@@ -224,6 +225,8 @@ export namespace Auth {
 
     /** The other half. Returns the `userID` — minting the session is the caller's to own. */
     export const login = fn(Credentials, async (input) => {
+      const subject = Limit.subject("email", input.email.trim().toLowerCase());
+      await Limits.auth.password.consume(subject);
       const row = await account(input.email);
       // One message for both halves, so a wrong password can't confirm a real address.
       if (!row?.hash || !(await Password.verify(input.password, row.hash)))
@@ -233,6 +236,7 @@ export namespace Auth {
           "Invalid email or password",
         );
       alive(row);
+      await Limits.auth.password.reset(subject);
       return row.userID;
     });
   }

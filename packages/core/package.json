@@ -21,6 +21,7 @@
     "./email/*": "./src/lib/email/*.ts",
     "./kv": "./src/lib/kv/index.ts",
     "./kv/*": "./src/lib/kv/*.ts",
+    "./limit": "./src/lib/limit/index.ts",
     "./queue": "./src/lib/queue/index.ts",
     "./queue/*": "./src/lib/queue/*.ts",
     "./storage": "./src/lib/storage/index.ts",

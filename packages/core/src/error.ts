@@ -42,6 +42,24 @@ export const ErrorResponse = z
           .meta({
             description: "Every field that failed. `param` names the first of them.",
           }),
+        limit: z
+          .number()
+          .int()
+          .nonnegative()
+          .optional()
+          .meta({ description: "Maximum attempts in the active window." }),
+        remaining: z
+          .number()
+          .int()
+          .nonnegative()
+          .optional()
+          .meta({ description: "Attempts remaining in the active window." }),
+        retryAfter: z
+          .number()
+          .int()
+          .nonnegative()
+          .optional()
+          .meta({ description: "Seconds until the caller can retry." }),
       })
       .optional()
       .meta({ description: "Additional error context information" }),
@@ -77,6 +95,11 @@ export const ErrorCodes = {
     RESOURCE_NOT_FOUND: "resource_not_found",
   },
 
+  // Rate limit errors (429)
+  RateLimit: {
+    EXCEEDED: "rate_limit_exceeded",
+  },
+
   // Server errors (500)
   Server: {
     INTERNAL_ERROR: "internal_error",
@@ -92,7 +115,7 @@ export class VisibleError extends Error {
     public code: string,
     public override message: string,
     public param?: string,
-    public details?: any,
+    public details?: ErrorResponseType["details"],
   ) {
     super(message);
   }

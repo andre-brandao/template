@@ -17,6 +17,7 @@ const worker: Handle = ({ event, resolve }) => {
   return Context.withProviders(
     () => resolve(event),
     Database.provider(Database.connect(cf.Hyperdrive.connectionString)),
+    Kv.provider(Kv.Providers.pg({ use: Database.use })),
     Storage.provider(Storage.Providers.r2(cf.Files)),
     Queue.provider(Queue.Providers.cloudflare(cf.Jobs)),
     Email.provider(Email.Providers.queue()),

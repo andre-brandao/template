@@ -1,29 +1,43 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { createQuery } from '@tanstack/svelte-query';
-	import { Button, Drawer, Empty, Issue, Skeleton, modal } from '@template/ui';
+	import { Button, Empty, Issue, Skeleton, Status, modal } from '@template/ui';
 	import { getEndpoint } from '../../api/apps.remote';
-	import { app, hooks, owned, remove } from '../../api/developers.query';
-	import SecretForm from './SecretForm.svelte';
-	import KeyForm from '../form/KeyForm.svelte';
-	import KeyList from '../list/KeyList.svelte';
+	import { app, hooks, owned, remove, rotate } from '../../api/developers.query';
+	import KeyForm from '../key/KeyForm.svelte';
+	import KeyList from '../key/KeyList.svelte';
+	import List from '../List.svelte';
+	import Loading from '../Loading.svelte';
+	import Reveal from '../Reveal.svelte';
 	import WebhookForm from '../webhook/WebhookForm.svelte';
 	import WebhookRow from '../webhook/WebhookRow.svelte';
 
-	// What an admin configures on an App's profile. The profile itself — header, edit, activity —
-	// is the people slice's; the route puts this panel inside it.
+	// What an admin configures on an App's profile. The profile itself is the people slice's;
+	// the route puts this panel inside it.
 	let { id }: { id: string } = $props();
 
 	const row = createQuery(() => app(id));
 	const subs = createQuery(() => hooks(id));
 	const keys = createQuery(() => owned(id));
 	const drop = remove({ onSuccess: () => goto('/developers/apps') });
+	// The panel outlives the reveal, so reset drops the secret from the mutation's data.
+	const spin = rotate({
+		onSuccess: (data) => {
+			spin.reset();
+			modal(Reveal, { title: 'Inbound secret', secret: data.secret });
+		}
+	});
 
-	let keying = $state(false);
-	let hooking = $state(false);
+	const key = () => modal(KeyForm, { app: id });
+	const hook = () => modal(WebhookForm, { owner: id });
 
-	async function ask() {
-		const ok = await modal.confirm({ title: 'Remove app', action: 'Remove app', body: warn });
+	async function cycle(held: boolean) {
+		if (held && !(await modal.confirm({ title: 'Rotate secret', action: 'Rotate', body: cut }))) return;
+		spin.mutate({ path: { id } });
+	}
+
+	async function ask(name: string) {
+		const ok = await modal.confirm({ title: 'Delete app', action: 'Delete app', body: warn, verify: name });
 		if (ok) drop.mutate({ path: { id } });
 	}
 
@@ -33,6 +47,10 @@ ts=$(date +%s)
 sig=$(printf '%s' "$body.$ts" | openssl dgst -sha256 -hmac "$SECRET" -binary | basenc --base64url | tr -d =)
 curl -X POST ${url} -H "x-webhook-timestamp: $ts" -H "x-webhook-signature: $sig" -d "$body"`;
 </script>
+
+{#snippet cut()}
+	The current inbound secret stops working at once.
+{/snippet}
 
 {#snippet warn()}
 	Its keys, inbound secret and webhooks stop working immediately.
@@ -45,70 +63,69 @@ curl -X POST ${url} -H "x-webhook-timestamp: $ts" -H "x-webhook-signature: $sig"
 {:else}
 	<section>
 		<header>
-			<h2>App</h2>
-			<Button variant="danger" pending={drop.isPending} onclick={ask}>Remove app</Button>
-		</header>
-		{#if drop.error}
-			<Issue>{drop.error.message}</Issue>
-		{/if}
-		<p class="hint">A system account. It never acts above its owner's role.</p>
-	</section>
-
-	<section>
-		<header>
 			<h2>API keys</h2>
-			<Button onclick={() => (keying = true)}>New key</Button>
+			<Button variant="secondary" onclick={key}>New key</Button>
 		</header>
-		<p class="hint">Send as <code>Authorization: Bearer &lt;key&gt;</code>; each key acts as the App, not as you.</p>
+		<p class="hint">Send as <code>Authorization: Bearer &lt;key&gt;</code>; each key acts as the App.</p>
 		{#if keys.isPending}
-			<Skeleton h="4em" />
+			<Loading rows={2} />
 		{:else if keys.isError}
 			<Issue>{keys.error.message}</Issue>
 		{:else}
-			<KeyList keys={keys.data} app={id} />
+			<KeyList keys={keys.data} app={id} create={key} />
 		{/if}
 	</section>
 
 	<section>
 		<header>
-			<h2>Inbound</h2>
-			<SecretForm {id} held={row.data.inbound} />
+			<h2>
+				Inbound
+				{#if spin.isPending || spin.error}
+					<Status state={spin.isPending ? 'pending' : 'failed'} message={spin.error?.message} />
+				{/if}
+			</h2>
+			<Button variant="secondary" pending={spin.isPending} onclick={() => cycle(row.data.inbound)}>
+				{row.data.inbound ? 'Rotate secret' : 'Generate secret'}
+			</Button>
 		</header>
-		<p class="hint">
-			Signed posts become <code>app.received</code> events. Nothing acts on them until a subscriber does.
-		</p>
+		<p class="hint">Signed posts become <code>app.received</code> events.</p>
 		<pre>{example(await getEndpoint(id))}</pre>
 	</section>
 
 	<section>
 		<header>
 			<h2>Webhooks</h2>
-			<Button onclick={() => (hooking = true)}>New webhook</Button>
+			<Button variant="secondary" onclick={hook}>New webhook</Button>
 		</header>
 		{#if subs.isPending}
-			<Skeleton h="4em" />
+			<Loading rows={2} />
 		{:else if subs.isError}
 			<Issue>{subs.error.message}</Issue>
 		{:else if subs.data.length === 0}
-			<Empty>No webhooks for this app.</Empty>
+			<Empty>
+				No webhooks for this app.
+				{#snippet action()}
+					<Button onclick={hook}>New webhook</Button>
+				{/snippet}
+			</Empty>
 		{:else}
-			<ul>
-				{#each subs.data as hook (hook.id)}
-					<WebhookRow row={hook} />
+			<List>
+				{#each subs.data as one (one.id)}
+					<WebhookRow row={one} />
 				{/each}
-			</ul>
+			</List>
 		{/if}
 	</section>
 
-	<Drawer bind:open={keying}>
-		<h2>New key for {row.data.name}</h2>
-		<KeyForm app={id} onsuccess={() => (keying = false)} />
-	</Drawer>
-
-	<Drawer bind:open={hooking}>
-		<h2>New webhook for {row.data.name}</h2>
-		<WebhookForm owner={id} onsuccess={() => (hooking = false)} />
-	</Drawer>
+	<section class="danger">
+		<header>
+			<h2>Delete app</h2>
+			<Button variant="danger" pending={drop.isPending} onclick={() => ask(row.data.name)}>Delete</Button>
+		</header>
+		{#if drop.error}
+			<Issue>{drop.error.message}</Issue>
+		{/if}
+	</section>
 {/if}
 
 <style>
@@ -116,21 +133,25 @@ curl -X POST ${url} -H "x-webhook-timestamp: $ts" -H "x-webhook-signature: $sig"
 		margin-top: 2em;
 	}
 
-	section header {
+	header {
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
 		gap: 1em;
-		margin-bottom: 0.6em;
+		margin-bottom: 0.5em;
 	}
 
 	h2 {
+		display: flex;
+		align-items: center;
+		gap: 0.5em;
 		margin: 0;
-		font-size: 1.05em;
+		font-size: 0.95em;
+		font-weight: 600;
 	}
 
 	.hint {
-		margin: 0 0 0.8em;
+		margin: 0 0 0.7em;
 		font-size: 0.8em;
 		color: var(--muted);
 	}
@@ -138,22 +159,17 @@ curl -X POST ${url} -H "x-webhook-timestamp: $ts" -H "x-webhook-signature: $sig"
 	pre {
 		margin: 0;
 		padding: 0.8em;
+		border: 1px solid var(--border);
 		border-radius: var(--radius);
 		background: var(--bg);
-		box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.45);
 		font-family: var(--font-mono);
 		font-size: 0.78em;
 		white-space: pre-wrap;
 		overflow-wrap: anywhere;
 	}
 
-
-	ul {
-		list-style: none;
-		margin: 0;
-		padding: 0;
-		display: flex;
-		flex-direction: column;
-		gap: 0.6em;
+	.danger {
+		padding-top: 1.2em;
+		border-top: 1px solid var(--border);
 	}
 </style>

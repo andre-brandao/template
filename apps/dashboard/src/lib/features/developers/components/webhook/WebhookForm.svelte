@@ -4,8 +4,8 @@
 	import { Types } from '@template/core/webhook/types';
 	import { subscribe } from '../../api/developers.query';
 
-	// `owner` files the subscription under that App.
-	let { owner, onsuccess }: { owner?: string; onsuccess?: () => void } = $props();
+	// Modal content. `owner` files the subscription under that App.
+	let { owner, close }: { owner?: string; close: () => void } = $props();
 
 	// What `scripts/testing/webhook.ts` listens on, so a local endpoint is one click away.
 	const local = 'http://localhost:4000/';
@@ -22,18 +22,10 @@
 		pick = pick.includes(entity) ? pick.filter((e) => e !== entity) : [...pick, entity];
 	}
 
-	const save = subscribe({
-		onSuccess: () => {
-			url = '';
-			pick = [];
-			onsuccess?.();
-		}
-	});
+	const save = subscribe({ onSuccess: () => close() });
 </script>
 
-{#if save.error}
-	<Issue>{save.error.message}</Issue>
-{/if}
+<h2>New webhook</h2>
 
 <form
 	onsubmit={(e) => {
@@ -41,6 +33,9 @@
 		save.mutate({ body: { url, types: pick.length ? [...list] : undefined, userID: owner } });
 	}}
 >
+	{#if save.error}
+		<Issue>{save.error.message}</Issue>
+	{/if}
 	<Field label="Endpoint URL">
 		<Input
 			type="url"
@@ -84,10 +79,24 @@
 		</div>
 	</fieldset>
 
-	<Button type="submit" pending={save.isPending}>Create</Button>
+	<div class="actions">
+		<Button variant="ghost" onclick={close}>Cancel</Button>
+		<Button type="submit" pending={save.isPending}>Create</Button>
+	</div>
 </form>
 
 <style>
+	h2 {
+		margin: 0 0 1em;
+		font-size: 1.05em;
+	}
+
+	.actions {
+		display: flex;
+		justify-content: flex-end;
+		gap: 0.4em;
+	}
+
 	form {
 		display: flex;
 		flex-direction: column;
@@ -139,8 +148,8 @@
 		font-size: 0.85em;
 		cursor: pointer;
 		transition:
-			color 0.15s ease,
-			border-color 0.15s ease;
+			color 140ms ease,
+			border-color 140ms ease;
 	}
 
 	.chips button:hover {

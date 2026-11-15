@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Button, Field, Input, Issue, toast } from '@template/ui';
+	import { Inline } from '@template/ui';
 	import AvatarUpload from '$lib/components/AvatarUpload.svelte';
 	import { rename } from '../../api/developers.query';
 
@@ -11,46 +11,31 @@
 		onchange
 	}: { id: string; name: string; image: string | null; onchange?: () => void } = $props();
 
-	// Seeded from the profile and edited locally; a refetched name reseeds it.
-	let value = $derived(name);
-
-	const save = rename({
-		onSuccess: () => {
-			toast.success('Name saved');
-			onchange?.();
-		}
-	});
+	const save = rename({ onSuccess: () => onchange?.() });
 </script>
 
-<div class="head">
+<div class="edit">
 	<AvatarUpload {name} {image} url="/avatars/user/{id}" size={56} {onchange} />
+	<span class="name">
+		<Inline
+			label="App name"
+			value={name}
+			onsave={(next) => save.mutateAsync({ path: { id }, body: { name: next } })}
+		/>
+	</span>
 </div>
 
-{#if save.error}
-	<Issue>{save.error.message}</Issue>
-{/if}
-
-<form
-	onsubmit={(e) => {
-		e.preventDefault();
-		save.mutate({ path: { id }, body: { name: value } });
-	}}
->
-	<Field label="Name" style="max-width: 24em">
-		<div class="row">
-			<Input required value={value} oninput={(e) => (value = e.currentTarget.value)} />
-			<Button type="submit" pending={save.isPending}>Save</Button>
-		</div>
-	</Field>
-</form>
-
 <style>
-	.head {
-		margin-bottom: 1em;
+	.edit {
+		display: flex;
+		align-items: center;
+		gap: 0.9em;
 	}
 
-	.row {
-		display: flex;
-		gap: 0.4em;
+	.name {
+		flex: 0 1 24em;
+		min-width: 0;
+		font-size: 1.05em;
+		font-weight: 550;
 	}
 </style>

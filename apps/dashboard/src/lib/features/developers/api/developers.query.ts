@@ -22,7 +22,7 @@ import {
 } from "@template/sdk/query";
 
 // An App's list, row and keys all carry the tag, so a write to one App refreshes all of them.
-// Minted keys and secrets come back in the mutation's data only, never into a query.
+// Minted keys and secrets live only in mutation data; `gcTime: 0` drops it on unmount.
 const tag = [{ tags: ["App"] }];
 
 export const keys = () => getKeyOptions();
@@ -38,6 +38,7 @@ export const hooks = (owner?: string) => getWebhookOptions({ query: { owner } })
 export const mint = (opts?: Pick<ReturnType<typeof postKeyMutation>, "onSuccess">) =>
   createMutation(() => ({
     ...postKeyMutation(),
+    gcTime: 0,
     meta: { invalidates: [getKeyQueryKey()] },
     ...opts,
   }));
@@ -74,6 +75,7 @@ export const remove = (opts?: Pick<ReturnType<typeof deleteAppByIdMutation>, "on
 export const issue = (opts?: Pick<ReturnType<typeof postAppByIdKeyMutation>, "onSuccess">) =>
   createMutation(() => ({
     ...postAppByIdKeyMutation(),
+    gcTime: 0,
     meta: { invalidates: [tag] },
     ...opts,
   }));
@@ -91,6 +93,7 @@ export const retire = (
 export const rotate = (opts?: Pick<ReturnType<typeof postAppByIdSecretMutation>, "onSuccess">) =>
   createMutation(() => ({
     ...postAppByIdSecretMutation(),
+    gcTime: 0,
     meta: { invalidates: [tag] },
     ...opts,
   }));
@@ -103,7 +106,7 @@ export const subscribe = (opts?: Pick<ReturnType<typeof postWebhookMutation>, "o
   }));
 
 // A row may sit in several lists (all, and its App's), so each one gets the patched row.
-export const toggle = (opts?: Pick<ReturnType<typeof patchWebhookByIdMutation>, "onSuccess">) =>
+export const update = (opts?: Pick<ReturnType<typeof patchWebhookByIdMutation>, "onSuccess">) =>
   createMutation(() => ({
     ...patchWebhookByIdMutation(),
     meta: { invalidates: [] },

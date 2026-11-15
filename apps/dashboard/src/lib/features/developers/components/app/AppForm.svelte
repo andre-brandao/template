@@ -3,16 +3,20 @@
 	import { Button, Field, Input, Issue } from '@template/ui';
 	import { create } from '../../api/developers.query';
 
+	// Modal content. An App is its account's profile, so that page is where it is configured.
+	let { close }: { close: () => void } = $props();
+
 	let name = $state('');
 
-	// An App is its account's profile: that page is where it is configured.
-	const save = create({ onSuccess: (app) => goto(`/u/${app.id}`) });
+	const save = create({
+		onSuccess: (app) => {
+			close();
+			goto(`/u/${app.id}`);
+		}
+	});
 </script>
 
-<!-- Creating navigates to the new App, so there is no success state to show here. -->
-{#if save.error}
-	<Issue>{save.error.message}</Issue>
-{/if}
+<h2>New app</h2>
 
 <form
 	onsubmit={(e) => {
@@ -20,6 +24,9 @@
 		save.mutate({ body: { name } });
 	}}
 >
+	{#if save.error}
+		<Issue>{save.error.message}</Issue>
+	{/if}
 	<Field label="Name">
 		<Input
 			placeholder="e.g. Billing, CI"
@@ -28,22 +35,34 @@
 			oninput={(e) => (name = e.currentTarget.value)}
 		/>
 	</Field>
-	<p class="hint">
-		Registers a system account you own. Its keys act as it, never above your role.
-	</p>
-	<Button type="submit" pending={save.isPending}>Create app</Button>
+	<p class="hint">A system account you own. Its keys act as it, never above your role.</p>
+	<div class="actions">
+		<Button variant="ghost" onclick={close}>Cancel</Button>
+		<Button type="submit" pending={save.isPending}>Create</Button>
+	</div>
 </form>
 
 <style>
+	h2 {
+		margin: 0 0 1em;
+		font-size: 1.05em;
+	}
+
 	form {
 		display: flex;
 		flex-direction: column;
-		gap: 0.8em;
+		gap: 0.9em;
 	}
 
 	.hint {
 		margin: 0;
 		font-size: 0.8em;
 		color: var(--muted);
+	}
+
+	.actions {
+		display: flex;
+		justify-content: flex-end;
+		gap: 0.4em;
 	}
 </style>

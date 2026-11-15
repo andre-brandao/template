@@ -56,7 +56,7 @@
 	}
 
 	a {
-		color: var(--text);
+		color: var(--ink);
 		text-decoration: none;
 	}
 
@@ -73,6 +73,8 @@
 		li {
 			grid-template-columns: 1fr;
 			align-items: start;
+			/* One column stretches every cell; the pill keeps its own width. */
+			justify-items: start;
 		}
 	}
 </style>

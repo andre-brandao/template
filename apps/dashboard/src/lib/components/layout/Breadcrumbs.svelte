@@ -70,9 +70,10 @@
 		color: var(--ink);
 	}
 
+	/* The phone bar also holds the menu, brand and switcher, which leaves a crumb one letter
+	   wide; the page's own heading names it instead. */
 	@media (max-width: 700px) {
-		li:not(:last-child),
-		li::before {
+		nav {
 			display: none;
 		}
 	}

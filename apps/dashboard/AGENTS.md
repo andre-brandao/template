@@ -83,10 +83,11 @@ Reference: `features/projects`. `$lib/query` owns the client; the `api` hook ser
   moves to a feature-wide slice (`events`, `sources`) or `lib/components`.
 - **No context plumbing.** Join a foreign name into the query, or fetch it at the leaf —
   don't hand shared data down through Svelte context.
-- **Await in markup**, inside the component's boundary. A conditional `$derived` in
-  `<script>` that awaits a remote query fires before the boundary can catch it.
+- **Reads are TanStack queries.** Svelte's experimental async mode is off, so there is no
+  `await` in markup or `$derived(await …)`: wrap a remote query in a `*.query.ts` builder
+  with `call(...)` and read it with `createQuery`. Form results are read bare (`form.result`).
 - **Guard `[id]` pages** with `{#if params.id}` — params are empty mid-navigation and will
-  fire a remote query with `undefined`.
+  fire a query with `undefined`.
 - **No global CSS.** `routes/layout.css` imports `@template/ui/tokens.css` and holds
   the app-only tokens (charts, shell frame) and the document reset, nothing else. A look shared by more than one screen becomes a component in
   `@template/ui` (`Field`, `Issue`, `Tabs`); a look used once stays scoped in the file

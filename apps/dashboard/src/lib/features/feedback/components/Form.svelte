@@ -15,7 +15,7 @@
 	let { kind, onsent }: { kind: 'feedback' | 'support'; onsent: () => void } = $props();
 
 	const form = $derived(send.for(kind));
-	const row = $derived(await form.result);
+	const row = $derived(form.result);
 	const id = $props.id();
 	let body = $state('');
 

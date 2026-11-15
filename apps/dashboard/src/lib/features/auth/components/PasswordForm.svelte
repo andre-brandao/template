@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { Button, Field, FormBoundary, Input, Issue, toast } from '@template/ui';
+	import { invalidate } from '$lib/query';
 	import { password } from '../api/profile.remote';
+	import { providers } from '../api/profile.query';
 
 	let { set }: { set: boolean } = $props();
 
@@ -17,6 +19,7 @@
 		bind:this={el}
 		{...password.enhance(async (f) => {
 			await f.submit();
+			invalidate(providers().queryKey);
 			el?.reset();
 			toast.success(set ? 'Password changed' : 'Password set');
 		})}

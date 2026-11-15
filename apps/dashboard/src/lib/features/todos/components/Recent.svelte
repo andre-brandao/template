@@ -29,7 +29,7 @@
 				<a href="/todos/{todo.id}">{todo.title}</a>
 				<span class="meta">
 					<span class={['when', { late: late(todo, f.zone) }]}>
-						{todo.dueDate ? f.date(todo.dueDate) : '—'}
+						{todo.dueDate ? f.day(todo.dueDate) : '—'}
 					</span>
 					<StatusPill status={todo.status} />
 				</span>

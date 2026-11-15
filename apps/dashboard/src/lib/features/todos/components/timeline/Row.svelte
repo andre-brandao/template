@@ -10,7 +10,7 @@
 
 	const f = fmt();
 
-	const when = (at: string | null) => (at ? f.date(at) : '?');
+	const when = (at: string | null) => (at ? f.day(at) : '?');
 
 	const titles = $derived({
 		plan: `${label(todo.status)} · ${when(todo.startDate)} → ${when(todo.dueDate)}`,
@@ -26,8 +26,7 @@
 	<div class="track">
 		{#if plan}
 			<span
-				class="plan"
-				class:late={late(todo, f.zone)}
+				class={["plan", { late: late(todo, f.zone) }]}
 				style:left="{plan.left}%"
 				style:width="{plan.width}%"
 				style:--c={color(todo.status)}

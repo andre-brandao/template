@@ -4,8 +4,10 @@
 	import { query } from '$lib/utils/params';
 	import { sort } from '../sort';
 	import * as Header from '$lib/components/header';
-	import { Button, Drawer } from '@template/ui';
-	import { getTodos } from '../api/todos.remote';
+	import { createQuery } from '@tanstack/svelte-query';
+	import { createHotkey } from '@tanstack/svelte-hotkeys';
+	import { Button, Drawer, Empty, Issue, Kbd, Skeleton, Status, modal } from '@template/ui';
+	import { list } from '../api/todos.query';
 	import Source from '$lib/features/events/components/Source.svelte';
 	import { STATUSES } from '../status';
 	import TodoForm from '../components/form/TodoForm.svelte';
@@ -31,18 +33,25 @@
 
 	const scope = $derived({ source, sourceID });
 
-	const todos = $derived(
-		await getTodos({
+	const todos = createQuery(() =>
+		list({
 			...scope,
 			status: params.status === 'all' ? undefined : params.status,
 			assignee: params.assignee || undefined,
 			stage: params.stage || undefined,
-			q: params.q || undefined,
+			search: params.q || undefined,
 			sort: params.sort
 		})
 	);
 
-	let adding = $state(false);
+	const add = () => modal(TodoForm, { scope });
+	createHotkey('C', add);
+
+	const filtered = $derived(
+		!!(params.q || params.assignee || params.stage) || params.status !== 'all'
+	);
+	const clear = () =>
+		params.update({ q: undefined, status: undefined, assignee: undefined, stage: undefined });
 </script>
 
 <!-- Scoped to a project, the project rides above the title as the way back. -->
@@ -52,8 +61,9 @@
 
 <Header.Root title="Todos" eyebrow={source && sourceID ? parent : undefined}>
 	{#snippet actions()}
+		{#if todos.isFetching && !todos.isPending}<Status state="pending" />{/if}
 		<ViewSelector view={params.view} onchange={(view) => params.update({ view })} />
-		<Button onclick={() => (adding = true)}>New todo</Button>
+		<Button onclick={add}>New todo <Kbd keys="C" /></Button>
 	{/snippet}
 	{#snippet strip()}
 		<TodoFilters
@@ -79,11 +89,6 @@
 	{/snippet}
 </Header.Root>
 
-<Drawer bind:open={adding}>
-	<h2>New todo</h2>
-	<TodoForm {scope} onsuccess={() => (adding = false)} />
-</Drawer>
-
 <!-- Shallow-routed by `peek`: the URL reads /todos/[id] but this list stays mounted,
      so closing (or swiping back) lands right back on the filtered view. -->
 <!-- Guarded: when the browser Back button closed the drawer, the entry is already
@@ -94,11 +99,37 @@
 	{/if}
 </Drawer>
 
-<TodosView {todos} view={params.view} by={params.group} />
+{#if todos.isPending}
+	<div class="skeleton">
+		{#each [0, 1, 2, 3, 4, 5] as i (i)}
+			<Skeleton h="2.6em" />
+		{/each}
+	</div>
+{:else if todos.isError}
+	<Issue>{todos.error.message}</Issue>
+{:else if todos.data.data.length === 0}
+	{#if filtered}
+		<Empty>
+			No todos match these filters.
+			{#snippet action()}
+				<Button variant="ghost" onclick={clear}>Clear filters</Button>
+			{/snippet}
+		</Empty>
+	{:else}
+		<Empty>
+			No todos yet.
+			{#snippet action()}
+				<Button onclick={add}>New todo <Kbd keys="C" /></Button>
+			{/snippet}
+		</Empty>
+	{/if}
+{:else}
+	<TodosView todos={todos.data.data} view={params.view} by={params.group} />
+{/if}
 
 <style>
-	h2 {
-		margin: 0 0 1em;
-		font-size: 1.15em;
+	.skeleton {
+		display: grid;
+		gap: 0.35em;
 	}
 </style>

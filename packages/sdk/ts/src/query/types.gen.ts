@@ -5,6 +5,69 @@ export type ClientOptions = {
 };
 
 /**
+ * A user as the directory lists them.
+ */
+export type UserSummary = {
+  /**
+   * Unique object identifier.
+   * The format and length of IDs may change over time.
+   */
+  id: string;
+  /**
+   * Display name.
+   */
+  name: string;
+  /**
+   * Login address. Unique across accounts.
+   */
+  email: string;
+  /**
+   * Avatar URL, or null for none.
+   */
+  image: string | null;
+};
+
+/**
+ * Not found error
+ */
+export type ErrorResponse = {
+  /**
+   * The error type category
+   */
+  type: "validation" | "authentication" | "forbidden" | "not_found" | "rate_limit" | "internal";
+  /**
+   * Machine-readable error code identifier
+   */
+  code: string;
+  /**
+   * Human-readable error message
+   */
+  message: string;
+  /**
+   * The parameter that caused the error (if applicable)
+   */
+  param?: string;
+  /**
+   * Additional error context information
+   */
+  details?: {
+    /**
+     * Every field that failed. `param` names the first of them.
+     */
+    issues?: Array<{
+      /**
+       * Dotted path to the field, like `user.email`.
+       */
+      path?: string;
+      /**
+       * What was wrong with it.
+       */
+      message: string;
+    }>;
+  };
+};
+
+/**
  * A user account.
  */
 export type User = {
@@ -59,46 +122,6 @@ export type User = {
    * When the account was created.
    */
   timeCreated: string;
-};
-
-/**
- * Not found error
- */
-export type ErrorResponse = {
-  /**
-   * The error type category
-   */
-  type: "validation" | "authentication" | "forbidden" | "not_found" | "rate_limit" | "internal";
-  /**
-   * Machine-readable error code identifier
-   */
-  code: string;
-  /**
-   * Human-readable error message
-   */
-  message: string;
-  /**
-   * The parameter that caused the error (if applicable)
-   */
-  param?: string;
-  /**
-   * Additional error context information
-   */
-  details?: {
-    /**
-     * Every field that failed. `param` names the first of them.
-     */
-    issues?: Array<{
-      /**
-       * Dotted path to the field, like `user.email`.
-       */
-      path?: string;
-      /**
-       * What was wrong with it.
-       */
-      message: string;
-    }>;
-  };
 };
 
 /**
@@ -459,6 +482,123 @@ export type Stage = {
 };
 
 /**
+ * The headline counts for a range.
+ */
+export type InsightStats = {
+  /**
+   * Todos created in range.
+   */
+  total: number;
+  /**
+   * Of those, how many are done.
+   */
+  done: number;
+  /**
+   * Of those, how many are active.
+   */
+  active: number;
+  /**
+   * Of those, how many are blocked.
+   */
+  blocked: number;
+  /**
+   * Done as a whole percentage of total.
+   */
+  rate: number;
+  /**
+   * Open todos past their due date, all time.
+   */
+  overdue: number;
+};
+
+/**
+ * Todos created in range, by status.
+ */
+export type InsightStatuses = {
+  /**
+   * Todos created in range.
+   */
+  total: number;
+  rows: Array<{
+    status: "backlog" | "planned" | "active" | "blocked" | "done";
+    total: number;
+    /**
+     * Share of the largest bucket, 0 to 100.
+     */
+    pct: number;
+  }>;
+};
+
+/**
+ * Todos created in range, by assignee and status.
+ */
+export type InsightLoad = {
+  /**
+   * The largest per-assignee total, at least 1.
+   */
+  max: number;
+  rows: Array<{
+    /**
+     * Assignee name, or "Unassigned".
+     */
+    name: string;
+    total: number;
+    active: number;
+    planned: number;
+    blocked: number;
+    done: number;
+  }>;
+};
+
+/**
+ * An open todo coming due.
+ */
+export type InsightDue = {
+  id: string;
+  title: string;
+  status: "backlog" | "planned" | "active" | "blocked" | "done";
+  dueDate: string | null;
+};
+
+/**
+ * Todos created per day, for a contribution grid.
+ */
+export type InsightCalendar = {
+  start: string;
+  end: string;
+  /**
+   * The busiest day's count.
+   */
+  max: number;
+  total: number;
+  days: Array<{
+    /**
+     * A bucket's first day.
+     */
+    day: string;
+    count: number;
+  }>;
+};
+
+/**
+ * Created and completed per day, week or month, coarser as the range grows.
+ */
+export type InsightActivity = {
+  /**
+   * Whether any bucket is non-zero.
+   */
+  active: boolean;
+  series: Array<{
+    /**
+     * A bucket's first day.
+     */
+    day: string;
+    created: number;
+    completed: number;
+  }>;
+};
+
+/**
  * A container for todos. Todos point at it through source/sourceID.
  */
 export type Project = {
@@ -508,6 +648,48 @@ export type File = {
   size: number;
   lastModified: string | null;
 };
+
+export type GetUserData = {
+  body?: never;
+  path?: never;
+  query?: {
+    /**
+     * Part of a name.
+     */
+    search?: string;
+  };
+  url: "/user";
+};
+
+export type GetUserErrors = {
+  /**
+   * Bad Request
+   */
+  400: ErrorResponse;
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
+   * Internal Server Error
+   */
+  500: ErrorResponse;
+};
+
+export type GetUserError = GetUserErrors[keyof GetUserErrors];
+
+export type GetUserResponses = {
+  /**
+   * A user as the directory lists them.
+   */
+  200: Array<UserSummary>;
+};
+
+export type GetUserResponse = GetUserResponses[keyof GetUserResponses];
 
 export type GetMeData = {
   body?: never;
@@ -961,6 +1143,374 @@ export type GetTodoStageResponses = {
 
 export type GetTodoStageResponse = GetTodoStageResponses[keyof GetTodoStageResponses];
 
+export type PatchTodoStageData = {
+  body: {
+    from: string;
+    to: string;
+    source?: string;
+    sourceID?: string;
+  };
+  path?: never;
+  query?: never;
+  url: "/todo/stage";
+};
+
+export type PatchTodoStageErrors = {
+  /**
+   * Bad Request
+   */
+  400: ErrorResponse;
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
+   * Internal Server Error
+   */
+  500: ErrorResponse;
+};
+
+export type PatchTodoStageError = PatchTodoStageErrors[keyof PatchTodoStageErrors];
+
+export type PatchTodoStageResponses = {
+  /**
+   * Deleted.
+   */
+  200: "ok";
+};
+
+export type PatchTodoStageResponse = PatchTodoStageResponses[keyof PatchTodoStageResponses];
+
+export type GetTodoInsightsStatsData = {
+  body?: never;
+  path?: never;
+  query: {
+    /**
+     * The owning entity type, e.g. "project".
+     */
+    source?: string;
+    /**
+     * Id of the owning entity.
+     */
+    sourceID?: string;
+    /**
+     * First day of the range (inclusive).
+     */
+    start: string;
+    /**
+     * Last day of the range (inclusive).
+     */
+    end: string;
+  };
+  url: "/todo/insights/stats";
+};
+
+export type GetTodoInsightsStatsErrors = {
+  /**
+   * Bad Request
+   */
+  400: ErrorResponse;
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
+   * Internal Server Error
+   */
+  500: ErrorResponse;
+};
+
+export type GetTodoInsightsStatsError =
+  GetTodoInsightsStatsErrors[keyof GetTodoInsightsStatsErrors];
+
+export type GetTodoInsightsStatsResponses = {
+  /**
+   * The headline counts for a range.
+   */
+  200: InsightStats;
+};
+
+export type GetTodoInsightsStatsResponse =
+  GetTodoInsightsStatsResponses[keyof GetTodoInsightsStatsResponses];
+
+export type GetTodoInsightsStatusData = {
+  body?: never;
+  path?: never;
+  query: {
+    /**
+     * The owning entity type, e.g. "project".
+     */
+    source?: string;
+    /**
+     * Id of the owning entity.
+     */
+    sourceID?: string;
+    /**
+     * First day of the range (inclusive).
+     */
+    start: string;
+    /**
+     * Last day of the range (inclusive).
+     */
+    end: string;
+  };
+  url: "/todo/insights/status";
+};
+
+export type GetTodoInsightsStatusErrors = {
+  /**
+   * Bad Request
+   */
+  400: ErrorResponse;
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
+   * Internal Server Error
+   */
+  500: ErrorResponse;
+};
+
+export type GetTodoInsightsStatusError =
+  GetTodoInsightsStatusErrors[keyof GetTodoInsightsStatusErrors];
+
+export type GetTodoInsightsStatusResponses = {
+  /**
+   * Todos created in range, by status.
+   */
+  200: InsightStatuses;
+};
+
+export type GetTodoInsightsStatusResponse =
+  GetTodoInsightsStatusResponses[keyof GetTodoInsightsStatusResponses];
+
+export type GetTodoInsightsLoadData = {
+  body?: never;
+  path?: never;
+  query: {
+    /**
+     * The owning entity type, e.g. "project".
+     */
+    source?: string;
+    /**
+     * Id of the owning entity.
+     */
+    sourceID?: string;
+    /**
+     * First day of the range (inclusive).
+     */
+    start: string;
+    /**
+     * Last day of the range (inclusive).
+     */
+    end: string;
+  };
+  url: "/todo/insights/load";
+};
+
+export type GetTodoInsightsLoadErrors = {
+  /**
+   * Bad Request
+   */
+  400: ErrorResponse;
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
+   * Internal Server Error
+   */
+  500: ErrorResponse;
+};
+
+export type GetTodoInsightsLoadError = GetTodoInsightsLoadErrors[keyof GetTodoInsightsLoadErrors];
+
+export type GetTodoInsightsLoadResponses = {
+  /**
+   * Todos created in range, by assignee and status.
+   */
+  200: InsightLoad;
+};
+
+export type GetTodoInsightsLoadResponse =
+  GetTodoInsightsLoadResponses[keyof GetTodoInsightsLoadResponses];
+
+export type GetTodoInsightsDueData = {
+  body?: never;
+  path?: never;
+  query?: {
+    /**
+     * The owning entity type, e.g. "project".
+     */
+    source?: string;
+    /**
+     * Id of the owning entity.
+     */
+    sourceID?: string;
+  };
+  url: "/todo/insights/due";
+};
+
+export type GetTodoInsightsDueErrors = {
+  /**
+   * Bad Request
+   */
+  400: ErrorResponse;
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
+   * Internal Server Error
+   */
+  500: ErrorResponse;
+};
+
+export type GetTodoInsightsDueError = GetTodoInsightsDueErrors[keyof GetTodoInsightsDueErrors];
+
+export type GetTodoInsightsDueResponses = {
+  /**
+   * An open todo coming due.
+   */
+  200: Array<InsightDue>;
+};
+
+export type GetTodoInsightsDueResponse =
+  GetTodoInsightsDueResponses[keyof GetTodoInsightsDueResponses];
+
+export type GetTodoInsightsCalendarData = {
+  body?: never;
+  path?: never;
+  query: {
+    /**
+     * The owning entity type, e.g. "project".
+     */
+    source?: string;
+    /**
+     * Id of the owning entity.
+     */
+    sourceID?: string;
+    /**
+     * First day of the range (inclusive).
+     */
+    start: string;
+    /**
+     * Last day of the range (inclusive).
+     */
+    end: string;
+  };
+  url: "/todo/insights/calendar";
+};
+
+export type GetTodoInsightsCalendarErrors = {
+  /**
+   * Bad Request
+   */
+  400: ErrorResponse;
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
+   * Internal Server Error
+   */
+  500: ErrorResponse;
+};
+
+export type GetTodoInsightsCalendarError =
+  GetTodoInsightsCalendarErrors[keyof GetTodoInsightsCalendarErrors];
+
+export type GetTodoInsightsCalendarResponses = {
+  /**
+   * Todos created per day, for a contribution grid.
+   */
+  200: InsightCalendar;
+};
+
+export type GetTodoInsightsCalendarResponse =
+  GetTodoInsightsCalendarResponses[keyof GetTodoInsightsCalendarResponses];
+
+export type GetTodoInsightsActivityData = {
+  body?: never;
+  path?: never;
+  query: {
+    /**
+     * The owning entity type, e.g. "project".
+     */
+    source?: string;
+    /**
+     * Id of the owning entity.
+     */
+    sourceID?: string;
+    /**
+     * First day of the range (inclusive).
+     */
+    start: string;
+    /**
+     * Last day of the range (inclusive).
+     */
+    end: string;
+  };
+  url: "/todo/insights/activity";
+};
+
+export type GetTodoInsightsActivityErrors = {
+  /**
+   * Bad Request
+   */
+  400: ErrorResponse;
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
+   * Internal Server Error
+   */
+  500: ErrorResponse;
+};
+
+export type GetTodoInsightsActivityError =
+  GetTodoInsightsActivityErrors[keyof GetTodoInsightsActivityErrors];
+
+export type GetTodoInsightsActivityResponses = {
+  /**
+   * Created and completed per day, week or month, coarser as the range grows.
+   */
+  200: InsightActivity;
+};
+
+export type GetTodoInsightsActivityResponse =
+  GetTodoInsightsActivityResponses[keyof GetTodoInsightsActivityResponses];
+
 export type DeleteTodoByIdData = {
   body?: never;
   path: {
@@ -1192,6 +1742,106 @@ export type PostTodoByIdMoveResponses = {
 };
 
 export type PostTodoByIdMoveResponse = PostTodoByIdMoveResponses[keyof PostTodoByIdMoveResponses];
+
+export type DeleteTodoByIdLinkData = {
+  body?: never;
+  path: {
+    /**
+     * Unique object identifier.
+     * The format and length of IDs may change over time.
+     */
+    id: string;
+  };
+  query: {
+    /**
+     * The link to drop.
+     */
+    url: string;
+  };
+  url: "/todo/{id}/link";
+};
+
+export type DeleteTodoByIdLinkErrors = {
+  /**
+   * Bad Request
+   */
+  400: ErrorResponse;
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
+   * Not Found
+   */
+  404: ErrorResponse;
+  /**
+   * Internal Server Error
+   */
+  500: ErrorResponse;
+};
+
+export type DeleteTodoByIdLinkError = DeleteTodoByIdLinkErrors[keyof DeleteTodoByIdLinkErrors];
+
+export type DeleteTodoByIdLinkResponses = {
+  /**
+   * A unit of work, owned by whatever entity created it.
+   */
+  200: Todo;
+};
+
+export type DeleteTodoByIdLinkResponse =
+  DeleteTodoByIdLinkResponses[keyof DeleteTodoByIdLinkResponses];
+
+export type PostTodoByIdLinkData = {
+  body: Link;
+  path: {
+    /**
+     * Unique object identifier.
+     * The format and length of IDs may change over time.
+     */
+    id: string;
+  };
+  query?: never;
+  url: "/todo/{id}/link";
+};
+
+export type PostTodoByIdLinkErrors = {
+  /**
+   * Bad Request
+   */
+  400: ErrorResponse;
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
+   * Not Found
+   */
+  404: ErrorResponse;
+  /**
+   * Internal Server Error
+   */
+  500: ErrorResponse;
+};
+
+export type PostTodoByIdLinkError = PostTodoByIdLinkErrors[keyof PostTodoByIdLinkErrors];
+
+export type PostTodoByIdLinkResponses = {
+  /**
+   * A unit of work, owned by whatever entity created it.
+   */
+  200: Todo;
+};
+
+export type PostTodoByIdLinkResponse = PostTodoByIdLinkResponses[keyof PostTodoByIdLinkResponses];
 
 export type GetProjectData = {
   body?: never;

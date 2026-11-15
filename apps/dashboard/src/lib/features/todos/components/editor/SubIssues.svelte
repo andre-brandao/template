@@ -1,38 +1,44 @@
 <script lang="ts">
-	import Issues from '$lib/components/Issues.svelte';
-	import { resets } from '$lib/utils/form';
-	import { Button, Card, Input } from '@template/ui';
+	import { createQuery } from '@tanstack/svelte-query';
+	import { Button, Card, Input, Issue } from '@template/ui';
 	import type { Todo } from '@template/core/todo';
-	import { createTodo, getTodo, getTodos } from '../../api/todos.remote';
+	import { create, get, list } from '../../api/todos.query';
 	import StatusPicker from '../StatusPicker.svelte';
 	import { peek } from '$lib/utils/peek';
 
 	let { todo }: { todo: Todo.Info } = $props();
 
-	const add = $derived(createTodo.for(`${todo.id}:sub`));
-	const kids = $derived(getTodos({ parentID: todo.id, sort: ['position'] }));
+	const kids = createQuery(() => list({ parentID: todo.id, sort: ['position'] }));
+	const parent = createQuery(() => ({ ...get(todo.parentID ?? ''), enabled: !!todo.parentID }));
+	const add = create();
+
+	function submit(e: SubmitEvent & { currentTarget: HTMLFormElement }) {
+		e.preventDefault();
+		const form = e.currentTarget;
+		const title = String(new FormData(form).get("title") ?? "").trim();
+		if (title) add.mutate({ body: { title, parentID: todo.id } }, { onSuccess: () => form.reset() });
+	}
 </script>
 
 <Card>
-	{#if todo.parentID}
-		{@const parent = await getTodo(todo.parentID)}
+	{#if todo.parentID && parent.data}
 		<p class="parent">
-			Sub-issue of <a href="/todos/{parent.id}">{parent.title}</a>
+			Sub-issue of <a href="/todos/{parent.data.id}">{parent.data.title}</a>
 		</p>
 	{/if}
 
-	{@const list = await kids}
+	{@const rows = kids.data?.data ?? []}
 	<div class="head">
 		<h2>Sub-issues</h2>
-		{#if list.length}
+		{#if rows.length}
 			<span class="count">
-				{list.filter((kid) => kid.status === 'done').length}/{list.length}
+				{rows.filter((kid) => kid.status === 'done').length}/{rows.length}
 			</span>
 		{/if}
 	</div>
 
 	<ul>
-		{#each list as kid (kid.id)}
+		{#each rows as kid (kid.id)}
 			<li>
 				<StatusPicker todo={kid} compact />
 				<a href="/todos/{kid.id}" onclick={peek({ selected: kid.id })}>{kid.title}</a>
@@ -40,15 +46,13 @@
 		{/each}
 	</ul>
 
-	<Issues issues={add.fields.allIssues()} />
+	{#if add.error}
+		<Issue>{add.error.message}</Issue>
+	{/if}
 
-	<form
-		class="add"
-		{...add.enhance(resets(() => kids.refresh()))}
-	>
-		<input {...add.fields.parentID.as('hidden', todo.id)} />
-		<Input placeholder="Add a sub-issue" {...add.fields.title.as('text')} />
-		<Button type="submit" variant="secondary" pending={!!add.pending}>Add</Button>
+	<form class="add" onsubmit={submit}>
+		<Input name="title" placeholder="Add a sub-issue" />
+		<Button type="submit" variant="secondary" pending={add.isPending}>Add</Button>
 	</form>
 </Card>
 

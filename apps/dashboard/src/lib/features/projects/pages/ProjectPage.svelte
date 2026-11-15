@@ -65,16 +65,12 @@
 	{/if}
 {/snippet}
 
-<!-- The boundary is for `facts`, which awaits the todos slice's remote queries. -->
-<svelte:boundary>
-	{#snippet pending()}<Header.Root title="Project" eyebrow={back} />{/snippet}
-	<Header.Root {title} eyebrow={back} {lead}>
-		{@render facts?.()}
-		{#if project.data}
-			<Header.Item label="Created">{f.date(project.data.timeCreated)}</Header.Item>
-		{/if}
-	</Header.Root>
-</svelte:boundary>
+<Header.Root {title} eyebrow={back} {lead}>
+	{@render facts?.()}
+	{#if project.data}
+		<Header.Item label="Created">{f.date(project.data.timeCreated)}</Header.Item>
+	{/if}
+</Header.Root>
 
 <!--
 	Stages carry four columns of their own, so they take the long side of the split

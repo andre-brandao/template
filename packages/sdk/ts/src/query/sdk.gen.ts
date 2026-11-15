@@ -24,6 +24,9 @@ import type {
   DeleteProjectByIdResponses,
   DeleteTodoByIdData,
   DeleteTodoByIdErrors,
+  DeleteTodoByIdLinkData,
+  DeleteTodoByIdLinkErrors,
+  DeleteTodoByIdLinkResponses,
   DeleteTodoByIdResponses,
   GetFileByNameContentData,
   GetFileByNameContentErrors,
@@ -51,6 +54,24 @@ import type {
   GetTodoByIdResponses,
   GetTodoData,
   GetTodoErrors,
+  GetTodoInsightsActivityData,
+  GetTodoInsightsActivityErrors,
+  GetTodoInsightsActivityResponses,
+  GetTodoInsightsCalendarData,
+  GetTodoInsightsCalendarErrors,
+  GetTodoInsightsCalendarResponses,
+  GetTodoInsightsDueData,
+  GetTodoInsightsDueErrors,
+  GetTodoInsightsDueResponses,
+  GetTodoInsightsLoadData,
+  GetTodoInsightsLoadErrors,
+  GetTodoInsightsLoadResponses,
+  GetTodoInsightsStatsData,
+  GetTodoInsightsStatsErrors,
+  GetTodoInsightsStatsResponses,
+  GetTodoInsightsStatusData,
+  GetTodoInsightsStatusErrors,
+  GetTodoInsightsStatusResponses,
   GetTodoResponses,
   GetTodoStageData,
   GetTodoStageErrors,
@@ -61,6 +82,9 @@ import type {
   GetUserByIdHistoryErrors,
   GetUserByIdHistoryResponses,
   GetUserByIdResponses,
+  GetUserData,
+  GetUserErrors,
+  GetUserResponses,
   PatchFileByNameData,
   PatchFileByNameErrors,
   PatchFileByNameResponses,
@@ -70,6 +94,9 @@ import type {
   PatchTodoByIdData,
   PatchTodoByIdErrors,
   PatchTodoByIdResponses,
+  PatchTodoStageData,
+  PatchTodoStageErrors,
+  PatchTodoStageResponses,
   PostFileData,
   PostFileErrors,
   PostFileResponses,
@@ -85,6 +112,9 @@ import type {
   PostProjectData,
   PostProjectErrors,
   PostProjectResponses,
+  PostTodoByIdLinkData,
+  PostTodoByIdLinkErrors,
+  PostTodoByIdLinkResponses,
   PostTodoByIdMoveData,
   PostTodoByIdMoveErrors,
   PostTodoByIdMoveResponses,
@@ -110,6 +140,20 @@ export type Options<
    */
   meta?: keyof ClientMeta extends never ? Record<string, unknown> : ClientMeta;
 };
+
+/**
+ * List users
+ *
+ * The user directory by name, at most 100, optionally narrowed by a name search.
+ */
+export const getUser = <ThrowOnError extends boolean = false>(
+  options?: Options<GetUserData, ThrowOnError>,
+): RequestResult<GetUserResponses, GetUserErrors, ThrowOnError> =>
+  (options?.client ?? client).get<GetUserResponses, GetUserErrors, ThrowOnError>({
+    security: [{ scheme: "bearer", type: "http" }],
+    url: "/user",
+    ...options,
+  });
 
 /**
  * Get current user
@@ -250,6 +294,132 @@ export const getTodoStage = <ThrowOnError extends boolean = false>(
   });
 
 /**
+ * Rename stage
+ *
+ * Rename a stage across every todo wearing it.
+ */
+export const patchTodoStage = <ThrowOnError extends boolean = false>(
+  options: Options<PatchTodoStageData, ThrowOnError>,
+): RequestResult<PatchTodoStageResponses, PatchTodoStageErrors, ThrowOnError> =>
+  (options.client ?? client).patch<PatchTodoStageResponses, PatchTodoStageErrors, ThrowOnError>({
+    security: [{ scheme: "bearer", type: "http" }],
+    url: "/todo/stage",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Todo stats
+ *
+ * Created, done, active and blocked counts for a range, plus overdue all time.
+ */
+export const getTodoInsightsStats = <ThrowOnError extends boolean = false>(
+  options: Options<GetTodoInsightsStatsData, ThrowOnError>,
+): RequestResult<GetTodoInsightsStatsResponses, GetTodoInsightsStatsErrors, ThrowOnError> =>
+  (options.client ?? client).get<
+    GetTodoInsightsStatsResponses,
+    GetTodoInsightsStatsErrors,
+    ThrowOnError
+  >({
+    security: [{ scheme: "bearer", type: "http" }],
+    url: "/todo/insights/stats",
+    ...options,
+  });
+
+/**
+ * Todos by status
+ *
+ * Todos created in a range, totalled per status in pipeline order.
+ */
+export const getTodoInsightsStatus = <ThrowOnError extends boolean = false>(
+  options: Options<GetTodoInsightsStatusData, ThrowOnError>,
+): RequestResult<GetTodoInsightsStatusResponses, GetTodoInsightsStatusErrors, ThrowOnError> =>
+  (options.client ?? client).get<
+    GetTodoInsightsStatusResponses,
+    GetTodoInsightsStatusErrors,
+    ThrowOnError
+  >({
+    security: [{ scheme: "bearer", type: "http" }],
+    url: "/todo/insights/status",
+    ...options,
+  });
+
+/**
+ * Todos by assignee
+ *
+ * Todos created in a range, per assignee and status, busiest first.
+ */
+export const getTodoInsightsLoad = <ThrowOnError extends boolean = false>(
+  options: Options<GetTodoInsightsLoadData, ThrowOnError>,
+): RequestResult<GetTodoInsightsLoadResponses, GetTodoInsightsLoadErrors, ThrowOnError> =>
+  (options.client ?? client).get<
+    GetTodoInsightsLoadResponses,
+    GetTodoInsightsLoadErrors,
+    ThrowOnError
+  >({
+    security: [{ scheme: "bearer", type: "http" }],
+    url: "/todo/insights/load",
+    ...options,
+  });
+
+/**
+ * Next due todos
+ *
+ * The five open todos coming due soonest.
+ */
+export const getTodoInsightsDue = <ThrowOnError extends boolean = false>(
+  options?: Options<GetTodoInsightsDueData, ThrowOnError>,
+): RequestResult<GetTodoInsightsDueResponses, GetTodoInsightsDueErrors, ThrowOnError> =>
+  (options?.client ?? client).get<
+    GetTodoInsightsDueResponses,
+    GetTodoInsightsDueErrors,
+    ThrowOnError
+  >({
+    security: [{ scheme: "bearer", type: "http" }],
+    url: "/todo/insights/due",
+    ...options,
+  });
+
+/**
+ * Todo calendar
+ *
+ * Todos created per day in a range, in the reader's timezone.
+ */
+export const getTodoInsightsCalendar = <ThrowOnError extends boolean = false>(
+  options: Options<GetTodoInsightsCalendarData, ThrowOnError>,
+): RequestResult<GetTodoInsightsCalendarResponses, GetTodoInsightsCalendarErrors, ThrowOnError> =>
+  (options.client ?? client).get<
+    GetTodoInsightsCalendarResponses,
+    GetTodoInsightsCalendarErrors,
+    ThrowOnError
+  >({
+    security: [{ scheme: "bearer", type: "http" }],
+    url: "/todo/insights/calendar",
+    ...options,
+  });
+
+/**
+ * Todo activity
+ *
+ * Todos created and completed per day, week or month, coarser as the range grows.
+ */
+export const getTodoInsightsActivity = <ThrowOnError extends boolean = false>(
+  options: Options<GetTodoInsightsActivityData, ThrowOnError>,
+): RequestResult<GetTodoInsightsActivityResponses, GetTodoInsightsActivityErrors, ThrowOnError> =>
+  (options.client ?? client).get<
+    GetTodoInsightsActivityResponses,
+    GetTodoInsightsActivityErrors,
+    ThrowOnError
+  >({
+    security: [{ scheme: "bearer", type: "http" }],
+    url: "/todo/insights/activity",
+    ...options,
+  });
+
+/**
  * Delete todo
  *
  * Soft-delete a todo. Its sub-issues move up to its parent.
@@ -306,6 +476,42 @@ export const postTodoByIdMove = <ThrowOnError extends boolean = false>(
   (options.client ?? client).post<PostTodoByIdMoveResponses, PostTodoByIdMoveErrors, ThrowOnError>({
     security: [{ scheme: "bearer", type: "http" }],
     url: "/todo/{id}/move",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+
+/**
+ * Unlink todo
+ *
+ * Drop the link at a url from a todo.
+ */
+export const deleteTodoByIdLink = <ThrowOnError extends boolean = false>(
+  options: Options<DeleteTodoByIdLinkData, ThrowOnError>,
+): RequestResult<DeleteTodoByIdLinkResponses, DeleteTodoByIdLinkErrors, ThrowOnError> =>
+  (options.client ?? client).delete<
+    DeleteTodoByIdLinkResponses,
+    DeleteTodoByIdLinkErrors,
+    ThrowOnError
+  >({
+    security: [{ scheme: "bearer", type: "http" }],
+    url: "/todo/{id}/link",
+    ...options,
+  });
+
+/**
+ * Link todo
+ *
+ * Attach an outside link to a todo, or retitle the one at that url.
+ */
+export const postTodoByIdLink = <ThrowOnError extends boolean = false>(
+  options: Options<PostTodoByIdLinkData, ThrowOnError>,
+): RequestResult<PostTodoByIdLinkResponses, PostTodoByIdLinkErrors, ThrowOnError> =>
+  (options.client ?? client).post<PostTodoByIdLinkResponses, PostTodoByIdLinkErrors, ThrowOnError>({
+    security: [{ scheme: "bearer", type: "http" }],
+    url: "/todo/{id}/link",
     ...options,
     headers: {
       "Content-Type": "application/json",

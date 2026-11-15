@@ -1,93 +1,102 @@
+<!-- Raised through `modal(TodoForm, { scope })`, which passes `close`. -->
 <script lang="ts">
-	import { Button, Field, FormBoundary, Input, Issue, MarkdownEditor } from '@template/ui';
+	import { Button, Field, Input, Issue, MarkdownEditor } from '@template/ui';
 	import { upload } from '$lib/upload';
-	import { createTodo } from '../../api/todos.remote';
+	import { create } from '../../api/todos.query';
 	import TagEditor from '../TagEditor.svelte';
 	import AssigneePicker from '../AssigneePicker.svelte';
 	import StagePicker from '../StagePicker.svelte';
 	import { STATUSES, label } from '../../status';
+	import { day, text } from '../../fields';
 
 	let {
-		onsuccess,
+		close,
 		scope = {}
-	}: { onsuccess?: () => void; scope?: { source?: string; sourceID?: string } } = $props();
+	}: { close: () => void; scope?: { source?: string; sourceID?: string } } = $props();
 
 	let body = $state('');
 	let tags = $state<string[]>([]);
+	const save = create({ onSuccess: () => close() });
+
+	function submit(e: SubmitEvent & { currentTarget: HTMLFormElement }) {
+		e.preventDefault();
+		const data = new FormData(e.currentTarget);
+		save.mutate({
+			body: {
+				title: String(data.get('title')),
+				stage: text(data, 'stage'),
+				assignee: text(data, 'assignee'),
+				startDate: day(data, 'startDate'),
+				dueDate: day(data, 'dueDate'),
+				status: STATUSES.find((one) => one === data.get('status')),
+				tags: tags.length ? tags : undefined,
+				body: body || undefined,
+				source: scope.source,
+				sourceID: scope.sourceID
+			}
+		});
+	}
 </script>
 
-<FormBoundary>
-	{#each createTodo.fields.allIssues() ?? [] as issue, i (i)}
-		<Issue>{issue.message}</Issue>
-	{/each}
+<h2>New todo</h2>
 
-	<form
-		class="add"
-		{...createTodo.enhance(async (f) => {
-			await f.submit();
-			body = '';
-			tags = [];
-			onsuccess?.();
-		})}
-	>
-		<Field label="Title">
-			<Input placeholder="What needs doing?" {...createTodo.fields.title.as('text')} />
+{#if save.error}
+	<Issue>{save.error.message}</Issue>
+{/if}
+
+<form class="add" onsubmit={submit}>
+	<Field label="Title">
+		<Input name="title" placeholder="What needs doing?" required autofocus />
+	</Field>
+
+	<div class="pair">
+		<Field label="Stage">
+			<StagePicker {scope} name="stage" />
 		</Field>
 
-		<div class="pair">
-			<Field label="Stage">
-				<StagePicker {scope} {...createTodo.fields.stage.as('text')} />
-			</Field>
+		<Field label="Assignee">
+			<AssigneePicker name="assignee" />
+		</Field>
+	</div>
 
-			<Field label="Assignee">
-				<AssigneePicker {...createTodo.fields.assignee.as('select')} />
-			</Field>
-		</div>
-
-		<div class="pair">
-			<Field label="Start">
-				<Input {...createTodo.fields.startDate.as('date')} />
-			</Field>
-
-			<Field label="Due">
-				<Input {...createTodo.fields.dueDate.as('date')} />
-			</Field>
-		</div>
-
-		<Field label="Status">
-			<select {...createTodo.fields.status.as('select')}>
-				{#each STATUSES as status (status)}
-					<option value={status}>{label(status)}</option>
-				{/each}
-			</select>
+	<div class="pair">
+		<Field label="Start">
+			<Input type="date" name="startDate" />
 		</Field>
 
-		<Field label="Tags" as="div">
-			<TagEditor bind:tags />
-			<input {...createTodo.fields.tags.as('hidden', tags.join(','))} />
+		<Field label="Due">
+			<Input type="date" name="dueDate" />
 		</Field>
+	</div>
 
-		<Field label="Description" as="div">
-			<MarkdownEditor bind:value={body} {upload} />
-			<input {...createTodo.fields.body.as('hidden', body)} />
-		</Field>
+	<Field label="Status">
+		<select name="status">
+			{#each STATUSES as status (status)}
+				<option value={status}>{label(status)}</option>
+			{/each}
+		</select>
+	</Field>
 
-		<input {...createTodo.fields.source.as('hidden', scope.source ?? '')} />
-		<input {...createTodo.fields.sourceID.as('hidden', scope.sourceID ?? '')} />
+	<Field label="Tags" as="div">
+		<TagEditor bind:tags />
+	</Field>
 
-		<div class="footer">
-			<Button type="submit" pending={!!createTodo.pending}>Add todo</Button>
-		</div>
-	</form>
-</FormBoundary>
+	<Field label="Description" as="div">
+		<MarkdownEditor bind:value={body} {upload} />
+	</Field>
+
+	<div class="footer">
+		<Button variant="ghost" type="button" onclick={close}>Cancel</Button>
+		<Button type="submit" pending={save.isPending}>Add todo</Button>
+	</div>
+</form>
 
 <style>
 	.add {
 		display: flex;
 		flex-direction: column;
 		gap: 1em;
-		margin-bottom: 1.25em;
-	}
+			}
 
 	.pair {
 		display: grid;
@@ -95,9 +104,15 @@
 		gap: 1em;
 	}
 
+	h2 {
+		margin: 0 0 1em;
+		font-size: 1.05em;
+	}
+
 	.footer {
 		display: flex;
 		justify-content: flex-end;
+		gap: 0.5em;
 	}
 
 	select {

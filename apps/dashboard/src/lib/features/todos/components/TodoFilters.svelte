@@ -13,10 +13,13 @@
      Clear, so a view setting (grouping) can sit on the same row. -->
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	import { browser } from '$app/environment';
+	import { useQueryClient } from '@tanstack/svelte-query';
+	import { createHotkey } from '@tanstack/svelte-hotkeys';
 	import { Button, Input, LazySelect, Select } from '@template/ui';
 	import * as Header from '$lib/components/header';
 	import { debounce } from '$lib/utils/debounce';
-	import { getStages, getUsers } from '../api/todos.remote';
+	import { stages, users } from '../api/todos.query';
 	import { STATUSES, label } from '../status';
 
 	let {
@@ -31,10 +34,16 @@
 		onchange: (next: Filters) => void;
 	} = $props();
 
+	// A filtered URL makes LazySelect load during SSR to label it; only the browser reaches the API.
+	const client = useQueryClient();
+
 	// Writable derived: typing overrides it, external changes (back/forward, reload) resnap it.
 	let input = $derived(filters.search);
 	const commit = debounce((search: string) => onchange({ ...filters, search }), 300);
 	const pick = (next: Partial<Filters>) => onchange({ ...filters, ...next });
+
+	let field: HTMLInputElement | undefined;
+	createHotkey("/", () => field?.focus());
 
 	const filtered = $derived(
 		!!(filters.search || filters.assignee || filters.stage) || filters.status !== 'all'
@@ -47,8 +56,12 @@
 		name="search"
 		autocomplete="off"
 		aria-label="Search todos"
+		aria-keyshortcuts="/"
 		placeholder="Search todos…"
 		value={input}
+		{@attach (el: HTMLInputElement) => {
+			field = el;
+		}}
 		oninput={(e) => {
 			input = e.currentTarget.value;
 			commit(input);
@@ -76,7 +89,10 @@
 			{ value: '', label: 'Anyone' },
 			{ value: 'none', label: 'Unassigned' }
 		]}
-		load={async () => (await getUsers({})).map((one) => ({ value: one.id, label: one.name }))}
+		load={async () =>
+			browser
+				? (await client.fetchQuery(users())).map((one) => ({ value: one.id, label: one.name }))
+				: []}
 		onchange={(e) => pick({ assignee: e.currentTarget.value })}
 	/>
 </Header.Group>
@@ -89,7 +105,10 @@
 			{ value: '', label: 'Any stage' },
 			{ value: 'none', label: 'No stage' }
 		]}
-		load={async () => (await getStages(scope)).map((one) => ({ value: one.name, label: one.name }))}
+		load={async () =>
+			browser
+				? (await client.fetchQuery(stages(scope))).map((one) => ({ value: one.name, label: one.name }))
+				: []}
 		onchange={(e) => pick({ stage: e.currentTarget.value })}
 	/>
 </Header.Group>

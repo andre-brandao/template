@@ -1,7 +1,8 @@
 <script lang="ts">
 	import type { HTMLInputAttributes } from 'svelte/elements';
+	import { createQuery } from '@tanstack/svelte-query';
 	import { Input } from '@template/ui';
-	import { getStages } from '../api/todos.remote';
+	import { stages } from '../api/todos.query';
 
 	let {
 		scope = {},
@@ -14,21 +15,22 @@
 
 	// Free text with the labels already in use as hints, so a project doesn't drift
 	// into both "Sprint 1" and "sprint 1". Fetched lazily, on first hover/focus.
-	let stages = $state.raw<Awaited<ReturnType<typeof getStages>>>([]);
-	let pending = false;
-
-	async function fetch() {
-		if (pending) return;
-		pending = true;
-		stages = await getStages(scope);
-	}
+	let touched = $state(false);
+	const query = createQuery(() => ({ ...stages(scope), enabled: touched }));
 
 	const list = $derived(`stages-${rest.id ?? rest.name ?? 'todo'}`);
 </script>
 
-<Input type="text" list={list} {placeholder} {...rest} onpointerenter={fetch} onfocus={fetch} />
+<Input
+	type="text"
+	{list}
+	{placeholder}
+	{...rest}
+	onpointerenter={() => (touched = true)}
+	onfocus={() => (touched = true)}
+/>
 <datalist id={list}>
-	{#each stages as stage (stage.name)}
+	{#each query.data ?? [] as stage (stage.name)}
 		<option value={stage.name}></option>
 	{/each}
 </datalist>

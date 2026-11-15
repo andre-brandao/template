@@ -1,7 +1,8 @@
 <script lang="ts">
 	import type { Insights } from '@template/core/todo';
+	import { createQuery } from '@tanstack/svelte-query';
 	import { Empty } from '@template/ui';
-	import { getDue } from '../../api/insights.remote';
+	import { due } from '../../api/todos.query';
 	import StatusPill from '../StatusPill.svelte';
 	import Section from './Section.svelte';
 	import { fmt } from '$lib/utils/fmt';
@@ -9,27 +10,25 @@
 	let { scope = {} }: { scope?: Insights.Scope } = $props();
 
 	const f = fmt();
-	const todos = $derived(await getDue(scope));
-
-	function date(todo: Awaited<ReturnType<typeof getDue>>[number]) {
-		return todo.dueDate ? f.date(todo.dueDate) : 'No due date';
-	}
+	const query = createQuery(() => due(scope));
 </script>
 
-<Section title="Next due">
-	{#if todos.length === 0}
-		<Empty>No upcoming due todos.</Empty>
-	{:else}
-		<ul>
-			{#each todos as todo (todo.id)}
-				<li>
-					<a href="/todos/{todo.id}">{todo.title}</a>
-					<span>{date(todo)}</span>
-					<StatusPill status={todo.status} />
-				</li>
-			{/each}
-		</ul>
-	{/if}
+<Section title="Next due" {query} height="180px">
+	{#snippet children(todos)}
+		{#if todos.length === 0}
+			<Empty>No upcoming due todos.</Empty>
+		{:else}
+			<ul>
+				{#each todos as todo (todo.id)}
+					<li>
+						<a href="/todos/{todo.id}">{todo.title}</a>
+						<span>{todo.dueDate ? f.date(todo.dueDate) : 'No due date'}</span>
+						<StatusPill status={todo.status} />
+					</li>
+				{/each}
+			</ul>
+		{/if}
+	{/snippet}
 </Section>
 
 <style>

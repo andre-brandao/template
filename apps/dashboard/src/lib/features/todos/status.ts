@@ -1,5 +1,5 @@
 import type { Todo } from "@template/core/todo";
-import { toDay, today } from "@template/ui";
+import { toDay, today } from "@template/ui/day";
 
 /** Pipeline order — the board's column order, and the picker's menu order. */
 export const STATUSES = ["backlog", "planned", "active", "blocked", "done"] as const;

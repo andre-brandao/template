@@ -30,8 +30,8 @@
 		justify-content: center;
 		font-size: calc(var(--size) * 0.42);
 		font-weight: 600;
-		color: var(--ink, #111);
-		background: var(--surface-2, #eee);
-		border: 1px solid var(--border, #333);
+		color: var(--ink, #1c1b19);
+		background: var(--surface-2, #f2f1ee);
+		border: 1px solid var(--border, #e6e5e1);
 	}
 </style>

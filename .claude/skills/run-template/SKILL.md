@@ -24,7 +24,7 @@ The developer's own stack usually occupies the default ports (3000–3002,
 alternate ports:
 
 ```bash
-PORT=4000 MCP_PORT=4001 AUTH_PORT=4002 WEB_PORT=4174 bun dev
+API_PORT=4000 MCP_PORT=4001 AUTH_PORT=4002 WEB_PORT=4174 bun dev
 ```
 
 Run it in the background; it's ready when `curl -s http://localhost:4174/healthz`
@@ -53,7 +53,7 @@ BASE=http://localhost:4174 bun .claude/skills/run-template/driver.ts todo "My ti
 | `shot <route> [out.png]` | authenticated full-page screenshot of a route                               |
 | `todo <title> [out.png]` | creates a todo through the `/todos` form, waits for it to list, screenshots |
 
-It prints page console errors at the end. Env: `BASE`, `DATABASE_URL`, `EMAIL`,
+It prints page console errors at the end. Env: `BASE`, `DATABASE_URL`, `ROLE` (admin|member, default admin),
 `CHROME_PATH`.
 
 ### API / MCP / CLI
@@ -107,7 +107,7 @@ cd apps/dashboard && bun run test:e2e   # needs real postgres on :5432 (docker)
   The driver and `e2e/playwright.config.ts` both fall back to `which chromium`;
   override with `CHROME_PATH`.
 - **No login UI needed.** Sessions are HMAC cookies (`auth`), signed with a key
-  the app mints in the `key` table. The driver creates/finds a user by email
+  the app mints in the `key` table. The driver creates a fresh user (role from `ROLE`)
   directly in the DB and seals the cookie itself — the issuer is never involved.
 - **The seeded API key is printed only in the seed log.** Each `bun dev` run
   re-seeds and prints `API key: sk-...`; grab it from the dev output, there is
@@ -120,7 +120,7 @@ cd apps/dashboard && bun run test:e2e   # needs real postgres on :5432 (docker)
 ## Troubleshooting
 
 - **`Error: Port 5173 is already in use` then every server SIGTERMs**: another
-  stack is running. Use the `PORT=4000 ...` line, or reuse the running stack
+  stack is running. Use the `API_PORT=4000 ...` line, or reuse the running stack
   (its `/healthz` already answers).
 - **`do-not-run-tests-from-root` guard fires**: you ran `bun test` at the repo
   root. `cd` into the package first.

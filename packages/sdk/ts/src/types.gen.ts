@@ -195,7 +195,7 @@ export type Identity =
       type: "agent";
       properties: {
         /**
-         * Which agent: `copilot`, or an MCP client like `claude`.
+         * Which agent: `orchestrator`, or an MCP client like `claude`.
          */
         name: string;
         /**
@@ -824,6 +824,10 @@ export type GetKeyErrors = {
    */
   401: ErrorResponse;
   /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
    * Internal Server Error
    */
   500: ErrorResponse;
@@ -863,6 +867,10 @@ export type PostKeyErrors = {
    */
   401: ErrorResponse;
   /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
    * Internal Server Error
    */
   500: ErrorResponse;
@@ -901,6 +909,10 @@ export type DeleteKeyByIdErrors = {
    * Unauthorized
    */
   401: ErrorResponse;
+  /**
+   * Forbidden
+   */
+  403: ErrorResponse;
   /**
    * Not Found
    */
@@ -2230,6 +2242,10 @@ export type GetFileErrors = {
    */
   401: ErrorResponse;
   /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
    * Internal Server Error
    */
   500: ErrorResponse;
@@ -2264,6 +2280,10 @@ export type PostFileErrors = {
    * Unauthorized
    */
   401: ErrorResponse;
+  /**
+   * Forbidden
+   */
+  403: ErrorResponse;
   /**
    * Internal Server Error
    */
@@ -2340,6 +2360,10 @@ export type GetFileByNameContentErrors = {
    */
   401: ErrorResponse;
   /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
    * Not Found
    */
   404: ErrorResponse;
@@ -2378,6 +2402,10 @@ export type DeleteFileByNameErrors = {
    */
   401: ErrorResponse;
   /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
    * Internal Server Error
    */
   500: ErrorResponse;
@@ -2414,6 +2442,10 @@ export type PatchFileByNameErrors = {
    * Unauthorized
    */
   401: ErrorResponse;
+  /**
+   * Forbidden
+   */
+  403: ErrorResponse;
   /**
    * Not Found
    */

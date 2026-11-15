@@ -17,6 +17,6 @@
 		padding: 0.9em 0.55em;
 		font-size: 0.9em;
 		text-align: center;
-		color: var(--dim, #888);
+		color: var(--dim, #75736d);
 	}
 </style>

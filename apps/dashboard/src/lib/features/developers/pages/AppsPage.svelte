@@ -18,7 +18,7 @@
 <Header.Root title="Apps">
 	{#snippet lead()}External systems with their own account, keys, webhooks and inbound endpoint.{/snippet}
 	{#snippet actions()}
-		<Button onclick={create}>New app <Kbd keys="C" /></Button>
+		<Button variant="primary" onclick={create}>New app <Kbd keys="C" /></Button>
 	{/snippet}
 	<Header.Item label="Registered">{list.data?.length ?? '–'}</Header.Item>
 	<Header.Item label="Inbound">{list.data?.filter((one) => one.inbound).length ?? '–'}</Header.Item>

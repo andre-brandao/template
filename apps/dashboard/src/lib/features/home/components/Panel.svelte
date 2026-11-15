@@ -8,7 +8,7 @@
 
 {#if widgets.length}
 	<aside>
-		{#each widgets as widget (widget.key)}
+		{#each widgets as widget (widget.title)}
 			<Card {widget} />
 		{/each}
 	</aside>

@@ -43,14 +43,14 @@
 		border-radius: 4px;
 		background: var(--surface, #fff);
 		color: var(--muted, #64625d);
-		font-family: var(--font-sans, system-ui, sans-serif);
+		font-family: var(--font-sans, ui-sans-serif, system-ui, sans-serif);
 		font-size: 0.72em;
 		font-weight: 500;
 		line-height: 1;
 	}
 
 	.then {
-		color: var(--dim, #8e8c86);
+		color: var(--dim, #75736d);
 		font-size: 0.72em;
 	}
 </style>

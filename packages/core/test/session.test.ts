@@ -98,11 +98,11 @@ describe("Session", () => {
   withTestUser("a session token is not a bearer token", async ({ userID }) => {
     const raw = await Session.create(userID);
     expect(await Key.verify(raw)).toBeNull();
-    expect(await Key.list(undefined)).toBeEmpty();
+    expect(await Key.list()).toBeEmpty();
   });
 
   withTestUser("an api key is not a session", async ({ userID }) => {
-    const key = await Key.create({ userID, name: "laptop" });
+    const key = await Key.create({ name: "laptop" });
     expect(await Session.verify(key.key)).toBeNull();
   });
 

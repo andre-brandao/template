@@ -146,10 +146,9 @@ export namespace Project {
             timeUpdated: new Date(),
           })
           .where(eq(ProjectTable.id, id));
-        await Event.Updated.publish(
-          { project: await assert.exists(fromID.force(id)), changes: patch },
-          { subject: id },
-        );
+        const project = await assert.exists(fromID.force(id));
+        await Event.Updated.publish({ project, changes: patch }, { subject: id });
+        return project;
       });
     },
     {

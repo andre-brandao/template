@@ -29,7 +29,7 @@ describe("mcp", () => {
       name: "Test User",
       email: `test-${crypto.randomUUID()}@example.com`,
     });
-    token = (await Key.create({ userID, name: "test" })).key;
+    token = (await Key.mint({ userID, name: "test" })).key;
   });
 
   it("lists todo tools", async () => {

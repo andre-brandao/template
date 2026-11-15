@@ -14,7 +14,7 @@
 		gap: 2px;
 		padding: 2px;
 		border-radius: var(--radius-sm, 6px);
-		background: var(--surface-2, #f2f2f2);
+		background: var(--surface-2, #f2f1ee);
 		/* Squeezed below its labels, the row scrolls inside itself instead of breaking a tab. */
 		max-width: 100%;
 		overflow-x: auto;

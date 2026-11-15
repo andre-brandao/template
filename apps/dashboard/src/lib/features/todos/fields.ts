@@ -1,4 +1,4 @@
-import { fromDay } from "@template/ui";
+import { fromDay } from "@template/ui/day";
 
 /** A form field as core takes it: blank is undefined. */
 export const text = (data: FormData, key: string) =>

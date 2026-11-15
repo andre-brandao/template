@@ -133,7 +133,7 @@ async function seed() {
   // The login screen prefills these credentials in dev, so the dev account needs a real
   // password row for them to match — an account gains one, it never signs up with one.
   await Identity.provide("user", { userID, role: "admin" }, () => Auth.Pass.set({ password: pw }));
-  const key = await Key.create({ userID, name: "seed" });
+  const key = await Key.mint({ userID, name: "seed" });
   const mates = await Promise.all(
     team.map((one) =>
       Auth.link({ provider: "email", accountId: one.email, email: one.email, name: one.name }),

@@ -3,11 +3,18 @@ import { getRequestEvent } from "$app/server";
 import { Feedback } from "@template/core/feedback";
 import { remote } from "$lib/server/remote";
 
-// An untouched picker posts one empty File; it is dropped before the per-file checks run.
+// Kit posts proxied LazyFiles, which Bun's `instanceof File` rejects: check the prototype, then
+// copy each into a real File for core. An untouched picker's one empty File is dropped first.
 const files = z
-  .array(z.file())
+  .array(z.custom<File>((file) => !!file && Object.getPrototypeOf(file) === File.prototype))
   .optional()
-  .transform((list) => (list ?? []).filter((file) => file.size > 0))
+  .transform((list) =>
+    Promise.all(
+      (list ?? [])
+        .filter((file) => file.size > 0)
+        .map(async (file) => new File([await file.arrayBuffer()], file.name, { type: file.type })),
+    ),
+  )
   .pipe(
     Feedback.upload.schema.array().max(Feedback.LIMIT, `At most ${Feedback.LIMIT} attachments`),
   );

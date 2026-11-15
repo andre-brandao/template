@@ -4,36 +4,40 @@
 
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	import IconButton from '../input/IconButton.svelte';
+	import { dialog } from '../modal/dialog';
 
 	let {
 		open = $bindable(false),
 		side = 'right',
+		label,
 		onclose,
 		children
 	}: {
 		open?: boolean;
 		side?: Side;
+		/** Names the dialog; without it, the first heading in the body does. */
+		label?: string;
 		onclose?: () => void;
 		children: Snippet;
 	} = $props();
-
-	let dialog: HTMLDialogElement | undefined = $state();
 </script>
 
 <dialog
-	bind:this={dialog}
 	class={side}
-	{@attach (el) => (open ? el.showModal() : el.close())}
+	aria-label={label}
+	{@attach dialog(open)}
 	onclose={() => {
 		// Fires on every close — user-initiated or parent-driven — so handlers must
 		// be idempotent (e.g. shallow routing checks its state before history.back()).
 		open = false;
 		onclose?.();
 	}}
-	onclick={(e) => e.target === e.currentTarget && e.currentTarget.close()}
 >
 	<div class="chrome">
-		<button class="close" type="button" aria-label="Close" onclick={() => dialog?.close()}>✕</button>
+		<IconButton label="Close" size="sm" onclick={(e) => e.currentTarget.closest('dialog')?.close()}>
+			✕
+		</IconButton>
 	</div>
 	{#if open}
 		{@render children()}
@@ -52,10 +56,10 @@
 		max-width: none;
 		max-height: none;
 		border: none;
-		border-inline-start: 1px solid var(--border, #333);
+		border-inline-start: 1px solid var(--border, #e6e5e1);
 		padding: 1.25em;
 		background: var(--surface, #fff);
-		color: var(--ink, #111);
+		color: var(--ink, #1c1b19);
 		box-shadow: -8px 0 24px rgb(0 0 0 / 0.15);
 		overflow-x: hidden;
 		overflow-y: auto;
@@ -70,7 +74,7 @@
 		inset-inline-end: auto;
 		inset-inline-start: 0;
 		border-inline-start: none;
-		border-inline-end: 1px solid var(--border, #333);
+		border-inline-end: 1px solid var(--border, #e6e5e1);
 		box-shadow: 8px 0 24px rgb(0 0 0 / 0.15);
 		translate: -100% 0;
 	}
@@ -84,7 +88,7 @@
 		height: auto;
 		max-height: 85dvh;
 		border-inline-start: none;
-		border-block-start: 1px solid var(--border, #333);
+		border-block-start: 1px solid var(--border, #e6e5e1);
 		border-radius: var(--radius, 8px) var(--radius, 8px) 0 0;
 		padding-bottom: max(1.25em, env(safe-area-inset-bottom));
 		box-shadow: 0 -8px 24px rgb(0 0 0 / 0.15);
@@ -130,19 +134,10 @@
 		margin: -0.5em -0.5em 0.5em auto;
 	}
 
-	.close {
-		border: none;
-		background: none;
-		padding: 0.4em 0.6em;
-		font-size: 1em;
-		line-height: 1;
-		color: var(--muted, #666);
-		cursor: pointer;
-		border-radius: var(--radius-sm, 6px);
-	}
-
-	.close:hover {
-		color: var(--ink, #111);
-		background: var(--hover, #eee);
+	@media (prefers-reduced-motion: reduce) {
+		dialog,
+		dialog::backdrop {
+			transition: none;
+		}
 	}
 </style>

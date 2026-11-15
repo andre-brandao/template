@@ -108,7 +108,7 @@
 	</div>
 
 	<div class="hours" {@attach (el) => el.scrollTo({ top: el.scrollHeight * (7 / 24) })}>
-		<div class="row grid">
+		<div class="row lines">
 			<div class="gutter ticks">
 				{#each Array.from({ length: 23 }, (_, h) => h + 1) as h (h)}
 					<span style:top={pct(h * 60)}>{chips.hour(h * 60)}</span>
@@ -136,7 +136,7 @@
 				time={chips.time(one.item)}
 				edge={one.item.from && one.item.until ? 'bottom' : undefined}
 				link
-				block
+				block={one.end - one.top >= 60}
 				{...chips.mark(one.item.todo.id)}
 				grab={chips.grab}
 				open={chips.open}
@@ -158,7 +158,7 @@
 
 <style>
 	.week {
-		--gutter: 3.4rem;
+		--gutter: 4.4rem;
 		--hour: 2.6rem;
 		border: 1px solid var(--border);
 		border-radius: var(--radius);
@@ -218,13 +218,20 @@
 		color: var(--accent-ink);
 	}
 
+	/* Capped so a busy week can't push the hour grid off screen. */
 	.lane {
+		max-height: 10.5rem;
+		overflow-y: auto;
 		border-bottom: 1px solid var(--border);
+		scrollbar-width: thin;
 	}
 
+	/* Pinned, since a busy lane scrolls and a centered label scrolls out of view. */
 	.label {
-		align-self: center;
-		padding-left: 0.5rem;
+		position: sticky;
+		top: 0;
+		align-self: start;
+		padding: 0.45rem 0 0 0.5rem;
 	}
 
 	.bars {
@@ -268,7 +275,7 @@
 		scrollbar-width: thin;
 	}
 
-	.grid {
+	.lines {
 		height: calc(24 * var(--hour));
 		background: repeating-linear-gradient(
 			to bottom,

@@ -1,27 +1,12 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	import { dialog } from './dialog';
 
+	// Named after the first heading in its body, which every modal body renders.
 	let { open = $bindable(false), children }: { open?: boolean; children: Snippet } = $props();
-
-	export function toggle() {
-		open = !open;
-	}
-
-	export function openModal() {
-		open = true;
-	}
-
-	export function closeModal() {
-		open = false;
-	}
-
 </script>
 
-<dialog
-	{@attach (dialog) => (open ? dialog.showModal() : dialog.close())}
-	onclose={() => (open = false)}
-	onclick={(e) => e.target === e.currentTarget && e.currentTarget.close()}
->
+<dialog {@attach dialog(open)} onclose={() => (open = false)}>
 	{#if open}
 		{@render children()}
 	{/if}
@@ -32,12 +17,12 @@
 		margin: auto;
 		width: min(30em, calc(100vw - 2em));
 		max-width: none;
-		border: 1px solid var(--border, #333);
+		border: 1px solid var(--border, #e6e5e1);
 		border-radius: calc(var(--radius, 8px) + 4px);
 		padding: 1.5em;
 		background: var(--surface, #fff);
-		color: var(--ink, #111);
-		box-shadow: var(--shadow-2, 0 12px 28px -14px rgb(0 0 0 / 0.6));
+		color: var(--ink, #1c1b19);
+		box-shadow: var(--shadow-2, 0 16px 32px -12px rgb(0 0 0 / 0.16));
 		opacity: 0;
 		scale: 0.97;
 		transition:

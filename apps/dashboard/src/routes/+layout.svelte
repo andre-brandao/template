@@ -10,24 +10,19 @@
 	import { createAgent } from '$lib/features/agent/agent.svelte';
 	import Dock from '$lib/features/agent/components/Dock.svelte';
 	import Toggle from '$lib/features/agent/components/Toggle.svelte';
+	import Feedback from '$lib/features/feedback/components/Feedback.svelte';
+	import ThemeToggle from '$lib/features/settings/components/ThemeToggle.svelte';
 
 	let { data, children } = $props();
 
 	// Here rather than in the Shell, so the conversation survives a move between sections.
-	// Not in ShellProvider: shared components can't import a feature slice.
+	// Shared components can't import a slice, so slices reach the Shell as snippets.
 	createAgent();
-
-	// TODO: use to reload app when new version comes out
-	// import { beforeNavigate } from '$app/navigation';
-
-	// beforeNavigate(({ willUnload, to }) => {
-	// 	if (updated.current && !willUnload && to?.url) {
-	// 		location.href = to.url.href;
-	// 	}
-	// });
 </script>
 
 <svelte:head><link rel="icon" href={favicon} /></svelte:head>
+
+{#snippet feedback(slim: boolean)}<Feedback {slim} fill={!slim} />{/snippet}
 
 <ShellProvider {data}>
 	<ViewTransitions />
@@ -38,15 +33,15 @@
 		<PreLoadingIndicator />
 	{/if}
 
-	<!-- One Shell for the whole app, so a navigation between sections swaps the content and
-	     leaves the sidebar standing. A section opts in by returning `nav` from its `+layout.ts`;
-	     the routes that want no chrome — `/`, auth, errors — simply don't. -->
+	<!-- One Shell for the whole app, so a navigation between sections leaves the sidebar
+	     standing. A section opts in by returning `nav`; `/`, auth and every error don't. -->
 	<div class="shell">
-		{#if page.data.nav}
-			<Shell nav={page.data.nav}>
+		{#if page.data.nav && !page.error}
+			<Shell nav={page.data.nav} foot={data.user && data.feedback ? feedback : undefined}>
 				{#snippet tools()}
 					{#if data.user && data.agent}<Toggle />{/if}
 				{/snippet}
+				{#snippet account()}<ThemeToggle />{/snippet}
 				{#snippet side()}
 					<!-- No LLM env, no dock: its model list would throw on every page. -->
 					{#if data.user && data.agent}<Dock />{/if}

@@ -126,17 +126,17 @@
 		white-space: normal;
 	}
 
-	/* Sized by its own box, so a narrow card stacks too: five 6.5em floors need ~36em. The bar
-	   keeps reading; only the legend gives up its columns, each keeping its colour as an edge. */
+	/* Sized by its own box: below five 6.5em floors the legend wraps into a row of entries,
+	   each keeping its colour as an edge, so a phone stays a few lines tall. */
 	@container (max-width: 36em) {
 		.legend {
 			display: flex;
-			flex-direction: column;
-			gap: 0;
+			flex-wrap: wrap;
+			gap: 0.5em 1.25em;
 		}
 
 		.legend > div {
-			padding: 0.5em 0 0.5em 0.7em;
+			padding: 0 0 0 0.6em;
 			border-left: 3px solid var(--c);
 			border-radius: 2px;
 		}

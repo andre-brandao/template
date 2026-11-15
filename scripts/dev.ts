@@ -36,6 +36,10 @@ const env = {
   LLM_URL: process.env.LLM_URL ?? "https://llm.developing.company/v1",
   LLM_MODEL: process.env.LLM_MODEL ?? "openai/gpt-6-luna",
   MCP_URL: process.env.MCP_URL ?? `http://localhost:${mcpport}/mcp`,
+  // Without a GitHub token, feedback files into the in-process tracker so the drawer still shows.
+  ...(!process.env.FEEDBACK_TOKEN && {
+    FEEDBACK_ADAPTER: process.env.FEEDBACK_ADAPTER ?? "memory",
+  }),
 };
 
 const apiport = Number(process.env.API_PORT ?? 3000);

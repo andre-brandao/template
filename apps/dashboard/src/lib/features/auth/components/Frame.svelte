@@ -1,22 +1,29 @@
-<!--
-	The signed-out frame: the mark and the one-line pitch on a dark panel, beside whatever form
-	is asking. Login and welcome share it, so onboarding never feels like a different page.
--->
+<!-- The signed-out frame: the mark and pitch on a dark panel, beside the form that is asking. -->
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	import { brand } from '$lib/brand';
+	import Brand from '$lib/components/layout/Brand.svelte';
 
-	let { children }: { children: Snippet } = $props();
+	let { title, lead, children }: { title: string; lead: string; children: Snippet } = $props();
 </script>
+
+<svelte:head><title>{title} · {brand.name}</title></svelte:head>
 
 <div class="frame">
 	<aside>
-		<span class="mark"><span class="dot"></span>Todos</span>
-		<p class="line">Track work from capture to shipped.</p>
-		<span class="legal">© {new Date().getFullYear()} Todos</span>
+		<div><Brand word /></div>
+		<p class="line">{brand.pitch}</p>
+		<span class="legal">© {new Date().getFullYear()} {brand.name}</span>
 	</aside>
 
 	<main>
-		<div class="column">{@render children()}</div>
+		<div class="column">
+			<header>
+				<h1>{title}</h1>
+				<p>{lead}</p>
+			</header>
+			{@render children()}
+		</div>
 	</main>
 </div>
 
@@ -47,20 +54,22 @@
 			auto;
 	}
 
-	.mark {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.55em;
-		font-size: 1.05em;
-		font-weight: 600;
-		letter-spacing: -0.011em;
+	header {
+		margin-bottom: 0.4em;
 	}
 
-	.dot {
-		width: 8px;
-		height: 8px;
-		border-radius: 2px;
-		background: var(--accent);
+	h1 {
+		margin: 0 0 0.35em;
+		font-size: 1.4em;
+		font-weight: 600;
+		letter-spacing: -0.015em;
+	}
+
+	header p {
+		margin: 0;
+		font-size: 0.88em;
+		line-height: 1.45;
+		color: var(--muted);
 	}
 
 	/* Pushed to the floor of the panel, so the mark tops it and the pitch sits low. */

@@ -2,10 +2,8 @@ import { z } from "zod";
 import { desc, sql, type Column, type SQL, type SQLWrapper } from "drizzle-orm";
 
 /**
- * A list's sort vocabulary: each key mapped to the expression it orders by. The map is both
- * the enum the schema publishes and the allowlist `orderBy` checks, so the two cannot drift.
- * Always tiebroken by `id` — LIMIT/OFFSET over a non-unique sort otherwise repeats and drops
- * rows between pages.
+ * A list's sort keys, each mapped to what it orders by: the schema's enum and the allowlist at
+ * once. Always tiebroken by `id`, or LIMIT/OFFSET repeats and drops rows between pages.
  */
 export function sortable<M extends Record<string, SQLWrapper>>(
   sorts: M,

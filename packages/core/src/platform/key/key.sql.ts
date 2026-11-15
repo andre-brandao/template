@@ -1,11 +1,10 @@
+import { gt, isNull, or } from "drizzle-orm";
 import { index, jsonb, pgTable as table, text, uniqueIndex, varchar } from "drizzle-orm/pg-core";
 import { id, timestamp, timestamps, ulid } from "../../drizzle/types";
 
 /**
- * Secrets; null expiry = never. `type` separates user-minted `api` bearer tokens from
- * app-level `signing` keys — auth resolves `api` alone. Everything a user holds is stored as
- * `encode(digest(secret))`, so a dump of this table authenticates nothing. `signing` is the
- * exception: the app has to reproduce that one to sign with it.
+ * Every secret the app holds, by `type`; null expiry = never. Hashed, except `signing` and
+ * `hook`, which the app has to reproduce.
  */
 export const KeyTable = table(
   "key",
@@ -16,8 +15,7 @@ export const KeyTable = table(
     name: varchar("name", { length: 255 }).notNull(),
     key: varchar("key", { length: 128 }).notNull(),
     type: text().notNull().default("api"),
-    // Whatever a key's own type wants remembered — the mask for an `api` key, the device
-    // for a `session`. Each namespace owns the shape it parses out of here.
+    // Whatever a key's own type wants remembered, like the mask for an `api` key.
     meta: jsonb().notNull().default({}),
     expiresAt: timestamp("expires_at"),
     timeUsed: timestamp("time_used"),
@@ -28,3 +26,11 @@ export const KeyTable = table(
     index("key_type").on(table.type),
   ],
 );
+
+/** How stale the last use has to be before a read is worth a write. */
+export const TOUCH = 60 * 60 * 1000;
+
+/** Unexpired: no expiry set, or expiry still in the future. */
+export function live() {
+  return or(isNull(KeyTable.expiresAt), gt(KeyTable.expiresAt, new Date()));
+}

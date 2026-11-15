@@ -132,7 +132,7 @@
 {/snippet}
 
 <table
-	class="grid"
+	class="days"
 	role="grid"
 	bind:this={grid}
 	aria-label={format(first, cfg.locale, { month: 'long', year: 'numeric' })}
@@ -160,8 +160,8 @@
 </table>
 
 <style>
-	/* The size tokens let a page grow the grid into a full calendar. */
-	.grid {
+	/* Size tokens let a page grow it into a full calendar. Not `.grid`: Tailwind owns that. */
+	.days {
 		width: var(--grid-width, auto);
 		border-collapse: collapse;
 		table-layout: fixed;

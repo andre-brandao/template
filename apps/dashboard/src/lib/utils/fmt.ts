@@ -1,5 +1,5 @@
 import { zone, type Prefs } from "@template/core/user/prefs";
-import { fromDay, toDay } from "@template/ui";
+import { fromDay, toDay } from "@template/ui/day";
 import { user } from "./context";
 
 // A fixed instant, so the format pickers preview the same date every time.

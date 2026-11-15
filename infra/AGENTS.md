@@ -21,7 +21,8 @@ workers read their bindings by name — `Hyperdrive`, `Files`, `Jobs`, `AuthKv`,
 `Resource`.
 
 Services map to `packages/functions/src/*/target/` — `sst/cf/`, `terraform/` and `alchemy/cf/` deploy the
-`worker` targets, `sst/aws/` the `lambda` ones, `docker/` and `alchemy/docker/` the `bun` ones. See
+`worker` targets, `sst/aws/` the `lambda` ones. `docker/` and `alchemy/docker/` run
+`template-cli serve`, which wires the same providers as the `bun` targets. See
 [`docs/runtime.md`](../docs/runtime.md).
 
 ## Rules

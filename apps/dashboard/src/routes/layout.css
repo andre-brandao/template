@@ -13,7 +13,8 @@
   --border-bright: light-dark(#d3d1cc, #3b3a37);
   --ink: light-dark(#1c1b19, #ecebe7);
   --muted: light-dark(#64625d, #a3a19b);
-  --dim: light-dark(#8e8c86, #6f6d68);
+  /* Small meta text, so the lightest grey that still passes AA on both surfaces. */
+  --dim: light-dark(#75736d, #8a8882);
   /* The dark-mode teal fails AA on white, so light mode gets a deeper one — and the
      text that sits *on* the accent flips from near-black to white. */
   --accent: light-dark(#2f7f68, #4fa98f);
@@ -39,6 +40,9 @@
   --cal-4: var(--accent);
   --radius: 8px;
   --radius-sm: 6px;
+  /* One height for every control (button, input, select, toggle); a toolbar may lower it. */
+  --control: 2.25rem;
+  --ring: 0 0 0 3px color-mix(in oklab, var(--accent) 16%, transparent);
   /* The app frame. The topbar's left cell and the sidebar share `--rail` so they line
      up as one column, and `--topbar` is fixed so its contents can't change its height. */
   --rail: 232px;

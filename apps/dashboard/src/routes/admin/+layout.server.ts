@@ -3,9 +3,8 @@ import { Identity } from "@template/core/identity";
 import * as next from "$lib/server/next";
 import type { LayoutServerLoad } from "./$types";
 
-// The back office gates once, here, rather than per page: every screen under it is
-// admin-only, and core re-checks each individual read anyway.
-export const load: LayoutServerLoad = (event) => {
-  if (Identity.use().type !== "user") next.login(event);
+// Gated once for the back office; core re-checks each read anyway.
+export const load: LayoutServerLoad = async (event) => {
+  next.gate(event, (await event.parent()).user);
   if (!Identity.can({ admin: ["read"] })) error(403, "Admins only");
 };

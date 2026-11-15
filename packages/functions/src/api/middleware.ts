@@ -8,7 +8,7 @@ import { client } from "./auth";
 const issuer = verifier(client);
 
 /**
- * Every bearer kind — session, `sk-` key, `agt-` delegation, issuer JWT — goes through
+ * Every bearer kind — `sk-` key, `agt-` delegation, issuer JWT — goes through
  * `Auth.resolve`, which owns the formats. `audience` is which service is asking.
  */
 export function auth(audience: "api" | "mcp" = "api"): MiddlewareHandler {

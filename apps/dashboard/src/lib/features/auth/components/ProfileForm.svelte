@@ -43,7 +43,7 @@
 		<Field label="Display name" style="max-width: 24em">
 			<div class="row">
 				<Input {...rename.fields.name.as('text', user.name)} />
-				<Button type="submit" {pending}>Save</Button>
+				<Button variant="primary" type="submit" {pending}>Save</Button>
 			</div>
 		</Field>
 	</form>

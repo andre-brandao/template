@@ -19,7 +19,7 @@
 	<Header.Item label="Used">{list.data?.filter((one) => one.timeUsed).length ?? '–'}</Header.Item>
 	{#snippet lead()}Tokens that act as you. Send as <code>Authorization: Bearer &lt;key&gt;</code>.{/snippet}
 	{#snippet actions()}
-		<Button onclick={create}>New token <Kbd keys="C" /></Button>
+		<Button variant="primary" onclick={create}>New token <Kbd keys="C" /></Button>
 	{/snippet}
 </Header.Root>
 

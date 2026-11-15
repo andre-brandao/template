@@ -158,6 +158,7 @@
 		</Field>
 		<div class="foot">
 			<Button
+				variant="primary"
 				pending={cast.isPending}
 				onclick={() =>
 					cast.mutate({

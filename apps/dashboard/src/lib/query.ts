@@ -3,6 +3,7 @@ import {
   MutationCache,
   QueryClient,
   matchQuery,
+  type EnsureQueryDataOptions,
   type MutationOptions,
   type QueryKey,
 } from "@tanstack/svelte-query";
@@ -33,18 +34,33 @@ const create = () =>
 // One per tab in the browser; one per request on the server, so users never share a cache.
 const shared = browser ? create() : undefined;
 
-export const queryClient = () => shared ?? create();
+/** On the server this also points the SDK at `origin`, so SSR reads the keys a load warmed. */
+export const queryClient = (origin: string) => {
+  if (!browser) client.setConfig({ baseUrl: `${origin}/api` });
+  return shared ?? create();
+};
+
+/** For a load: cached data returns at once and refreshes behind; cold data waits. Errors stay the page's. */
+export const warm = (cache: QueryClient, ...opts: EnsureQueryDataOptions<any, any, any, any>[]) =>
+  Promise.all(
+    opts.map((one) => cache.ensureQueryData({ ...one, revalidateIfStale: true }).catch(() => {})),
+  );
 
 // For remote-function writes: refresh the TanStack queries they touched.
 export const invalidate = (key: QueryKey) => shared?.invalidateQueries({ queryKey: key });
 
 // A remote function rejects with an `HttpError`, which carries no `message`; the views read one.
+// A remote query read inside an effect stays cached, so a refetch would replay it: `refresh`
+// makes every call hit the server, once (the proxy's `then` reuses that request).
 export const call =
   <I, O>(fn: (input: I) => PromiseLike<O>) =>
-  (input: I) =>
-    Promise.resolve(fn(input)).catch((err) =>
+  (input: I) => {
+    const out = fn(input);
+    if ("refresh" in out && typeof out.refresh === "function") out.refresh();
+    return Promise.resolve(out).catch((err) =>
       Promise.reject(new Error(err?.body?.message ?? String(err))),
     );
+  };
 
 /** What a mutation factory accepts, typed from the remote command behind it. */
 export type Done<T extends (input: never) => PromiseLike<unknown>> = Pick<

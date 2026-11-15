@@ -80,9 +80,11 @@
 	// Blur or Enter: a match commits, an empty field clears, anything else reverts.
 	function commit() {
 		if (!typing) return;
+		// Read before `typing` drops: the preview derives from it and goes blank after.
+		const next = preview;
 		typing = false;
 		if (!text.trim() && clearable) return pick(undefined);
-		if (preview) pick(preview);
+		if (next) pick(next);
 	}
 
 	function key(e: KeyboardEvent) {
@@ -262,6 +264,7 @@
 	}
 
 	.time {
+		flex: none;
 		width: 6.5em;
 		padding: 0.4em 0.2em;
 		border-left: 1px solid var(--border, #ddd);

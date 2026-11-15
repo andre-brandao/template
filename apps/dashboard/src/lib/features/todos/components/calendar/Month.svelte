@@ -98,6 +98,8 @@
 		position: relative;
 		display: block;
 		height: 7.3rem;
+		/* MonthGrid bolds today's whole button; only the date pill should be. */
+		font-weight: 400;
 		box-shadow:
 			inset 0 1px 0 var(--border),
 			inset -1px 0 0 var(--border);

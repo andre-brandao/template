@@ -24,7 +24,7 @@
     "@tanstack/ai-mcp": "^0.9.2",
     "@tanstack/ai-openai": "^0.30.1",
     "@tanstack/ai-svelte": "^0.26.1",
-    "@tanstack/charts": "0.9.0",
+    "@tanstack/charts": "^1.5.0",
     "@tanstack/svelte-hotkeys": "catalog:frontend",
     "@tanstack/svelte-query": "catalog:frontend",
     "@tanstack/svelte-table": "^9.3.2",

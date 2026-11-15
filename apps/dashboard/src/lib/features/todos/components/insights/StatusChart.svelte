@@ -17,6 +17,7 @@
 			marks: [
 				polar({
 					inset: 4,
+					scales: { angle: null, radius: null },
 					marks: [
 						radialArc(pie(rows, { value: 'total' }), {
 							innerRadius: ({ radius }) => radius * 0.6,
@@ -27,6 +28,7 @@
 					]
 				})
 			],
+			scales: { x: null, y: null },
 			color: {
 				domain: rows.map((row) => label(row.status)),
 				range: rows.map((row) => color(row.status)),

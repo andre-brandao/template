@@ -29,22 +29,16 @@
           "email": {
             "type": "string",
             "format": "email",
-            "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+            "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
             "description": "Login address. Unique across accounts."
           },
           "image": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "Avatar URL, or null for none."
+            "description": "Avatar URL, or null for none.",
+            "type": ["string", "null"]
           }
         },
         "required": ["id", "name", "email", "image"],
+        "additionalProperties": false,
         "description": "A user as the directory lists them."
       },
       "ErrorResponse": {
@@ -97,14 +91,17 @@
                       "description": "What was wrong with it."
                     }
                   },
-                  "required": ["message"]
+                  "required": ["message"],
+                  "additionalProperties": false
                 }
               }
-            }
+            },
+            "additionalProperties": false
           }
         },
         "required": ["type", "code", "message"],
-        "description": "Not found error"
+        "additionalProperties": false,
+        "description": "Server error"
       },
       "User": {
         "type": "object",
@@ -122,7 +119,7 @@
           "email": {
             "type": "string",
             "format": "email",
-            "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+            "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
             "description": "Login address. Unique across accounts."
           },
           "emailVerified": {
@@ -130,15 +127,8 @@
             "type": "boolean"
           },
           "image": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "Avatar URL, or null for none."
+            "description": "Avatar URL, or null for none.",
+            "type": ["string", "null"]
           },
           "role": {
             "type": "string",
@@ -151,15 +141,8 @@
             "description": "A `system` account is an App: nobody logs in as it — an external system or CI acting through API keys."
           },
           "ownerID": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "For an App, the person answerable for it. Null for people."
+            "description": "For an App, the person answerable for it. Null for people.",
+            "type": ["string", "null"]
           },
           "prefs": {
             "type": "object",
@@ -197,6 +180,8 @@
                 "enum": ["system", "h12", "h24"]
               }
             },
+            "required": ["theme", "locale", "zone", "date", "time"],
+            "additionalProperties": false,
             "description": "Display preferences. Every key has a default, so this is always complete."
           },
           "timeDeleted": {
@@ -204,7 +189,7 @@
               {
                 "type": "string",
                 "format": "date-time",
-                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
               },
               {
                 "type": "null"
@@ -215,7 +200,7 @@
           "timeCreated": {
             "type": "string",
             "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
             "description": "When the account was created."
           }
         },
@@ -231,6 +216,7 @@
           "timeDeleted",
           "timeCreated"
         ],
+        "additionalProperties": false,
         "description": "A user account.",
         "example": {
           "id": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX",
@@ -266,15 +252,8 @@
             "description": "Display name."
           },
           "image": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "Avatar URL, or null for none."
+            "description": "Avatar URL, or null for none.",
+            "type": ["string", "null"]
           },
           "kind": {
             "type": "string",
@@ -289,7 +268,7 @@
           "timeCreated": {
             "type": "string",
             "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
             "description": "When the account was created."
           },
           "email": {
@@ -297,7 +276,7 @@
               {
                 "type": "string",
                 "format": "email",
-                "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
                 "description": "Login address. Unique across accounts."
               },
               {
@@ -317,7 +296,8 @@
                     "type": "string"
                   }
                 },
-                "required": ["id", "name"]
+                "required": ["id", "name"],
+                "additionalProperties": false
               },
               {
                 "type": "null"
@@ -326,6 +306,7 @@
           }
         },
         "required": ["id", "name", "image", "kind", "role", "timeCreated", "email", "owner"],
+        "additionalProperties": false,
         "description": "An account as other signed-in users see it."
       },
       "Identity": {
@@ -339,10 +320,12 @@
               },
               "properties": {
                 "type": "object",
-                "properties": {}
+                "properties": {},
+                "additionalProperties": false
               }
             },
-            "required": ["type", "properties"]
+            "required": ["type", "properties"],
+            "additionalProperties": false
           },
           {
             "type": "object",
@@ -372,10 +355,12 @@
                     "type": "string"
                   }
                 },
-                "required": ["userID", "role"]
+                "required": ["userID", "role"],
+                "additionalProperties": false
               }
             },
-            "required": ["type", "properties"]
+            "required": ["type", "properties"],
+            "additionalProperties": false
           },
           {
             "type": "object",
@@ -412,10 +397,12 @@
                     "type": "string"
                   }
                 },
-                "required": ["name", "userID", "role"]
+                "required": ["name", "userID", "role"],
+                "additionalProperties": false
               }
             },
-            "required": ["type", "properties"]
+            "required": ["type", "properties"],
+            "additionalProperties": false
           },
           {
             "type": "object",
@@ -450,6 +437,7 @@
                       }
                     },
                     "required": ["userID", "role"],
+                    "additionalProperties": false,
                     "description": "The person answerable for the App."
                   },
                   "credential": {
@@ -457,10 +445,12 @@
                     "type": "string"
                   }
                 },
-                "required": ["userID", "role", "owner"]
+                "required": ["userID", "role", "owner"],
+                "additionalProperties": false
               }
             },
-            "required": ["type", "properties"]
+            "required": ["type", "properties"],
+            "additionalProperties": false
           },
           {
             "type": "object",
@@ -480,10 +470,12 @@
                     "description": "Exactly what it may do."
                   }
                 },
-                "required": ["name", "scope"]
+                "required": ["name", "scope"],
+                "additionalProperties": false
               }
             },
-            "required": ["type", "properties"]
+            "required": ["type", "properties"],
+            "additionalProperties": false
           }
         ],
         "description": "Who acted: a person, an agent for one, an App, or the app itself."
@@ -497,15 +489,8 @@
             "example": "evt_XXXXXXXXXXXXXXXXXXXXXXXXX"
           },
           "userID": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "Who caused it. Null for system and public actors."
+            "description": "Who caused it. Null for system and public actors.",
+            "type": ["string", "null"]
           },
           "user": {
             "anyOf": [
@@ -519,17 +504,11 @@
                     "type": "string"
                   },
                   "image": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "null"
-                      }
-                    ]
+                    "type": ["string", "null"]
                   }
                 },
-                "required": ["id", "name", "image"]
+                "required": ["id", "name", "image"],
+                "additionalProperties": false
               },
               {
                 "type": "null"
@@ -569,15 +548,8 @@
             "description": "Kind of entity it happened to, like `todo`."
           },
           "sourceID": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "Id of that entity."
+            "description": "Id of that entity.",
+            "type": ["string", "null"]
           },
           "tags": {
             "maxItems": 20,
@@ -600,7 +572,7 @@
           "timeCreated": {
             "type": "string",
             "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
             "description": "When it was recorded."
           }
         },
@@ -616,6 +588,7 @@
           "data",
           "timeCreated"
         ],
+        "additionalProperties": false,
         "description": "An immutable audit-log entry.",
         "example": {
           "id": "evt_XXXXXXXXXXXXXXXXXXXXXXXXX",
@@ -663,22 +636,15 @@
             "description": "Masked secret, safe to show in a list."
           },
           "key": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "The secret, handed back in full the once so it can be copied. Null everywhere else — the row holds a hash, so a key that wasn't saved has to be replaced."
+            "description": "The secret, handed back in full the once so it can be copied. Null everywhere else — the row holds a hash, so a key that wasn't saved has to be replaced.",
+            "type": ["string", "null"]
           },
           "timeUsed": {
             "anyOf": [
               {
                 "type": "string",
                 "format": "date-time",
-                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
               },
               {
                 "type": "null"
@@ -691,7 +657,7 @@
               {
                 "type": "string",
                 "format": "date-time",
-                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
               },
               {
                 "type": "null"
@@ -705,6 +671,7 @@
           }
         },
         "required": ["id", "name", "display", "key", "timeUsed", "expiresAt", "current"],
+        "additionalProperties": false,
         "description": "A personal access token (or an App's API key). It acts as the user that owns it.",
         "example": {
           "id": "key_XXXXXXXXXXXXXXXXXXXXXXXXX",
@@ -716,7 +683,7 @@
           "current": false
         }
       },
-      "Link": {
+      "LinkOutput": {
         "type": "object",
         "properties": {
           "url": {
@@ -736,6 +703,7 @@
           }
         },
         "required": ["url"],
+        "additionalProperties": false,
         "description": "A plain reference to an outside resource."
       },
       "Metadata": {
@@ -761,12 +729,13 @@
             "maxItems": 50,
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/Link"
+              "$ref": "#/components/schemas/LinkOutput"
             },
             "description": "Outside references."
           }
         },
         "required": ["annotations", "links"],
+        "additionalProperties": false,
         "description": "Backstage-style annotations and links."
       },
       "Todo": {
@@ -793,17 +762,11 @@
                     "type": "string"
                   },
                   "image": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "null"
-                      }
-                    ]
+                    "type": ["string", "null"]
                   }
                 },
-                "required": ["id", "name", "image"]
+                "required": ["id", "name", "image"],
+                "additionalProperties": false
               },
               {
                 "type": "null"
@@ -824,26 +787,12 @@
             "description": "Kind of entity that owns it, like `project`."
           },
           "sourceID": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "Id of the owning entity, paired with `source`."
+            "description": "Id of the owning entity, paired with `source`.",
+            "type": ["string", "null"]
           },
           "parentID": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "The todo this is a sub-issue of. Null at the top level."
+            "description": "The todo this is a sub-issue of. Null at the top level.",
+            "type": ["string", "null"]
           },
           "position": {
             "type": "integer",
@@ -913,7 +862,7 @@
               {
                 "type": "string",
                 "format": "date-time",
-                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
               },
               {
                 "type": "null"
@@ -926,7 +875,7 @@
               {
                 "type": "string",
                 "format": "date-time",
-                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
               },
               {
                 "type": "null"
@@ -939,7 +888,7 @@
               {
                 "type": "string",
                 "format": "date-time",
-                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
               },
               {
                 "type": "null"
@@ -952,7 +901,7 @@
               {
                 "type": "string",
                 "format": "date-time",
-                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
               },
               {
                 "type": "null"
@@ -966,7 +915,7 @@
           "timeCreated": {
             "type": "string",
             "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
             "description": "When it was created."
           }
         },
@@ -991,6 +940,7 @@
           "metadata",
           "timeCreated"
         ],
+        "additionalProperties": false,
         "description": "A unit of work, owned by whatever entity created it.",
         "example": {
           "id": "tod_XXXXXXXXXXXXXXXXXXXXXXXXX",
@@ -1038,7 +988,7 @@
               {
                 "type": "string",
                 "format": "date-time",
-                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
               },
               {
                 "type": "null"
@@ -1050,7 +1000,7 @@
               {
                 "type": "string",
                 "format": "date-time",
-                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
               },
               {
                 "type": "null"
@@ -1059,7 +1009,30 @@
           }
         },
         "required": ["name", "total", "done", "start", "end"],
+        "additionalProperties": false,
         "description": "A stage label, with the span and counts derived from its todos."
+      },
+      "Link": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "description": "Where it points."
+          },
+          "title": {
+            "description": "Label shown in place of the url.",
+            "type": "string",
+            "maxLength": 200
+          },
+          "type": {
+            "description": "Free kind hint, like `doc` or `design`.",
+            "type": "string",
+            "maxLength": 64
+          }
+        },
+        "required": ["url"],
+        "description": "A plain reference to an outside resource."
       },
       "InsightStats": {
         "type": "object",
@@ -1100,6 +1073,7 @@
           }
         },
         "required": ["total", "done", "active", "blocked", "rate", "overdue"],
+        "additionalProperties": false,
         "description": "The headline counts for a range."
       },
       "InsightStatuses": {
@@ -1130,11 +1104,13 @@
                   "description": "Share of the largest bucket, 0 to 100."
                 }
               },
-              "required": ["status", "total", "pct"]
+              "required": ["status", "total", "pct"],
+              "additionalProperties": false
             }
           }
         },
         "required": ["total", "rows"],
+        "additionalProperties": false,
         "description": "Todos created in range, by status."
       },
       "InsightLoad": {
@@ -1181,11 +1157,13 @@
                   "maximum": 9007199254740991
                 }
               },
-              "required": ["name", "total", "active", "planned", "blocked", "done"]
+              "required": ["name", "total", "active", "planned", "blocked", "done"],
+              "additionalProperties": false
             }
           }
         },
         "required": ["max", "rows"],
+        "additionalProperties": false,
         "description": "Todos created in range, by assignee and status."
       },
       "InsightDue": {
@@ -1206,7 +1184,7 @@
               {
                 "type": "string",
                 "format": "date-time",
-                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
               },
               {
                 "type": "null"
@@ -1215,6 +1193,7 @@
           }
         },
         "required": ["id", "title", "status", "dueDate"],
+        "additionalProperties": false,
         "description": "An open todo coming due."
       },
       "InsightCalendar": {
@@ -1258,11 +1237,13 @@
                   "maximum": 9007199254740991
                 }
               },
-              "required": ["day", "count"]
+              "required": ["day", "count"],
+              "additionalProperties": false
             }
           }
         },
         "required": ["start", "end", "max", "total", "days"],
+        "additionalProperties": false,
         "description": "Todos created per day, for a contribution grid."
       },
       "InsightActivity": {
@@ -1294,11 +1275,13 @@
                   "maximum": 9007199254740991
                 }
               },
-              "required": ["day", "created", "completed"]
+              "required": ["day", "created", "completed"],
+              "additionalProperties": false
             }
           }
         },
         "required": ["active", "series"],
+        "additionalProperties": false,
         "description": "Created and completed per day, week or month, coarser as the range grows."
       },
       "Project": {
@@ -1332,15 +1315,8 @@
             "description": "What it is for."
           },
           "image": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "Cover image URL, or null for none."
+            "description": "Cover image URL, or null for none.",
+            "type": ["string", "null"]
           },
           "metadata": {
             "$ref": "#/components/schemas/Metadata"
@@ -1348,11 +1324,12 @@
           "timeCreated": {
             "type": "string",
             "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
             "description": "When it was created."
           }
         },
         "required": ["id", "createdBy", "name", "description", "image", "metadata", "timeCreated"],
+        "additionalProperties": false,
         "description": "A container for todos. Todos point at it through source/sourceID.",
         "example": {
           "id": "prj_XXXXXXXXXXXXXXXXXXXXXXXXX",
@@ -1381,7 +1358,7 @@
               {
                 "type": "string",
                 "format": "date-time",
-                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
               },
               {
                 "type": "null"
@@ -1393,6 +1370,7 @@
           }
         },
         "required": ["key", "size", "lastModified", "contentType"],
+        "additionalProperties": false,
         "description": "An object on the user's storage disk, with its content type.",
         "example": {
           "key": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX/screenshot.png",
@@ -1415,7 +1393,7 @@
               {
                 "type": "string",
                 "format": "date-time",
-                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
               },
               {
                 "type": "null"
@@ -1424,6 +1402,7 @@
           }
         },
         "required": ["key", "size", "lastModified"],
+        "additionalProperties": false,
         "description": "An object on the user's storage disk.",
         "example": {
           "key": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX/screenshot.png",
@@ -2261,6 +2240,7 @@
                     }
                   },
                   "required": ["data", "page", "pageSize", "total"],
+                  "additionalProperties": false,
                   "description": "A page of results.",
                   "example": {
                     "data": [
@@ -2533,7 +2513,7 @@
               "example": "2026-06-01T00:00:00.000Z",
               "type": "string",
               "format": "date-time",
-              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
             },
             "description": "Window start (inclusive). Keeps todos whose start-to-due span reaches it."
           },
@@ -2544,7 +2524,7 @@
               "example": "2026-06-30T23:59:59.999Z",
               "type": "string",
               "format": "date-time",
-              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
             },
             "description": "Window end (inclusive). Keeps todos whose start-to-due span begins by it."
           },
@@ -2727,14 +2707,7 @@
                     }
                   },
                   "assignee": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "null"
-                      }
-                    ]
+                    "type": ["string", "null"]
                   },
                   "source": {
                     "anyOf": [
@@ -2749,26 +2722,12 @@
                     "description": "Kind of entity that owns it, like `project`."
                   },
                   "sourceID": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "null"
-                      }
-                    ],
-                    "description": "Id of the owning entity, paired with `source`."
+                    "description": "Id of the owning entity, paired with `source`.",
+                    "type": ["string", "null"]
                   },
                   "parentID": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "null"
-                      }
-                    ],
-                    "description": "The todo this is a sub-issue of. Null at the top level."
+                    "description": "The todo this is a sub-issue of. Null at the top level.",
+                    "type": ["string", "null"]
                   },
                   "status": {
                     "type": "string",
@@ -2779,7 +2738,7 @@
                       {
                         "type": "string",
                         "format": "date-time",
-                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
                       },
                       {
                         "type": "null"
@@ -2792,7 +2751,7 @@
                       {
                         "type": "string",
                         "format": "date-time",
-                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
                       },
                       {
                         "type": "null"
@@ -3322,7 +3281,6 @@
           }
         ],
         "requestBody": {
-          "required": true,
           "content": {
             "application/json": {
               "schema": {
@@ -3390,7 +3348,7 @@
                       {
                         "type": "string",
                         "format": "date-time",
-                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
                       },
                       {
                         "type": "null"
@@ -3403,7 +3361,7 @@
                       {
                         "type": "string",
                         "format": "date-time",
-                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
                       },
                       {
                         "type": "null"
@@ -3412,14 +3370,7 @@
                     "description": "When it is meant to be done."
                   },
                   "assignee": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "null"
-                      }
-                    ]
+                    "type": ["string", "null"]
                   },
                   "links": {
                     "maxItems": 50,
@@ -3701,15 +3652,8 @@
                 "type": "object",
                 "properties": {
                   "parentID": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "null"
-                      }
-                    ],
-                    "description": "The todo this is a sub-issue of. Null at the top level."
+                    "description": "The todo this is a sub-issue of. Null at the top level.",
+                    "type": ["string", "null"]
                   },
                   "position": {
                     "description": "Slot among the new siblings, from 0. Last when omitted.",
@@ -4834,6 +4778,7 @@
                     }
                   },
                   "required": ["data", "page", "pageSize", "total"],
+                  "additionalProperties": false,
                   "description": "A page of results.",
                   "example": {
                     "data": [
@@ -5379,7 +5324,6 @@
           }
         ],
         "requestBody": {
-          "required": true,
           "content": {
             "application/json": {
               "schema": {
@@ -5404,15 +5348,8 @@
                     "description": "What it is for."
                   },
                   "image": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "null"
-                      }
-                    ],
-                    "description": "Cover image URL, or null for none."
+                    "description": "Cover image URL, or null for none.",
+                    "type": ["string", "null"]
                   },
                   "links": {
                     "maxItems": 50,
@@ -6490,6 +6427,7 @@
                     }
                   },
                   "required": ["id"],
+                  "additionalProperties": false,
                   "description": "The post was verified and recorded."
                 }
               }

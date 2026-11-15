@@ -14,7 +14,7 @@
 
 	const save = update();
 	// The typed title stays up until the refetch lands; a failure falls back to the stored one.
-	const shown = $derived((save.isPending && save.variables?.body.title) || todo.title);
+	const shown = $derived((save.isPending && save.variables?.body?.title) || todo.title);
 	const mark = $derived(
 		save.isPending ? 'pending' : save.isError ? 'failed' : save.isSuccess ? 'saved' : 'idle'
 	);

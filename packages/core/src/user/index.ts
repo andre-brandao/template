@@ -23,7 +23,7 @@ export namespace User {
     .object({
       id: z.string().meta({ description: Common.IdDescription, example: Examples.User.id }),
       name: z.string().min(1).meta({ description: "Display name." }),
-      email: z.string().email().meta({ description: "Login address. Unique across accounts." }),
+      email: z.email().meta({ description: "Login address. Unique across accounts." }),
       emailVerified: z
         .boolean()
         .optional()
@@ -233,30 +233,24 @@ export namespace User {
     },
   );
 
-  export const fromEmail = fn(Info.shape.email, (email) =>
-    Database.use((tx) =>
-      tx
-        .select()
-        .from(UserTable)
-        .where(eq(UserTable.email, email))
-        .then((rows) => (rows[0] ? serialize(rows[0]) : null)),
-    ),
-  );
-
   export const update = fn(
     z.object({ name: Info.shape.name.optional(), image: Info.shape.image.optional() }),
-    (input) =>
-      Database.use((tx) =>
+    (input) => {
+      const id = Identity.userID();
+      Identity.check({ user: ["update"] }, id);
+      return Database.use((tx) =>
         tx
           .update(UserTable)
           .set({ ...input, timeUpdated: new Date() })
-          .where(eq(UserTable.id, Identity.userID())),
-      ),
+          .where(eq(UserTable.id, id)),
+      );
+    },
   );
 
   /** Patch-merges prefs with a jsonb `||` in one statement — no read-modify-write race. */
-  export const prefs = fn(Patch, (input) =>
-    Database.use((tx) =>
+  export const prefs = fn(Patch, (input) => {
+    Identity.check({ user: ["update"] }, Identity.userID());
+    return Database.use((tx) =>
       tx
         .update(UserTable)
         .set({
@@ -264,8 +258,8 @@ export namespace User {
           timeUpdated: new Date(),
         })
         .where(eq(UserTable.id, Identity.userID())),
-    ),
-  );
+    );
+  });
 
   /** Reads past the disabled filter `fromID` applies — the admin screens act on those rows. */
   const target = (id: string) =>

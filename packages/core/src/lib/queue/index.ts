@@ -121,6 +121,8 @@ export namespace Queue {
       return db({ use: database, ...cfg });
     }
     if (driver === "memory") return memory(cfg);
-    return sync(run);
+    if (driver === "sync") return sync(run);
+    // `cloudflare` needs its binding, so a target wires it through `Providers` instead.
+    throw new Error(`Unknown QUEUE_DRIVER ${driver}: use sync, memory or db`);
   }
 }

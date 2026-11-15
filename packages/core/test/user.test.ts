@@ -43,18 +43,28 @@ describe("user", () => {
     expect(providers.every((provider) => !provider.connected)).toBe(true);
   });
 
-  withTestUser("can be looked up by id and email", async ({ userID, email }) => {
+  withTestUser("can be looked up by id", async ({ userID, email }) => {
     const byID = await User.fromID(userID);
     expect(byID?.email).toBe(email);
-
-    const byEmail = await User.fromEmail(email);
-    expect(byEmail?.id).toBe(userID);
   });
 
   withTestUser("update changes the name", async ({ userID }) => {
     await User.update({ name: "New Name" });
     const user = await User.fromID(userID);
     expect(user?.name).toBe("New Name");
+  });
+
+  withTestUser("a scoped agent can't change the account or set a password", async ({ userID }) => {
+    await Identity.delegate("copilot", { todo: ["read"] }, async () => {
+      expect(() => User.update({ name: "Taken" })).toThrow(/user:update/);
+      expect(() => User.prefs({ theme: "dark" })).toThrow(/user:update/);
+      await expect(Auth.Pass.set({ password: "password123" })).rejects.toThrow(/user:update/);
+    });
+    // Even unscoped, a password is a person's to set: it opens a login.
+    await Identity.delegate("copilot", undefined, async () => {
+      await expect(Auth.Pass.set({ password: "password123" })).rejects.toThrow(/person/);
+    });
+    expect((await User.fromID(userID))?.name).toBe("Test User");
   });
 
   withTestUser("a new user starts with every preference defaulted", async ({ userID }) => {

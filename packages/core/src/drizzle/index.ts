@@ -115,7 +115,6 @@ export namespace Database {
     return DatabaseContext.provide(client, fn);
   }
 
-  /** Curried form of `provide` for composition via `Context.withProviders`. */
   export function provider(client: Client) {
     return <R>(fn: () => R) => DatabaseContext.provide(client, fn);
   }
@@ -153,10 +152,6 @@ export namespace Database {
     );
     await Promise.all(effects.map((effect) => effect()));
     return result as T;
-  }
-
-  export function fn<Input, T>(callback: (input: Input, trx: TxOrDb) => Promise<T>) {
-    return (input: Input) => use(async (tx) => callback(input, tx));
   }
 
   export async function healthcheck(): Promise<{

@@ -6,8 +6,7 @@
     "dev": "bun dev.ts",
     "prototype": "bun prototype.ts",
     "typecheck": "tsc --noEmit",
-    "seed": "bun seed.ts",
-    "db:migrate": "bunx sst shell bun \"migrate.ts\""
+    "seed": "bun seed.ts"
   },
   "dependencies": {
     "@electric-sql/pglite": "^0.3.14",

@@ -15,15 +15,15 @@ sequenceDiagram
 
   C->>T: request
   T->>M: inside Database context
-  M->>M: resolve actor<br/>(bearer key, session, or public)
-  M->>H: Actor.provide(...)
+  M->>M: resolve identity<br/>(bearer: sk-, agt- or JWT; else public)
+  M->>H: Identity.enter(...)
   H->>Core: one call, validated by fn()
   Core-->>H: result
   H-->>C: JSON / VisibleError
 ```
 
 Two rules fall out of this. Handlers stay thin — validate, call one core function, return.
-And core never reads a header: everything it needs about the caller comes from `Actor`.
+And core never reads a header: everything it needs about the caller comes from `Identity`.
 
 ## Targets
 
@@ -32,12 +32,15 @@ a `target/` directory that picks one:
 
 | Target   | Database                          | Used by                                            |
 | -------- | --------------------------------- | -------------------------------------------------- |
-| `bun`    | One pool per process              | `bun dev`, Docker                                  |
+| `bun`    | One pool per process              | `bun dev`                                          |
 | `lambda` | Pool from env, streamed responses | `infra/sst/aws`                                    |
 | `worker` | Fresh pool per request            | `infra/sst/cf`, `infra/terraform` (via Hyperdrive) |
 
+Docker runs neither: its services go through `template-cli serve <api|mcp|auth|dashboard>`
+(`apps/cli/src/serve.ts`), which wires the same providers as the `bun` targets.
+
 The worker's per-request pool isn't an oversight — Workers forbid reusing a socket across
-requests. Likewise `bun` cycles its pool when `PG_RELEASE=true`, because dev pglite allows
+requests, so `worker()` closes it once the response body is sent. Likewise `bun` cycles its pool when `PG_RELEASE=true`, because dev pglite allows
 exactly one live connection and the dashboard needs it back.
 
 ## Deploy
@@ -48,14 +51,16 @@ graph LR
   sst -.-> aws["infra/sst/aws"]
   tofu["infra/terraform<br/>opentofu"] --> worker["worker targets"]
   cf --> worker
-  docker["infra/docker<br/>compose"] --> bun["bun targets"]
+  alchemy["infra/alchemy"] -.-> worker
+  docker["infra/docker<br/>compose"] --> cli["template-cli serve"]
 ```
 
 `sst.config.ts` imports `infra/sst/cf`; `infra/sst/aws` is the alternate wiring.
 `infra/terraform` deploys the same Cloudflare stack as `infra/sst/cf` without SST — it has
-its own state and its own `tf.` domain, so the two can coexist. `infra/docker`
-runs the same `bun` targets under Compose — note its migrate step copies a real Node
-binary, because `drizzle-kit` needs `node:sqlite`, which Bun doesn't have.
+its own state and its own `tf.` domain, so the two can coexist. `infra/alchemy` is a
+third, alternate wiring. `infra/docker` runs one app image under Compose: every service
+is a `template-cli serve` target, and a one-shot `migrate` service runs `template-cli db
+migrate` (core's `Migrations.apply`, under Bun) before the rest start.
 
 **Agents never deploy.** No `sst deploy`, no `sst remove`, no infra-mutating command —
 prepare the change and hand the command to the user.

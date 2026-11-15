@@ -20,18 +20,22 @@ const log = Log.create({ namespace: "queue.worker" });
  */
 export default {
   async queue(batch: MessageBatch<Job>, env: Env) {
-    await Promise.all(batch.messages.map((msg) => handle(msg, env)));
+    // One pool per batch, closed once every message settles.
+    const db = Database.connect(env.Hyperdrive.connectionString, { max: 5 });
+    await Promise.all(batch.messages.map((msg) => handle(msg, env, db))).finally(() =>
+      Database.release(db),
+    );
   },
 };
 
 /** One message, contained: a thrown handler retries that job alone, not the batch. */
-async function handle(msg: Message<Job>, env: Env) {
+async function handle(msg: Message<Job>, env: Env, db: Database.Client) {
   const job = { ...msg.body, attempts: msg.attempts };
   const err = await Promise.resolve()
     .then(() =>
       Context.withProviders(
         () => run(job),
-        Database.provider(Database.connect(env.Hyperdrive.connectionString)),
+        Database.provider(db),
         Storage.provider(Storage.Providers.r2(env.Files)),
         Email.provider(Email.Providers.cloudflare(env.SEND_EMAIL)),
         Queue.provider(Queue.Providers.cloudflare(env.Jobs)),

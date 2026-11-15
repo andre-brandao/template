@@ -2,10 +2,22 @@ import { describe, expect } from "bun:test";
 import { setupApiTest } from "./util";
 import { app } from "../../src/api/routes";
 import { Key } from "@template/core/key";
+import { Delegation } from "@template/core/auth/delegation";
 
 const { test, validateOpenAPIRoute, noAuth, get, userID } = setupApiTest();
 
 describe("key", () => {
+  // A delegation scoped to reading todos must not trade itself for a full-power `sk-` key.
+  test("a scoped agent gets 403 on POST /key", async () => {
+    const token = await Delegation.create({ name: "copilot", scope: { todo: ["read"] } });
+    const response = await app.request("/key", {
+      method: "post",
+      headers: { authorization: `Bearer ${token}`, "content-type": "application/json" },
+      body: JSON.stringify({ name: "escape" }),
+    });
+    expect(response.status).toBe(403);
+  });
+
   test("GET /key", async () => {
     const response = await validateOpenAPIRoute("get", "/key");
     expect(response).toBeArray();
@@ -22,7 +34,7 @@ describe("key", () => {
   });
 
   test("revoking a key signs that token out", async () => {
-    const other = await Key.create({ userID: userID(), name: "other" });
+    const other = await Key.create({ name: "other" });
     expect(
       (await app.request("/me", { headers: { authorization: `Bearer ${other.key}` } })).status,
     ).toBe(200);
@@ -42,14 +54,14 @@ describe("key", () => {
   });
 
   test("DELETE /key/:id", async () => {
-    const key = await Key.create({ userID: userID(), name: "temporary" });
+    const key = await Key.create({ name: "temporary" });
     await validateOpenAPIRoute("delete", "/key/:id", { id: key.id });
     expect(await Key.verify(key.key)).toBeNull();
   });
 
   // An API key authenticates the same actor through the same middleware, until revoked.
   test("an api key authenticates a request, until revoked", async () => {
-    const key = await Key.create({ userID: userID(), name: "cli" });
+    const key = await Key.create({ name: "cli" });
     const auth = { authorization: `Bearer ${key.key}` };
 
     const me = await app.request("/me", { headers: auth });

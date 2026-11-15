@@ -160,7 +160,7 @@ export namespace App {
     async (input) => {
       Identity.check({ app: ["update"] });
       await assert.exists(fromID(input.app));
-      return Key.create({ userID: input.app, name: input.name, expiresAt: input.expiresAt });
+      return Key.mint({ userID: input.app, name: input.name, expiresAt: input.expiresAt });
     },
   );
 

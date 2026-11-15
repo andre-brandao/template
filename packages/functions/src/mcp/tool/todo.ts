@@ -1,6 +1,5 @@
 import type { McpServer } from "@modelcontextprotocol/server";
 import { Todo } from "@template/core/todo";
-import { Project } from "@template/core/project";
 import { tools } from "../common";
 
 export function todo(server: McpServer) {
@@ -33,8 +32,4 @@ export function todo(server: McpServer) {
     await Todo.remove(id);
     return "ok";
   });
-
-  read("project_list", Project.list);
-  tool("project_create", Project.create);
-  tool("project_annotate", Project.annotate);
 }

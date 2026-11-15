@@ -3,7 +3,6 @@ import { Hono } from "hono";
 import { validator, authRequired } from "../common";
 import { describe } from "../doc";
 import { Key } from "@template/core/key";
-import { Identity } from "@template/core/identity";
 
 export namespace KeyApi {
   const doc = describe("Key");
@@ -13,12 +12,10 @@ export namespace KeyApi {
       "/",
       doc(Key.list.meta, {
         200: doc.list(Key.Info),
-        ...doc.errors(401, 500),
+        ...doc.errors(401, 403, 500),
       }),
       authRequired,
-      // The dashboard's `/api` hook carries a session cookie, not a bearer, so nothing is current.
-      async (c) =>
-        c.json(await Key.list(c.req.header("authorization")?.replace(/^Bearer /, "")), 200),
+      async (c) => c.json(await Key.list(), 200),
     )
     .post(
       "/",
@@ -31,7 +28,7 @@ export namespace KeyApi {
         },
         {
           200: doc.json(Key.Info),
-          ...doc.errors(400, 401, 500),
+          ...doc.errors(400, 401, 403, 500),
         },
       ),
       authRequired,
@@ -45,7 +42,6 @@ export namespace KeyApi {
       async (c) => {
         const body = c.req.valid("json");
         const key = await Key.create({
-          userID: Identity.userID(),
           name: body.name,
           expiresAt: Key.expires(body.expiresInDays),
         });
@@ -56,7 +52,7 @@ export namespace KeyApi {
       "/:id",
       doc(Key.remove.meta, {
         200: doc.ok,
-        ...doc.errors(400, 401, 404, 500),
+        ...doc.errors(400, 401, 403, 404, 500),
       }),
       authRequired,
       validator("param", z.object({ id: Key.Info.shape.id })),

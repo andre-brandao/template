@@ -50,11 +50,8 @@ export namespace ProjectApi {
       authRequired,
       validator("param", id),
       validator("json", Project.update.schema.omit({ id: true })),
-      async (c) => {
-        const { id } = c.req.valid("param");
-        await Project.update({ id, ...c.req.valid("json") });
-        return c.json(await Project.fromID(id), 200);
-      },
+      async (c) =>
+        c.json(await Project.update({ id: c.req.valid("param").id, ...c.req.valid("json") }), 200),
     )
     .delete(
       "/:id",

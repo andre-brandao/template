@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { and, desc, eq, gt, isNull, or } from "drizzle-orm";
+import { and, desc, eq, isNull } from "drizzle-orm";
 import { fn } from "../../util/fn";
 import { iso } from "../../util/fmt";
 import { Assert } from "../../util/assert";
@@ -10,7 +10,7 @@ import { Examples } from "../../examples";
 import { Identifier } from "../../identifier";
 import { digest, encode } from "../../util/hash";
 import { token } from "../../util/token";
-import { KeyTable } from "./key.sql";
+import { KeyTable, TOUCH, live } from "./key.sql";
 
 export namespace Key {
   const assert = Assert.create("Key");
@@ -47,19 +47,13 @@ export namespace Key {
   /** What an `api` key's row remembers, now that the secret itself isn't kept. */
   const Meta = z.object({ display: z.string().default("") });
 
-  /** How stale the last use has to be before a read is worth a write. */
-  const TOUCH = 60 * 60 * 1000;
-
   /** A number of days from now as an expiry instant. No days means a key that never expires. */
   export function expires(days?: number) {
     return days ? new Date(Date.now() + days * 86_400_000) : null;
   }
 
-  /**
-   * Takes `userID` so a key can be minted before an actor exists. The only moment the secret
-   * exists outside the caller's hands: the row keeps a hash, so nothing can hand it back later.
-   */
-  export const create = fn(
+  /** Unchecked: for setup and `App.key`, whose caller has checked it may mint for `userID`. */
+  export const mint = fn(
     z.object({
       userID: Identifier.schema("user"),
       name: Info.shape.name,
@@ -86,10 +80,13 @@ export namespace Key {
     },
   );
 
-  /**
-   * Resolves a secret to its user. `api` keys only. The hash is what's indexed, so this is a
-   * single lookup and the database never compares the secret itself.
-   */
+  /** Mints a key for the caller. The only moment the secret exists: the row keeps a hash. */
+  export const create = fn(mint.schema.omit({ userID: true }), (input) => {
+    Identity.check({ key: ["create"] });
+    return mint({ ...input, userID: Identity.userID() });
+  });
+
+  /** Resolves a secret to its user, `api` keys only. The hash is indexed: a single lookup. */
   export const verify = fn(z.string(), async (secret) => {
     const hash = encode(await digest(secret));
     const row = await Database.use((tx) =>
@@ -108,8 +105,7 @@ export namespace Key {
     );
     if (!row) return null;
 
-    // Stamps last use at most hourly, so a busy key isn't a write per request — and concurrent
-    // requests holding it aren't all queued behind the same row.
+    // Stamps last use at most hourly, so a busy key isn't a write per request.
     if (!row.used || Date.now() - row.used.getTime() >= TOUCH)
       await Database.use((tx) =>
         tx.update(KeyTable).set({ timeUsed: new Date() }).where(eq(KeyTable.id, row.id)),
@@ -118,26 +114,15 @@ export namespace Key {
     return row.userID ? { id: row.id, userID: row.userID } : null;
   });
 
-  /** Every live key the user has. Pass the caller's secret to flag its key `current`. */
+  /** The caller's live keys; the one authenticating this request is flagged `current`. */
   export const list = fn(
-    z.string().optional(),
-    async (current) => {
-      const hash = current ? encode(await digest(current)) : null;
-      return Database.use((tx) =>
-        tx
-          .select()
-          .from(KeyTable)
-          .where(
-            and(
-              eq(KeyTable.userID, Identity.userID()),
-              eq(KeyTable.type, "api"),
-              isNull(KeyTable.timeDeleted),
-              live(),
-            ),
-          )
-          .orderBy(desc(KeyTable.timeCreated))
-          .then((rows) => rows.map((row) => serialize(row, hash))),
-      );
+    z.void(),
+    async () => {
+      const user = Identity.userID();
+      Identity.check({ key: ["read"] }, user);
+      const info = Identity.use();
+      const current = "credential" in info.properties ? info.properties.credential : undefined;
+      return (await rows(user)).map((row) => serialize(row, current));
     },
     {
       title: "List personal access tokens",
@@ -146,9 +131,48 @@ export namespace Key {
     },
   );
 
-  /** Someone else's live keys — an App's. Not routed: the caller checks it may manage them. */
-  export const owned = fn(Identifier.schema("user"), (user) =>
-    Database.use((tx) =>
+  /** Someone else's live keys — an App's. Unchecked: the caller checks it may manage them. */
+  export const owned = fn(Identifier.schema("user"), async (user) =>
+    (await rows(user)).map((row) => serialize(row)),
+  );
+
+  /** Revokes one of `user`'s keys. Unchecked, like `owned`. */
+  export const revoke = fn(z.object({ id: Info.shape.id, user: z.string() }), (input) =>
+    drop(input.id, input.user),
+  );
+
+  /** Revokes a personal access token — the secret stops authenticating immediately. */
+  export const remove = fn(
+    Info.shape.id,
+    (id) => {
+      const user = Identity.userID();
+      Identity.check({ key: ["delete"] }, user);
+      return drop(id, user);
+    },
+    {
+      title: "Revoke personal access token",
+      description:
+        "Revoke one of your personal access tokens. The secret stops authenticating immediately.",
+    },
+  );
+
+  function serialize(row: typeof KeyTable.$inferSelect, current?: string): Info {
+    return {
+      id: row.id,
+      name: row.name,
+      // Parsed: a row written before a key kept a mask has nothing under it.
+      display: Meta.parse(row.meta).display,
+      key: null,
+      timeUsed: iso(row.timeUsed),
+      expiresAt: iso(row.expiresAt),
+      current: row.id === current,
+    };
+  }
+
+  // === UTILS ===
+
+  function rows(user: string) {
+    return Database.use((tx) =>
       tx
         .select()
         .from(KeyTable)
@@ -160,78 +184,28 @@ export namespace Key {
             live(),
           ),
         )
-        .orderBy(desc(KeyTable.timeCreated))
-        .then((rows) => rows.map((row) => serialize(row))),
-    ),
-  );
+        .orderBy(desc(KeyTable.timeCreated)),
+    );
+  }
 
-  /** Revokes one of `user`'s keys. Not routed, like `owned`. */
-  export const revoke = fn(z.object({ id: Info.shape.id, user: z.string() }), (input) =>
-    assert.exists(
+  function drop(id: string, user: string) {
+    return assert.exists(
       Database.use((tx) =>
         tx
           .update(KeyTable)
           .set({ timeDeleted: new Date() })
           .where(
             and(
-              eq(KeyTable.id, input.id),
+              eq(KeyTable.id, id),
               eq(KeyTable.type, "api"),
-              eq(KeyTable.userID, input.user),
+              eq(KeyTable.userID, user),
               isNull(KeyTable.timeDeleted),
             ),
           )
           .returning({ id: KeyTable.id })
           .then((rows) => rows.at(0)),
       ),
-    ),
-  );
-
-  /** Revokes a personal access token — the secret stops authenticating immediately. */
-  export const remove = fn(
-    Info.shape.id,
-    async (id) =>
-      assert.exists(
-        Database.use((tx) =>
-          tx
-            .update(KeyTable)
-            .set({ timeDeleted: new Date() })
-            .where(
-              and(
-                eq(KeyTable.id, id),
-                eq(KeyTable.type, "api"),
-                eq(KeyTable.userID, Identity.userID()),
-                isNull(KeyTable.timeDeleted),
-              ),
-            )
-            .returning({ id: KeyTable.id })
-            .then((rows) => rows.at(0)),
-        ),
-      ),
-    {
-      title: "Revoke personal access token",
-      description:
-        "Revoke one of your personal access tokens. The secret stops authenticating immediately.",
-    },
-  );
-
-  function serialize(row: typeof KeyTable.$inferSelect, hash?: string | null): Info {
-    return {
-      id: row.id,
-      name: row.name,
-      // Parsed: a row written before a key kept a mask has nothing under it.
-      display: Meta.parse(row.meta).display,
-      key: null,
-      timeUsed: iso(row.timeUsed),
-      expiresAt: iso(row.expiresAt),
-      current: !!hash && row.key === hash,
-    };
-  }
-
-  // === UTILS ===
-
-  /** Unexpired: no expiry set, or expiry still in the future. */
-  function live() {
-    return or(isNull(KeyTable.expiresAt), gt(KeyTable.expiresAt, new Date()));
+    );
   }
 
   /** What's left of a secret once the row keeps only its hash: recognisable, not usable. */

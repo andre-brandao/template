@@ -21,6 +21,16 @@ template-cli serve dashboard   # SvelteKit prod build on PORT (auto-builds if mi
 They read `DATABASE_URL` (falling back to `Database.DEFAULT_URL`). For a local DB, start
 one with `bun dev` or `bun scripts/pglite.ts`.
 
+## Database
+
+```sh
+template-cli db migrate                     # apply pending migrations to DATABASE_URL
+template-cli db migrate --url postgres://…  # or an explicit database
+```
+
+Runs drizzle-orm's migrator under Bun, sharing the journal with `drizzle-kit migrate`. It
+reads the migration files from source, so it isn't available in `--compile` builds.
+
 ## Health
 
 ```sh

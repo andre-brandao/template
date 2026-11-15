@@ -17,14 +17,6 @@ COPY scripts/package.json scripts/
 RUN bun install --frozen-lockfile
 COPY . .
 
-# Migration image. drizzle-kit needs `node:sqlite`, which Bun doesn't provide,
-# so this stage borrows the Node binary purely to run `drizzle-kit migrate`.
-# Kept out of the app runtime below so those images stay Node-free.
-FROM base AS migrate
-COPY --from=node:24-trixie-slim /usr/local/bin/node /usr/local/bin/node
-WORKDIR /app/packages/core
-ENTRYPOINT ["node", "node_modules/.bin/drizzle-kit", "migrate"]
-
 # Pre-build the SvelteKit dashboard with adapter-node → apps/dashboard/build.
 FROM base AS build
 ENV SVELTE_ADAPTER=node

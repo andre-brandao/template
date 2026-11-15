@@ -16,6 +16,7 @@ The one entrypoint that runs and talks to the template. Bun-only, no build step 
 | `src/index.ts`  | Command table + help text. Every command is one entry in `commands`. |
 | `src/serve.ts`  | `serve api\|mcp\|auth\|dashboard`                                    |
 | `src/health.ts` | `health <target>` — probe a surface, exit code as the answer         |
+| `src/db.ts`     | `db migrate [--url]` — apply core migrations via `Migrations.apply`  |
 | `src/api.ts`    | SDK reflection, param parsing, result printing                       |
 | `src/auth.ts`   | `login` (browser PKCE), `logout`, `whoami`                           |
 | `src/config.ts` | `~/.config/template/config.json` read/write + token/url resolution   |

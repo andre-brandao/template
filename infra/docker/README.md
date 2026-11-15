@@ -9,7 +9,7 @@ PlanetScale — just containers. It's an alternative to the SST/Cloudflare path
 | Service     | Host port | What it is                                            |
 | ----------- | --------- | ----------------------------------------------------- |
 | `postgres`  | 5432      | Postgres 17, persisted to the `pgdata` volume         |
-| `migrate`   | —         | One-shot `drizzle-kit migrate`, then exits            |
+| `migrate`   | —         | One-shot `template-cli db migrate`, then exits        |
 | `api`       | 8080      | Hono API (`serve api`)                                |
 | `mcp`       | 3001      | MCP server (`serve mcp`), path `/mcp`                 |
 | `auth`      | 3002      | OpenAuth issuer (`serve auth`)                        |
@@ -19,9 +19,7 @@ The four app services share one image (`template-app`) built from the repo
 root. The image's entrypoint is the `template-cli`; each service just passes a
 `serve <target>` verb. Each waits for `migrate` to finish.
 
-`migrate` uses a separate image (`template-migrate`) that adds a Node binary
-solely to run `drizzle-kit migrate` — drizzle-kit needs `node:sqlite`, which
-Bun doesn't provide. Node stays out of the app runtime images.
+`migrate` runs off the same image as a one-shot `template-cli db migrate`.
 
 ## Run
 

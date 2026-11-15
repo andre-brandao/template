@@ -42,15 +42,10 @@ services:
       start_period: 30s
       start_interval: 1s
 
-  # One-shot: runs `drizzle-kit migrate`, then exits. Own image (adds Node,
-  # which drizzle-kit needs for node:sqlite); entrypoint set in the Dockerfile.
+  # One-shot: `template-cli db migrate` off the app image, then exits.
   migrate:
-    build:
-      context: ../..
-      dockerfile: infra/docker/Dockerfile
-      target: migrate
-    image: template-migrate
-    env_file: .env
+    <<: *app
+    command: ["db", "migrate"]
     restart: "no"
     depends_on:
       postgres:

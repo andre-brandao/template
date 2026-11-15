@@ -32,7 +32,8 @@ process.env.DATABASE_URL ??= `postgresql://postgres:password@${host}:${port}/pos
 process.env.QUEUE_DRIVER ??= "memory";
 // Same for kv: its `pg` default needs a runner, and the kv suite builds its own drivers.
 process.env.KV_DRIVER ??= "memory";
-// The socket server accepts exactly one connection, so the pool must not grow.
+// The socket server runs one query at a time and an open transaction stalls every other
+// connection, so a pool of one keeps a process from waiting on itself.
 process.env.PG_MAX = "1";
 
 const db = await PGlite.create({
@@ -43,6 +44,8 @@ const server = new PGLiteSocketServer({
   db,
   port,
   host,
+  // Defaults to 1 and refuses the rest; every dev process holds its own connection.
+  maxConnections: 100,
 });
 await server.start();
 

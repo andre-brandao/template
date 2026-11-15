@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { Button, Field, FormBoundary, Input, Issue, toast } from '@template/ui';
+	import { Inline } from '@template/ui';
 	import AvatarUpload from '$lib/components/AvatarUpload.svelte';
-	import { renameApp } from '../../api/apps.remote';
+	import { rename } from '../../api/developers.query';
 
 	// An App's name and avatar, edited by an admin. `onchange` is the profile around it.
 	let {
@@ -11,41 +11,31 @@
 		onchange
 	}: { id: string; name: string; image: string | null; onchange?: () => void } = $props();
 
-	const rename = $derived(renameApp.for(id));
+	const save = rename({ onSuccess: () => onchange?.() });
 </script>
 
-<div class="head">
+<div class="edit">
 	<AvatarUpload {name} {image} url="/avatars/user/{id}" size={56} {onchange} />
+	<span class="name">
+		<Inline
+			label="App name"
+			value={name}
+			onsave={(next) => save.mutateAsync({ path: { id }, body: { name: next } })}
+		/>
+	</span>
 </div>
 
-<FormBoundary>
-	{#each rename.fields.allIssues() ?? [] as issue (issue)}
-		<Issue>{issue.message}</Issue>
-	{/each}
-
-	<form
-		{...rename.enhance(async (f) => {
-			await f.submit();
-			toast.success('Name saved');
-		})}
-	>
-		<input {...rename.fields.id.as('hidden', id)} />
-		<Field label="Name" style="max-width: 24em">
-			<div class="row">
-				<Input {...rename.fields.name.as('text', name)} />
-				<Button type="submit" pending={!!rename.pending}>Save</Button>
-			</div>
-		</Field>
-	</form>
-</FormBoundary>
-
 <style>
-	.head {
-		margin-bottom: 1em;
+	.edit {
+		display: flex;
+		align-items: center;
+		gap: 0.9em;
 	}
 
-	.row {
-		display: flex;
-		gap: 0.4em;
+	.name {
+		flex: 0 1 24em;
+		min-width: 0;
+		font-size: 1.05em;
+		font-weight: 550;
 	}
 </style>

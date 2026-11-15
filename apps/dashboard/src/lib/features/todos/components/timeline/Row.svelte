@@ -27,7 +27,7 @@
 		{#if plan}
 			<span
 				class="plan"
-				class:late={late(todo)}
+				class:late={late(todo, f.zone)}
 				style:left="{plan.left}%"
 				style:width="{plan.width}%"
 				style:--c={color(todo.status)}

@@ -978,6 +978,18 @@ export type GetTodoData = {
      */
     parentID?: string;
     search?: string;
+    /**
+     * Window start (inclusive). Keeps todos whose start-to-due span reaches it.
+     */
+    from?: string;
+    /**
+     * Window end (inclusive). Keeps todos whose start-to-due span begins by it.
+     */
+    to?: string;
+    /**
+     * Only todos with neither a start nor a due date; a window skips those.
+     */
+    unscheduled?: boolean;
   };
   url: "/todo";
 };
@@ -1184,332 +1196,6 @@ export type PatchTodoStageResponses = {
 };
 
 export type PatchTodoStageResponse = PatchTodoStageResponses[keyof PatchTodoStageResponses];
-
-export type GetTodoInsightsStatsData = {
-  body?: never;
-  path?: never;
-  query: {
-    /**
-     * The owning entity type, e.g. "project".
-     */
-    source?: string;
-    /**
-     * Id of the owning entity.
-     */
-    sourceID?: string;
-    /**
-     * First day of the range (inclusive).
-     */
-    start: string;
-    /**
-     * Last day of the range (inclusive).
-     */
-    end: string;
-  };
-  url: "/todo/insights/stats";
-};
-
-export type GetTodoInsightsStatsErrors = {
-  /**
-   * Bad Request
-   */
-  400: ErrorResponse;
-  /**
-   * Unauthorized
-   */
-  401: ErrorResponse;
-  /**
-   * Forbidden
-   */
-  403: ErrorResponse;
-  /**
-   * Internal Server Error
-   */
-  500: ErrorResponse;
-};
-
-export type GetTodoInsightsStatsError =
-  GetTodoInsightsStatsErrors[keyof GetTodoInsightsStatsErrors];
-
-export type GetTodoInsightsStatsResponses = {
-  /**
-   * The headline counts for a range.
-   */
-  200: InsightStats;
-};
-
-export type GetTodoInsightsStatsResponse =
-  GetTodoInsightsStatsResponses[keyof GetTodoInsightsStatsResponses];
-
-export type GetTodoInsightsStatusData = {
-  body?: never;
-  path?: never;
-  query: {
-    /**
-     * The owning entity type, e.g. "project".
-     */
-    source?: string;
-    /**
-     * Id of the owning entity.
-     */
-    sourceID?: string;
-    /**
-     * First day of the range (inclusive).
-     */
-    start: string;
-    /**
-     * Last day of the range (inclusive).
-     */
-    end: string;
-  };
-  url: "/todo/insights/status";
-};
-
-export type GetTodoInsightsStatusErrors = {
-  /**
-   * Bad Request
-   */
-  400: ErrorResponse;
-  /**
-   * Unauthorized
-   */
-  401: ErrorResponse;
-  /**
-   * Forbidden
-   */
-  403: ErrorResponse;
-  /**
-   * Internal Server Error
-   */
-  500: ErrorResponse;
-};
-
-export type GetTodoInsightsStatusError =
-  GetTodoInsightsStatusErrors[keyof GetTodoInsightsStatusErrors];
-
-export type GetTodoInsightsStatusResponses = {
-  /**
-   * Todos created in range, by status.
-   */
-  200: InsightStatuses;
-};
-
-export type GetTodoInsightsStatusResponse =
-  GetTodoInsightsStatusResponses[keyof GetTodoInsightsStatusResponses];
-
-export type GetTodoInsightsLoadData = {
-  body?: never;
-  path?: never;
-  query: {
-    /**
-     * The owning entity type, e.g. "project".
-     */
-    source?: string;
-    /**
-     * Id of the owning entity.
-     */
-    sourceID?: string;
-    /**
-     * First day of the range (inclusive).
-     */
-    start: string;
-    /**
-     * Last day of the range (inclusive).
-     */
-    end: string;
-  };
-  url: "/todo/insights/load";
-};
-
-export type GetTodoInsightsLoadErrors = {
-  /**
-   * Bad Request
-   */
-  400: ErrorResponse;
-  /**
-   * Unauthorized
-   */
-  401: ErrorResponse;
-  /**
-   * Forbidden
-   */
-  403: ErrorResponse;
-  /**
-   * Internal Server Error
-   */
-  500: ErrorResponse;
-};
-
-export type GetTodoInsightsLoadError = GetTodoInsightsLoadErrors[keyof GetTodoInsightsLoadErrors];
-
-export type GetTodoInsightsLoadResponses = {
-  /**
-   * Todos created in range, by assignee and status.
-   */
-  200: InsightLoad;
-};
-
-export type GetTodoInsightsLoadResponse =
-  GetTodoInsightsLoadResponses[keyof GetTodoInsightsLoadResponses];
-
-export type GetTodoInsightsDueData = {
-  body?: never;
-  path?: never;
-  query?: {
-    /**
-     * The owning entity type, e.g. "project".
-     */
-    source?: string;
-    /**
-     * Id of the owning entity.
-     */
-    sourceID?: string;
-  };
-  url: "/todo/insights/due";
-};
-
-export type GetTodoInsightsDueErrors = {
-  /**
-   * Bad Request
-   */
-  400: ErrorResponse;
-  /**
-   * Unauthorized
-   */
-  401: ErrorResponse;
-  /**
-   * Forbidden
-   */
-  403: ErrorResponse;
-  /**
-   * Internal Server Error
-   */
-  500: ErrorResponse;
-};
-
-export type GetTodoInsightsDueError = GetTodoInsightsDueErrors[keyof GetTodoInsightsDueErrors];
-
-export type GetTodoInsightsDueResponses = {
-  /**
-   * An open todo coming due.
-   */
-  200: Array<InsightDue>;
-};
-
-export type GetTodoInsightsDueResponse =
-  GetTodoInsightsDueResponses[keyof GetTodoInsightsDueResponses];
-
-export type GetTodoInsightsCalendarData = {
-  body?: never;
-  path?: never;
-  query: {
-    /**
-     * The owning entity type, e.g. "project".
-     */
-    source?: string;
-    /**
-     * Id of the owning entity.
-     */
-    sourceID?: string;
-    /**
-     * First day of the range (inclusive).
-     */
-    start: string;
-    /**
-     * Last day of the range (inclusive).
-     */
-    end: string;
-  };
-  url: "/todo/insights/calendar";
-};
-
-export type GetTodoInsightsCalendarErrors = {
-  /**
-   * Bad Request
-   */
-  400: ErrorResponse;
-  /**
-   * Unauthorized
-   */
-  401: ErrorResponse;
-  /**
-   * Forbidden
-   */
-  403: ErrorResponse;
-  /**
-   * Internal Server Error
-   */
-  500: ErrorResponse;
-};
-
-export type GetTodoInsightsCalendarError =
-  GetTodoInsightsCalendarErrors[keyof GetTodoInsightsCalendarErrors];
-
-export type GetTodoInsightsCalendarResponses = {
-  /**
-   * Todos created per day, for a contribution grid.
-   */
-  200: InsightCalendar;
-};
-
-export type GetTodoInsightsCalendarResponse =
-  GetTodoInsightsCalendarResponses[keyof GetTodoInsightsCalendarResponses];
-
-export type GetTodoInsightsActivityData = {
-  body?: never;
-  path?: never;
-  query: {
-    /**
-     * The owning entity type, e.g. "project".
-     */
-    source?: string;
-    /**
-     * Id of the owning entity.
-     */
-    sourceID?: string;
-    /**
-     * First day of the range (inclusive).
-     */
-    start: string;
-    /**
-     * Last day of the range (inclusive).
-     */
-    end: string;
-  };
-  url: "/todo/insights/activity";
-};
-
-export type GetTodoInsightsActivityErrors = {
-  /**
-   * Bad Request
-   */
-  400: ErrorResponse;
-  /**
-   * Unauthorized
-   */
-  401: ErrorResponse;
-  /**
-   * Forbidden
-   */
-  403: ErrorResponse;
-  /**
-   * Internal Server Error
-   */
-  500: ErrorResponse;
-};
-
-export type GetTodoInsightsActivityError =
-  GetTodoInsightsActivityErrors[keyof GetTodoInsightsActivityErrors];
-
-export type GetTodoInsightsActivityResponses = {
-  /**
-   * Created and completed per day, week or month, coarser as the range grows.
-   */
-  200: InsightActivity;
-};
-
-export type GetTodoInsightsActivityResponse =
-  GetTodoInsightsActivityResponses[keyof GetTodoInsightsActivityResponses];
 
 export type DeleteTodoByIdData = {
   body?: never;
@@ -1842,6 +1528,325 @@ export type PostTodoByIdLinkResponses = {
 };
 
 export type PostTodoByIdLinkResponse = PostTodoByIdLinkResponses[keyof PostTodoByIdLinkResponses];
+
+export type GetInsightsStatsData = {
+  body?: never;
+  path?: never;
+  query: {
+    /**
+     * The owning entity type, e.g. "project".
+     */
+    source?: string;
+    /**
+     * Id of the owning entity.
+     */
+    sourceID?: string;
+    /**
+     * First day of the range (inclusive).
+     */
+    start: string;
+    /**
+     * Last day of the range (inclusive).
+     */
+    end: string;
+  };
+  url: "/insights/stats";
+};
+
+export type GetInsightsStatsErrors = {
+  /**
+   * Bad Request
+   */
+  400: ErrorResponse;
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
+   * Internal Server Error
+   */
+  500: ErrorResponse;
+};
+
+export type GetInsightsStatsError = GetInsightsStatsErrors[keyof GetInsightsStatsErrors];
+
+export type GetInsightsStatsResponses = {
+  /**
+   * The headline counts for a range.
+   */
+  200: InsightStats;
+};
+
+export type GetInsightsStatsResponse = GetInsightsStatsResponses[keyof GetInsightsStatsResponses];
+
+export type GetInsightsStatusData = {
+  body?: never;
+  path?: never;
+  query: {
+    /**
+     * The owning entity type, e.g. "project".
+     */
+    source?: string;
+    /**
+     * Id of the owning entity.
+     */
+    sourceID?: string;
+    /**
+     * First day of the range (inclusive).
+     */
+    start: string;
+    /**
+     * Last day of the range (inclusive).
+     */
+    end: string;
+  };
+  url: "/insights/status";
+};
+
+export type GetInsightsStatusErrors = {
+  /**
+   * Bad Request
+   */
+  400: ErrorResponse;
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
+   * Internal Server Error
+   */
+  500: ErrorResponse;
+};
+
+export type GetInsightsStatusError = GetInsightsStatusErrors[keyof GetInsightsStatusErrors];
+
+export type GetInsightsStatusResponses = {
+  /**
+   * Todos created in range, by status.
+   */
+  200: InsightStatuses;
+};
+
+export type GetInsightsStatusResponse =
+  GetInsightsStatusResponses[keyof GetInsightsStatusResponses];
+
+export type GetInsightsLoadData = {
+  body?: never;
+  path?: never;
+  query: {
+    /**
+     * The owning entity type, e.g. "project".
+     */
+    source?: string;
+    /**
+     * Id of the owning entity.
+     */
+    sourceID?: string;
+    /**
+     * First day of the range (inclusive).
+     */
+    start: string;
+    /**
+     * Last day of the range (inclusive).
+     */
+    end: string;
+  };
+  url: "/insights/load";
+};
+
+export type GetInsightsLoadErrors = {
+  /**
+   * Bad Request
+   */
+  400: ErrorResponse;
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
+   * Internal Server Error
+   */
+  500: ErrorResponse;
+};
+
+export type GetInsightsLoadError = GetInsightsLoadErrors[keyof GetInsightsLoadErrors];
+
+export type GetInsightsLoadResponses = {
+  /**
+   * Todos created in range, by assignee and status.
+   */
+  200: InsightLoad;
+};
+
+export type GetInsightsLoadResponse = GetInsightsLoadResponses[keyof GetInsightsLoadResponses];
+
+export type GetInsightsDueData = {
+  body?: never;
+  path?: never;
+  query?: {
+    /**
+     * The owning entity type, e.g. "project".
+     */
+    source?: string;
+    /**
+     * Id of the owning entity.
+     */
+    sourceID?: string;
+  };
+  url: "/insights/due";
+};
+
+export type GetInsightsDueErrors = {
+  /**
+   * Bad Request
+   */
+  400: ErrorResponse;
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
+   * Internal Server Error
+   */
+  500: ErrorResponse;
+};
+
+export type GetInsightsDueError = GetInsightsDueErrors[keyof GetInsightsDueErrors];
+
+export type GetInsightsDueResponses = {
+  /**
+   * An open todo coming due.
+   */
+  200: Array<InsightDue>;
+};
+
+export type GetInsightsDueResponse = GetInsightsDueResponses[keyof GetInsightsDueResponses];
+
+export type GetInsightsCalendarData = {
+  body?: never;
+  path?: never;
+  query: {
+    /**
+     * The owning entity type, e.g. "project".
+     */
+    source?: string;
+    /**
+     * Id of the owning entity.
+     */
+    sourceID?: string;
+    /**
+     * First day of the range (inclusive).
+     */
+    start: string;
+    /**
+     * Last day of the range (inclusive).
+     */
+    end: string;
+  };
+  url: "/insights/calendar";
+};
+
+export type GetInsightsCalendarErrors = {
+  /**
+   * Bad Request
+   */
+  400: ErrorResponse;
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
+   * Internal Server Error
+   */
+  500: ErrorResponse;
+};
+
+export type GetInsightsCalendarError = GetInsightsCalendarErrors[keyof GetInsightsCalendarErrors];
+
+export type GetInsightsCalendarResponses = {
+  /**
+   * Todos created per day, for a contribution grid.
+   */
+  200: InsightCalendar;
+};
+
+export type GetInsightsCalendarResponse =
+  GetInsightsCalendarResponses[keyof GetInsightsCalendarResponses];
+
+export type GetInsightsActivityData = {
+  body?: never;
+  path?: never;
+  query: {
+    /**
+     * The owning entity type, e.g. "project".
+     */
+    source?: string;
+    /**
+     * Id of the owning entity.
+     */
+    sourceID?: string;
+    /**
+     * First day of the range (inclusive).
+     */
+    start: string;
+    /**
+     * Last day of the range (inclusive).
+     */
+    end: string;
+  };
+  url: "/insights/activity";
+};
+
+export type GetInsightsActivityErrors = {
+  /**
+   * Bad Request
+   */
+  400: ErrorResponse;
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
+   * Internal Server Error
+   */
+  500: ErrorResponse;
+};
+
+export type GetInsightsActivityError = GetInsightsActivityErrors[keyof GetInsightsActivityErrors];
+
+export type GetInsightsActivityResponses = {
+  /**
+   * Created and completed per day, week or month, coarser as the range grows.
+   */
+  200: InsightActivity;
+};
+
+export type GetInsightsActivityResponse =
+  GetInsightsActivityResponses[keyof GetInsightsActivityResponses];
 
 export type GetProjectData = {
   body?: never;

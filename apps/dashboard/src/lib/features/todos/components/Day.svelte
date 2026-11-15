@@ -39,7 +39,7 @@
 	<Popover label="{name} date" align="end">
 		{#snippet trigger(attrs)}
 			<button
-				class={["when", { late: field === "dueDate" && late({ ...todo, dueDate: shown }) }]}
+				class={["when", { late: field === "dueDate" && late({ ...todo, dueDate: shown }, f.zone) }]}
 				type="button"
 				aria-label={shown ? `${name} ${f.date(shown)}` : `Set ${name.toLowerCase()} date`}
 				disabled={save.isPending}

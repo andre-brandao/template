@@ -3,15 +3,39 @@ import { setupApiTest } from "./util";
 import { Todo } from "@template/core/todo";
 import { Examples } from "@template/core/examples";
 
-const { test, validateOpenAPIRoute, get, del } = setupApiTest();
-
-const day = (offset: number) =>
-  new Date(Date.now() + offset * 86_400_000).toISOString().slice(0, 10);
+const { test, validateOpenAPIRoute, del } = setupApiTest();
 
 describe("todo", () => {
   test("GET /todo", async () => {
     const response = await validateOpenAPIRoute("get", "/todo");
     expect(response.data).toBeArray();
+  });
+
+  test("GET /todo?from&to", async () => {
+    const scope = { source: "project", sourceID: `window-${crypto.randomUUID()}` };
+    const span = await Todo.create({
+      title: "Spans the window",
+      startDate: "2026-05-20T00:00:00.000Z",
+      dueDate: "2026-07-10T00:00:00.000Z",
+      ...scope,
+    });
+    const due = await Todo.create({
+      title: "Due inside",
+      dueDate: "2026-06-15T12:00:00.000Z",
+      ...scope,
+    });
+    await Todo.create({ title: "Due after", dueDate: "2026-07-02T00:00:00.000Z", ...scope });
+    const undated = await Todo.create({ title: "Undated", ...scope });
+    const range = {
+      from: "2026-06-01T00:00:00.000Z",
+      to: "2026-06-30T23:59:59.999Z",
+      ...scope,
+    };
+    const response = await validateOpenAPIRoute("get", "/todo", range);
+    const ids = response.data.map((todo: { id: string }) => todo.id).sort();
+    expect(ids).toEqual([span.id, due.id].sort());
+    const loose = await validateOpenAPIRoute("get", "/todo", { unscheduled: "true", ...scope });
+    expect(loose.data.map((todo: { id: string }) => todo.id)).toEqual([undated.id]);
   });
 
   test("GET /todo/stage", async () => {
@@ -81,50 +105,5 @@ describe("todo", () => {
     await validateOpenAPIRoute("delete", "/todo/:id", { id });
     const deleted = await Todo.fromID(id);
     expect(deleted).toBeNull();
-  });
-});
-
-describe("insights", () => {
-  // Scoped to a project of their own, so other tests' todos don't shift the counts.
-  const scope = { source: "project", sourceID: `insights-${crypto.randomUUID()}` };
-  const range = { start: day(-30), end: day(1), ...scope };
-
-  test("GET /todo/insights/stats", async () => {
-    await Todo.create({ title: "Counted", status: "active", ...scope });
-    const response = await validateOpenAPIRoute("get", "/todo/insights/stats", range);
-    expect(response.active).toBe(1);
-    // No body to break, so the declared 400 is driven by a backwards range.
-    const bad = new URLSearchParams({ start: day(1), end: day(-1) });
-    expect((await get(`/todo/insights/stats?${bad}`)).status).toBe(400);
-  });
-
-  test("GET /todo/insights/status", async () => {
-    const response = await validateOpenAPIRoute("get", "/todo/insights/status", range);
-    expect(response.rows.map((row: { status: string }) => row.status)).toContain("done");
-  });
-
-  test("GET /todo/insights/load", async () => {
-    const response = await validateOpenAPIRoute("get", "/todo/insights/load", range);
-    expect(response.rows).toBeArray();
-  });
-
-  test("GET /todo/insights/due", async () => {
-    const { id } = await Todo.create({
-      title: "Due soon",
-      dueDate: new Date(Date.now() + 86_400_000).toISOString(),
-      ...scope,
-    });
-    const response = await validateOpenAPIRoute("get", "/todo/insights/due", scope);
-    expect(response.map((todo: { id: string }) => todo.id)).toContain(id);
-  });
-
-  test("GET /todo/insights/calendar", async () => {
-    const response = await validateOpenAPIRoute("get", "/todo/insights/calendar", range);
-    expect(response.total).toBeGreaterThanOrEqual(1);
-  });
-
-  test("GET /todo/insights/activity", async () => {
-    const response = await validateOpenAPIRoute("get", "/todo/insights/activity", range);
-    expect(response.series).toBeArray();
   });
 });

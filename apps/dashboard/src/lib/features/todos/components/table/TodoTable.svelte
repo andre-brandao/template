@@ -135,7 +135,7 @@
 {/snippet}
 
 {#snippet due(row: Cell)}
-	<span class="dim" class:late={late(row.original)}>
+	<span class="dim" class:late={late(row.original, f.zone)}>
 		{row.original.dueDate ? f.date(row.original.dueDate) : '—'}
 	</span>
 {/snippet}

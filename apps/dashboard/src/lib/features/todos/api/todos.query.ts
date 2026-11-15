@@ -4,13 +4,12 @@ import {
   deleteTodoByIdMutation,
   getTodoByIdOptions,
   getTodoByIdQueryKey,
-  getTodoInsightsActivityOptions,
-  getTodoInsightsCalendarOptions,
-  getTodoInsightsDueOptions,
-  getTodoInsightsDueQueryKey,
-  getTodoInsightsLoadOptions,
-  getTodoInsightsStatsOptions,
-  getTodoInsightsStatusOptions,
+  getInsightsActivityOptions,
+  getInsightsCalendarOptions,
+  getInsightsDueOptions,
+  getInsightsLoadOptions,
+  getInsightsStatsOptions,
+  getInsightsStatusOptions,
   getTodoOptions,
   getTodoQueryKey,
   getTodoStageOptions,
@@ -28,18 +27,14 @@ import {
 type Scope = { source?: string; sourceID?: string };
 type Range = Scope & { start: string; end: string };
 
-// Rows, lists, stages and insights all carry the tag; project pages count todos, so they refresh too.
-const todo = [[{ tags: ["Todo"] }], [{ tags: ["Project"] }]];
+// Rows, lists and stages carry the Todo tag; insights and project pages count todos, so they refresh too.
+const todo = [[{ tags: ["Todo"] }], [{ tags: ["Insights"] }], [{ tags: ["Project"] }]];
 
 // Everything but rows: a removed todo's own query would refetch straight into a 404.
-// Range insights need a query to build a key, so they match on the SDK's `_id` alone.
 const views = () => [
   getTodoQueryKey(),
   getTodoStageQueryKey(),
-  getTodoInsightsDueQueryKey(),
-  ...["Stats", "Status", "Load", "Calendar", "Activity"].map((x) => [
-    { _id: `getTodoInsights${x}` },
-  ]),
+  [{ tags: ["Insights"] }],
   [{ tags: ["Project"] }],
 ];
 
@@ -57,32 +52,32 @@ export const users = () => getUserOptions();
 
 // Insights keep the last range on screen while the next one loads.
 export const stats = (range: Range) => ({
-  ...getTodoInsightsStatsOptions({ query: range }),
+  ...getInsightsStatsOptions({ query: range }),
   placeholderData: keepPreviousData,
 });
 
 export const statuses = (range: Range) => ({
-  ...getTodoInsightsStatusOptions({ query: range }),
+  ...getInsightsStatusOptions({ query: range }),
   placeholderData: keepPreviousData,
 });
 
 export const load = (range: Range) => ({
-  ...getTodoInsightsLoadOptions({ query: range }),
+  ...getInsightsLoadOptions({ query: range }),
   placeholderData: keepPreviousData,
 });
 
 export const due = (scope: Scope) => ({
-  ...getTodoInsightsDueOptions({ query: scope }),
+  ...getInsightsDueOptions({ query: scope }),
   placeholderData: keepPreviousData,
 });
 
 export const calendar = (range: Range) => ({
-  ...getTodoInsightsCalendarOptions({ query: range }),
+  ...getInsightsCalendarOptions({ query: range }),
   placeholderData: keepPreviousData,
 });
 
 export const activity = (range: Range) => ({
-  ...getTodoInsightsActivityOptions({ query: range }),
+  ...getInsightsActivityOptions({ query: range }),
   placeholderData: keepPreviousData,
 });
 

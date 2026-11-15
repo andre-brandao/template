@@ -26,8 +26,8 @@
 		flex-wrap: wrap;
 		gap: 0.9em;
 		padding: 0.45em 0.5em 0.2em;
-		border-top: 1px solid var(--border, #e6e5e1);
-		color: var(--dim, #8e8c86);
+		border-top: 1px solid var(--border);
+		color: var(--dim);
 		font-size: 0.78em;
 	}
 

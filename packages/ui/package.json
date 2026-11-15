@@ -24,6 +24,7 @@
       "types": "./src/lib/story.ts",
       "svelte": "./src/lib/story.ts"
     },
+    "./tokens.css": "./src/lib/tokens.css",
     "./day": {
       "types": "./src/lib/date/day.ts",
       "default": "./src/lib/date/day.ts"

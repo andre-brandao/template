@@ -34,9 +34,9 @@
 
 	.card {
 		position: relative;
-		background: var(--surface, #fff);
-		border: 1px solid var(--border, #e6e5e1);
-		border-radius: var(--radius, 8px);
+		background: var(--surface);
+		border: 1px solid var(--border);
+		border-radius: var(--radius);
 		padding: 1.1em;
 	}
 
@@ -53,8 +53,8 @@
 	}
 
 	.card.interactive:hover {
-		border-color: var(--border-bright, #d3d1cc);
-		box-shadow: var(--shadow-1, 0 1px 2px rgb(0 0 0 / 0.04));
+		border-color: var(--border-bright);
+		box-shadow: var(--shadow-1);
 	}
 
 	.card.interactive.accent:hover {

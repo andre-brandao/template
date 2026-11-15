@@ -39,6 +39,6 @@
 	span {
 		font-size: 0.93em;
 		font-weight: 500;
-		color: var(--ink, #1c1b19);
+		color: var(--ink);
 	}
 </style>

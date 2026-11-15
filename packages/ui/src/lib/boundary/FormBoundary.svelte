@@ -22,15 +22,15 @@
 		gap: 0.6em;
 		margin-bottom: 1em;
 		padding: 0.6em 0.8em;
-		border: 1px solid var(--danger, #b8452c);
-		border-radius: var(--radius, 8px);
-		color: var(--danger, #b8452c);
+		border: 1px solid var(--danger);
+		border-radius: var(--radius);
+		color: var(--danger);
 		font-size: 0.85em;
 	}
 
 	.crash button {
 		border: 1px solid currentColor;
-		border-radius: var(--radius, 8px);
+		border-radius: var(--radius);
 		background: none;
 		padding: 0.3em 0.7em;
 		color: inherit;

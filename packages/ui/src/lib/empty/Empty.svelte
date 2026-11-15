@@ -18,7 +18,7 @@
 
 <style>
 	.empty {
-		color: var(--dim, #75736d);
+		color: var(--dim);
 		font-size: 0.9em;
 	}
 

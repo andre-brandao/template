@@ -11,30 +11,30 @@
 		flex: 1;
 		min-width: 0;
 		box-sizing: border-box;
-		min-height: var(--control, 2.25em);
+		min-height: var(--control);
 		font: inherit;
 		padding: 0.4em 0.7em;
-		border: 1px solid var(--border, #e6e5e1);
-		border-radius: var(--radius-sm, 6px);
-		background: var(--surface, #fff);
-		color: var(--ink, #1c1b19);
-		box-shadow: var(--shadow-1, 0 1px 2px rgb(0 0 0 / 0.04));
+		border: 1px solid var(--border);
+		border-radius: var(--radius-sm);
+		background: var(--surface);
+		color: var(--ink);
+		box-shadow: var(--shadow-1);
 		transition:
 			border-color 0.12s ease,
 			box-shadow 0.12s ease;
 	}
 
 	input::placeholder {
-		color: var(--dim, #75736d);
+		color: var(--dim);
 	}
 
 	input:hover {
-		border-color: var(--border-bright, #d3d1cc);
+		border-color: var(--border-bright);
 	}
 
 	input:focus-visible {
-		border-color: var(--accent, #2f7f68);
+		border-color: var(--accent);
 		outline: none;
-		box-shadow: var(--ring, 0 0 0 3px color-mix(in oklab, var(--accent, #2f7f68) 16%, transparent));
+		box-shadow: var(--ring);
 	}
 </style>

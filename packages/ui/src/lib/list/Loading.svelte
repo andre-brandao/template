@@ -27,7 +27,7 @@
 		gap: 0.75em;
 		min-height: 3em;
 		padding: 0.35em 2.5em 0.35em 0.7em;
-		border-bottom: 1px solid var(--border, #e6e5e1);
+		border-bottom: 1px solid var(--border);
 	}
 
 	.row:last-child {

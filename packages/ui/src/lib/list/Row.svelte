@@ -101,7 +101,7 @@
 		gap: 0.75em;
 		min-height: 3em;
 		padding: 0.35em 0.4em 0.35em 0.7em;
-		border-bottom: 1px solid var(--border, #e6e5e1);
+		border-bottom: 1px solid var(--border);
 		transition:
 			background 140ms ease,
 			opacity 140ms ease;
@@ -114,7 +114,7 @@
 	.row:hover,
 	.row:focus-within,
 	.row:has(:global([aria-expanded='true'])) {
-		background: var(--hover, rgb(0 0 0 / 0.06));
+		background: var(--hover);
 	}
 
 	.muted {
@@ -143,7 +143,7 @@
 	.text {
 		min-width: 0;
 		overflow: hidden;
-		color: var(--ink, #1c1b19);
+		color: var(--ink);
 		font-weight: 500;
 		text-decoration: none;
 		text-overflow: ellipsis;
@@ -164,18 +164,18 @@
 		content: '';
 		position: absolute;
 		inset: 0;
-		border-radius: var(--radius-sm, 6px);
+		border-radius: var(--radius-sm);
 	}
 
 	.link:focus-visible::after {
-		outline: 2px solid var(--accent, #2f7f68);
+		outline: 2px solid var(--accent);
 		outline-offset: -2px;
 	}
 
 	.sub {
 		margin-top: 0.1em;
 		overflow: hidden;
-		color: var(--muted, #64625d);
+		color: var(--muted);
 		font-size: 0.85em;
 		text-overflow: ellipsis;
 		white-space: nowrap;
@@ -190,7 +190,7 @@
 	}
 
 	.meta {
-		color: var(--dim, #75736d);
+		color: var(--dim);
 		font-size: 0.82em;
 		font-variant-numeric: tabular-nums;
 		white-space: nowrap;

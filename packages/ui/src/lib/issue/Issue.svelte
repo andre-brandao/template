@@ -24,10 +24,10 @@
 		gap: 0.75em;
 		margin: 0 0 0.5em;
 		padding: 0.5em 0.7em;
-		border: 1px solid color-mix(in srgb, var(--danger, #b8452c) 45%, transparent);
-		border-radius: var(--radius, 8px);
-		background: color-mix(in srgb, var(--danger, #b8452c) 10%, transparent);
-		color: var(--danger, #b8452c);
+		border: 1px solid color-mix(in srgb, var(--danger) 45%, transparent);
+		border-radius: var(--radius);
+		background: color-mix(in srgb, var(--danger) 10%, transparent);
+		color: var(--danger);
 		font-size: 0.85em;
 	}
 
@@ -35,7 +35,7 @@
 		flex: none;
 		padding: 0.2em 0.5em;
 		border: 0;
-		border-radius: var(--radius-sm, 6px);
+		border-radius: var(--radius-sm);
 		background: none;
 		color: inherit;
 		font: inherit;
@@ -46,11 +46,11 @@
 	}
 
 	button:hover {
-		background: color-mix(in srgb, var(--danger, #b8452c) 12%, transparent);
+		background: color-mix(in srgb, var(--danger) 12%, transparent);
 	}
 
 	button:focus-visible {
-		outline: 2px solid var(--accent, #2f7f68);
+		outline: 2px solid var(--accent);
 		outline-offset: 1px;
 	}
 </style>

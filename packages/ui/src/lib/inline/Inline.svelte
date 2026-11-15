@@ -171,7 +171,7 @@
 		margin: 0;
 		padding: 0.2em 0.4em;
 		border: 1px solid transparent;
-		border-radius: var(--radius-sm, 6px);
+		border-radius: var(--radius-sm);
 		background: none;
 		color: inherit;
 		font: inherit;
@@ -184,10 +184,10 @@
 
 	input.box,
 	textarea.box {
-		border-color: var(--accent, #2f7f68);
-		background: var(--surface, #fff);
+		border-color: var(--accent);
+		background: var(--surface);
 		outline: none;
-		box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent, #2f7f68) 16%, transparent);
+		box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent) 16%, transparent);
 	}
 
 	textarea.box {
@@ -208,11 +208,11 @@
 	}
 
 	.face:hover:not(:disabled) {
-		background: var(--hover, rgb(0 0 0 / 0.06));
+		background: var(--hover);
 	}
 
 	.face:focus-visible {
-		outline: 2px solid var(--accent, #2f7f68);
+		outline: 2px solid var(--accent);
 		outline-offset: -1px;
 	}
 
@@ -221,15 +221,15 @@
 	}
 
 	.empty {
-		color: var(--dim, #75736d);
+		color: var(--dim);
 	}
 
 	.pending .face {
-		color: var(--muted, #64625d);
+		color: var(--muted);
 	}
 
 	.failed .face {
-		border-color: color-mix(in oklab, var(--danger, #b8452c) 60%, transparent);
+		border-color: color-mix(in oklab, var(--danger) 60%, transparent);
 	}
 
 	.spin {
@@ -238,7 +238,7 @@
 		inset-inline-end: 0.4em;
 		display: grid;
 		place-items: center;
-		color: var(--dim, #75736d);
+		color: var(--dim);
 		pointer-events: none;
 	}
 

@@ -53,6 +53,6 @@
 	.sub {
 		margin: 0 0 1.25em;
 		font-size: 0.85em;
-		color: var(--muted, #666);
+		color: var(--muted);
 	}
 </style>

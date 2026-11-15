@@ -1,4 +1,3 @@
-import tailwindcss from "@tailwindcss/vite";
 import { sveltekit } from "@sveltejs/kit/vite";
 import { defineConfig, type PluginOption } from "vite";
 import * as child_process from "node:child_process";
@@ -62,7 +61,6 @@ const adapter = await (async () => {
 
 export default defineConfig({
   plugins: [
-    tailwindcss(),
     sveltekit({
       version: {
         // No git in the image build (`.git` is dockerignored), so fall back to

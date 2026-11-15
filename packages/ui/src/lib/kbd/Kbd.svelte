@@ -38,19 +38,19 @@
 		min-width: 1.6em;
 		height: 1.6em;
 		padding: 0 0.35em;
-		border: 1px solid var(--border, #e6e5e1);
+		border: 1px solid var(--border);
 		border-bottom-width: 2px;
 		border-radius: 4px;
-		background: var(--surface, #fff);
-		color: var(--muted, #64625d);
-		font-family: var(--font-sans, ui-sans-serif, system-ui, sans-serif);
+		background: var(--surface);
+		color: var(--muted);
+		font-family: var(--font-sans);
 		font-size: 0.72em;
 		font-weight: 500;
 		line-height: 1;
 	}
 
 	.then {
-		color: var(--dim, #75736d);
+		color: var(--dim);
 		font-size: 0.72em;
 	}
 </style>

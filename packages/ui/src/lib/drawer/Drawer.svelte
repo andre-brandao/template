@@ -56,10 +56,10 @@
 		max-width: none;
 		max-height: none;
 		border: none;
-		border-inline-start: 1px solid var(--border, #e6e5e1);
+		border-inline-start: 1px solid var(--border);
 		padding: 1.25em;
-		background: var(--surface, #fff);
-		color: var(--ink, #1c1b19);
+		background: var(--surface);
+		color: var(--ink);
 		box-shadow: -8px 0 24px rgb(0 0 0 / 0.15);
 		overflow-x: hidden;
 		overflow-y: auto;
@@ -74,7 +74,7 @@
 		inset-inline-end: auto;
 		inset-inline-start: 0;
 		border-inline-start: none;
-		border-inline-end: 1px solid var(--border, #e6e5e1);
+		border-inline-end: 1px solid var(--border);
 		box-shadow: 8px 0 24px rgb(0 0 0 / 0.15);
 		translate: -100% 0;
 	}
@@ -88,8 +88,8 @@
 		height: auto;
 		max-height: 85dvh;
 		border-inline-start: none;
-		border-block-start: 1px solid var(--border, #e6e5e1);
-		border-radius: var(--radius, 8px) var(--radius, 8px) 0 0;
+		border-block-start: 1px solid var(--border);
+		border-radius: var(--radius) var(--radius) 0 0;
 		padding-bottom: max(1.25em, env(safe-area-inset-bottom));
 		box-shadow: 0 -8px 24px rgb(0 0 0 / 0.15);
 		translate: 0 100%;

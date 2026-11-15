@@ -128,7 +128,7 @@
 		letter-spacing: 0.06em;
 		padding: 0.15em 0.45em;
 		border-radius: 999px;
-		background: var(--raised, var(--border));
+		background: var(--border);
 		color: var(--muted);
 	}
 

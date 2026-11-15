@@ -42,7 +42,6 @@
     "@sveltejs/adapter-node": "catalog:frontend",
     "@sveltejs/kit": "catalog:frontend",
     "@sveltejs/vite-plugin-svelte": "catalog:frontend",
-    "@tailwindcss/vite": "catalog:frontend",
     "@tanstack/query-devtools": "catalog:frontend",
     "@tanstack/svelte-devtools": "catalog:frontend",
     "@tanstack/svelte-hotkeys-devtools": "catalog:frontend",
@@ -52,7 +51,6 @@
     "svelte-adapter-bun": "^1.0.1",
     "svelte-check": "catalog:frontend",
     "svelte-kit-sst": "^2.43.5",
-    "tailwindcss": "catalog:frontend",
     "typescript": "^5.9.3",
     "vite": "catalog:frontend"
   }

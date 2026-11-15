@@ -38,14 +38,14 @@
 		flex: none;
 		place-items: center;
 		box-sizing: border-box;
-		width: var(--control, 2.25em);
-		height: var(--control, 2.25em);
+		width: var(--control);
+		height: var(--control);
 		margin: 0;
 		padding: 0;
 		border: 1px solid transparent;
-		border-radius: var(--radius-sm, 6px);
+		border-radius: var(--radius-sm);
 		background: transparent;
-		color: var(--muted, #64625d);
+		color: var(--muted);
 		font: inherit;
 		line-height: 1;
 		cursor: pointer;
@@ -60,22 +60,22 @@
 	}
 
 	.secondary {
-		border-color: var(--border, #e6e5e1);
-		background: var(--surface, #fff);
-		box-shadow: var(--shadow-1, 0 1px 2px rgb(0 0 0 / 0.04));
+		border-color: var(--border);
+		background: var(--surface);
+		box-shadow: var(--shadow-1);
 	}
 
 	.icon:hover:not(:disabled),
 	.icon[aria-expanded='true'],
 	.icon[aria-pressed='true'] {
-		background: var(--hover, rgb(0 0 0 / 0.06));
-		color: var(--ink, #1c1b19);
+		background: var(--hover);
+		color: var(--ink);
 	}
 
 	.icon:focus-visible {
 		outline: none;
-		box-shadow: var(--ring, 0 0 0 3px color-mix(in oklab, var(--accent, #2f7f68) 16%, transparent));
-		color: var(--ink, #1c1b19);
+		box-shadow: var(--ring);
+		color: var(--ink);
 	}
 
 	.icon:disabled {

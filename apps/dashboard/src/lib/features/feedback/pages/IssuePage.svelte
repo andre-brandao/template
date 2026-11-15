@@ -88,10 +88,10 @@
 		gap: 0.45em;
 		min-height: 2em;
 		padding: 0.3em 0.75em;
-		border: 1px solid var(--border, #ddd);
-		border-radius: var(--radius-sm, 4px);
-		background: var(--surface, #fff);
-		color: var(--ink, #111);
+		border: 1px solid var(--border);
+		border-radius: var(--radius-sm);
+		background: var(--surface);
+		color: var(--ink);
 		font-size: 0.9em;
 		font-weight: 500;
 		text-decoration: none;
@@ -99,7 +99,7 @@
 	}
 
 	.open:hover {
-		background: var(--hover, #f2f2f2);
+		background: var(--hover);
 	}
 
 	.column {
@@ -111,9 +111,9 @@
 	.block {
 		min-width: 0;
 		padding: 1em 1.15em;
-		background: var(--surface, #fff);
-		border: 1px solid var(--border, #ddd);
-		border-radius: var(--radius, 6px);
+		background: var(--surface);
+		border: 1px solid var(--border);
+		border-radius: var(--radius);
 	}
 
 	h2 {
@@ -133,7 +133,7 @@
 	.replies li {
 		min-width: 0;
 		padding-top: 1em;
-		border-top: 1px solid var(--border, #ddd);
+		border-top: 1px solid var(--border);
 	}
 
 	.replies li:first-child {
@@ -144,11 +144,11 @@
 	.when {
 		margin: 0 0 0.4em;
 		font-size: 0.78em;
-		color: var(--dim, #888);
+		color: var(--dim);
 	}
 
 	.return {
-		color: var(--accent, #3b82f6);
+		color: var(--accent);
 		font-size: 0.9em;
 	}
 </style>

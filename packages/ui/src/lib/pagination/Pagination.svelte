@@ -42,9 +42,9 @@
 		gap: 1em;
 		margin-top: 1em;
 		padding-top: 1em;
-		border-top: 1px solid var(--border, #e6e5e1);
+		border-top: 1px solid var(--border);
 		font-size: 0.9em;
-		color: var(--muted, #64625d);
+		color: var(--muted);
 	}
 
 	span {

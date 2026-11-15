@@ -4,7 +4,7 @@ SvelteKit 5 on :5173. Calls `@template/core` **directly** from remote functions 
 process, no HTTP hop. From the one generated SDK it uses only the TanStack Query helpers, via
 `@template/sdk/query` (an alias of the SDK barrel; below).
 
-TypeScript, Tailwind, bun. Svelte components: use the Svelte MCP server
+TypeScript, plain scoped CSS (no Tailwind), bun. Svelte components: use the Svelte MCP server
 (`list-sections` → `get-documentation` → `svelte-autofixer`) before writing, and keep
 calling `svelte-autofixer` until it is quiet.
 
@@ -87,8 +87,8 @@ Reference: `features/projects`. `$lib/query` owns the client; the `api` hook ser
   `<script>` that awaits a remote query fires before the boundary can catch it.
 - **Guard `[id]` pages** with `{#if params.id}` — params are empty mid-navigation and will
   fire a remote query with `undefined`.
-- **No global CSS.** `routes/layout.css` holds design tokens and the document reset,
-  nothing else. A look shared by more than one screen becomes a component in
+- **No global CSS.** `routes/layout.css` imports `@template/ui/tokens.css` and holds
+  the app-only tokens (charts, shell frame) and the document reset, nothing else. A look shared by more than one screen becomes a component in
   `@template/ui` (`Field`, `Issue`, `Tabs`); a look used once stays scoped in the file
   that uses it. Scoped styles can't cross into a child, so pass a one-off layout tweak to
   a component as `style="..."` rather than reaching in with `:global`.

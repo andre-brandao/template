@@ -132,15 +132,18 @@
 			</span>
 		{/if}
 	</span>
-	{#if time}
-		<input
-			class="time"
-			type="time"
-			aria-label="Time"
-			value={parts?.clock ?? ''}
-			onchange={(e) => emit(at(parts?.day ?? today(cfg.zone), e.currentTarget.value, cfg.zone))}
-		/>
-	{/if}
+	<!-- Inline only once a time is set; until then it waits in the popover. -->
+	{#if time && (focus || parts?.clock)}{@render clock()}{/if}
+{/snippet}
+
+{#snippet clock()}
+	<input
+		class="time"
+		type="time"
+		aria-label="Time"
+		value={parts?.clock ?? ''}
+		onchange={(e) => emit(at(parts?.day ?? today(cfg.zone), e.currentTarget.value, cfg.zone))}
+	/>
 {/snippet}
 
 {#snippet panel(close: () => void)}
@@ -177,9 +180,12 @@
 		onchange={(next) => {
 			pick(next);
 			// With the time field in here too, stay open so it can be set next.
-			if (!(time && trigger)) close();
+			if (!time) close();
 		}}
 	/>
+	{#if time && !trigger}
+		<label class="row">Time {@render clock()}</label>
+	{/if}
 	<Keys
 		today={() => {
 			pick(today(cfg.zone));
@@ -282,6 +288,28 @@
 		padding: 0.4em 0.2em;
 		border-left: 1px solid var(--border);
 		padding-left: 0.5em;
+	}
+
+	/* The calendar button is the field's one icon; the time is typed. */
+	.time::-webkit-calendar-picker-indicator {
+		display: none;
+	}
+
+	.row {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.5em;
+		margin: 0.3em 0.3em 0;
+		padding-top: 0.3em;
+		border-top: 1px solid var(--border);
+		color: var(--muted);
+		font-size: 0.85em;
+	}
+
+	.row .time {
+		border-left: none;
+		text-align: right;
 	}
 
 	.preview {

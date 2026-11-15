@@ -431,6 +431,12 @@
 		scroll-padding-block: 1.9em 0.25em;
 	}
 
+	/* Downward, the top edge is the anchor, so the list can shrink to its rows. */
+	:global([data-side='bottom']) .list {
+		height: auto;
+		max-height: min(17rem, 45vh);
+	}
+
 	.head {
 		position: sticky;
 		z-index: 1;

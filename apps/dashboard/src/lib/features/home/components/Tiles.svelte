@@ -13,21 +13,10 @@
 </nav>
 
 <style>
+	/* One-line rows that wrap into columns, so a narrower page adds rows, never height. */
 	nav {
 		display: grid;
-		grid-template-columns: minmax(0, 1fr);
-		gap: 0.75em;
-	}
-
-	@media (min-width: 480px) {
-		nav {
-			grid-template-columns: repeat(2, minmax(0, 1fr));
-		}
-	}
-
-	@media (min-width: 700px) {
-		nav {
-			grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
-		}
+		grid-template-columns: repeat(auto-fill, minmax(min(14rem, 100%), 1fr));
+		gap: 0.5em;
 	}
 </style>

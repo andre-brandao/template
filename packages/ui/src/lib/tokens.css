@@ -8,6 +8,9 @@
     --bg: light-dark(#f7f7f5, #111110);
     --surface: light-dark(#ffffff, #181817);
     --surface-2: light-dark(#f2f1ee, #222220);
+    /* A modal over the dimmed page: dark mode lifts it and dims harder so the edge reads. */
+    --raised: light-dark(#ffffff, #21211f);
+    --scrim: light-dark(rgb(0 0 0 / 0.32), rgb(0 0 0 / 0.6));
     --border: light-dark(#e6e5e1, #2a2927);
     --border-bright: light-dark(#d3d1cc, #3b3a37);
     --ink: light-dark(#1c1b19, #ecebe7);

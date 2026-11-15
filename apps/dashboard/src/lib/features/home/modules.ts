@@ -12,23 +12,18 @@ const modules = {
   projects: {
     href: "/projects",
     label: "Projects",
-    hint: "Group work into spaces",
+    hint: "Todos grouped by project",
     icon: FolderKanban,
   },
-  todos: { href: "/todos", label: "Todos", hint: "The board and the list", icon: ListTodo },
-  files: {
-    href: "/files",
-    label: "Files",
-    hint: "Everything attached, in one place",
-    icon: Files,
-  },
+  todos: { href: "/todos", label: "Todos", hint: "All todos", icon: ListTodo },
+  files: { href: "/files", label: "Files", hint: "Uploaded attachments", icon: Files },
   insights: {
     href: "/insights",
     label: "Insights",
-    hint: "Trends once the dust settles",
+    hint: "Charts of todo activity",
     icon: ChartLine,
   },
-  admin: { href: "/admin", label: "Admin", hint: "Users, logs and the instance", icon: Gauge },
+  admin: { href: "/admin", label: "Admin", hint: "Users, logs and settings", icon: Gauge },
 } satisfies Record<string, { href: string; label: string; hint: string; icon: Component }>;
 
 /** Widget slots. The route fills each with a snippet, so this slice imports no other. */

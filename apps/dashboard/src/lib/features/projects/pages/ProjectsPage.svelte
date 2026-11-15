@@ -3,6 +3,7 @@
 	import { z } from 'zod';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { createHotkey } from '@tanstack/svelte-hotkeys';
+	import { hotkeys } from '$lib/hotkeys';
 	import { query } from '$lib/utils/params';
 	import { debounce } from '$lib/utils/debounce';
 	import { Button, Empty, Input, Issue, Kbd, Skeleton, modal } from '@template/ui';
@@ -22,8 +23,8 @@
 
 	const add = () => modal(ProjectForm);
 
-	createHotkey('C', add);
-	createHotkey('/', () => search?.focus());
+	createHotkey(hotkeys.create, add);
+	createHotkey(hotkeys.search, () => search?.focus());
 </script>
 
 <Header.Root title="Projects" lead="Each project files its own todos, stages and insights.">

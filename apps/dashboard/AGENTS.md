@@ -62,6 +62,20 @@ Reference: `features/projects`. `$lib/query` owns the client; the `api` hook ser
   ``const data = await event.parent(); await data.queryClient.prefetchQuery(getXOptions({ baseUrl: `${event.url.origin}/api`, fetch: event.fetch, ... }))``
 - App-wide providers (query client, shared contexts) live in `components/layout/ShellProvider.svelte`; a slice's context (`createAgent`) stays in the root layout.
 
+## Palette and hotkeys
+
+`routes/Palette.svelte` is the ⌘K palette. It reads only memory when it opens: no request.
+
+- **Nav** comes from data that already exists: the current layout's `nav`, plus `home` and
+  `account()` from `components/layout/nav.ts`. A new section shows up once its layout returns `nav`.
+- **An app-wide action** is one entry in `actions` there. Routes may import slices, so it raises a
+  slice's own form (`run: () => modal(ProjectForm)`); gate it with `me.can(...)`.
+- **A page action** is a hotkey, not a palette entry. Declare it once in `$lib/hotkeys.ts` (with
+  `meta.name` and `meta.group`), then bind it where the page mounts:
+  `createHotkey(hotkeys.create, add)`. The `?` sheet lists every declared key, dimming the ones
+  this page doesn't bind. Reuse `create` (`C`) and `search` (`/`) before declaring a new key.
+- Open modals and the palette hold exclusive scopes, so page keys never fire behind them.
+
 ## Rules
 
 - **No cross-slice imports.** Routes compose slices via snippets; anything genuinely shared

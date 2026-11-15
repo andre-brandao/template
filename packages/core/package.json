@@ -33,6 +33,7 @@
     "./connection": "./src/platform/connection/index.ts",
     "./app": "./src/platform/app/index.ts",
     "./feedback": "./src/platform/feedback/index.ts",
+    "./file": "./src/platform/file/index.ts",
     "./webhook": "./src/platform/webhook/index.ts",
     "./webhook/*": "./src/platform/webhook/*.ts",
     "./conversation/*": "./src/platform/conversation/*.ts",

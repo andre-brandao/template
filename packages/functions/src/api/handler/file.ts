@@ -3,56 +3,21 @@ import { Hono } from "hono";
 import { describeRoute } from "hono-openapi";
 import { validator, authRequired } from "../common";
 import { describe } from "../doc";
-import { Identity } from "@template/core/identity";
-import { Signing } from "@template/core/key/signing";
+import { File } from "@template/core/file";
 import { Storage } from "@template/core/storage";
-import { check } from "@template/core/storage/adapter/serve";
-import { Examples } from "@template/core/examples";
 import { VisibleError, ErrorCodes } from "@template/core/error";
-import { Assert } from "@template/core/util/assert";
 
 export namespace FileApi {
-  const MAX = 20 * 1024 * 1024;
-
   const doc = describe("File");
 
-  const assert = Assert.create("File");
-
-  /** `Storage.Entry` on the wire — what `list` can report about an object. */
-  const Info = z
-    .object({
-      key: z.string(),
-      size: z.number(),
-      lastModified: z.iso.datetime().nullable(),
-    })
-    .meta({
-      ref: "File",
-      description: "An object on the user's storage disk.",
-      example: Examples.File,
-    });
-
-  /** `Storage.Meta` — an `Info` plus the content type, which only `head` knows. */
-  const Meta = Info.extend({ contentType: z.string() }).meta({
-    ref: "FileMeta",
-    description: "An object on the user's storage disk, with its content type.",
-    example: { ...Examples.File, contentType: "image/png" },
-  });
-
-  /** The `:name` path param, before `key()` flattens it to a basename. */
+  /** The `:name` path param, before core flattens it to a basename. */
   const param = z.object({ name: z.string() });
 
-  /**
-   * There is no metadata table, so a key's prefix *is* its owner. `name` comes off a
-   * filename, so it's flattened to a basename — otherwise `../` walks into someone else.
-   */
-  function key(name: string) {
-    const base = name.split(/[\\/]/).at(-1)?.trim();
-    if (!base || base === "." || base === "..") invalid(`Invalid filename: ${name}`);
-    return `${Identity.userID()}/${base}`;
-  }
-
-  function invalid(message: string): never {
-    throw new VisibleError("validation", ErrorCodes.Validation.INVALID_PARAMETER, message);
+  function bytes(object: Storage.Object) {
+    return new Response(new Blob([new Uint8Array(object.bytes)]), {
+      status: 200,
+      headers: { "Content-Type": object.contentType },
+    });
   }
 
   export const route = new Hono()
@@ -62,9 +27,8 @@ export namespace FileApi {
       // shapes responses.
       describeRoute({
         tags: ["File"],
-        summary: "Upload file",
-        description:
-          "Multipart form with a `file` field. The filename becomes the key, so re-uploading the same name overwrites.",
+        summary: File.put.meta.title,
+        description: File.put.meta.description,
         requestBody: {
           content: {
             "multipart/form-data": {
@@ -77,60 +41,38 @@ export namespace FileApi {
           },
         },
         responses: {
-          200: doc.json(Meta),
+          200: doc.json(File.Meta),
           ...doc.errors(400, 401, 403, 500),
         },
       }),
       authRequired,
       async (c) => {
-        Identity.check({ file: ["create"] });
         const file = (await c.req.parseBody()).file;
-        if (!(file instanceof globalThis.File)) invalid("Missing file");
-        if (file.size > MAX) invalid(`File too large: max ${MAX} bytes`);
-
-        const at = key(file.name);
-        await Storage.disk().put(
-          at,
-          new Uint8Array(await file.arrayBuffer()),
-          file.type || "application/octet-stream",
-        );
-        return c.json(await assert.exists(Storage.disk().head(at)), 200);
+        if (!(file instanceof globalThis.File))
+          throw new VisibleError(
+            "validation",
+            ErrorCodes.Validation.INVALID_PARAMETER,
+            "Missing file",
+          );
+        return c.json(await File.put(file), 200);
       },
     )
     .get(
       "/",
-      doc(
-        {
-          title: "List files",
-          description: "Everything under the user's prefix on the default disk, newest first.",
-        },
-        {
-          200: doc.list(Info),
-          ...doc.errors(401, 403, 500),
-        },
-      ),
+      doc(File.list.meta, {
+        200: doc.list(File.Info),
+        ...doc.errors(401, 403, 500),
+      }),
       authRequired,
-      async (c) => {
-        Identity.check({ file: ["read"] });
-        const rows = await Storage.disk().list(`${Identity.userID()}/`);
-        rows.sort((a, b) => (b.lastModified?.getTime() ?? 0) - (a.lastModified?.getTime() ?? 0));
-        return c.json(rows, 200);
-      },
+      async (c) => c.json(await File.list(), 200),
     )
     .get(
       "/signed",
-      doc(
-        {
-          title: "Get signed file content",
-          description:
-            "Serves the bytes for a `temporaryUrl` minted by a disk that can't presign (fs, R2 binding). The signature stands in for the session, so no token is needed.",
-        },
-        // No 401: the signature stands in for the session, so this route never runs `authRequired`.
-        {
-          200: { description: "The raw file bytes." },
-          ...doc.errors(400, 403, 404, 500),
-        },
-      ),
+      // No 401: the signature stands in for the session, so this route never runs `authRequired`.
+      doc(File.signed.meta, {
+        200: { description: "The raw file bytes." },
+        ...doc.errors(400, 403, 404, 500),
+      }),
       validator(
         "query",
         z.object({
@@ -140,91 +82,50 @@ export namespace FileApi {
           sig: z.string(),
         }),
       ),
-      async (c) => {
-        const query = c.req.valid("query");
-        const secret = await Signing.secret(query.kid);
-        if (!secret || !(await check(query, secret)))
-          throw new VisibleError(
-            "forbidden",
-            ErrorCodes.Permission.FORBIDDEN,
-            "This link is invalid or has expired",
-          );
-
-        const object = await assert.exists(Storage.disk().get(query.key));
-        return new Response(new Blob([new Uint8Array(object.bytes)]), {
-          status: 200,
-          headers: { "Content-Type": object.contentType },
-        });
-      },
+      async (c) => bytes(await File.signed(c.req.valid("query"))),
     )
     .get(
       "/:name/content",
-      doc(
-        {
-          title: "Get file content",
-          description:
-            "Redirects to a presigned storage URL when the disk supports it; streams the bytes otherwise.",
-        },
-        {
-          200: { description: "The raw file bytes." },
-          302: { description: "Redirect to a presigned storage URL." },
-          ...doc.errors(400, 401, 403, 404, 500),
-        },
-      ),
+      doc(File.get.meta, {
+        200: { description: "The raw file bytes." },
+        302: { description: "Redirect to a presigned storage URL." },
+        ...doc.errors(400, 401, 403, 404, 500),
+      }),
       authRequired,
       validator("param", param),
       async (c) => {
-        Identity.check({ file: ["read"] });
-        const at = key(c.req.valid("param").name);
-        const url = await Storage.disk().temporaryUrl(at);
+        const name = c.req.valid("param").name;
+        const url = await File.url(name);
         if (url) return c.redirect(url, 302);
-
-        const object = await assert.exists(Storage.disk().get(at));
-        return new Response(new Blob([new Uint8Array(object.bytes)]), {
-          status: 200,
-          headers: { "Content-Type": object.contentType },
-        });
+        return bytes(await File.get(name));
       },
     )
     .patch(
       "/:name",
-      doc(
-        {
-          title: "Rename file",
-          description: "Moves the object to a new key under the same prefix.",
-        },
-        {
-          200: doc.json(Meta),
-          ...doc.errors(400, 401, 403, 404, 500),
-        },
-      ),
+      doc(File.rename.meta, {
+        200: doc.json(File.Meta),
+        ...doc.errors(400, 401, 403, 404, 500),
+      }),
       authRequired,
       validator("param", param),
-      validator("json", z.object({ name: z.string().trim().min(1).max(255) })),
-      async (c) => {
-        Identity.check({ file: ["update"] });
-        const from = key(c.req.valid("param").name);
-        const to = key(c.req.valid("json").name);
-        await assert.exists(Storage.disk().head(from));
-        await Storage.disk().move(from, to);
-        return c.json(await assert.exists(Storage.disk().head(to)), 200);
-      },
+      validator("json", z.object({ name: File.rename.schema.shape.to })),
+      async (c) =>
+        c.json(
+          await File.rename({ from: c.req.valid("param").name, to: c.req.valid("json").name }),
+          200,
+        ),
     )
     .delete(
       "/:name",
       // No 404: the disks treat deleting a missing key as a no-op.
-      doc(
-        { title: "Delete file" },
-        {
-          200: doc.ok,
-          ...doc.errors(400, 401, 403, 500),
-        },
-      ),
+      doc(File.remove.meta, {
+        200: doc.ok,
+        ...doc.errors(400, 401, 403, 500),
+      }),
       authRequired,
       validator("param", param),
       async (c) => {
-        Identity.check({ file: ["delete"] });
-        await Storage.disk().delete(key(c.req.valid("param").name));
+        await File.remove(c.req.valid("param").name);
         return c.json("ok" as const, 200);
       },
     );

@@ -1,6 +1,6 @@
-<!-- Raised through `modal(TodoForm, { scope })`, which passes `close`. -->
+<!-- Raised through `modal(TodoForm, { scope, due })`, which passes `close`. -->
 <script lang="ts">
-	import { Button, DatePicker, Field, Input, Issue, MarkdownEditor, toDay } from '@template/ui';
+	import { Button, DatePicker, Field, Input, Issue, MarkdownEditor, fromDay, toDay } from '@template/ui';
 	import { upload } from '$lib/upload';
 	import { fmt } from '$lib/utils/fmt';
 	import { create } from '../../api/todos.query';
@@ -12,8 +12,14 @@
 
 	let {
 		close,
-		scope = {}
-	}: { close: () => void; scope?: { source?: string; sourceID?: string } } = $props();
+		scope = {},
+		due
+	}: {
+		close: () => void;
+		scope?: { source?: string; sourceID?: string };
+		/** A `YYYY-MM-DD` the due field starts on, like a clicked calendar day. */
+		due?: string;
+	} = $props();
 
 	let body = $state('');
 	let tags = $state<string[]>([]);
@@ -72,6 +78,7 @@
 				name="dueDate"
 				label="Due"
 				placeholder="No due date"
+				value={due && fromDay(due, f.zone)}
 				min={start && toDay(start, f.zone)}
 				time
 				clearable

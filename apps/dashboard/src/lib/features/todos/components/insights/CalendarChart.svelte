@@ -14,39 +14,44 @@
 	import { Chart } from '@tanstack/charts/svelte';
 	import { tooltip } from '@tanstack/charts/tooltip';
 	import { portal } from '@tanstack/charts/tooltip/portal';
+	import { dates } from '@template/ui';
 
 	let { data }: { data: Data } = $props();
 
 	let width = $state(0);
 
+	const cfg = dates();
 	const DAY = 86_400_000;
 	const at = (iso: string) => new Date(`${iso}T00:00:00`);
-	const short = (day: Date) => day.toLocaleDateString('en', { month: 'short', day: 'numeric' });
+	const short = (day: Date) => day.toLocaleDateString(cfg.locale, { month: 'short', day: 'numeric' });
+	const origin = $derived(['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'].indexOf(cfg.weekStart));
+	// The row a date sits in, counted from the locale's first weekday.
+	const slot = (date: Date) => (date.getDay() - origin + 7) % 7;
 
 	// GitHub-style 5-step ramp: 0 empty, then quartiles of the busiest day.
 	const level = (n: number) =>
 		n === 0 || data.max === 0 ? 0 : Math.min(4, Math.ceil((n / data.max) * 4));
 
-	// One row per day from start..end inclusive, zero-filled; weeks are Sunday-started columns.
+	// One row per day from start..end inclusive, zero-filled; weeks start on the locale's day.
 	const grid = $derived.by(() => {
 		const counts = new Map(data.days.map((d) => [d.day, d.count]));
 		const start = at(data.start);
 		const stop = at(data.end);
-		const sunday = new Date(start.getTime() - start.getDay() * DAY);
+		const anchor = new Date(start.getTime() - slot(start) * DAY);
 		const rows = [];
 		const ticks = [];
 		const labels = new Map<number, string>();
 		for (const date = new Date(start); date <= stop; date.setDate(date.getDate() + 1)) {
 			const day = date.toLocaleDateString('en-CA');
 			// Math.round absorbs DST hour shifts in the day distance.
-			const week = Math.floor(Math.round((date.getTime() - sunday.getTime()) / DAY) / 7);
+			const week = Math.floor(Math.round((date.getTime() - anchor.getTime()) / DAY) / 7);
 			const count = counts.get(day) ?? 0;
 			const first = rows.length === 0 || date.getDate() === 1;
 			if (first && !labels.has(week)) {
 				ticks.push(week);
-				labels.set(week, date.toLocaleDateString('en', { month: 'short' }));
+				labels.set(week, date.toLocaleDateString(cfg.locale, { month: 'short' }));
 			}
-			rows.push({ day, date: new Date(date), week, weekday: date.getDay(), count, level: level(count) });
+			rows.push({ day, date: new Date(date), week, weekday: slot(date), count, level: level(count) });
 		}
 		const weeks = [...new Set(rows.map((row) => row.week))];
 		return { rows, weeks, ticks, labels };

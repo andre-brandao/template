@@ -1,15 +1,15 @@
 <!-- Every todo opened in the last 90 days, as one rule split by where each stands now. -->
 <script lang="ts">
 	import { createQuery } from '@tanstack/svelte-query';
-	import { Issue } from '@template/ui';
+	import { Issue, last, today } from '@template/ui';
 	import Rule from '$lib/components/Rule.svelte';
-	import { fmt, last } from '$lib/utils/fmt';
+	import { fmt } from '$lib/utils/fmt';
 	import { statuses } from '../api/todos.query';
 	import { color, label, STATUSES } from '../status';
 
 	const f = fmt();
 	// A quarter, not insights' month: the glance before you go anywhere spans more than a sprint.
-	const query = createQuery(() => statuses(last(90, f.zone)));
+	const query = createQuery(() => statuses(last(90, today(f.zone))));
 
 	// The same five columns, unmeasured — the shape the real rule lands in.
 	const blank = STATUSES.map((status) => ({

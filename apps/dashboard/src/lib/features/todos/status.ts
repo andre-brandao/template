@@ -1,5 +1,5 @@
 import type { Todo } from "@template/core/todo";
-import { day, today } from "$lib/utils/fmt";
+import { toDay, today } from "@template/ui";
 
 /** Pipeline order — the board's column order, and the picker's menu order. */
 export const STATUSES = ["backlog", "planned", "active", "blocked", "done"] as const;
@@ -18,4 +18,4 @@ export const color = (status: Todo.Status) => meta[status].color;
 
 /** Past its due day in the zone with work outstanding; due today isn't late until the day ends. */
 export const late = (todo: Todo.Info, zone: string) =>
-  todo.status !== "done" && !!todo.dueDate && day(todo.dueDate, zone) < today(zone);
+  todo.status !== "done" && !!todo.dueDate && toDay(todo.dueDate, zone) < today(zone);

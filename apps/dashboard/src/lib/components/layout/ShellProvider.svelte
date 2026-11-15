@@ -39,12 +39,15 @@
 		can: (grants, owned) => Permission.can(data.user?.role, grants, owned)
 	});
 
-	// A quiet accent dot in place of the logo; core reruns this on theme change.
+	// A small accent dot in place of the logo, inside a 28px hit area so it's easy to click.
+	// Core reruns this on theme change.
 	function trigger(el: HTMLElement) {
+		const hit = document.createElement('span');
+		hit.style.cssText = 'display:grid;place-items:center;width:28px;height:28px;opacity:0.7';
 		const dot = document.createElement('span');
-		dot.style.cssText =
-			'display:block;width:8px;height:8px;border-radius:50%;background:var(--accent)';
-		el.replaceChildren(dot);
+		dot.style.cssText = 'width:10px;height:10px;border-radius:50%;background:var(--accent)';
+		hit.replaceChildren(dot);
+		el.replaceChildren(hit);
 	}
 </script>
 
@@ -59,7 +62,6 @@
 				config={{
 					triggerMode: 'fixed',
 					position: 'bottom-right',
-					hideUntilHover: true,
 					openHotkey: ['Control', '~'],
 					customTrigger: trigger
 				}}

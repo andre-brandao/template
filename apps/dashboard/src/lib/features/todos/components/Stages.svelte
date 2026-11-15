@@ -3,14 +3,18 @@
 <!-- fallow-ignore-file code-duplication -->
 <script lang="ts">
 	import { createQuery } from '@tanstack/svelte-query';
-	import { Empty, Issue, Skeleton } from '@template/ui';
-	import { stages } from '../api/todos.query';
+	import { Empty, Inline, Issue, Skeleton } from '@template/ui';
+	import Pencil from '@lucide/svelte/icons/pencil';
+	import { rename, stages } from '../api/todos.query';
 	import { fmt } from '$lib/utils/fmt';
 
 	let { scope, base }: { scope: { source: string; sourceID: string }; base: string } = $props();
 
 	const f = fmt();
 	const query = createQuery(() => stages(scope));
+	const save = rename();
+	// The stage being renamed; Inline owns the draft and its Status dot.
+	let editing = $state<string>();
 
 	const span = (stage: { start: string | null; end: string | null }) =>
 		[stage.start && f.date(stage.start), stage.end && f.date(stage.end)].filter(Boolean).join(' → ');
@@ -26,7 +30,26 @@
 	<ul>
 		{#each query.data as stage (stage.name)}
 			<li>
-				<a href="{base}?stage={encodeURIComponent(stage.name)}">{stage.name}</a>
+				{#if editing === stage.name}
+					<div class="edit" onfocusout={() => (editing = undefined)} {@attach (el) => el.querySelector('button')?.focus()}>
+						<Inline
+							label="Stage name"
+							value={stage.name}
+							onsave={(to) => save.mutateAsync({ body: { from: stage.name, to, ...scope } })}
+						/>
+					</div>
+				{:else}
+					<span class="name">
+						<a href="{base}?stage={encodeURIComponent(stage.name)}">{stage.name}</a>
+						<button
+							class="rename"
+							type="button"
+							aria-label="Rename {stage.name}"
+							disabled={save.isPending}
+							onclick={() => (editing = stage.name)}><Pencil size={12} strokeWidth={1.75} /></button
+						>
+					</span>
+				{/if}
 				<span class="when">{span(stage) || 'undated'}</span>
 				<span class="count">{stage.done}/{stage.total}</span>
 				<span class="track">
@@ -72,6 +95,51 @@
 
 	a:hover {
 		color: var(--accent);
+	}
+
+	.name {
+		display: flex;
+		align-items: center;
+		gap: 0.4em;
+		min-width: 0;
+	}
+
+	.edit {
+		margin: -0.2em -0.4em;
+	}
+
+	.rename {
+		display: grid;
+		place-items: center;
+		padding: 0.2em;
+		border: none;
+		border-radius: var(--radius-sm);
+		background: none;
+		color: var(--dim);
+		cursor: pointer;
+		opacity: 0;
+		transition: opacity 140ms ease;
+	}
+
+	li:hover .rename,
+	.rename:focus-visible {
+		opacity: 1;
+	}
+
+	.rename:hover {
+		color: var(--ink);
+	}
+
+	@media (hover: none) {
+		.rename {
+			opacity: 1;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.rename {
+			transition: none;
+		}
 	}
 
 	.when,

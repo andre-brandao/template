@@ -22,6 +22,7 @@ import {
   getTodoStageQueryKey,
   getUserOptions,
   patchTodoByIdMutation,
+  patchTodoStageMutation,
   postTodoByIdLinkMutation,
   postTodoByIdMoveMutation,
   postTodoMutation,
@@ -101,6 +102,14 @@ export const create = (opts?: Pick<ReturnType<typeof postTodoMutation>, "onSucce
 export const update = (opts?: Pick<ReturnType<typeof patchTodoByIdMutation>, "onSuccess">) =>
   createMutation(() => ({
     ...patchTodoByIdMutation(),
+    meta: { invalidates: todo },
+    ...opts,
+  }));
+
+// Relabels every todo in a stage at once.
+export const rename = (opts?: Pick<ReturnType<typeof patchTodoStageMutation>, "onSuccess">) =>
+  createMutation(() => ({
+    ...patchTodoStageMutation(),
     meta: { invalidates: todo },
     ...opts,
   }));

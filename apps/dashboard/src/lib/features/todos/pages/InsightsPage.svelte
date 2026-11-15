@@ -2,7 +2,8 @@
 	import { z } from 'zod';
 	import { query } from '$lib/utils/params';
 	import * as Header from '$lib/components/header';
-	import { RangePicker, last, valid } from '@template/ui';
+	import { useIsFetching } from '@tanstack/svelte-query';
+	import { RangePicker, Status, last, valid } from '@template/ui';
 	import { debounce } from '$lib/utils/debounce';
 	import StatsSection from '../components/insights/StatsSection.svelte';
 	import ActivitySection from '../components/insights/ActivitySection.svelte';
@@ -26,6 +27,8 @@
 	const picked = $derived(valid(params) ? { start: params.start, end: params.end } : fallback);
 	const range = $derived({ ...picked, ...scope });
 	const commit = debounce(params.update, 250);
+	// Every insight carries the Todo tag; the dot pulses while a new range loads.
+	const fetching = useIsFetching({ queryKey: [{ tags: ['Todo'] }] });
 </script>
 
 <!-- Scoped to a project, the project rides above the title as the way back. -->
@@ -38,6 +41,9 @@
 		<Header.Group label="Period">
 			<RangePicker range={picked} onchange={commit} />
 		</Header.Group>
+		{#if fetching.current}
+			<Header.Group end><Status state="pending" /></Header.Group>
+		{/if}
 	{/snippet}
 </Header.Root>
 

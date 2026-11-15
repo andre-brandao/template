@@ -2,7 +2,9 @@
 	import { z } from 'zod';
 	import { createTable, renderSnippet } from '@tanstack/svelte-table';
 	import type { ColumnDef, Row } from '@tanstack/svelte-table';
-	import { Button, DataTable, features } from '@template/ui';
+	import { goto } from '$app/navigation';
+	import { DataTable, Menu, Status, features } from '@template/ui';
+	import Ellipsis from '@lucide/svelte/icons/ellipsis';
 	import { SvelteSet } from 'svelte/reactivity';
 	import type { Todo } from '@template/core/todo';
 	import { query } from '$lib/utils/params';
@@ -11,7 +13,8 @@
 	import StatusPicker from '../StatusPicker.svelte';
 	import TagList from '../TagList.svelte';
 	import { late } from '../../status';
-	import { move, remove } from '../../api/todos.query';
+	import { move } from '../../api/todos.query';
+	import Delete from '../Delete.svelte';
 	import { moves, tree, visible, type Node } from '../../tree';
 	import { sort } from '../../sort';
 
@@ -30,7 +33,6 @@
 	}
 
 	const shift = move();
-	const drop = remove();
 
 	const nest = (to: { id: string; parentID: string | null; position?: number }) =>
 		shift.mutate({ path: { id: to.id }, body: { parentID: to.parentID, position: to.position } });
@@ -41,12 +43,8 @@
 	// `getTodos` it re-runs — has resolved. Reading sorting back off the URL would hand the
 	// next click a pre-click value, and TanStack replaces rather than appends when the state
 	// it is given is empty. Local state leads; the URL follows.
-	let sorting = $state(sort.decode(params.sort));
-
-	// Back and forward move the URL without passing through the toggle.
-	$effect(() => {
-		sorting = sort.decode(params.sort);
-	});
+	// Writable derived: back and forward move the URL without passing through the toggle.
+	let sorting = $derived(sort.decode(params.sort));
 
 	// Cells render through snippets rather than a row component, so the column definition is
 	// the single place a column's header, sort key and markup are declared together.
@@ -122,6 +120,9 @@
 		{#if node.total}
 			<span class="dim">{node.done}/{node.total}</span>
 		{/if}
+		{#if shift.variables?.path.id === node.id}
+			<Status state={shift.isPending ? 'pending' : shift.isError ? 'failed' : 'saved'} message={shift.error?.message} />
+		{/if}
 	</span>
 {/snippet}
 
@@ -144,30 +145,33 @@
 {/snippet}
 
 {#snippet status(row: Cell)}
-	<StatusPicker todo={row.original} compact />
+	<StatusPicker todo={row.original} />
 {/snippet}
 
 {#snippet actions(row: Cell)}
 	{@const to = moves(nodes, row.original)}
-	<div class="acts">
-		<Button
-			variant="ghost"
-			type="button"
-			disabled={!to.outdent}
-			onclick={() => to.outdent && nest(to.outdent)}>Outdent</Button
-		>
-		<Button
-			variant="ghost"
-			type="button"
-			disabled={!to.indent}
-			onclick={() => to.indent && nest(to.indent)}>Indent</Button
-		>
-		<Button
-			variant="ghost"
-			pending={drop.isPending && drop.variables?.path.id === row.original.id}
-			onclick={() => drop.mutate({ path: { id: row.original.id } })}>Delete</Button
-		>
-	</div>
+	<Delete id={row.original.id} title={row.original.title}>
+		{#snippet children(ask, deleting)}
+			<Menu.Root label="{row.original.title} actions" align="end">
+				{#snippet trigger(attrs)}
+					<button class="dots" aria-label="{row.original.title} actions" {...attrs}>
+						<Ellipsis size={16} strokeWidth={1.75} />
+					</button>
+				{/snippet}
+				<Menu.Item onselect={() => goto(`/todos/${row.original.id}`)}>Open</Menu.Item>
+				<Menu.Item
+					disabled={!to.indent || shift.isPending}
+					onselect={() => to.indent && nest(to.indent)}>Indent</Menu.Item
+				>
+				<Menu.Item
+					disabled={!to.outdent || shift.isPending}
+					onselect={() => to.outdent && nest(to.outdent)}>Outdent</Menu.Item
+				>
+				<Menu.Separator />
+				<Menu.Item danger disabled={deleting} onselect={ask}>Delete</Menu.Item>
+			</Menu.Root>
+		{/snippet}
+	</Delete>
 {/snippet}
 
 <DataTable {table} empty="No tasks yet" />
@@ -183,10 +187,23 @@
 		color: var(--danger);
 	}
 
-	.acts {
-		display: flex;
-		gap: 0.4em;
-		justify-content: flex-end;
+	.dots {
+		display: grid;
+		place-items: center;
+		width: 1.9em;
+		height: 1.9em;
+		margin-left: auto;
+		border: none;
+		border-radius: var(--radius-sm);
+		background: none;
+		color: var(--muted);
+		cursor: pointer;
+	}
+
+	.dots:hover,
+	.dots[aria-expanded='true'] {
+		background: var(--hover);
+		color: var(--ink);
 	}
 
 	.title {

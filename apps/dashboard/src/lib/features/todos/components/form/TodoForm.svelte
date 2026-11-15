@@ -1,3 +1,4 @@
+<!-- Raised through `modal(TodoForm, { scope })`, which passes `close`. -->
 <script lang="ts">
 	import { Button, Field, Input, Issue, MarkdownEditor } from '@template/ui';
 	import { upload } from '$lib/upload';
@@ -9,22 +10,13 @@
 	import { day, text } from '../../fields';
 
 	let {
-		onsuccess,
+		close,
 		scope = {}
-	}: { onsuccess?: () => void; scope?: { source?: string; sourceID?: string } } = $props();
+	}: { close: () => void; scope?: { source?: string; sourceID?: string } } = $props();
 
 	let body = $state('');
 	let tags = $state<string[]>([]);
-	let form = $state<HTMLFormElement>();
-
-	const save = create({
-		onSuccess: () => {
-			form?.reset();
-			body = '';
-			tags = [];
-			onsuccess?.();
-		}
-	});
+	const save = create({ onSuccess: () => close() });
 
 	function submit(e: SubmitEvent & { currentTarget: HTMLFormElement }) {
 		e.preventDefault();
@@ -46,13 +38,15 @@
 	}
 </script>
 
+<h2>New todo</h2>
+
 {#if save.error}
 	<Issue>{save.error.message}</Issue>
 {/if}
 
-<form class="add" bind:this={form} onsubmit={submit}>
+<form class="add" onsubmit={submit}>
 	<Field label="Title">
-		<Input name="title" placeholder="What needs doing?" required />
+		<Input name="title" placeholder="What needs doing?" required autofocus />
 	</Field>
 
 	<div class="pair">
@@ -92,6 +86,7 @@
 	</Field>
 
 	<div class="footer">
+		<Button variant="ghost" type="button" onclick={close}>Cancel</Button>
 		<Button type="submit" pending={save.isPending}>Add todo</Button>
 	</div>
 </form>
@@ -101,8 +96,7 @@
 		display: flex;
 		flex-direction: column;
 		gap: 1em;
-		margin-bottom: 1.25em;
-	}
+			}
 
 	.pair {
 		display: grid;
@@ -110,9 +104,15 @@
 		gap: 1em;
 	}
 
+	h2 {
+		margin: 0 0 1em;
+		font-size: 1.05em;
+	}
+
 	.footer {
 		display: flex;
 		justify-content: flex-end;
+		gap: 0.5em;
 	}
 
 	select {

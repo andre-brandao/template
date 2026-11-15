@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { createQuery } from '@tanstack/svelte-query';
-	import { Button, Card, Issue, Section, Skeleton } from '@template/ui';
+	import { Button, Card, Inline, Issue, Section, Skeleton } from '@template/ui';
 	import type { Event } from '@template/core/event';
-	import { get, link, remove, unlink, update } from '../api/todos.query';
+	import { get, link, unlink, update } from '../api/todos.query';
 	import Timeline from '$lib/features/events/components/Timeline.svelte';
 	import StatusPill from './StatusPill.svelte';
 	import StatusPicker from './StatusPicker.svelte';
@@ -10,6 +10,7 @@
 	import Head from './editor/Head.svelte';
 	import Facts from './editor/Facts.svelte';
 	import Description from './editor/Description.svelte';
+	import Delete from "./Delete.svelte";
 	import Plan from "./editor/Plan.svelte";
 	import SubIssues from './editor/SubIssues.svelte';
 	import Links from '$lib/components/Links.svelte';
@@ -29,7 +30,6 @@
 
 	const query = createQuery(() => get(id));
 	const save = update();
-	const drop = remove({ onSuccess: () => onremove() });
 	const attach = link();
 	const detach = unlink();
 
@@ -63,7 +63,13 @@
 				{#if !page}
 					<!-- Flat, like a page header: the title is the hierarchy, a hairline closes it. -->
 					<header class="head">
-						<h1>{todo.title}</h1>
+						<h1>
+							<Inline
+								label="Title"
+								value={todo.title}
+								onsave={(next) => save.mutateAsync({ path: { id }, body: { title: next } })}
+							/>
+						</h1>
 						<div class="pills">
 							<StatusPill status={todo.status} reason={todo.reason} />
 						</div>
@@ -93,17 +99,13 @@
 					<Facts {todo} />
 					<Plan {todo} />
 
-					{#if drop.error}
-						<Issue>{drop.error.message}</Issue>
-					{/if}
-
 					<div class="actions">
 						<StatusPicker {todo} />
-						<Button
-							variant="danger"
-							pending={drop.isPending}
-							onclick={() => drop.mutate({ path: { id } })}>Delete</Button
-						>
+						<Delete {id} title={todo.title} ondone={onremove}>
+							{#snippet children(ask, deleting)}
+								<Button variant="danger" pending={deleting} onclick={ask}>Delete</Button>
+							{/snippet}
+						</Delete>
 					</div>
 				</Card>
 

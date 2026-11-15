@@ -15,6 +15,7 @@
 	import type { Snippet } from 'svelte';
 	import { browser } from '$app/environment';
 	import { useQueryClient } from '@tanstack/svelte-query';
+	import { createHotkey } from '@tanstack/svelte-hotkeys';
 	import { Button, Input, LazySelect, Select } from '@template/ui';
 	import * as Header from '$lib/components/header';
 	import { debounce } from '$lib/utils/debounce';
@@ -41,6 +42,9 @@
 	const commit = debounce((search: string) => onchange({ ...filters, search }), 300);
 	const pick = (next: Partial<Filters>) => onchange({ ...filters, ...next });
 
+	let field: HTMLInputElement | undefined;
+	createHotkey("/", () => field?.focus());
+
 	const filtered = $derived(
 		!!(filters.search || filters.assignee || filters.stage) || filters.status !== 'all'
 	);
@@ -52,8 +56,12 @@
 		name="search"
 		autocomplete="off"
 		aria-label="Search todos"
+		aria-keyshortcuts="/"
 		placeholder="Search todos…"
 		value={input}
+		{@attach (el: HTMLInputElement) => {
+			field = el;
+		}}
 		oninput={(e) => {
 			input = e.currentTarget.value;
 			commit(input);

@@ -14,12 +14,15 @@ the DDL (`conversation`, `conversation_message`) lives in core, at
   schemas; every tool of a run (MCP and browser included) goes out with an open root.
 - `api/conversation.ts` — `Conversation`: `record`, `list`, `fromID`, `remove`, always the
   actor's own threads. `agent` is free text, so a new agent needs no migration.
-- `api/agents.ts` — the registry: `export const agents = { orchestrator }`.
+- `api/agents.ts` — the registry: `export const agents = { orchestrator, panel }`.
 - `api/<name>/agent.ts` — one folder per agent, a function that calls `chat()` directly with
   its own persona, tools, MCP access and `Agent.recorder({ agent: "<name>", thread })`.
-- `api/orchestrator/` — the dashboard orchestrator, plus its admin-only server tools: `sql.ts` (`Sql`,
-  read-only SQL over a table→resource allowlist, a 20-row sample for the model) and
-  `panel.ts` (`Panel`, saved json-render specs in Storage under `panels/`).
+- `api/orchestrator/` — the dashboard orchestrator: the MCP, the page tools, and for admins
+  the `panel` subagent plus its `delegate` prompt.
+- `api/panel/` — the `panel` subagent (admins only, `undefined` for anyone else), plus its
+  server tools: `sql.ts` (`Sql`, read-only SQL over a table→resource allowlist, a 20-row
+  sample for the model) and `panel.ts` (`Panel`, saved json-render specs in Storage under
+  `panels/`). Its `draft` tool checks a spec server-side; the last ok one is its result.
 - `api/serve.ts` — the SSE endpoint behind `routes/(app)/agent/+server.ts`. Reads
   `forwardedProps` (`page`, `thread`, `model`) and forwards the session cookie as the MCP
   bearer, so every MCP call runs as the signed-in user.
@@ -27,8 +30,11 @@ the DDL (`conversation`, `conversation_message`) lives in core, at
   `pageTools(list, views)`: client tools a mounted component declares for as long as it lives.
 - `components/Dock.svelte` — the drawer and its open button. `routes/+layout.svelte` composes it
   into the Shell through its `side` snippet; shared layout never imports a feature.
+- `components/Message.svelte` — a subagent part renders as its steps (a recursive snippet)
+  under the tool call that started it; a reloaded transcript keeps only the call's chip.
 - `ask/` — the `ask` page tool: a json-render form catalog, answered in the chat.
-- `panel/` — the `panel` page tool (admins): blocks run their own SQL in the browser.
+- `panel/` — the `show` page tool (admins): draws the spec `panel` returned, blocks running
+  their own SQL in the browser. `check.ts` is shared with `draft`, over another row source.
 
 ## Add an agent
 
@@ -39,9 +45,15 @@ with `Agent.recorder({ agent: "<name>", thread })`; list its history with
 
 ## Subagents
 
-A specialist another agent delegates to is wrapped with TanStack's `defineAgent` and passed
-via `chat({ subagents })`; its function takes `Agent.Run` so `run(ctx)` spreads the ids in.
-Parent middleware does not reach a child, so it keeps its own recorder.
+A specialist another agent delegates to is a factory returning TanStack's `defineAgent`,
+built inside the request and passed via `chat({ subagents: { agents: [child] } })`;
+`run(ctx)` spreads `ctx.forward` into its own `chat()`.
+
+- Parent middleware does not reach a child, so it keeps its own recorder, on its own thread
+  (`<thread>/<subagentRunId>`): a child's messages never land in the parent's conversation.
+- A child gets no browser tools. It hands data back as `RUN_FINISHED.result`, which the parent
+  model gets instead of the child's text; the parent passes it on to a page tool.
+- The synthetic tool is named after the agent, so no page tool may share that name.
 
 ## Boundary
 

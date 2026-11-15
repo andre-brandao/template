@@ -1,6 +1,6 @@
 import { remote } from "$lib/server/remote";
-import { Panel } from "./orchestrator/panel";
-import { Sql } from "./orchestrator/sql";
+import { Panel } from "./panel/panel";
+import { Sql } from "./panel/sql";
 
 /** One read-only SELECT as the user: a panel block's rows, straight to the browser. */
 export const getRows = remote.core(Sql.run).query();

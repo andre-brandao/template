@@ -8,9 +8,9 @@ import type { Permission } from "@template/core/permission";
 import { fn } from "@template/core/util/fn";
 
 /**
- * The agent's read-only SQL, for admins and never on the MCP. The model only explores, on a
- * small sample; what the user sees is a panel the browser renders, each block fetching its
- * own rows so they never reach the model.
+ * The `panel` agent's read-only SQL, for admins and never on the MCP. The model only explores,
+ * on a small sample; what the user sees is a panel the browser renders, each block fetching
+ * its own rows so they never reach the model.
  */
 export namespace Sql {
   /** Table → the resource whose `read` opens it. A table left out is never queryable. */
@@ -49,10 +49,8 @@ export namespace Sql {
 - Start with \`sql_tables\` for the tables and columns this user may read. Never invent columns.
 - Query with \`sql\`: one PostgreSQL SELECT. Aggregate in SQL (group by, date_trunc, count) rather than pulling raw rows, and give columns short snake_case aliases.
 - Skip removed rows with \`time_deleted is null\`.
-- \`sql\` returns a sample of at most 20 rows: use it to learn the data and test the SQL, never to list results to the user.
-- To show data, call \`panel\` when it exists: build the UI from its catalog, each block carrying SQL you already tested. The browser fetches the rows and draws them; you get a per-block summary. Don't repeat the numbers in text. Without \`panel\`, summarise in a short markdown table.
-- If a query fails, read the error, fix it and retry before explaining.
-- When the user wants a panel but doesn't know what to show, interview first with one \`ask\` (what decision it supports, which projects and period matter), then propose 3–6 metrics with a MultiChoice and build the panel from the picks.`;
+- \`sql\` returns a sample of at most 20 rows: use it to learn the data and test the SQL.
+- If a query fails, read the error, fix it and retry before explaining.`;
 
   /** The tables the actor may query, with their columns and foreign keys. */
   export const tables = fn(z.void(), async () => {

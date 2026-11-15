@@ -2,7 +2,7 @@ import { describe, expect, it } from "bun:test";
 import type { ModelMessage } from "@tanstack/ai";
 import { z } from "zod";
 import { Agent } from "../src/lib/features/agent/api/core";
-import { Sql } from "../src/lib/features/agent/api/orchestrator/sql";
+import { Sql } from "../src/lib/features/agent/api/panel/sql";
 import { loose } from "../src/lib/features/agent/api/tools";
 import { transcript } from "../src/lib/features/agent/transcript";
 import * as ask from "../src/lib/features/agent/ask/catalog";

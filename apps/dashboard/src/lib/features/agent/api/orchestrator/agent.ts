@@ -6,16 +6,16 @@ import {
   type UIMessage,
 } from "@tanstack/ai";
 import { Agent } from "../core";
+import { delegate, panel } from "../panel/agent";
 import { relax } from "../tools";
-import { Sql } from "./sql";
 
 const persona = `You are the Assistant inside the dashboard. Answer short and direct.
 When you need a decision or details from the user before acting, use \`ask\` with a recommended answer instead of asking in text. Put everything you need to know now into one call.
 After you create, change or remove data, call \`refresh\` so the user's page shows it.`;
 
 /**
- * The dashboard's orchestrator: the whole MCP as the signed-in user, the read-only SQL tools for
- * admins, plus the page tools the browser runs.
+ * The dashboard's orchestrator: the whole MCP as the signed-in user, the page tools the browser
+ * runs, and for admins the `panel` subagent.
  */
 export async function orchestrator(
   input: Agent.Run & {
@@ -31,7 +31,7 @@ export async function orchestrator(
   env?: Record<string, string | undefined>,
 ) {
   const link = Agent.attach(await Agent.mcp(input.token, {}, env));
-  const sql = Sql.kit();
+  const child = panel({ thread: input.thread, model: input.model }, env);
   return chat({
     adapter: Agent.adapter(input.model, env),
     messages: input.messages,
@@ -43,12 +43,13 @@ export async function orchestrator(
     systemPrompts: [
       Agent.prompt,
       persona,
-      ...sql.prompts,
+      ...(child ? [delegate] : []),
       ...(input.prompts ?? []),
       ...link.prompts,
     ],
-    tools: [...sql.tools, ...(input.tools ?? [])],
+    tools: input.tools ?? [],
     mcp: link.mcp,
+    subagents: child ? { agents: [child] } : undefined,
     middleware: [relax, Agent.recorder({ agent: "orchestrator", thread: input.thread })],
     abortController: input.abortController,
   });

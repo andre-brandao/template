@@ -43,7 +43,7 @@ as software, use `Identity.delegate(name, grants?, cb)` (for the caller, narrowe
 `public` can't delegate; `internal` only narrows to another `internal`.
 
 **Auth** — a request carries `Authorization: Bearer <token>`, and `Auth.resolve` (core) owns every
-format: `agt-` is a delegation (the copilot → `agent`), `sk-` an API key (`user`, or `system` for an App), anything
+format: `agt-` is a delegation (the orchestrator → `agent`), `sk-` an API key (`user`, or `system` for an App), anything
 else a JWT from the OpenAuth issuer, verified through the `Auth.Issuer` port and linked to a local
 user. A JWT minted for an `mcp:*` client is an `agent` and only works on the MCP. The role always
 comes from the user row. Dashboard sessions are cookies only — never a bearer. No header means

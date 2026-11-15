@@ -32,7 +32,7 @@ const env = {
   AUTH_URL: process.env.AUTH_URL ?? `http://localhost:${authport}`,
   // `db` so pushes land in the job table for the queue worker; `sync` would run them inline.
   QUEUE_DRIVER: process.env.QUEUE_DRIVER ?? "db",
-  // The copilot: LiteLLM for models (set LLM_KEY in .env), the local MCP for tools.
+  // The orchestrator: LiteLLM for models (set LLM_KEY in .env), the local MCP for tools.
   LLM_URL: process.env.LLM_URL ?? "https://llm.developing.company/v1",
   LLM_MODEL: process.env.LLM_MODEL ?? "openai/gpt-6-luna",
   MCP_URL: process.env.MCP_URL ?? `http://localhost:${mcpport}/mcp`,

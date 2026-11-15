@@ -1,6 +1,6 @@
 <!--
 	The agent's drawer: header, conversation or history, and the composer. Declares the page
-	tools: navigate and refresh, ask, and for admins panel.
+	tools: navigate and refresh, ask, and for admins show (draws the panel subagent's spec).
 -->
 <script lang="ts">
 	import { Scroll } from '@template/ui';
@@ -14,7 +14,7 @@
 	import { ask } from '../ask/tool';
 	import AskView from '../ask/View.svelte';
 	import { builtins } from '../page';
-	import { panel } from '../panel/tool';
+	import { show } from '../panel/tool';
 	import PanelView from '../panel/View.svelte';
 	import Avatar from './Avatar.svelte';
 	import Composer from './Composer.svelte';
@@ -27,7 +27,7 @@
 
 	pageTools(builtins());
 	pageTools([ask()], { ask: AskView });
-	if (admin) pageTools([panel()], { panel: PanelView });
+	if (admin) pageTools([show()], { show: PanelView });
 
 	// Starters for an empty thread; a click sends the text as is.
 	const cards = [

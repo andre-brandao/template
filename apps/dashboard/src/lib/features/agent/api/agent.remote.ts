@@ -5,7 +5,7 @@ import { Conversation } from "./conversation";
 
 export const getModels = remote.query(z.void(), () => Agent.models());
 
-/** The caller's own copilot conversations, most recent first, by page. */
+/** The caller's own orchestrator conversations, most recent first, by page. */
 export const getConversations = remote
   .core(Conversation.list)
   .with(
@@ -14,7 +14,7 @@ export const getConversations = remote
       .int()
       .min(1)
       .optional()
-      .transform((page) => ({ agent: "copilot", page: page ?? 1 })),
+      .transform((page) => ({ agent: "orchestrator", page: page ?? 1 })),
   )
   .query();
 

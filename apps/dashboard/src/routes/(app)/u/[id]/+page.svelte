@@ -1,10 +1,11 @@
 <script lang="ts">
 	import UserPage from '$lib/features/people/pages/UserPage.svelte';
-	import { getProfile } from '$lib/features/people/api/people.remote';
+	import { get } from '$lib/features/people/api/people.query';
 	import ProfileForm from '$lib/features/auth/components/ProfileForm.svelte';
 	import { getMe } from '$lib/features/auth/api/profile.remote';
 	import AppEditForm from '$lib/features/developers/components/app/AppEditForm.svelte';
 	import AppPanel from '$lib/features/developers/components/app/AppPanel.svelte';
+	import { invalidate } from '$lib/query';
 
 	let { params } = $props();
 </script>
@@ -19,13 +20,13 @@
 	<UserPage {id}>
 		{#snippet edit(profile)}
 			{#if profile.self}
-				<ProfileForm user={await getMe()} onchange={() => getProfile(id).refresh()} />
+				<ProfileForm user={await getMe()} onchange={() => invalidate(get(id).queryKey)} />
 			{:else}
 				<AppEditForm
 					{id}
 					name={profile.name}
 					image={profile.image}
-					onchange={() => getProfile(id).refresh()}
+					onchange={() => invalidate(get(id).queryKey)}
 				/>
 			{/if}
 		{/snippet}

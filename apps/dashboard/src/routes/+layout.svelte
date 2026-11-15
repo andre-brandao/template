@@ -7,10 +7,15 @@
 	import { Modals, Toaster } from '@template/ui';
 	import Shell from '$lib/components/layout/Shell.svelte';
 	import ShellProvider from '$lib/components/layout/ShellProvider.svelte';
+	import { createAgent } from '$lib/features/agent/agent.svelte';
 	import Dock from '$lib/features/agent/components/Dock.svelte';
 	import Toggle from '$lib/features/agent/components/Toggle.svelte';
 
 	let { data, children } = $props();
+
+	// Here rather than in the Shell, so the conversation survives a move between sections.
+	// Not in ShellProvider: shared components can't import a feature slice.
+	createAgent();
 
 	// TODO: use to reload app when new version comes out
 	// import { beforeNavigate } from '$app/navigation';

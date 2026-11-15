@@ -1,0 +1,238 @@
+<script module lang="ts">
+	export type Action = { group: string; label: string; hint?: string; run: () => void };
+</script>
+
+<!--
+	The palette shell: a modal dialog, a search box and a grouped list. Focus never leaves
+	the input; arrows move `aria-activedescendant`, so typing and choosing never fight.
+-->
+<script lang="ts">
+	import { HotkeysProvider } from '@tanstack/svelte-hotkeys';
+
+	let {
+		open = $bindable(false),
+		commands,
+		placeholder = 'Type a command or search',
+		empty = 'No matching commands'
+	}: {
+		open?: boolean;
+		commands: Action[];
+		placeholder?: string;
+		empty?: string;
+	} = $props();
+
+	const id = $props.id();
+
+	let query = $state('');
+	let active = $state(0);
+
+	// Every word must appear in the group or label, in any order.
+	const groups = $derived.by(() => {
+		const words = query.toLowerCase().split(/\s+/).filter(Boolean);
+		const hits = commands.filter((one) =>
+			words.every((word) => `${one.group} ${one.label}`.toLowerCase().includes(word))
+		);
+		return [...new Set(hits.map((one) => one.group))].map((name) => ({
+			name,
+			items: hits.filter((one) => one.group === name)
+		}));
+	});
+	// Display order, which is what the arrow keys walk.
+	const order = $derived(groups.flatMap((group) => group.items));
+
+	function run(item: Action | undefined) {
+		if (!item) return;
+		open = false;
+		item.run();
+	}
+
+	function keys(e: KeyboardEvent) {
+		if (e.isComposing || !order.length) return;
+		const step = {
+			ArrowDown: active + 1,
+			ArrowUp: active - 1,
+			Home: 0,
+			End: order.length - 1
+		}[e.key];
+		if (step !== undefined) {
+			e.preventDefault();
+			active = (step + order.length) % order.length;
+			return;
+		}
+		if (e.key !== 'Enter') return;
+		e.preventDefault();
+		run(order[active]);
+	}
+</script>
+
+<dialog
+	aria-label="Command palette"
+	{@attach (dialog) => (open ? dialog.showModal() : dialog.close())}
+	onclose={() => {
+		open = false;
+		query = '';
+		active = 0;
+	}}
+	onclick={(e) => e.target === e.currentTarget && e.currentTarget.close()}
+>
+	{#if open}
+		<!-- Owns the keyboard while open, so page hotkeys never fire behind the palette. -->
+		<HotkeysProvider scope="command-{id}" exclusive>
+		<input
+			class="search"
+			type="text"
+			role="combobox"
+			autocomplete="off"
+			spellcheck="false"
+			aria-expanded="true"
+			aria-controls="{id}-list"
+			aria-activedescendant={order.length ? `${id}-${active}` : undefined}
+			{placeholder}
+			bind:value={query}
+			oninput={() => (active = 0)}
+			onkeydown={keys}
+			{@attach (el) => el.focus()}
+		/>
+		<div class="list" id="{id}-list" role="listbox" aria-label="Commands">
+			{#each groups as group, g (group.name)}
+				<div class="group" role="group" aria-labelledby="{id}-g{g}">
+					<p class="name" id="{id}-g{g}">{group.name}</p>
+					{#each group.items as item (item.label)}
+						{@const at = order.indexOf(item)}
+						<!-- Pointer only: the keyboard drives the same rows through the input. -->
+						<!-- svelte-ignore a11y_click_events_have_key_events -->
+						<div
+							class="option"
+							id="{id}-{at}"
+							role="option"
+							tabindex="-1"
+							aria-selected={at === active}
+							onpointermove={() => (active = at)}
+							onclick={() => run(item)}
+							{@attach (el) => {
+								if (at === active) el.scrollIntoView({ block: 'nearest' });
+							}}
+						>
+							<span class="label">{item.label}</span>
+							{#if item.hint}<span class="hint">{item.hint}</span>{/if}
+						</div>
+					{/each}
+				</div>
+			{:else}
+				<p class="empty">{empty}</p>
+			{/each}
+		</div>
+		</HotkeysProvider>
+	{/if}
+</dialog>
+
+<style>
+	dialog {
+		margin: 12vh auto auto;
+		width: min(36em, calc(100vw - 2em));
+		max-width: none;
+		padding: 0;
+		border: 1px solid var(--border, #e6e5e1);
+		border-radius: calc(var(--radius, 8px) + 2px);
+		background: var(--surface, #fff);
+		color: var(--ink, #1c1b19);
+		box-shadow: var(--shadow-2, 0 12px 28px -14px rgb(0 0 0 / 0.6));
+		overflow: hidden;
+		opacity: 0;
+		scale: 0.98;
+		transition:
+			opacity 0.14s ease,
+			scale 0.14s ease,
+			display 0.14s allow-discrete,
+			overlay 0.14s allow-discrete;
+	}
+
+	dialog[open] {
+		opacity: 1;
+		scale: 1;
+	}
+
+	@starting-style {
+		dialog[open] {
+			opacity: 0;
+			scale: 0.98;
+		}
+	}
+
+	dialog::backdrop {
+		background: rgb(0 0 0 / 0.24);
+	}
+
+	.search {
+		display: block;
+		width: 100%;
+		padding: 0.85em 1em;
+		border: none;
+		border-bottom: 1px solid var(--border, #e6e5e1);
+		background: none;
+		color: inherit;
+		font: inherit;
+		outline: none;
+	}
+
+	.search::placeholder {
+		color: var(--dim, #8e8c86);
+	}
+
+	.list {
+		max-height: min(24em, 60vh);
+		overflow-y: auto;
+		padding: 0.35em;
+		scroll-padding: 0.35em;
+	}
+
+	.name {
+		margin: 0.55em 0.6em 0.25em;
+		color: var(--dim, #8e8c86);
+		font-size: 0.75em;
+		font-weight: 500;
+	}
+
+	.option {
+		display: flex;
+		align-items: center;
+		gap: 1em;
+		min-height: 2.2em;
+		padding: 0.35em 0.6em;
+		border-radius: var(--radius-sm, 6px);
+		font-size: 0.9em;
+		cursor: pointer;
+	}
+
+	.option[aria-selected='true'] {
+		background: var(--hover, rgb(0 0 0 / 0.06));
+	}
+
+	.label {
+		flex: 1;
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.hint {
+		color: var(--dim, #8e8c86);
+		font-size: 0.85em;
+	}
+
+	.empty {
+		margin: 0;
+		padding: 1.5em 1em;
+		color: var(--dim, #8e8c86);
+		font-size: 0.9em;
+		text-align: center;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		dialog {
+			scale: 1;
+			transition: none;
+		}
+	}
+</style>

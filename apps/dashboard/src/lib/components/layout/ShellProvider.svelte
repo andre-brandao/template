@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { untrack, type Snippet } from 'svelte';
 	import { dev } from '$app/env';
+	import { DEVTOOLS } from '$app/env/public';
 	import { QueryClientProvider, type QueryClient } from '@tanstack/svelte-query';
 	import { HotkeysProvider, type HotkeyPlatform } from '@tanstack/svelte-hotkeys';
 	import { Permission } from '@template/core/permission';
@@ -55,7 +56,7 @@
 	<!-- The request's platform, so server-rendered Kbd labels already read ⌘ or Ctrl. -->
 	<HotkeysProvider appHotkeys={hotkeys} defaultOptions={{ platform: data.platform }}>
 		{@render children()}
-		<!-- `dev` is a build-time constant, so prod compiles the devtools out entirely. -->
-		{#if dev}<DevToolsProvider client={data.queryClient} />{/if}
+		<!-- Both are build-time constants, so prod compiles the devtools out. Opt in: DEVTOOLS=1. -->
+		{#if dev && DEVTOOLS}<DevToolsProvider client={data.queryClient} />{/if}
 	</HotkeysProvider>
 </QueryClientProvider>

@@ -72,7 +72,12 @@
 			? new DOMRect(point.x, point.y, 0, 0)
 			: (anchor?.getBoundingClientRect() ?? new DOMRect());
 		// A point opens the panel from the pointer outward, like a native context menu.
-		place(panel, at, side, point ? 'start' : align);
+		const edge = point ? 'start' : align;
+		const to = place(panel, at, side, edge);
+		if (panel.dataset.side === to) return;
+		// Content may size itself by side (a list that shrinks only downward): measure again.
+		panel.dataset.side = to;
+		place(panel, at, to, edge);
 	}
 
 	function toggle(e: ToggleEvent) {

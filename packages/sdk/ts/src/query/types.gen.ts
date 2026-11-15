@@ -62,7 +62,7 @@ export type User = {
 };
 
 /**
- * Permission error
+ * Not found error
  */
 export type ErrorResponse = {
   /**
@@ -99,6 +99,199 @@ export type ErrorResponse = {
       message: string;
     }>;
   };
+};
+
+/**
+ * An account as other signed-in users see it.
+ */
+export type Profile = {
+  /**
+   * Unique object identifier.
+   * The format and length of IDs may change over time.
+   */
+  id: string;
+  /**
+   * Display name.
+   */
+  name: string;
+  /**
+   * Avatar URL, or null for none.
+   */
+  image: string | null;
+  /**
+   * A `system` account is an App: nobody logs in as it — an external system or CI acting through API keys.
+   */
+  kind: "human" | "system";
+  /**
+   * Decides everything the account may do. Only `user:assign` can change it.
+   */
+  role: "admin" | "member";
+  /**
+   * When the account was created.
+   */
+  timeCreated: string;
+  email: string | null;
+  owner: {
+    id: string;
+    name: string;
+  } | null;
+};
+
+/**
+ * Who acted: a person, an agent for one, an App, or the app itself.
+ */
+export type Identity =
+  | {
+      type: "public";
+      properties: {
+        [key: string]: unknown;
+      };
+    }
+  | {
+      type: "user";
+      properties: {
+        /**
+         * Who answers for the act.
+         */
+        userID: string;
+        /**
+         * The role held at the time.
+         */
+        role: "admin" | "member";
+        /**
+         * IANA zone, when known.
+         */
+        timezone?: string;
+        /**
+         * The key or delegation that acted, so an audit can name it.
+         */
+        credential?: string;
+      };
+    }
+  | {
+      type: "agent";
+      properties: {
+        /**
+         * Which agent: `copilot`, or an MCP client like `claude`.
+         */
+        name: string;
+        /**
+         * Who answers for the act.
+         */
+        userID: string;
+        /**
+         * The role held at the time.
+         */
+        role: "admin" | "member";
+        /**
+         * Exactly what it may do.
+         */
+        scope?: unknown;
+        /**
+         * IANA zone, when known.
+         */
+        timezone?: string;
+        /**
+         * The key or delegation that acted, so an audit can name it.
+         */
+        credential?: string;
+      };
+    }
+  | {
+      type: "system";
+      properties: {
+        /**
+         * Who answers for the act.
+         */
+        userID: string;
+        /**
+         * The role held at the time.
+         */
+        role: "admin" | "member";
+        /**
+         * The person answerable for the App.
+         */
+        owner: {
+          /**
+           * Who answers for the act.
+           */
+          userID: string;
+          /**
+           * The role held at the time.
+           */
+          role: "admin" | "member";
+        };
+        /**
+         * The key or delegation that acted, so an audit can name it.
+         */
+        credential?: string;
+      };
+    }
+  | {
+      type: "internal";
+      properties: {
+        /**
+         * Which part of the app, like `auth` or `seed`.
+         */
+        name: string;
+        /**
+         * Exactly what it may do.
+         */
+        scope: unknown;
+      };
+    };
+
+/**
+ * An immutable audit-log entry.
+ */
+export type Event = {
+  /**
+   * Unique object identifier.
+   * The format and length of IDs may change over time.
+   */
+  id: string;
+  /**
+   * Who caused it. Null for system and public actors.
+   */
+  userID: string | null;
+  /**
+   * That user, joined in so a log row can name them.
+   */
+  user: {
+    id: string;
+    name: string;
+    image: string | null;
+  } | null;
+  /**
+   * Who acted, in full: agent name, scope, credential. Null unless you are an admin.
+   */
+  identity: Identity | null;
+  /**
+   * What happened, like `todo.created`.
+   */
+  type: string;
+  /**
+   * Kind of entity it happened to, like `todo`.
+   */
+  source: string | null;
+  /**
+   * Id of that entity.
+   */
+  sourceID: string | null;
+  /**
+   * Filter labels. Always carries the actor kind, like `actor:user`.
+   */
+  tags: Array<string>;
+  /**
+   * The payload declared for its type. Webhooks get the same.
+   */
+  data: {
+    [key: string]: unknown;
+  };
+  /**
+   * When it was recorded.
+   */
+  timeCreated: string;
 };
 
 /**
@@ -432,6 +625,97 @@ export type GetMeResponses = {
 };
 
 export type GetMeResponse = GetMeResponses[keyof GetMeResponses];
+
+export type GetUserByIdData = {
+  body?: never;
+  path: {
+    /**
+     * Unique object identifier.
+     * The format and length of IDs may change over time.
+     */
+    id: string;
+  };
+  query?: never;
+  url: "/user/{id}";
+};
+
+export type GetUserByIdErrors = {
+  /**
+   * Bad Request
+   */
+  400: ErrorResponse;
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
+   * Not Found
+   */
+  404: ErrorResponse;
+  /**
+   * Internal Server Error
+   */
+  500: ErrorResponse;
+};
+
+export type GetUserByIdError = GetUserByIdErrors[keyof GetUserByIdErrors];
+
+export type GetUserByIdResponses = {
+  /**
+   * An account as other signed-in users see it.
+   */
+  200: Profile;
+};
+
+export type GetUserByIdResponse = GetUserByIdResponses[keyof GetUserByIdResponses];
+
+export type GetUserByIdHistoryData = {
+  body?: never;
+  path: {
+    /**
+     * Unique object identifier.
+     * The format and length of IDs may change over time.
+     */
+    id: string;
+  };
+  query?: never;
+  url: "/user/{id}/history";
+};
+
+export type GetUserByIdHistoryErrors = {
+  /**
+   * Bad Request
+   */
+  400: ErrorResponse;
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
+   * Internal Server Error
+   */
+  500: ErrorResponse;
+};
+
+export type GetUserByIdHistoryError = GetUserByIdHistoryErrors[keyof GetUserByIdHistoryErrors];
+
+export type GetUserByIdHistoryResponses = {
+  /**
+   * An immutable audit-log entry.
+   */
+  200: Array<Event>;
+};
+
+export type GetUserByIdHistoryResponse =
+  GetUserByIdHistoryResponses[keyof GetUserByIdHistoryResponses];
 
 export type GetKeyData = {
   body?: never;

@@ -14,10 +14,10 @@ When you need a decision or details from the user before acting, use \`ask\` wit
 After you create, change or remove data, call \`refresh\` so the user's page shows it.`;
 
 /**
- * The dashboard's copilot: the whole MCP as the signed-in user, the read-only SQL tools for
+ * The dashboard's orchestrator: the whole MCP as the signed-in user, the read-only SQL tools for
  * admins, plus the page tools the browser runs.
  */
-export async function copilot(
+export async function orchestrator(
   input: Agent.Run & {
     /** The conversation it is recorded under; `threadId` defaults to it. */
     thread: string;
@@ -49,7 +49,7 @@ export async function copilot(
     ],
     tools: [...sql.tools, ...(input.tools ?? [])],
     mcp: link.mcp,
-    middleware: [relax, Agent.recorder({ agent: "copilot", thread: input.thread })],
+    middleware: [relax, Agent.recorder({ agent: "orchestrator", thread: input.thread })],
     abortController: input.abortController,
   });
 }

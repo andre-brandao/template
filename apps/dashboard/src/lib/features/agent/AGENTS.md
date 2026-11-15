@@ -14,10 +14,10 @@ the DDL (`conversation`, `conversation_message`) lives in core, at
   schemas; every tool of a run (MCP and browser included) goes out with an open root.
 - `api/conversation.ts` — `Conversation`: `record`, `list`, `fromID`, `remove`, always the
   actor's own threads. `agent` is free text, so a new agent needs no migration.
-- `api/agents.ts` — the registry: `export const agents = { copilot }`.
+- `api/agents.ts` — the registry: `export const agents = { orchestrator }`.
 - `api/<name>/agent.ts` — one folder per agent, a function that calls `chat()` directly with
   its own persona, tools, MCP access and `Agent.recorder({ agent: "<name>", thread })`.
-- `api/copilot/` — the dashboard copilot, plus its admin-only server tools: `sql.ts` (`Sql`,
+- `api/orchestrator/` — the dashboard orchestrator, plus its admin-only server tools: `sql.ts` (`Sql`,
   read-only SQL over a table→resource allowlist, a 20-row sample for the model) and
   `panel.ts` (`Panel`, saved json-render specs in Storage under `panels/`).
 - `api/serve.ts` — the SSE endpoint behind `routes/(app)/agent/+server.ts`. Reads

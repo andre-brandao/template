@@ -1,4 +1,4 @@
-import { copilot } from "./copilot/agent";
+import { orchestrator } from "./orchestrator/agent";
 
 /** Adding an agent: a folder `<name>/agent.ts` and a line here. */
-export const agents = { copilot };
+export const agents = { orchestrator };

@@ -10,7 +10,6 @@ import {
   getInsightsLoadOptions,
   getInsightsStatsOptions,
   getInsightsStatusOptions,
-  getProjectOptions,
   getTodoOptions,
   getTodoQueryKey,
   getTodoStageOptions,
@@ -24,12 +23,15 @@ import {
   type GetTodoData,
   type Todo,
 } from "@template/sdk/query";
+import { call } from "$lib/query";
+import { getLabels } from "./todos.remote";
 
 type Scope = { source?: string; sourceID?: string };
 type Range = Scope & { start: string; end: string };
 
 // Rows, lists and stages carry the Todo tag; insights and project pages count todos, so they refresh too.
-const todo = [[{ tags: ["Todo"] }], [{ tags: ["Insights"] }], [{ tags: ["Project"] }]];
+// Picker options sit under the plain `todos` root.
+const todo = [[{ tags: ["Todo"] }], [{ tags: ["Insights"] }], [{ tags: ["Project"] }], ["todos"]];
 
 // Everything but rows: a removed todo's own query would refetch straight into a 404.
 const views = () => [
@@ -37,6 +39,7 @@ const views = () => [
   getTodoStageQueryKey(),
   [{ tags: ["Insights"] }],
   [{ tags: ["Project"] }],
+  ["todos"],
 ];
 
 // Every board view groups this one page client-side; the last page stays up while the next loads.
@@ -59,10 +62,11 @@ export const stages = (scope: Scope) => getTodoStageOptions({ query: scope });
 
 export const users = () => getUserOptions();
 
-// Unscoped, the stage picker groups labels by the project their todos sit in; a page of each.
-export const placed = () => getTodoOptions({ query: { pageSize: 100 } });
-
-export const projects = () => getProjectOptions({ query: { pageSize: 100 } });
+// The stage picker's labels, each with the projects its todos sit in, grouped in SQL.
+export const labels = (scope: Scope) => ({
+  queryKey: ["todos", "labels", scope],
+  queryFn: call(() => getLabels(scope)),
+});
 
 // Insights keep the last range on screen while the next one loads.
 export const stats = (range: Range) => ({

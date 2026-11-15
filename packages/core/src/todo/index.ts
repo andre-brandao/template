@@ -38,6 +38,7 @@ import {
 } from "../util/meta";
 import { Bus } from "../platform/bus";
 import { UserTable } from "../user/user.sql";
+import { ProjectTable } from "../project/project.sql";
 import { rank, StatusValues, TodoTable } from "./todo.sql";
 
 export { Insights } from "./insights";
@@ -343,14 +344,7 @@ export namespace Todo {
             end: max(TodoTable.dueDate),
           })
           .from(TodoTable)
-          .where(
-            and(
-              isNull(TodoTable.timeDeleted),
-              input.source ? eq(TodoTable.source, input.source) : undefined,
-              input.sourceID ? eq(TodoTable.sourceID, input.sourceID) : undefined,
-              isNotNull(TodoTable.stage),
-            ),
-          )
+          .where(staged(input))
           .groupBy(TodoTable.stage)
           .orderBy(sql`min(${TodoTable.startDate}) asc nulls last`, asc(TodoTable.stage))
           .then((rows) =>
@@ -370,6 +364,35 @@ export namespace Todo {
         "The stage labels in use, with the span and counts derived from the todos in each. Call before staging a todo so labels stay consistent.",
     },
   );
+
+  /** The stage picker's options: each label with the live projects whose todos wear it. */
+  export const labels = fn(stages.schema, (input) => {
+    Identity.check({ todo: ["read"] });
+    return Database.use((tx) =>
+      tx
+        .select({
+          name: sql<string>`${TodoTable.stage}`,
+          count: count(),
+          projects: sql<
+            { id: string; name: string }[]
+          >`coalesce(jsonb_agg(distinct jsonb_build_object('id', ${ProjectTable.id}, 'name', ${ProjectTable.name})) filter (where ${ProjectTable.id} is not null), '[]'::jsonb)`,
+          // Some of its todos sit outside any live project.
+          unplaced: sql<boolean>`bool_or(${ProjectTable.id} is null)`,
+        })
+        .from(TodoTable)
+        .leftJoin(
+          ProjectTable,
+          and(
+            eq(TodoTable.source, "project"),
+            eq(ProjectTable.id, TodoTable.sourceID),
+            isNull(ProjectTable.timeDeleted),
+          ),
+        )
+        .where(staged(input))
+        .groupBy(TodoTable.stage)
+        .orderBy(sql`min(${TodoTable.startDate}) asc nulls last`, asc(TodoTable.stage)),
+    );
+  });
 
   /** Renames a stage across every todo wearing it — the only stage edit there is. */
   export const rename = fn(
@@ -632,6 +655,16 @@ export namespace Todo {
   // === UTILS ===
 
   type Owner = Pick<Info, "source" | "sourceID">;
+
+  /** Live todos with a stage, narrowed to an owner when one is given. */
+  function staged(input: { source?: string; sourceID?: string }) {
+    return and(
+      isNull(TodoTable.timeDeleted),
+      input.source ? eq(TodoTable.source, input.source) : undefined,
+      input.sourceID ? eq(TodoTable.sourceID, input.sourceID) : undefined,
+      isNotNull(TodoTable.stage),
+    );
+  }
 
   /** Live todos sharing a parent; top-level ones share the owner instead. */
   function siblings(parentID: string | null, owner: Owner) {

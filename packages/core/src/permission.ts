@@ -19,6 +19,8 @@ export namespace Permission {
     file: ["read", "create", "update", "delete"],
     // Submissions live on the tracker, not a table; a member reads only their own.
     feedback: ["read", "create"],
+    // Panels the agent built and someone saved. Even an admin changes only their own.
+    panel: ["read", "create", "update", "delete"],
   } as const;
 
   type Res = keyof typeof Statement;
@@ -35,7 +37,7 @@ export namespace Permission {
 
   /** `member` stays permissive on projects/todos (shared workspace); tighten to `:own` here. */
   export const Roles = {
-    admin: Statement,
+    admin: { ...Statement, panel: ["read", "create", "update:own", "delete:own"] },
     member: {
       user: ["read", "update:own"],
       project: ["read", "create", "update", "delete"],

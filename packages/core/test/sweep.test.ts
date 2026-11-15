@@ -12,6 +12,8 @@ import { File } from "../src/platform/file";
 import { Admin } from "../src/platform/admin";
 import { Event } from "../src/platform/event";
 import { Feedback } from "../src/platform/feedback";
+import { Conversation } from "../src/platform/conversation";
+import { Panel } from "../src/platform/panel";
 import { createUser, testEmail } from "./util";
 
 type Res = keyof typeof Permission.Statement;
@@ -19,7 +21,7 @@ type Act<R extends Res> = (typeof Permission.Statement)[R][number];
 type Op = ((input: any) => unknown) & { schema: unknown };
 
 /** Rows owned by someone else, so a member's `:own` grants never unlock them. */
-const fx = { me: "", other: "", project: "", todo: "", webhook: "", app: "" };
+const fx = { me: "", other: "", project: "", todo: "", webhook: "", app: "", panel: "" };
 
 /**
  * One real call per op, under the grant it must be denied without. `own` marks an op that only
@@ -38,6 +40,7 @@ function entry<R extends Res, T extends Op>(
 const png = () => new globalThis.File([new Uint8Array([1])], "x.png", { type: "image/png" });
 const range = { start: "2026-01-01", end: "2026-01-31" };
 const test1 = { key: "sweep", title: "Sweep" };
+const spec = { root: "r", elements: { r: { type: "Text", props: {}, children: [] } } };
 
 const ops = [
   entry("admin", "read", Admin.users, () => ({})),
@@ -126,6 +129,12 @@ const ops = [
     label: "A",
   })),
   entry("feedback", "create", Feedback.Experiment.expose, () => ({ key: "sweep", variant: "a" })),
+
+  entry("panel", "read", Panel.list, () => undefined),
+  entry("panel", "read", Panel.fromID, () => fx.panel),
+  entry("panel", "create", Panel.create, () => ({ title: "Sweep", spec })),
+  entry("panel", "update", Panel.update, () => ({ id: fx.panel, title: "Renamed", spec })),
+  entry("panel", "delete", Panel.remove, () => fx.panel),
 ];
 
 /** Ops that check nothing on purpose: a signature or the caller's own lookup is the gate. */
@@ -138,6 +147,11 @@ const exempt = new Set<unknown>([
   User.providers,
   App.receive,
   File.signed,
+  // Scoped to the caller's own conversations by `userID`.
+  Conversation.record,
+  Conversation.list,
+  Conversation.fromID,
+  Conversation.remove,
   // Reads a tracker row before it can know whose it is; needs a live adapter to reach the check.
   Feedback.get,
 ]);
@@ -159,6 +173,8 @@ const exported = [
   Event,
   Feedback,
   Feedback.Experiment,
+  Conversation,
+  Panel,
 ].flatMap((ns) =>
   Object.entries(ns).filter((pair) => typeof pair[1] === "function" && "schema" in pair[1]),
 );
@@ -198,6 +214,7 @@ beforeAll(async () => {
     fx.todo = (await Todo.create({ title: "Theirs" })).id;
     fx.webhook = (await Webhook.create({ url: "https://x.dev/theirs" })).id;
     fx.app = (await App.create({ name: "Theirs" })).id;
+    fx.panel = (await Panel.create({ title: "Theirs", spec })).id;
   });
 });
 

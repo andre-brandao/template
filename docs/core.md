@@ -6,7 +6,7 @@ visible as directories.
 ```mermaid
 graph TD
   domain["<b>the product</b><br/>project · todo · user"]
-  platform["<b>platform/</b><br/>admin · key · webhook · event · bus · file"]
+  platform["<b>platform/</b><br/>admin · key · webhook · event · bus · file · conversation · panel"]
   lib["<b>lib/</b><br/>queue · storage · email"]
   kernel["<b>kernel</b><br/>identity · context · error · permission · drizzle · util"]
 
@@ -56,7 +56,6 @@ Slices declare and publish typed events through `platform/bus`. See [events.md](
 - `platform/admin` reads `project` and `todo` tables for its counts — the one arrow that
   points up. A fork rewrites the tallies in `counts`; the rest of the back office is generic.
 - `platform/app` reaches `auth` to identify an App's account when it posts an event in.
-- `platform/conversation` is DDL only: the dashboard's copilot queries it with raw drizzle.
 
 File-level conventions (module shape, ordering inside a file) live in
 [`packages/core/AGENTS.md`](../packages/core/AGENTS.md).

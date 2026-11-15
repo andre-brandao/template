@@ -2,7 +2,7 @@ import type { ChatMiddleware, ModelMessage, TextOptions } from "@tanstack/ai";
 import { openaiCompatibleText } from "@tanstack/ai-openai/compatible";
 import { createMCPClient } from "@tanstack/ai-mcp";
 import { Log } from "@template/core/util/log";
-import { Conversation } from "./conversation";
+import { Conversation } from "@template/core/conversation";
 
 const log = Log.create({ namespace: "agent" });
 

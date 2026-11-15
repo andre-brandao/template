@@ -1,6 +1,13 @@
 import { createMutation } from "@tanstack/svelte-query";
 import { call, type Done } from "$lib/query";
-import { getPanel, getPanels, getRows, removePanel, savePanel } from "./panel.remote";
+import {
+  createPanel,
+  getPanel,
+  getPanels,
+  getRows,
+  removePanel,
+  updatePanel,
+} from "./panel.remote";
 
 export const panels = () => ({ queryKey: ["panels"], queryFn: call(() => getPanels()) });
 
@@ -18,9 +25,13 @@ export const rows = (sql: string, limit: number) => ({
 
 export type Rows = Awaited<ReturnType<typeof getRows>>;
 
-export const save = (opts?: Done<typeof savePanel>) =>
+// A panel saved before is overwritten; a new one is created.
+const put = (input: Parameters<typeof createPanel>[0] & { id?: string }) =>
+  input.id ? updatePanel({ ...input, id: input.id }) : createPanel(input);
+
+export const save = (opts?: Done<typeof put>) =>
   createMutation(() => ({
-    mutationFn: call(savePanel),
+    mutationFn: call(put),
     meta: { invalidates: [["panels"], ["panel"]] },
     ...opts,
   }));

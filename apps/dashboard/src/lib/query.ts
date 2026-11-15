@@ -57,10 +57,17 @@ export const call =
   (input: I) => {
     const out = fn(input);
     if ("refresh" in out && typeof out.refresh === "function") out.refresh();
-    return Promise.resolve(out).catch((err) =>
-      Promise.reject(new Error(err?.body?.message ?? String(err))),
-    );
+    return Promise.resolve(out).catch((err) => Promise.reject(new Error(message(err))));
   };
+
+/** The text of any rejected write: an SDK error body, a remote `HttpError` or an `Error`. */
+export const message = (err: unknown) => {
+  const one = err as { message?: string; body?: { message?: string } } | undefined;
+  return one?.body?.message ?? one?.message ?? String(err);
+};
+
+/** What an SDK mutation factory accepts: `Opts<typeof postProjectMutation>`. */
+export type Opts<T extends () => { onSuccess?: unknown }> = Pick<ReturnType<T>, "onSuccess">;
 
 /** What a mutation factory accepts, typed from the remote command behind it. */
 export type Done<T extends (input: never) => PromiseLike<unknown>> = Pick<

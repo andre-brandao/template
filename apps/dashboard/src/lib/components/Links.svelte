@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Status, modal } from '@template/ui';
 	import type { Link } from '@template/core/util/meta';
+	import { message } from '$lib/query';
 	import { label } from '$lib/utils/link';
 	import LinkForm from './LinkForm.svelte';
 	import X from '@lucide/svelte/icons/x';
@@ -20,17 +21,11 @@
 	// Per url: a removal in flight, or the reason it failed. A success drops the row itself.
 	let marks = $state<Record<string, { state: 'pending' | 'failed'; message?: string }>>({});
 
-	// A remote command rejects with `{ body: { message } }`, the query SDK with the body itself.
 	function remove(url: string) {
 		marks[url] = { state: 'pending' };
 		drop(url).then(
 			() => delete marks[url],
-			(err: { message?: string; body?: { message?: string } }) => {
-				marks[url] = {
-					state: 'failed',
-					message: err.body?.message ?? err.message ?? 'Could not remove the link'
-				};
-			}
+			(err) => (marks[url] = { state: 'failed', message: message(err) })
 		);
 	}
 </script>

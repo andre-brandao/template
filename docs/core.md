@@ -6,7 +6,7 @@ visible as directories.
 ```mermaid
 graph TD
   domain["<b>the product</b><br/>project · todo · user"]
-  platform["<b>platform/</b><br/>admin · key · webhook · event · bus"]
+  platform["<b>platform/</b><br/>admin · key · webhook · event · bus · file"]
   lib["<b>lib/</b><br/>queue · storage · email"]
   kernel["<b>kernel</b><br/>identity · context · error · permission · drizzle · util"]
 

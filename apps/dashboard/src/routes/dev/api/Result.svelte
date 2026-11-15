@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Code } from '@template/ui';
-	import Status from './Status.svelte';
+	import Verdict from './Verdict.svelte';
 	import type { send } from './api.remote';
 
 	let { res }: { res: Awaited<ReturnType<typeof send>> } = $props();
@@ -15,14 +15,14 @@
 
 <section>
 	<div class="status">
-		<Status status={res.status} />
+		<Verdict status={res.status} />
 		<span>{res.ms}ms</span>
 		<span>{res.headers['content-type'] ?? ''}</span>
 	</div>
-	<Code value={res.text} {lang} />
+	<Code value={res.text} {lang} max="30em" />
 	<details>
 		<summary>Response headers</summary>
-		<Code value={headers} lang="http" />
+		<Code value={headers} lang="http" max="30em" />
 	</details>
 </section>
 
@@ -39,18 +39,6 @@
 		font-family: var(--font-mono);
 		font-size: 0.75em;
 		color: var(--dim);
-	}
-
-	section :global(pre.tm-code) {
-		margin: 0;
-		max-height: 30em;
-		overflow: auto;
-		padding: 0.9em 1em;
-		border: 1px solid var(--border);
-		border-radius: var(--radius);
-		background: var(--surface);
-		font-size: 0.78em;
-		line-height: 1.5;
 	}
 
 	details {

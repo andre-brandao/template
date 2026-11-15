@@ -1,9 +1,9 @@
 <!-- A short markdown paragraph: context, or a reading of the numbers. -->
 <script lang="ts">
 	import { Markdown } from '@template/ui';
-	import type { Block } from '../catalog';
+	import type { Layout } from '../catalog';
 
-	let { props }: Block<'Text'> = $props();
+	let { props }: Layout<'Text'> = $props();
 </script>
 
 <div class="text"><Markdown value={props.content ?? ''} /></div>

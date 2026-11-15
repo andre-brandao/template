@@ -5,20 +5,16 @@
 <script lang="ts">
 	import { parsePartialJSON } from '@tanstack/ai/client';
 	import type { Spec } from '@json-render/svelte';
-	import { Button, Issue, toast } from '@template/ui';
+	import { Button, Issue, Status } from '@template/ui';
 	import Busy from '../components/Busy.svelte';
 	import Save from '@lucide/svelte/icons/save';
 	import ExternalLink from '@lucide/svelte/icons/external-link';
-	import { savePanel } from '../api/panel.remote';
-	import { failure } from '../failure';
-	import { agent } from '../agent.svelte';
+	import { save } from '../api/panel.query';
 	import type { ViewProps } from '../views';
 	import Render from './Render.svelte';
-	import { clean, title } from './spec';
+	import { clean, title } from '../render/spec';
 
 	let { part, result, done, output }: ViewProps = $props();
-
-	const ctx = agent();
 
 	const raw = $derived(
 		part.input !== undefined
@@ -39,15 +35,9 @@
 
 	// The saved panel's id: saving again overwrites it.
 	let saved = $state<string>();
-	let saving = $state(false);
+	const store = save({ onSuccess: (info) => (saved = info.id) });
 
-	async function save(panel: Spec) {
-		saving = true;
-		const info = await savePanel({ id: saved, title: title(panel), spec: panel, thread: ctx.thread })
-			.catch((err) => void toast.error(failure(err)));
-		saving = false;
-		if (info) saved = info.id;
-	}
+	const keep = (panel: Spec) => store.mutate({ id: saved, title: title(panel), spec: panel });
 </script>
 
 <div class="view">
@@ -67,10 +57,11 @@
 					Saved · open
 				</a>
 			{/if}
-			<Button variant="ghost" pending={saving} onclick={() => save(spec)}>
+			<Button variant="ghost" pending={store.isPending} onclick={() => keep(spec)}>
 				<Save size={14} strokeWidth={1.75} />
 				{saved ? 'Save again' : 'Save panel'}
 			</Button>
+			{#if store.isError}<Status state="failed" message={store.error.message} />{/if}
 		</div>
 	{/if}
 </div>

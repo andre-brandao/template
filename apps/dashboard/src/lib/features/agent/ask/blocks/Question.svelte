@@ -19,7 +19,8 @@
 </script>
 
 <fieldset class="question">
-	<legend><label for={id}>{label ?? ''}</label></legend>
+	<!-- A choice group is named by the legend alone; only a single control takes a label. -->
+	<legend>{#if id}<label for={id}>{label ?? ''}</label>{:else}{label ?? ''}{/if}</legend>
 	{#if hint}<p class="hint">{hint}</p>{/if}
 	{@render children()}
 	{#if reason}

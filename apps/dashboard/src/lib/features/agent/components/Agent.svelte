@@ -1,16 +1,17 @@
 <!--
-	The agent's drawer: header, conversation or history, and the composer. Declares the page
-	tools: navigate and refresh, ask, and for admins show (draws the panel subagent's spec).
+	The agent's drawer: header, conversation or history, and the composer. Equips the chat with
+	its page tools: navigate and refresh, ask, and for admins show (draws the panel's spec).
 -->
 <script lang="ts">
+	import { useQueryClient } from '@tanstack/svelte-query';
+	import { createRegisterWebMCPTools } from '@tanstack/ai-svelte';
 	import { Scroll } from '@template/ui';
 	import FolderKanban from '@lucide/svelte/icons/folder-kanban';
 	import ListChecks from '@lucide/svelte/icons/list-checks';
 	import Help from '@lucide/svelte/icons/circle-question-mark';
 	import ChartColumn from '@lucide/svelte/icons/chart-column';
-	import History from '@lucide/svelte/icons/history';
 	import { user } from '$lib/utils/context';
-	import { agent, pageTools } from '../agent.svelte';
+	import { agent } from '../agent.svelte';
 	import { ask } from '../ask/tool';
 	import AskView from '../ask/View.svelte';
 	import { builtins } from '../page';
@@ -25,9 +26,11 @@
 	const ctx = agent();
 	const admin = user().can({ admin: ['read'] });
 
-	pageTools(builtins());
-	pageTools([ask()], { ask: AskView });
-	if (admin) pageTools([show()], { show: PanelView });
+	const tools = [...builtins(), ask(), ...(admin ? [show(useQueryClient())] : [])];
+
+	ctx.equip(tools, admin ? { ask: AskView, show: PanelView } : { ask: AskView });
+	// Also exposed to external WebMCP browser agents.
+	createRegisterWebMCPTools(tools);
 
 	// Starters for an empty thread; a click sends the text as is.
 	const cards = [
@@ -64,35 +67,30 @@
 
 <section class={['root', { full: ctx.full }]}>
 	<Header />
+	<!-- The composer stays mounted across tabs, so a draft survives a look at the history. -->
 	{#if ctx.tab === 'history'}
 		<Scroll fill><HistoryList /></Scroll>
+	{:else if ctx.chat.messages.length}
+		<Thread />
 	{:else}
-		{#if ctx.chat.messages.length}
-			<Thread />
-		{:else}
-			<div class="empty">
-				<span class="mark"><Avatar size={56} state={ctx.activity.state} /></span>
-				<h2>How can I help?</h2>
-				<p>Ask about your projects and todos, or about what is on this page.</p>
-				<div class="cards">
-					{#each cards as item (item.title)}
-						<button class="card" type="button" onclick={() => ctx.send(item.text)}>
-							<item.icon size={17} strokeWidth={1.75} />
-							<span>
-								<strong>{item.title}</strong>
-								<small>{item.sub}</small>
-							</span>
-						</button>
-					{/each}
-				</div>
-				<button class="past" type="button" onclick={() => (ctx.tab = 'history')}>
-					<History size={15} strokeWidth={1.75} />
-					Past conversations
-				</button>
+		<div class="empty">
+			<span class="mark"><Avatar size={56} /></span>
+			<h2>How can I help?</h2>
+			<p>Ask about your projects and todos, or about what is on this page.</p>
+			<div class="cards">
+				{#each cards as item (item.title)}
+					<button class="card" type="button" onclick={() => ctx.send(item.text)}>
+						<item.icon size={17} strokeWidth={1.75} />
+						<span>
+							<strong>{item.title}</strong>
+							<small>{item.sub}</small>
+						</span>
+					</button>
+				{/each}
 			</div>
-		{/if}
-		<Composer />
+		</div>
 	{/if}
+	<Composer />
 </section>
 
 <style>
@@ -186,30 +184,7 @@
 		font-size: 0.8em;
 	}
 
-	.past {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		gap: 0.5em;
-		margin-top: 1em;
-		padding: 0.55em 0.75em;
-		border: 1px dashed var(--border);
-		border-radius: var(--radius);
-		background: none;
-		color: var(--muted);
-		font: inherit;
-		font-size: 0.82em;
-		cursor: pointer;
-	}
-
-	.past:hover {
-		border-style: solid;
-		background: var(--hover);
-		color: var(--ink);
-	}
-
-	.card:focus-visible,
-	.past:focus-visible {
+	.card:focus-visible {
 		outline: 2px solid var(--accent);
 		outline-offset: 2px;
 	}

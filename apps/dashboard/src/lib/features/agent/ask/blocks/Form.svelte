@@ -1,6 +1,7 @@
 <!-- The form's root: title, its questions and context blocks, then send or discuss. -->
 <script lang="ts">
-	import { Button } from '@template/ui';
+	import { createHotkeyAttachment } from '@tanstack/svelte-hotkeys';
+	import { Button, Kbd } from '@template/ui';
 	import Help from '@lucide/svelte/icons/message-circle-question-mark';
 	import type { Block } from '../catalog';
 	import { form } from '../state.svelte';
@@ -8,6 +9,8 @@
 	let { props, children }: Block<'Form'> = $props();
 
 	const ctx = form();
+	// Mod+Enter sends from any field, a multiline one included.
+	const send = createHotkeyAttachment('Mod+Enter', () => ctx.ready && ctx.send());
 
 	function submit(e: SubmitEvent) {
 		e.preventDefault();
@@ -15,7 +18,7 @@
 	}
 </script>
 
-<form class="form" onsubmit={submit}>
+<form class="form" onsubmit={submit} {@attach send}>
 	<header>
 		<Help size={16} strokeWidth={1.75} />
 		<div>
@@ -26,7 +29,9 @@
 	<div class="body">{@render children?.()}</div>
 	<footer>
 		<Button variant="ghost" onclick={ctx.talk}>Discuss in chat</Button>
-		<Button variant="primary" type="submit" disabled={!ctx.ready}>{props.submit ?? 'Send'}</Button>
+		<Button variant="primary" type="submit" disabled={!ctx.ready}>
+			{props.submit ?? 'Send'} <Kbd keys="Mod+Enter" />
+		</Button>
 	</footer>
 </form>
 

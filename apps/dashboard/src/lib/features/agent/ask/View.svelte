@@ -8,7 +8,7 @@
 	import Busy from '../components/Busy.svelte';
 	import Message from '@lucide/svelte/icons/message-square-text';
 	import type { ViewProps } from '../views';
-	import { clean } from '../panel/spec';
+	import { clean } from '../render/spec';
 	import type { Output } from './catalog';
 	import { talking, waiting } from './pending';
 	import Host from './Host.svelte';
@@ -37,7 +37,7 @@
 		<div hidden={talking.has(part.id)}><Host {spec} id={part.id} /></div>
 	{:else if out?.answered}
 		<Summary {heading} answers={out.answers} chat={false} />
-	{:else if out?.reason.startsWith('Invalid form')}
+	{:else if out?.invalid}
 		<Issue>{out.reason}</Issue>
 	{:else if out}
 		<Summary {heading} answers={out.partial ?? []} chat />

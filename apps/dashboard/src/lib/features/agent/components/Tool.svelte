@@ -1,15 +1,16 @@
 <!-- A tool call: its page view when one is registered, else a chip that opens on its I/O. -->
 <script lang="ts">
-	import { Code, Spinner } from '@template/ui';
+	import { Code, Spinner, Status } from '@template/ui';
 	import Wrench from '@lucide/svelte/icons/wrench';
 	import Chevron from '@lucide/svelte/icons/chevron-right';
-	import { views } from '../agent.svelte';
+	import { agent } from '../agent.svelte';
 	import type { CallPart, ResultPart } from '../views';
 
 	let { part, result, loading }: { part: CallPart; result?: ResultPart; loading: boolean } =
 		$props();
 
-	const View = $derived(views.get(part.name));
+	const ctx = agent();
+	const View = $derived(ctx.views[part.name]);
 	const done = $derived(
 		!loading || !!result || part.state === 'complete' || part.state === 'error'
 	);
@@ -24,6 +25,7 @@
 		}
 	}
 
+	const failed = $derived(part.state === 'error' || result?.state === 'error' || !!result?.error);
 	const output = $derived(result ? parse(result.content) : part.output);
 	const input = $derived(part.input !== undefined ? part.input : parse(part.arguments));
 
@@ -45,15 +47,21 @@
 {#if View}
 	<View {part} {result} {done} {output} />
 {:else}
-	<details class="tool">
-		<summary class="chip">
-			{#if done}<Wrench size={12} strokeWidth={1.75} />{:else}<Spinner />{/if}
+	<details class="tool" open={failed}>
+		<summary class={['chip', { failed }]}>
+			{#if !done}
+				<Spinner />
+			{:else if failed}
+				<Status state="failed" message="Tool failed" />
+			{:else}
+				<Wrench size={12} strokeWidth={1.75} />
+			{/if}
 			{part.name}
 			<span class="chevron"><Chevron size={12} strokeWidth={1.75} /></span>
 		</summary>
 		<div class="body">
 			{@render block('Input', input, '—')}
-			{@render block('Output', output, done ? '—' : 'waiting…')}
+			{@render block(failed ? 'Error' : 'Output', result?.error ?? output, done ? '—' : 'waiting…')}
 		</div>
 	</details>
 {/if}
@@ -83,6 +91,11 @@
 
 	.chip:hover {
 		color: var(--ink);
+	}
+
+	.chip.failed {
+		border-color: color-mix(in oklab, var(--danger) 40%, var(--border));
+		color: var(--danger);
 	}
 
 	.chevron {

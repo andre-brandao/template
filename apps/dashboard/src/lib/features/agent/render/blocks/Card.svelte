@@ -1,8 +1,8 @@
 <!-- A container with an optional title. -->
 <script lang="ts">
-	import type { Block } from '../catalog';
+	import type { Layout } from '../catalog';
 
-	let { props, children }: Block<'Card'> = $props();
+	let { props, children }: Layout<'Card'> = $props();
 </script>
 
 <section class="card">

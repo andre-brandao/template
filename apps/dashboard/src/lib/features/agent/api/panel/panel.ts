@@ -28,7 +28,6 @@ export namespace Panel {
     id: z.string(),
     title: z.string(),
     spec: Spec,
-    thread: z.string().nullable(),
     createdBy: z.string(),
     author: z.string(),
     timeCreated: z.string(),
@@ -42,7 +41,6 @@ export namespace Panel {
       id: z.uuid().optional(),
       title: z.string().trim().min(1).max(120),
       spec: Spec,
-      thread: z.string().max(255).nullable().default(null),
     }),
     async (input) => {
       Identity.check(Sql.Grant);
@@ -60,7 +58,6 @@ export namespace Panel {
         ...(before ?? (await origin(input.id))),
         title: input.title,
         spec: input.spec,
-        thread: input.thread,
         timeUpdated: new Date().toISOString(),
       };
       await Storage.disk().put(

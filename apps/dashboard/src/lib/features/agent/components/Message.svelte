@@ -24,16 +24,6 @@
 				.map((part) => [part.toolCallId, part])
 		);
 	const results = $derived(collect(message.parts));
-
-	// The caret rides in the text, so it lands after the last word; it blinks by swapping for
-	// a same-width space.
-	let lit = $state(true);
-	const blink = () => {
-		const timer = setInterval(() => (lit = !lit), 530);
-		return () => clearInterval(timer);
-	};
-	const say = (i: number, content: string) =>
-		writing && i === message.parts.length - 1 ? `${content}${lit ? ' ▍' : '  '}` : content;
 </script>
 
 <!-- What a subagent did, under the tool call that started it; a reload keeps only the call. -->
@@ -57,16 +47,19 @@
 	{#if part.subagent.error}<Issue>{part.subagent.error.message}</Issue>{/if}
 {/snippet}
 
-<li class={{ user }} {@attach writing ? blink : undefined}>
+<li class={{ user }}>
+	<!-- Still: the header's mark is the one that shows activity. -->
 	{#if !user}
-		<span class="avatar"><Avatar size={24} state={writing ? 'writing' : 'idle'} /></span>
+		<span class="avatar"><Avatar size={24} /></span>
 	{/if}
 	<div class="body">
 		{#each message.parts as part, i (i)}
 			{#if part.type === 'text' && user}
 				<p class="bubble">{part.content}</p>
 			{:else if part.type === 'text'}
-				<div class="text"><Markdown value={say(i, part.content)} /></div>
+				<div class="text">
+					<Markdown value={part.content} caret={writing && i === message.parts.length - 1} />
+				</div>
 			{:else if part.type === 'tool-call'}
 				<Tool {part} result={results.get(part.id)} {loading} />
 			{:else if part.type === 'subagent'}

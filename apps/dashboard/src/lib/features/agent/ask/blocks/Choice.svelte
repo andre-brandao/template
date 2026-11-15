@@ -20,7 +20,7 @@
 </script>
 
 <Question label={props.label} hint={props.hint} reason={props.reason}>
-	<div class="options" role="radiogroup">
+	<div class="options">
 		{#each options as option (option.value)}
 			<Option
 				label={option.label}

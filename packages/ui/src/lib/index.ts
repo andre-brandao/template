@@ -61,6 +61,7 @@ export { default as Kbd } from "./kbd/Kbd.svelte";
 export * as List from "./list";
 // Root, Item, Label and Separator: `<Menu.Root>`.
 export * as Menu from "./menu";
+export { default as Meter } from "./meter/Meter.svelte";
 export { default as Dialog } from "./modal/Dialog.svelte";
 export { default as Modals } from "./modal/Modals.svelte";
 export { modal, type Ask } from "./modal/modal.svelte";
@@ -71,6 +72,7 @@ export { default as Scroll } from "./pane/Scroll.svelte";
 export { default as Section } from "./section/Section.svelte";
 export { default as Skeleton } from "./skeleton/Skeleton.svelte";
 export { default as Spinner } from "./spinner/Spinner.svelte";
+export { default as Stat } from "./stat/Stat.svelte";
 export { default as Status, type State } from "./status/Status.svelte";
 // A container and its items, so it lands as a namespace like Combobox.
 export * as Tabs from "./tabs";

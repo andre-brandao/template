@@ -37,7 +37,8 @@ export namespace Sql {
   });
 
   export type Result = {
-    columns: { name: string; type: string }[];
+    /** `numeric` columns arrive as numbers, bigint and numeric included. */
+    columns: { name: string; type: string; numeric: boolean }[];
     rows: Record<string, unknown>[];
     /** There were more rows than `limit`. */
     truncated: boolean;
@@ -126,7 +127,11 @@ export namespace Sql {
         rows.columns.filter((col) => NUMERIC.has(col.type)).map((col) => col.name),
       );
       return {
-        columns: rows.columns.map((col) => ({ name: col.name, type: TYPES[col.type] ?? "text" })),
+        columns: rows.columns.map((col) => ({
+          name: col.name,
+          type: TYPES[col.type] ?? "text",
+          numeric: NUMBERS.has(col.type),
+        })),
         rows: rows
           .slice(0, input.limit)
           .map((row) =>
@@ -200,6 +205,9 @@ export namespace Sql {
 
   // bigint and numeric arrive as strings; a chart needs numbers.
   const NUMERIC = new Set([20, 1700]);
+
+  // Every number type, by oid: what a Metric or Chart may read.
+  const NUMBERS = new Set([20, 21, 23, 700, 701, 1700]);
 
   const TYPES: Record<number, string> = {
     16: "boolean",

@@ -100,3 +100,25 @@
   clip-path: inset(50%);
   white-space: nowrap;
 }
+
+/* The streaming caret rides after the last block, or alone while nothing has arrived. */
+.markdown-body.caret > :last-child::after,
+.markdown-body.caret:empty::after {
+  content: "▍";
+  margin-left: 0.15em;
+  color: var(--muted, #64625d);
+  animation: caret 1s steps(1) infinite;
+}
+
+@keyframes caret {
+  50% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .markdown-body.caret > :last-child::after,
+  .markdown-body.caret:empty::after {
+    animation: none;
+  }
+}

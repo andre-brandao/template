@@ -72,6 +72,11 @@ export function fmt() {
     time: (value: string | Date) => time(value, me.prefs),
     stamp: (value: string | Date) => stamp(value, me.prefs),
     ago: (iso: string) => ago(iso, me.prefs),
+    number: (value: number, opts?: Intl.NumberFormatOptions) =>
+      value.toLocaleString(me.prefs.locale, opts),
+    get locale() {
+      return me.prefs.locale;
+    },
     get zone() {
       return zone(me.prefs);
     },

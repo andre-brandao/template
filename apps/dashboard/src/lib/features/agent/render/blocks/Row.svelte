@@ -1,8 +1,8 @@
 <!-- Children side by side, sized by its own width rather than the viewport's. -->
 <script lang="ts">
-	import type { Block } from '../catalog';
+	import type { Layout } from '../catalog';
 
-	let { children }: Block<'Row'> = $props();
+	let { children }: Layout<'Row'> = $props();
 </script>
 
 <div class="row">{@render children?.()}</div>

@@ -1,6 +1,6 @@
-<!-- The drawer's bar: history, new conversation, full screen, close. -->
+<!-- The drawer's bar: history, new conversation, full screen, close. Its mark is the one activity cue. -->
 <script lang="ts">
-	import { MediaQuery } from 'svelte/reactivity';
+	import { IconButton } from '@template/ui';
 	import SquarePen from '@lucide/svelte/icons/square-pen';
 	import X from '@lucide/svelte/icons/x';
 	import Maximize from '@lucide/svelte/icons/maximize-2';
@@ -8,37 +8,37 @@
 	import History from '@lucide/svelte/icons/history';
 	import { agent } from '../agent.svelte';
 	import Avatar from './Avatar.svelte';
-	import Icon from './Icon.svelte';
 
 	const ctx = agent();
-	// The Shell's breakpoint: a phone is always full screen, so there is nothing to toggle.
-	const narrow = new MediaQuery('max-width: 700px');
-	const wide = $derived(ctx.full ? 'Exit full screen' : 'Full screen');
 	const Size = $derived(ctx.full ? Minimize : Maximize);
 </script>
 
 <header>
 	<span class="title"><Avatar size={24} state={ctx.activity.state} />Assistant</span>
 	<span class="actions">
-		<Icon
-			aria-label="History"
-			title="History"
-			aria-pressed={ctx.tab === 'history'}
+		<IconButton
+			label="History"
+			pressed={ctx.tab === 'history'}
 			onclick={() => (ctx.tab = ctx.tab === 'history' ? 'chat' : 'history')}
 		>
 			<History size={17} strokeWidth={1.75} />
-		</Icon>
-		<Icon aria-label="New conversation" title="New conversation" onclick={ctx.fresh}>
+		</IconButton>
+		<IconButton label="New conversation" onclick={ctx.fresh}>
 			<SquarePen size={17} strokeWidth={1.75} />
-		</Icon>
-		{#if !narrow.current}
-			<Icon aria-label={wide} title={wide} aria-pressed={ctx.full} onclick={ctx.widen}>
+		</IconButton>
+		<!-- A phone is always full screen, so there is nothing to toggle. -->
+		{#if !ctx.narrow}
+			<IconButton
+				label={ctx.full ? 'Exit full screen' : 'Full screen'}
+				pressed={ctx.full}
+				onclick={ctx.widen}
+			>
 				<Size size={17} strokeWidth={1.75} />
-			</Icon>
+			</IconButton>
 		{/if}
-		<Icon aria-label="Close assistant" title="Close" onclick={ctx.close}>
+		<IconButton label="Close assistant" onclick={ctx.close}>
 			<X size={17} strokeWidth={1.75} />
-		</Icon>
+		</IconButton>
 	</span>
 </header>
 
@@ -52,6 +52,7 @@
 		padding: 0 0.75em 0 1em;
 		border-bottom: 1px solid var(--border);
 		flex-shrink: 0;
+		--control: 2em;
 	}
 
 	.title {

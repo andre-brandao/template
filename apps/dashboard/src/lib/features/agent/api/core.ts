@@ -4,8 +4,6 @@ import { createMCPClient } from "@tanstack/ai-mcp";
 import { Log } from "@template/core/util/log";
 import { Conversation } from "./conversation";
 
-type Env = Record<string, string | undefined>;
-
 const log = Log.create({ namespace: "agent" });
 
 /** The building blocks every agent's `chat()` is made of. */
@@ -26,32 +24,48 @@ export namespace Agent {
   export const offline = `The data tools are unavailable right now. If the question depends on the app's data, say so instead of answering from memory.`;
 
   /** Whether the LLM proxy is set; without it the dock stays hidden instead of throwing. */
-  export function ready(env: Env = process.env) {
-    return !!(env.LLM_URL && env.LLM_KEY && env.LLM_MODEL);
-  }
+  export const ready = () =>
+    !!(process.env.LLM_URL && process.env.LLM_KEY && process.env.LLM_MODEL);
 
   /** The LLM proxy and the MCP. Without `MCP_URL` the agent gets no MCP. */
-  export function config(env: Env = process.env) {
-    if (!env.LLM_URL || !env.LLM_KEY || !env.LLM_MODEL)
-      throw new Error("Agent needs LLM_URL, LLM_KEY and LLM_MODEL");
-    return { url: env.LLM_URL, key: env.LLM_KEY, model: env.LLM_MODEL, mcp: env.MCP_URL };
+  export function config() {
+    if (!ready()) throw new Error("Agent needs LLM_URL, LLM_KEY and LLM_MODEL");
+    return {
+      url: process.env.LLM_URL!,
+      key: process.env.LLM_KEY!,
+      model: process.env.LLM_MODEL!,
+      mcp: process.env.MCP_URL,
+    };
   }
 
+  // The gateway's list only changes on a deploy; a failed fetch is retried on the next call.
+  let listed: Promise<{ ids: string[]; default: string }> | undefined;
+
   /** Models the LiteLLM proxy serves; the default alone when it can't be listed. */
-  export async function models(env?: Env) {
-    const cfg = config(env);
+  export function models() {
+    listed ??= list();
+    return listed;
+  }
+
+  async function list() {
+    const cfg = config();
     const res = await fetch(`${cfg.url}/models`, {
       headers: { authorization: `Bearer ${cfg.key}` },
     }).catch(() => undefined);
-    if (!res?.ok) return { ids: [cfg.model], default: cfg.model };
-    const body = (await res.json()) as { data: { id: string }[] };
+    const body = res?.ok
+      ? ((await res.json().catch(() => undefined)) as { data: { id: string }[] } | undefined)
+      : undefined;
+    if (!body) {
+      listed = undefined;
+      return { ids: [cfg.model], default: cfg.model };
+    }
     const ids = body.data.map((model) => model.id).sort();
     return { ids: ids.includes(cfg.model) ? ids : [cfg.model, ...ids], default: cfg.model };
   }
 
   /** The LiteLLM proxy as a TanStack text adapter, on `model` or the default. */
-  export function adapter(model?: string, env?: Env) {
-    const cfg = config(env);
+  export function adapter(model?: string) {
+    const cfg = config();
     return openaiCompatibleText(model ?? cfg.model, { baseURL: cfg.url, apiKey: cfg.key });
   }
 
@@ -59,13 +73,11 @@ export namespace Agent {
    * The app's MCP as whoever `token` resolves to — a delegation, so the agent for its user. Undefined
    * without `MCP_URL` or when it is unreachable.
    */
-  export async function mcp(token: string, opts?: { readonly?: boolean }, env?: Env) {
-    const url = config(env).mcp;
+  export async function mcp(token: string) {
+    const url = config().mcp;
     if (!url) return undefined;
     return createMCPClient({
       transport: { type: "http", url, headers: { authorization: `Bearer ${token}` } },
-      // Hints, not a boundary: the MCP still checks every call against the token's role.
-      toolFilter: opts?.readonly ? (tool) => tool.annotations?.readOnlyHint === true : undefined,
     }).catch((err) => {
       log.warn(`MCP unreachable at ${url}`, { error: String(err) });
       return undefined;

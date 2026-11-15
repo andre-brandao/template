@@ -16,7 +16,7 @@
 	export const story: Story = {
 		title: 'Code',
 		blurb:
-			'Syntax highlighting from `@tanstack/highlight`: tokens are real `<span>`s coloured by `code.css`, so there is no `{@html}` and no theme stylesheet. Consumers restyle the frame with `:global(pre.tm-code)`. Past 50k characters it renders plain to keep tokenising off the critical path.',
+			'Syntax highlighting from `@tanstack/highlight`: tokens are real `<span>`s coloured by `code.css`, so there is no `{@html}` and no theme stylesheet. `max` caps the height and frames it as a scrolling pane. Past 50k characters it renders plain to keep tokenising off the critical path.',
 		of: Code,
 		props: {
 			value: { type: 'textarea', value: ts },
@@ -25,7 +25,8 @@
 				value: 'ts',
 				options: ['ts', 'json', 'shell', 'svelte', 'sql', 'yaml', 'diff', 'plaintext']
 			},
-			title: { type: 'text', value: '' }
+			title: { type: 'text', value: '' },
+			max: { type: 'text', value: '' }
 		},
 		variants: [
 			{ label: 'typescript', props: { value: ts, lang: 'ts' } },

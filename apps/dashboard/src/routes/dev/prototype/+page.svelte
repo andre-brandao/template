@@ -1,17 +1,17 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import { Card } from '@template/ui';
+	import { Badge, Card, Empty } from '@template/ui';
+	import * as Header from '$lib/components/header';
 
 	let { data } = $props();
 </script>
 
-<div class="intro">
-	<h1>Prototypes</h1>
-	<p>
-		Everything under <code>docs/prototype/</code>, rendered with its mockups live in their iframes.
-		The same docs are served standalone by <code>bun prototype</code> on port 4400.
-	</p>
-</div>
+<Header.Root title="Prototypes">
+	{#snippet lead()}
+		Everything under <code>docs/prototype/</code>, with its mockups live in their iframes. Also served
+		standalone by <code>bun prototype</code> on port 4400.
+	{/snippet}
+</Header.Root>
 
 {#if data.features.length}
 	<div class="grid">
@@ -21,43 +21,19 @@
 				{#if one.description}<p>{one.description}</p>{/if}
 				<footer>
 					<code>{one.name}</code>
-					{#if one.status}<span class="badge">{one.status}</span>{/if}
+					{#if one.status}<Badge>{one.status}</Badge>{/if}
 				</footer>
 			</Card>
 		{/each}
 	</div>
 {:else}
-	<p class="hint">
-		Nothing in <code>docs/prototype/</code> yet — run the <code>prototype</code> skill to scaffold
-		one.
-	</p>
+	<Empty>Nothing in docs/prototype/ yet. Run the prototype skill to scaffold one.</Empty>
 {/if}
 
 <style>
-	/* All title, prose and a closing hint — the shape every /dev index screen takes. */
-	.intro h1 {
-		margin: 0 0 0.4em;
-		font-size: 1.5em;
-	}
-
-	.intro p {
-		max-width: 60ch;
-		color: var(--muted);
-		font-size: 0.9em;
-	}
-
-	.intro code {
-		font-family: var(--font-mono);
-		font-size: 0.9em;
-	}
-
-	.hint {
-		color: var(--dim);
-	}
-
 	.grid {
 		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(19em, 1fr));
+		grid-template-columns: repeat(auto-fill, minmax(min(100%, 19em), 1fr));
 		gap: 1em;
 	}
 
@@ -66,7 +42,7 @@
 		font-size: 1em;
 	}
 
-	.grid p {
+	p {
 		margin: 0;
 		color: var(--muted);
 		font-size: 0.85em;
@@ -83,14 +59,5 @@
 	code {
 		font-family: var(--font-mono);
 		color: var(--dim);
-	}
-
-	.badge {
-		padding: 0.1em 0.55em;
-		border: 1px solid var(--border);
-		border-radius: 999px;
-		color: var(--dim);
-		letter-spacing: 0.06em;
-		text-transform: uppercase;
 	}
 </style>

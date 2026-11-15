@@ -1,15 +1,16 @@
 <script lang="ts">
 	import { z } from 'zod';
-	import { Button, Fill, Input, LazySelect, Pagination, Scroll, Toggle } from '@template/ui';
+	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
+	import { Button, Fill, Input, Issue, LazySelect, Pagination, Scroll, Skeleton, Toggle } from '@template/ui';
 	import * as Header from '$lib/components/header';
 	import { debounce } from '$lib/utils/debounce';
+	import { fmt } from '$lib/utils/fmt';
 	import { query } from '$lib/utils/params';
-	import { getEvents, getFacets } from '../api/admin.remote';
+	import { events as entries, facets } from '../api/admin.query';
 	import LogsTable from '../components/LogsTable.svelte';
 	import { events } from '../sort';
 
-	// Filters live in the URL so a narrowed log can be linked, reloaded and stepped back
-	// through — the same treatment insights gives its date range.
+	// In the URL so a narrowed log can be linked, reloaded and stepped back through.
 	const params = query(
 		z.object({
 			q: z.string().default(''),
@@ -21,34 +22,34 @@
 		})
 	);
 
-	const args = $derived({
-		search: params.q || undefined,
-		type: params.type || undefined,
-		source: params.source || undefined,
-		userID: params.user || undefined,
-		page: params.page,
-		pageSize: 50,
-		sort: params.sort
-	});
-	const log = $derived(await getEvents(args));
+	const f = fmt();
+	const client = useQueryClient();
+	const log = createQuery(() =>
+		entries({
+			search: params.q || undefined,
+			type: params.type || undefined,
+			source: params.source || undefined,
+			userID: params.user || undefined,
+			page: params.page,
+			pageSize: 50,
+			sort: params.sort
+		})
+	);
 	const filtered = $derived(!!(params.q || params.type || params.source || params.user));
 
-	// The facet lists are only ever read by the two selects, so they ride along with them
-	// instead of holding up the log. Both halves come from the one cached query.
+	// Read only by the two selects, when opened; both share the one cached query.
 	const list = (key: 'types' | 'sources') => async () =>
-		(await getFacets())[key].map((one) => ({ value: one, label: one }));
+		(await client.fetchQuery(facets()))[key].map((one) => ({ value: one, label: one }));
 
-	// `undefined` drops the key entirely, so narrowing always lands back on page one and the
-	// URL stays as short as the filters actually in use.
+	// `undefined` drops the key, so narrowing always lands back on page one.
 	const pick = (next: Partial<typeof params>) => params.update({ ...next, page: undefined });
 	const commit = debounce((q: string) => pick({ q }), 300);
 </script>
 
-<!-- Header, filters and pagination hold still; only the list scrolls. A log is read by
-     narrowing it, so the controls that narrow it have to stay in reach. -->
+<!-- Header, filters and pagination hold still; only the list scrolls. -->
 <Fill>
 	<Header.Root title="Logs" lead="Every audit entry, newest first. Written by core; read-only here.">
-		<Header.Item label="Entries">{log.total.toLocaleString()}</Header.Item>
+		<Header.Item label="Entries">{log.data ? f.number(log.data.total) : '–'}</Header.Item>
 		{#snippet strip()}
 			<Header.Group>
 				<Input
@@ -93,14 +94,19 @@
 		{/snippet}
 	</Header.Root>
 
-	<Scroll fill>
-		<LogsTable
-			rows={log.data}
-			sorting={events.decode(params.sort)}
-			onsort={(sort) => pick({ sort })}
-			onuser={(user) => pick({ user })}
-		/>
-	</Scroll>
-
-	<Pagination of={log} onchange={(page) => params.update({ page })} />
+	{#if log.isSuccess}
+		<Scroll fill>
+			<LogsTable
+				rows={log.data.data}
+				sorting={events.decode(params.sort)}
+				onsort={(sort) => pick({ sort })}
+				onuser={(user) => pick({ user })}
+			/>
+		</Scroll>
+		<Pagination of={log.data} onchange={(page) => params.update({ page })} />
+	{:else if log.isError}
+		<Issue>{log.error.message}</Issue>
+	{:else}
+		<Skeleton h="12em" />
+	{/if}
 </Fill>

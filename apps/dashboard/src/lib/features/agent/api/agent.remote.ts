@@ -13,14 +13,10 @@ export const getConversations = remote
       .number()
       .int()
       .min(1)
-      .optional()
-      .transform((page) => ({ agent: "orchestrator", page: page ?? 1 })),
+      .transform((page) => ({ agent: "orchestrator", page })),
   )
   .query();
 
 export const getConversation = remote.core(Conversation.fromID).query();
 
-export const removeConversation = remote.command(z.uuid(), async (id) => {
-  await Conversation.remove(id);
-  await getConversations().refresh();
-});
+export const removeConversation = remote.core(Conversation.remove).command();

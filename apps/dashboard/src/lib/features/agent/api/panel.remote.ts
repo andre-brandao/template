@@ -9,13 +9,6 @@ export const getPanels = remote.core(Panel.list).query();
 
 export const getPanel = remote.core(Panel.fromID).query();
 
-export const savePanel = remote.command(Panel.save.schema, async (input) => {
-  const info = await Panel.save(input);
-  await getPanels().refresh();
-  return info;
-});
+export const savePanel = remote.core(Panel.save).command();
 
-export const removePanel = remote.command(Panel.remove.schema, async (id) => {
-  await Panel.remove(id);
-  await getPanels().refresh();
-});
+export const removePanel = remote.core(Panel.remove).command();

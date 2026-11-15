@@ -1,5 +1,5 @@
-/* Presentation for @tanstack/highlight token output. Global so a scoped `:global(pre.tm-code)`
-   rule in a consumer can restyle the frame without knowing the token classes. */
+/* Presentation for @tanstack/highlight token output. Global so token classes need no scoping;
+   a consumer sizes the frame with `max`, never by reaching into it. */
 
 .tm-code {
   --tm-comment: var(--dim, #75736d);
@@ -16,6 +16,16 @@
   background: var(--surface-2, #f2f1ee);
   font-family: var(--font-mono, ui-monospace, monospace);
   tab-size: 2;
+}
+
+.tm-code.pane {
+  margin: 0;
+  overflow: auto;
+  padding: 0.9em 1em;
+  border: 1px solid var(--border, #e6e5e1);
+  background: var(--surface, #fff);
+  font-size: 0.78em;
+  line-height: 1.5;
 }
 
 .tm-code code {

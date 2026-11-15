@@ -88,7 +88,7 @@
 		aria-expanded={row.getIsExpanded()}
 		onclick={row.getToggleExpandedHandler()}
 	>
-		<ChevronRight class="mark" size={14} strokeWidth={2} />
+		<ChevronRight size={14} strokeWidth={2} />
 		<span class="type">{row.original.type}</span>
 	</button>
 {/snippet}
@@ -160,13 +160,13 @@
 		text-align: left;
 	}
 
-	:global(.mark) {
+	.toggle :global(svg) {
 		flex: none;
 		color: var(--dim);
 		transition: transform 120ms ease;
 	}
 
-	.toggle.open :global(.mark) {
+	.toggle.open :global(svg) {
 		transform: rotate(90deg);
 	}
 

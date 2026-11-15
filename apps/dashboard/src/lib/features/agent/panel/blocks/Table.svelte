@@ -1,6 +1,6 @@
 <!-- Every column of the result, for lists. -->
 <script lang="ts">
-	import type { Block } from '../catalog';
+	import { limits, type Block } from '../catalog';
 	import Data from './Data.svelte';
 	import Grid from './Grid.svelte';
 	import Titled from './Titled.svelte';
@@ -9,7 +9,7 @@
 </script>
 
 <Titled title={props.title}>
-	<Data sql={props.sql} {loading}>
+	<Data sql={props.sql} limit={limits.Table} {loading}>
 		{#snippet children(data)}
 			<Grid {data} />
 		{/snippet}

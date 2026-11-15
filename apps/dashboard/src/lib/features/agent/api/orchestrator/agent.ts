@@ -28,12 +28,11 @@ export async function orchestrator(
     tools?: MergedAgentTools<ReadonlyArray<AnyTool>>;
     abortController?: AbortController;
   },
-  env?: Record<string, string | undefined>,
 ) {
-  const link = Agent.attach(await Agent.mcp(input.token, {}, env));
-  const child = panel({ thread: input.thread, model: input.model }, env);
+  const link = Agent.attach(await Agent.mcp(input.token));
+  const child = panel({ thread: input.thread, model: input.model });
   return chat({
-    adapter: Agent.adapter(input.model, env),
+    adapter: Agent.adapter(input.model),
     messages: input.messages,
     threadId: input.threadId ?? input.thread,
     runId: input.runId,

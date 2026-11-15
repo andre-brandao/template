@@ -31,10 +31,7 @@ async function* deliver(stream: AsyncIterable<StreamChunk>, state: { spec?: Draf
  * The orchestrator's panel builder, for admins only: anyone else gets no `panel` at all. Built
  * inside the request, so its tools and recorder run as the actor once the stream is consumed.
  */
-export function panel(
-  input: { thread: string; model?: string },
-  env?: Record<string, string | undefined>,
-) {
+export function panel(input: { thread: string; model?: string }) {
   if (!Identity.can(Sql.Grant)) return undefined;
   const scope = AsyncLocalStorage.snapshot();
   return defineAgent({
@@ -53,14 +50,14 @@ export function panel(
           inputSchema: shape,
         }).server((spec) =>
           scope(async () => {
-            const out = await check(spec, (query) => Sql.run({ sql: query, limit: 200 }));
+            const out = await check(spec, (query, limit) => Sql.run({ sql: query, limit }));
             if (out.ok) state.spec = spec;
             return out;
           }),
         );
         return deliver(
           chat({
-            adapter: Agent.adapter(input.model, env),
+            adapter: Agent.adapter(input.model),
             messages: ctx.messages,
             ...ctx.forward,
             systemPrompts: [Agent.prompt, guide, ...sql.prompts],

@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { Code, Tabs, toast } from '@template/ui';
+	import Copy from '@lucide/svelte/icons/copy';
+	import { Code, IconButton, Tabs, toast } from '@template/ui';
 	import { cli, curl, fetch as js, sdk } from './snippets';
 
 	let {
@@ -28,9 +29,9 @@
 				</Tabs.Item>
 			{/each}
 		</Tabs.Root>
-		<button class="copy" onclick={copy}>Copy</button>
+		<IconButton size="sm" label="Copy {kind}" onclick={copy}><Copy size={14} /></IconButton>
 	</div>
-	<Code value={text} lang={langs[kind]} />
+	<Code value={text} lang={langs[kind]} max="22em" />
 </section>
 
 <style>
@@ -43,35 +44,5 @@
 		align-items: center;
 		justify-content: space-between;
 		margin-bottom: 0.6em;
-	}
-
-	.copy {
-		font-family: var(--font-mono);
-		font-size: 0.75em;
-		padding: 0.4em 0.8em;
-		border: 1px solid var(--border);
-		border-radius: var(--radius);
-		background: none;
-		color: var(--muted);
-		cursor: pointer;
-	}
-
-	.copy:hover {
-		color: var(--ink);
-		border-color: var(--border-bright);
-	}
-
-	section :global(pre.tm-code) {
-		margin: 0;
-		max-height: 22em;
-		overflow: auto;
-		padding: 0.9em 1em;
-		border: 1px solid var(--border);
-		border-radius: var(--radius);
-		background: var(--surface);
-		font-family: var(--font-mono);
-		font-size: 0.78em;
-		line-height: 1.5;
-		color: var(--muted);
 	}
 </style>

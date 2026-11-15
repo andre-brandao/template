@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Button, Field, Input, Issue, modal } from '@template/ui';
-	import { issue, mint } from '../../api/developers.query';
+	import { issue } from '../../api/apps.query';
+	import { mint } from '../../api/keys.query';
 	import Reveal from '../Reveal.svelte';
 
 	// Modal content. `app` mints the key for that App instead of for the signed-in user.
@@ -19,7 +20,7 @@
 	function submit(e: SubmitEvent) {
 		e.preventDefault();
 		const body = { name, expiresInDays: ttl ? Number(ttl) : undefined };
-		if (app) return its.mutate({ path: { id: app }, body });
+		if (app) return its.mutate({ app, ...body });
 		own.mutate({ body });
 	}
 </script>

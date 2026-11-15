@@ -9,15 +9,20 @@
 	import { get } from '../api/people.query';
 	import Activity from '../components/Activity.svelte';
 
+	type Profile = User.Profile & { self: boolean; manage: boolean };
+
 	// Editing is the route's to supply: it composes the forms from the slices that own them.
 	let {
 		id,
+		name,
 		edit,
 		app
 	}: {
 		id: string;
+		/** Stands in for the name in the header, e.g. an Inline rename when the reader manages it. */
+		name?: Snippet<[Profile]>;
 		/** Rendered when the reader may change this account: their own, or an App they manage. */
-		edit?: Snippet<[User.Profile & { self: boolean; manage: boolean }]>;
+		edit?: Snippet<[Profile]>;
 		/** Rendered on an App's profile for an admin: its keys, inbound endpoint and webhooks. */
 		app?: Snippet;
 	} = $props();
@@ -46,7 +51,11 @@
 		{#snippet title()}
 			<span class="title">
 				<Avatar name={data.name} image={data.image} size={48} />
-				<span class="name">{data.name}</span>
+				{#if name}
+					{@render name({ ...data, self, manage })}
+				{:else}
+					<span class="name">{data.name}</span>
+				{/if}
 				{#if self}<Badge tone="accent">You</Badge>{/if}
 			</span>
 		{/snippet}

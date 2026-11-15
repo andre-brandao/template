@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { Button, Field, Input, Issue } from '@template/ui';
-	import { create } from '../../api/developers.query';
+	import { create } from '../../api/apps.query';
 
 	// Modal content. An App is its account's profile, so that page is where it is configured.
 	let { close }: { close: () => void } = $props();
@@ -21,7 +21,7 @@
 <form
 	onsubmit={(e) => {
 		e.preventDefault();
-		save.mutate({ body: { name } });
+		save.mutate({ name });
 	}}
 >
 	{#if save.error}

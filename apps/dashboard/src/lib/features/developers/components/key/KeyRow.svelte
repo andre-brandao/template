@@ -4,7 +4,8 @@
 	import CircleOff from '@lucide/svelte/icons/circle-off';
 	import { Menu, Status, Tooltip, modal } from '@template/ui';
 	import { fmt } from '$lib/utils/fmt';
-	import { retire, revoke } from '../../api/developers.query';
+	import { retire } from '../../api/apps.query';
+	import { revoke } from '../../api/keys.query';
 	import Row from '../Row.svelte';
 
 	// With `app` the key is the App's, revoked through its own route.
@@ -21,7 +22,7 @@
 	async function ask() {
 		const ok = await modal.confirm({ title: 'Revoke key', action: 'Revoke', body: warn });
 		if (!ok) return;
-		if (app) return its.mutate({ path: { id: app, key: key.id } });
+		if (app) return its.mutate({ app, id: key.id });
 		own.mutate({ path: { id: key.id } });
 	}
 </script>

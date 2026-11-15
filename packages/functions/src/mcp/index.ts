@@ -4,6 +4,7 @@ import { McpServer, createMcpHandler } from "@modelcontextprotocol/server";
 import { VisibleError, ErrorCodes, type ErrorResponseType } from "@template/core/error";
 import { auth } from "../api/middleware";
 import { authRequired } from "../api/common";
+import { feedback } from "./tool/feedback";
 import { todo } from "./tool/todo";
 import { health } from "../health";
 
@@ -23,6 +24,7 @@ function metadata(c: Context) {
 function server() {
   const s = new McpServer({ name: "template", version: "1.0.0" });
   todo(s);
+  feedback(s);
   return s;
 }
 

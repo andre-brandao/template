@@ -1,5 +1,11 @@
 import { browser } from "$app/environment";
-import { MutationCache, QueryClient, matchQuery, type QueryKey } from "@tanstack/svelte-query";
+import {
+  MutationCache,
+  QueryClient,
+  matchQuery,
+  type MutationOptions,
+  type QueryKey,
+} from "@tanstack/svelte-query";
 import { client } from "@template/sdk/query/client.gen";
 
 declare module "@tanstack/svelte-query" {
@@ -31,3 +37,17 @@ export const queryClient = () => shared ?? create();
 
 // For remote-function writes: refresh the TanStack queries they touched.
 export const invalidate = (key: QueryKey) => shared?.invalidateQueries({ queryKey: key });
+
+// A remote function rejects with an `HttpError`, which carries no `message`; the views read one.
+export const call =
+  <I, O>(fn: (input: I) => PromiseLike<O>) =>
+  (input: I) =>
+    Promise.resolve(fn(input)).catch((err) =>
+      Promise.reject(new Error(err?.body?.message ?? String(err))),
+    );
+
+/** What a mutation factory accepts, typed from the remote command behind it. */
+export type Done<T extends (input: never) => PromiseLike<unknown>> = Pick<
+  MutationOptions<Awaited<ReturnType<T>>, Error, Parameters<T>[0]>,
+  "onSuccess"
+>;

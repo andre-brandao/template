@@ -21,10 +21,17 @@ function cloudflaredPg(): PluginOption {
         }
       }
       // Leave cloudflare:* imports as external — resolved at CF Workers runtime.
-      // postgres/src/cf.js imports cloudflare:sockets, which only workerd provides.
       if (id.startsWith("cloudflare:")) {
         return { id, external: true };
       }
+    },
+    // cf.js imports cloudflare:sockets statically, which kit's Node analyse step can't load.
+    // Defer it into the async `socket()`, so it only runs inside workerd.
+    transform(code, id) {
+      if (!/\/postgres\/src\/cf\.js$/.test(id)) return;
+      return code
+        .replace("import { connect } from 'cloudflare:sockets'\n", "")
+        .replace("let raw = connect(", "let raw = (await import('cloudflare:sockets')).connect(");
     },
   };
 }

@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 
-// Stamps out a new CRUD feature modeled on the todo reference implementation: core
-// module, API handler, id prefix, dashboard remote functions and a minimal page.
+// Stamps out a CRUD feature modeled on `project`: table, core module with grants and events,
+// API handler, MCP tools, and a dashboard slice on the SDK's TanStack options.
 // Usage: bun run scripts/feature.ts <name> [prefix]  — e.g. `invoice inv`
 
 const name = process.argv[2] ?? "";
@@ -16,17 +16,18 @@ if (!/^[a-z][a-z0-9]{1,30}$/.test(name)) {
   process.exit(1);
 }
 
+const slice = `${root}/apps/dashboard/src/lib/features/${plural}`;
 const targets = {
   sql: `${root}/packages/core/src/${name}/${name}.sql.ts`,
   core: `${root}/packages/core/src/${name}/index.ts`,
   test: `${root}/packages/core/test/${name}.test.ts`,
   handler: `${root}/packages/functions/src/api/handler/${name}.ts`,
   mcp: `${root}/packages/functions/src/mcp/tool/${name}.ts`,
-  remote: `${root}/apps/dashboard/src/lib/features/${plural}/api/${plural}.remote.ts`,
-  form: `${root}/apps/dashboard/src/lib/features/${plural}/components/${pascal}Form.svelte`,
-  card: `${root}/apps/dashboard/src/lib/features/${plural}/components/${pascal}Card.svelte`,
-  page: `${root}/apps/dashboard/src/lib/features/${plural}/pages/${pascal}sPage.svelte`,
-  route: `${root}/apps/dashboard/src/routes/(app)/${plural}/+page.svelte`,
+  query: `${slice}/api/${plural}.query.ts`,
+  form: `${slice}/components/${pascal}Form.svelte`,
+  row: `${slice}/components/Row.svelte`,
+  page: `${slice}/pages/${pascal}sPage.svelte`,
+  route: `${root}/apps/dashboard/src/routes/(app)/(home)/${plural}/+page.svelte`,
 };
 
 for (const target of Object.values(targets)) {
@@ -58,10 +59,10 @@ export const ${pascal}Table = table(
   {
     id: id(),
     ...timestamps,
-    userID: ulid("user_id").notNull(),
-    title: text("title").notNull(),
+    createdBy: ulid("created_by").notNull(),
+    title: text().notNull(),
   },
-  (table) => [index("${name}_user").on(table.userID)],
+  (table) => [index("${name}_created_by").on(table.createdBy)],
 );
 `,
 );
@@ -70,29 +71,37 @@ await Bun.write(
   targets.core,
   `import { z } from "zod";
 import { and, count, desc, eq, ilike, isNull, type SQLWrapper } from "drizzle-orm";
+import { Assert } from "../util/assert";
 import { fn } from "../util/fn";
-import { found } from "../error";
 import { Database } from "../drizzle";
 import { Identity } from "../identity";
 import { Common } from "../common";
 import { Examples } from "../examples";
 import { Identifier } from "../identifier";
 import { sortable } from "../drizzle/order";
+import { Bus } from "../platform/bus";
 import { ${pascal}Table } from "./${name}.sql";
 
 export namespace ${pascal} {
+  export const assert = Assert.create("${pascal}");
+
   export const Info = z
     .object({
       id: z.string().meta({ description: Common.IdDescription, example: Examples.${pascal}.id }),
-      userID: z.string(),
-      title: z.string().min(0).max(2000),
+      createdBy: z.string().meta({ description: "Id of the user who created it." }),
+      title: z.string().min(1).max(2000).meta({ description: "What it is called." }),
+      timeCreated: z.iso.datetime().meta({ description: "When it was created." }),
     })
-    .meta({
-      ref: "${pascal}",
-      description: "A ${name} that belongs to a user.",
-      example: Examples.${pascal},
-    });
+    .meta({ ref: "${pascal}", description: "A ${name}.", example: Examples.${pascal} });
   export type Info = z.infer<typeof Info>;
+
+  const Patch = Info.pick({ title: true });
+
+  export const Event = {
+    Created: Bus.define("${name}.created", Info),
+    Updated: Bus.define("${name}.updated", z.object({ ${name}: Info, changes: Patch })),
+    Removed: Bus.define("${name}.removed", Info),
+  };
 
   /** Sortable keys mapped to what each orders by — also the allowlist. */
   export const SortableColumns = sortable(
@@ -104,29 +113,27 @@ export namespace ${pascal} {
     desc(${pascal}Table.timeCreated),
   );
 
-  export const create = fn(z.object({ title: Info.shape.title.min(1) }), (input) =>
-    Database.use((tx) =>
-      tx
-        .insert(${pascal}Table)
-        .values({
-          id: Identifier.create("${name}"),
-          userID: Identity.userID(),
-          title: input.title,
-        })
-        .returning()
-        .then((rows) => serialize(rows[0]!)),
-    ),
-    { title: "Create ${name}", description: "Create a ${name} for the current user." },
+  export const create = fn(
+    Patch,
+    (input) => {
+      Identity.check({ ${name}: ["create"] });
+      const id = Identifier.create("${name}");
+      return Database.transaction(async (tx) => {
+        await tx.insert(${pascal}Table).values({ id, createdBy: Identity.userID(), title: input.title });
+        const ${name} = await assert.exists(fromID.force(id));
+        await Event.Created.publish(${name}, { subject: id });
+        return ${name};
+      });
+    },
+    { title: "Create ${name}", description: "Create a ${name}." },
   );
 
   export const list = fn(
     Common.Query({ sort: SortableColumns.schema, search: z.string().optional() }),
     (input) => {
+      Identity.check({ ${name}: ["read"] });
       const { page, pageSize, limit, offset } = Common.page(input);
-      const conditions = [
-        eq(${pascal}Table.userID, Identity.userID()),
-        isNull(${pascal}Table.timeDeleted),
-      ];
+      const conditions = [isNull(${pascal}Table.timeDeleted)];
       if (input.search) conditions.push(ilike(${pascal}Table.title, \`%\${input.search}%\`));
       const where = and(...conditions);
       return Database.use(async (tx) => {
@@ -143,54 +150,62 @@ export namespace ${pascal} {
         return { data: rows.map(serialize), page, pageSize, total: totals[0]?.total ?? 0 };
       });
     },
-    { title: "List ${plural}", description: "List the current user's ${plural}. Paginated." },
+    { title: "List ${plural}", description: "List ${plural}, optionally filtered by title. Paginated." },
   );
 
-  export const fromID = fn(Info.shape.id, (id) =>
-    Database.use((tx) =>
-      tx
-        .select()
-        .from(${pascal}Table)
-        .where(
-          and(
-            eq(${pascal}Table.id, id),
-            eq(${pascal}Table.userID, Identity.userID()),
-            isNull(${pascal}Table.timeDeleted),
-          ),
-        )
-        .then((rows) => (rows[0] ? serialize(rows[0]) : null)),
-    ),
+  export const fromID = fn(
+    Info.shape.id,
+    (id) => {
+      Identity.check({ ${name}: ["read"] });
+      return Database.use((tx) =>
+        tx
+          .select()
+          .from(${pascal}Table)
+          .where(and(eq(${pascal}Table.id, id), isNull(${pascal}Table.timeDeleted)))
+          .then((rows) => (rows[0] ? serialize(rows[0]) : null)),
+      );
+    },
     { title: "Get ${name}", description: "Fetch a single ${name} by id." },
   );
 
   export const update = fn(
-    z.object({ id: Info.shape.id, title: Info.shape.title.min(1) }),
-    async ({ id, title }) => {
-      found("${pascal}", await fromID.force(id));
-
-      return Database.use((tx) =>
-        tx
+    Patch.extend({ id: Info.shape.id }),
+    async (input) => {
+      const before = await assert.exists(fromID.force(input.id));
+      Identity.check({ ${name}: ["update"] }, before.createdBy);
+      return Database.transaction(async (tx) => {
+        await tx
           .update(${pascal}Table)
-          .set({ title, timeUpdated: new Date() })
-          .where(and(eq(${pascal}Table.id, id), eq(${pascal}Table.userID, Identity.userID()))),
-      );
+          .set({ title: input.title, timeUpdated: new Date() })
+          .where(eq(${pascal}Table.id, input.id));
+        const ${name} = await assert.exists(fromID.force(input.id));
+        await Event.Updated.publish({ ${name}, changes: { title: input.title } }, { subject: input.id });
+        return ${name};
+      });
     },
-    { title: "Update ${name}", description: "Update a ${name}'s title." },
+    { title: "Update ${name}", description: "Rename a ${name}." },
   );
 
-  export const remove = fn(Info.shape.id, async (id) => {
-    found("${pascal}", await fromID.force(id));
-
-    return Database.use((tx) =>
-      tx
-        .update(${pascal}Table)
-        .set({ timeDeleted: new Date() })
-        .where(and(eq(${pascal}Table.id, id), eq(${pascal}Table.userID, Identity.userID()))),
-    );
-  }, { title: "Delete ${name}", description: "Soft-delete a ${name}." });
+  export const remove = fn(
+    Info.shape.id,
+    async (id) => {
+      const before = await assert.exists(fromID.force(id));
+      Identity.check({ ${name}: ["delete"] }, before.createdBy);
+      return Database.transaction(async (tx) => {
+        await tx.update(${pascal}Table).set({ timeDeleted: new Date() }).where(eq(${pascal}Table.id, id));
+        await Event.Removed.publish(before, { subject: id });
+      });
+    },
+    { title: "Delete ${name}", description: "Soft-delete a ${name}." },
+  );
 
   function serialize(row: typeof ${pascal}Table.$inferSelect): Info {
-    return { id: row.id, userID: row.userID, title: row.title };
+    return {
+      id: row.id,
+      createdBy: row.createdBy,
+      title: row.title,
+      timeCreated: row.timeCreated.toISOString(),
+    };
   }
 }
 `,
@@ -199,6 +214,7 @@ export namespace ${pascal} {
 await Bun.write(
   targets.test,
   `import { describe, expect } from "bun:test";
+import { Identity } from "../src/identity";
 import { ${pascal} } from "../src/${name}";
 import { withTestUser } from "./util";
 
@@ -207,28 +223,31 @@ describe("${name}", () => {
     const { id } = await ${pascal}.create({ title: "First" });
     const row = await ${pascal}.fromID(id);
     expect(row?.title).toBe("First");
-    expect(row?.userID).toBe(userID);
+    expect(row?.createdBy).toBe(userID);
   });
 
-  withTestUser("list only returns rows for the current user", async () => {
-    await ${pascal}.create({ title: "First" });
-    await ${pascal}.create({ title: "Second" });
-    const page = await ${pascal}.list({});
-    expect(page.data).toHaveLength(2);
-    expect(page.total).toBe(2);
+  withTestUser("list finds ${plural} by title", async () => {
+    const title = \`Search \${crypto.randomUUID()}\`;
+    await ${pascal}.create({ title });
+    const page = await ${pascal}.list({ search: title });
+    expect(page.data.map((row) => row.title)).toEqual([title]);
   });
 
-  withTestUser("update renames the ${name}", async () => {
+  withTestUser("update returns the renamed ${name}", async () => {
     const { id } = await ${pascal}.create({ title: "Before" });
-    await ${pascal}.update({ id, title: "After" });
-    const row = await ${pascal}.fromID(id);
-    expect(row?.title).toBe("After");
+    expect((await ${pascal}.update({ id, title: "After" })).title).toBe("After");
   });
 
   withTestUser("remove soft-deletes the ${name}", async () => {
     const { id } = await ${pascal}.create({ title: "Temporary" });
     await ${pascal}.remove(id);
     expect(await ${pascal}.fromID(id)).toBeNull();
+  });
+
+  withTestUser("a scoped agent needs the ${name} grant", async () => {
+    await Identity.delegate("copilot", { todo: ["read"] }, () =>
+      expect(() => ${pascal}.create({ title: "Nope" })).toThrow(/${name}:create/),
+    );
   });
 });
 `,
@@ -241,7 +260,6 @@ import { Hono } from "hono";
 import { validator, PaginatedQuery, authRequired } from "../common";
 import { describe } from "../doc";
 import { ${pascal} } from "@template/core/${name}";
-import { found } from "@template/core/error";
 
 export namespace ${pascal}Api {
   const doc = describe("${pascal}");
@@ -250,40 +268,53 @@ export namespace ${pascal}Api {
   export const route = new Hono()
     .get(
       "/",
-      doc(${pascal}.list.meta, { 200: doc.page(${pascal}.Info) }),
+      doc(${pascal}.list.meta, {
+        200: doc.page(${pascal}.Info),
+        ...doc.errors(400, 401, 403, 500),
+      }),
       authRequired,
       validator("query", PaginatedQuery(${pascal}.list.schema)),
       async (c) => c.json(await ${pascal}.list(c.req.valid("query")), 200),
     )
     .get(
       "/:id",
-      doc(${pascal}.fromID.meta, { 200: doc.json(${pascal}.Info) }),
+      doc(${pascal}.fromID.meta, {
+        200: doc.json(${pascal}.Info),
+        ...doc.errors(400, 401, 403, 404, 500),
+      }),
       authRequired,
       validator("param", id),
-      async (c) => c.json(found("${pascal}", await ${pascal}.fromID(c.req.valid("param").id)), 200),
+      async (c) =>
+        c.json(await ${pascal}.assert.exists(${pascal}.fromID(c.req.valid("param").id)), 200),
     )
     .post(
       "/",
-      doc(${pascal}.create.meta, { 200: doc.json(${pascal}.Info) }),
+      doc(${pascal}.create.meta, {
+        200: doc.json(${pascal}.Info),
+        ...doc.errors(400, 401, 403, 500),
+      }),
       authRequired,
       validator("json", ${pascal}.create.schema),
       async (c) => c.json(await ${pascal}.create(c.req.valid("json")), 200),
     )
     .patch(
       "/:id",
-      doc(${pascal}.update.meta, { 200: doc.json(${pascal}.Info) }),
+      doc(${pascal}.update.meta, {
+        200: doc.json(${pascal}.Info),
+        ...doc.errors(400, 401, 403, 404, 500),
+      }),
       authRequired,
       validator("param", id),
       validator("json", ${pascal}.update.schema.omit({ id: true })),
-      async (c) => {
-        const { id } = c.req.valid("param");
-        await ${pascal}.update({ id, ...c.req.valid("json") });
-        return c.json(await ${pascal}.fromID(id), 200);
-      },
+      async (c) =>
+        c.json(await ${pascal}.update({ id: c.req.valid("param").id, ...c.req.valid("json") }), 200),
     )
     .delete(
       "/:id",
-      doc(${pascal}.remove.meta, { 200: doc.ok }),
+      doc(${pascal}.remove.meta, {
+        200: doc.ok,
+        ...doc.errors(400, 401, 403, 404, 500),
+      }),
       authRequired,
       validator("param", id),
       async (c) => {
@@ -303,16 +334,12 @@ import { tools } from "../common";
 
 export function ${name}(server: McpServer) {
   const tool = tools(server);
+  const read = tools(server, { readOnlyHint: true });
 
-  tool("${name}_list", ${pascal}.list);
-  tool.id("${name}_get", ${pascal}.fromID);
+  read("${name}_list", ${pascal}.list);
+  read.id("${name}_get", ${pascal}.fromID);
   tool("${name}_create", ${pascal}.create);
-
-  tool("${name}_update", ${pascal}.update, async (input) => {
-    await ${pascal}.update(input);
-    return ${pascal}.fromID(input.id);
-  });
-
+  tool("${name}_update", ${pascal}.update);
   tool.id("${name}_remove", ${pascal}.remove, async (id) => {
     await ${pascal}.remove(id);
     return "ok";
@@ -322,50 +349,54 @@ export function ${name}(server: McpServer) {
 );
 
 await Bun.write(
-  targets.remote,
-  `import { error } from "@sveltejs/kit";
-import { z } from "zod";
-import { ${pascal} } from "@template/core/${name}";
-import { remote } from "$lib/server/remote";
+  targets.query,
+  `import { createMutation } from "@tanstack/svelte-query";
+import {
+  delete${pascal}ByIdMutation,
+  get${pascal}Options,
+  get${pascal}QueryKey,
+  post${pascal}Mutation,
+} from "@template/sdk/query";
 
-export const get${pascal}s = remote.query(
-  z.object({ q: z.string().optional() }),
-  async (input) => {
-    const { data } = await ${pascal}.list({ search: input.q, pageSize: 100 });
-    return data;
-  },
-);
+export const list = () => get${pascal}Options({ query: { pageSize: 100 } });
 
-export const get${pascal} = remote.query(${pascal}.Info.shape.id, async (id) => {
-  const row = await ${pascal}.fromID(id);
-  if (!row) error(404, "${pascal} not found");
-  return row;
-});
+export const create = (opts?: Pick<ReturnType<typeof post${pascal}Mutation>, "onSuccess">) =>
+  createMutation(() => ({
+    ...post${pascal}Mutation(),
+    meta: { invalidates: [get${pascal}QueryKey()] },
+    ...opts,
+  }));
 
-export const create${pascal} = remote.form(${pascal}.create.schema, ${pascal}.create);
-
-export const remove${pascal} = remote.form(
-  z.object({ id: ${pascal}.Info.shape.id }).transform((input) => input.id),
-  ${pascal}.remove,
-);
+export const remove = (opts?: Pick<ReturnType<typeof delete${pascal}ByIdMutation>, "onSuccess">) =>
+  createMutation(() => ({
+    ...delete${pascal}ByIdMutation(),
+    meta: { invalidates: [get${pascal}QueryKey()] },
+    ...opts,
+  }));
 `,
 );
 
 await Bun.write(
   targets.form,
   `<script lang="ts">
-	import { Button } from '@template/ui';
-	import { create${pascal} } from '../api/${plural}.remote';
+	import { Button, Input, Issue } from '@template/ui';
+	import { create } from '../api/${plural}.query';
+
+	const add = create();
+
+	function submit(e: SubmitEvent & { currentTarget: HTMLFormElement }) {
+		e.preventDefault();
+		const form = e.currentTarget;
+		const title = String(new FormData(form).get('title'));
+		add.mutate({ body: { title } }, { onSuccess: () => form.reset() });
+	}
 </script>
 
-{#each create${pascal}.fields.allIssues() ?? [] as issue, i (i)}
-	<p class="error">{issue.message}</p>
-{/each}
-
-<form class="add" {...create${pascal}}>
-	<input placeholder="Title" {...create${pascal}.fields.title.as('text')} />
-	<Button type="submit" pending={!!create${pascal}.pending}>Add</Button>
+<form class="add" onsubmit={submit}>
+	<Input name="title" aria-label="Title" placeholder="Title" required />
+	<Button type="submit" pending={add.isPending}>Add</Button>
 </form>
+{#if add.isError}<Issue>{add.error.message}</Issue>{/if}
 
 <style>
 	.add {
@@ -373,60 +404,42 @@ await Bun.write(
 		gap: 0.6em;
 		margin-bottom: 1.25em;
 	}
-
-	input {
-		flex: 1;
-		font: inherit;
-		padding: 0.5em 0.7em;
-		border: 1px solid var(--border);
-		border-radius: var(--radius);
-		background: var(--surface);
-		color: var(--ink);
-	}
-
-	input:focus-visible {
-		border-color: var(--accent);
-		outline: none;
-	}
 </style>
 `,
 );
 
 await Bun.write(
-  targets.card,
+  targets.row,
   `<script lang="ts">
-	import { Button, Card } from '@template/ui';
 	import type { ${pascal} } from '@template/core/${name}';
-	import { remove${pascal} } from '../api/${plural}.remote';
+	import { Button, toast } from '@template/ui';
+	import { remove } from '../api/${plural}.query';
 
 	let { ${name} }: { ${name}: ${pascal}.Info } = $props();
-	const remove = $derived(remove${pascal}.for(${name}.id));
+
+	const drop = remove();
 </script>
 
-<Card>
-	{#each remove.fields.allIssues() ?? [] as issue, i (i)}
-		<p class="error">{issue.message}</p>
-	{/each}
-
-	<div class="head">
-		<span class="title">{${name}.title}</span>
-		<form {...remove}>
-			<input {...remove.fields.id.as('hidden', ${name}.id)} />
-			<Button variant="danger" type="submit" pending={!!remove.pending}>Delete</Button>
-		</form>
-	</div>
-</Card>
+<li>
+	<span>{${name}.title}</span>
+	<Button
+		variant="ghost"
+		pending={drop.isPending}
+		onclick={() =>
+			drop.mutate({ path: { id: ${name}.id } }, { onError: (err) => toast.error(err.message) })}
+	>
+		Delete
+	</Button>
+</li>
 
 <style>
-	.head {
+	li {
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
 		gap: 0.75em;
-	}
-
-	.title {
-		font-weight: 600;
+		padding: 0.4em 0.7em;
+		border-bottom: 1px solid var(--border);
 	}
 </style>
 `,
@@ -435,34 +448,42 @@ await Bun.write(
 await Bun.write(
   targets.page,
   `<script lang="ts">
-	import { get${pascal}s } from '../api/${plural}.remote';
+	import { createQuery } from '@tanstack/svelte-query';
+	import { Empty, Issue, Skeleton } from '@template/ui';
+	import * as Header from '$lib/components/header';
 	import ${pascal}Form from '../components/${pascal}Form.svelte';
-	import ${pascal}Card from '../components/${pascal}Card.svelte';
+	import Row from '../components/Row.svelte';
+	import { list } from '../api/${plural}.query';
 
-	const rows = $derived(await get${pascal}s({}));
+	const rows = createQuery(list);
 </script>
 
-<h1>${pascal}s</h1>
+<Header.Root title="${pascal}s">
+	<Header.Item label="${pascal}s">{rows.data?.total ?? '–'}</Header.Item>
+</Header.Root>
 
 <${pascal}Form />
 
-<div class="list">
-	{#each rows as ${name} (${name}.id)}
-		<${pascal}Card {${name}} />
-	{/each}
-	{#if rows.length === 0}
-		<p class="empty">No ${plural} yet</p>
-	{/if}
-</div>
+{#if rows.isPending}
+	<Skeleton h="3.25em" />
+{:else if rows.isError}
+	<Issue>{rows.error.message}</Issue>
+{:else if rows.data.data.length === 0}
+	<Empty>No ${plural} yet.</Empty>
+{:else}
+	<ul>
+		{#each rows.data.data as ${name} (${name}.id)}
+			<Row {${name}} />
+		{/each}
+	</ul>
+{/if}
 
 <style>
-	.list {
-		display: grid;
-		gap: 0.75em;
-	}
-
-	.empty {
-		color: var(--dim);
+	ul {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		border-top: 1px solid var(--border);
 	}
 </style>
 `,
@@ -483,67 +504,72 @@ await Bun.write(
   ids.replace("\n  } as const;", `\n    ${name}: "${prefix}",\n  } as const;`),
 );
 
-const examples = await Bun.file(`${root}/packages/core/src/examples.ts`).text();
-const seeded = examples.replace(
-  /\n}\s*$/,
-  `\n
-  export const ${pascal} = {
-    id: Id("${name}"),
-    userID: Id("user"),
-    title: "Example ${name}",
-  } as const;
+/** Applies one edit to a file, or prints what to add by hand when its anchor moved. */
+async function wire(file: string, edits: [string | RegExp, string][], hint: string[]) {
+  const before = await Bun.file(`${root}/${file}`).text();
+  const after = edits.reduce((text, [from, to]) => text.replace(from, to), before);
+  if (after !== before) return Bun.write(`${root}/${file}`, after);
+  console.warn(`Could not wire ${file} automatically; add this yourself:`);
+  for (const line of hint) console.warn(`  ${line}`);
 }
-`,
+
+const grants = `${name}: ["read", "create", "update", "delete"],`;
+await wire(
+  "packages/core/src/permission.ts",
+  [
+    ["\n  } as const;\n", `\n    ${grants}\n  } as const;\n`],
+    ["\n    },\n  } as const satisfies", `\n      ${grants}\n    },\n  } as const satisfies`],
+  ],
+  [`${grants} — in Statement and in Roles.member`],
 );
-if (seeded === examples) {
-  console.warn(`Could not wire examples.ts automatically; add this to the Examples namespace:`);
-  console.warn(
-    `  export const ${pascal} = { id: Id("${name}"), userID: Id("user"), title: "Example ${name}" } as const;`,
-  );
-}
-if (seeded !== examples) await Bun.write(`${root}/packages/core/src/examples.ts`, seeded);
 
-const api = await Bun.file(`${root}/packages/functions/src/api/routes.ts`).text();
-const wired = api
-  .replace(
-    `import { TodoApi } from "./handler/todo";`,
-    `import { TodoApi } from "./handler/todo";\nimport { ${pascal}Api } from "./handler/${name}";`,
-  )
-  .replace(
-    `.route("/todo", TodoApi.route)`,
-    `.route("/todo", TodoApi.route)\n  .route("/${name}", ${pascal}Api.route)`,
-  );
-if (wired === api) {
-  console.warn(`Could not wire routes.ts automatically; add these lines yourself:`);
-  console.warn(`  import { ${pascal}Api } from "./handler/${name}";`);
-  console.warn(`  .route("/${name}", ${pascal}Api.route)`);
-}
-if (wired !== api) await Bun.write(`${root}/packages/functions/src/api/routes.ts`, wired);
+const example = `export const ${pascal} = {
+    id: Id("${name}"),
+    createdBy: Id("user"),
+    title: "Example ${name}",
+    timeCreated: "2026-06-07T00:00:00.000Z",
+  } as const;`;
+await wire("packages/core/src/examples.ts", [[/\n}\s*$/, `\n\n  ${example}\n}\n`]], [example]);
 
-const mcp = await Bun.file(`${root}/packages/functions/src/mcp/index.ts`).text();
-const tooled = mcp
-  .replace(
-    `import { todo } from "./tool/todo";`,
-    `import { todo } from "./tool/todo";\nimport { ${name} } from "./tool/${name}";`,
-  )
-  .replace("  todo(s);", `  todo(s);\n  ${name}(s);`);
-if (tooled === mcp) {
-  console.warn(`Could not wire mcp/index.ts automatically; add these lines yourself:`);
-  console.warn(`  import { ${name} } from "./tool/${name}";`);
-  console.warn(`  ${name}(s);`);
-}
-if (tooled !== mcp) await Bun.write(`${root}/packages/functions/src/mcp/index.ts`, tooled);
+await wire(
+  "packages/functions/src/api/routes.ts",
+  [
+    [
+      `import { TodoApi } from "./handler/todo";`,
+      `import { TodoApi } from "./handler/todo";\nimport { ${pascal}Api } from "./handler/${name}";`,
+    ],
+    [
+      `.route("/todo", TodoApi.route)`,
+      `.route("/todo", TodoApi.route)\n  .route("/${name}", ${pascal}Api.route)`,
+    ],
+  ],
+  [`import { ${pascal}Api } from "./handler/${name}";`, `.route("/${name}", ${pascal}Api.route)`],
+);
+
+await wire(
+  "packages/functions/src/mcp/index.ts",
+  [
+    [
+      `import { todo } from "./tool/todo";`,
+      `import { todo } from "./tool/todo";\nimport { ${name} } from "./tool/${name}";`,
+    ],
+    ["  todo(s);", `  todo(s);\n  ${name}(s);`],
+  ],
+  [`import { ${name} } from "./tool/${name}";`, `${name}(s);`],
+);
 
 console.log(`Created feature "${name}":`);
 for (const target of Object.values(targets)) console.log(`  ${target.replace(`${root}/`, "")}`);
 console.log(
-  `Wired: identifier prefix "${prefix}", Examples.${pascal}, route /${name}, MCP ${name}_* tools`,
+  `Wired: identifier prefix "${prefix}", Permission "${name}", Examples.${pascal}, route /${name}, MCP ${name}_* tools`,
 );
 console.log(`
-Next steps:
-  - restart \`bun dev\` (drizzle pushes the new "${name}" table on startup)
-  - link it: add { href: '/${plural}', label: '${pascal}s', icon } to a layout's nav.sections
-  - \`bun run gen\` to refresh the OpenAPI spec + SDK
-  - typecheck: \`cd packages/core && bun typecheck\`
-  - tests: \`cd packages/core && bun test ${name}\`
+Next steps (yours to run):
+  - \`bun run fmt\`: the templates are not line-wrapped
+  - \`cd packages/core && bun db:generate\` for the "${name}" table, then migrate
+  - \`cd packages/functions && bun run gen:spec\`, then \`cd packages/sdk/ts && bun run gen\`:
+    the dashboard slice imports the SDK's ${name} options, which don't exist until then
+  - link it: add { href: '/${plural}', label: '${pascal}s', icon } to routes/(app)/(home)/+layout.ts
+  - \`bun typecheck\` in packages/core, packages/functions and apps/dashboard
+  - \`cd packages/core && bun test ${name}\`
 `);

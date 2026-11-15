@@ -1,4 +1,4 @@
-import { call } from "#lib/query.ts";
+import { read } from "#lib/query.ts";
 import { doc } from "./api.remote";
 
-export const spec = () => ({ queryKey: ["dev", "api"], queryFn: call(() => doc()) });
+export const spec = () => ({ queryKey: ["dev", "api"], queryFn: read(() => doc()) });

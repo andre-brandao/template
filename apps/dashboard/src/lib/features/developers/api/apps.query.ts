@@ -1,5 +1,5 @@
 import { createMutation } from "@tanstack/svelte-query";
-import { call, type Done } from "#lib/query.ts";
+import { call, read, type Done } from "#lib/query.ts";
 import {
   createApp,
   createAppKey,
@@ -15,19 +15,19 @@ import {
 
 // `apps` is the list, `app` one App and its keys: separate roots, so a delete never refetches its own row.
 // Minted keys and secrets live only in mutation data; `gcTime: 0` drops it on unmount.
-export const list = () => ({ queryKey: ["apps"], queryFn: call(() => getApps()) });
+export const list = () => ({ queryKey: ["apps"], queryFn: read(() => getApps()) });
 
-export const get = (id: string) => ({ queryKey: ["app", id], queryFn: call(() => getApp(id)) });
+export const get = (id: string) => ({ queryKey: ["app", id], queryFn: read(() => getApp(id)) });
 
 export const keys = (id: string) => ({
   queryKey: ["app", id, "keys"],
-  queryFn: call(() => getAppKeys(id)),
+  queryFn: read(() => getAppKeys(id)),
 });
 
 // Server config under its own root, so no `app` write refetches it.
 export const endpoint = (id: string) => ({
   queryKey: ["endpoint", id],
-  queryFn: call(() => getEndpoint(id)),
+  queryFn: read(() => getEndpoint(id)),
   staleTime: Infinity,
 });
 

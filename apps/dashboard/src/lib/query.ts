@@ -5,6 +5,7 @@ import {
   matchQuery,
   type EnsureQueryDataOptions,
   type MutationOptions,
+  type QueryFunctionContext,
   type QueryKey,
 } from "@tanstack/svelte-query";
 import { client } from "@template/sdk/client.gen";
@@ -58,14 +59,24 @@ export const message = (err: unknown) => {
   return one?.body?.message ?? one?.message ?? String(err);
 };
 
-// A remote query read inside an effect stays cached, so a refetch would replay it: `refresh`
-// makes every call hit the server, once (the proxy's `then` reuses that request).
+const fail = (err: unknown) => Promise.reject(new Error(message(err)));
+
+/** A remote command as a `mutationFn`, rejecting with a plain `Error`. */
 export const call =
   <I, O>(fn: (input: I) => PromiseLike<O>) =>
-  (input: I) => {
-    const out = fn(input);
-    if ("refresh" in out && typeof out.refresh === "function") out.refresh();
-    return Promise.resolve(out).catch((err) => Promise.reject(new Error(message(err))));
+  (input: I) =>
+    Promise.resolve(fn(input)).catch(fail);
+
+// A key's first fetch awaits the remote query as is, so hydration reuses what SSR serialized.
+// Kit keeps a query cached while it is read, so any later fetch (refetch, retry) `refresh`es.
+export const read =
+  <O, P = never>(fn: (page: P) => PromiseLike<O>) =>
+  (ctx: QueryFunctionContext) => {
+    const out = fn(ctx.pageParam as P);
+    const state = ctx.client.getQueryState(ctx.queryKey);
+    const seen = state?.dataUpdateCount || state?.errorUpdateCount || state?.fetchFailureCount;
+    if (seen && "refresh" in out && typeof out.refresh === "function") out.refresh();
+    return Promise.resolve(out).catch(fail);
   };
 
 /** What an SDK mutation factory accepts: `Opts<typeof postProjectMutation>`. */

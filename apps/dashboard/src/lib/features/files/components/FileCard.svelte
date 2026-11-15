@@ -1,25 +1,25 @@
 <script lang="ts">
 	import { Button, Card, Issue } from '@template/ui';
-	import type { Storage } from '@template/core/storage';
+	import type { File as Entry } from '@template/sdk/query';
 	import { fmt } from '$lib/utils/fmt';
 	import { size } from '$lib/utils/size';
-	import { removeFile } from '../api/files.remote';
+	import { remove } from '../api/files.query';
 
-	let { file, onedit }: { file: Storage.Entry; onedit: () => void } = $props();
+	let { file, onedit }: { file: Entry; onedit: () => void } = $props();
 
 	const f = fmt();
+	const drop = remove();
 	const name = $derived(file.key.split('/').at(-1) ?? file.key);
-	const href = $derived(`/files/${encodeURIComponent(name)}`);
-	const remove = $derived(removeFile.for(file.key));
+	const href = $derived(`/api/file/${encodeURIComponent(name)}/content`);
 	// No metadata table, so `list` can't report a content type — the extension is all we have.
 	const kind = $derived(name.includes('.') ? (name.split('.').at(-1) ?? 'file') : 'file');
 	const image = $derived(/\.(png|jpe?g|gif|webp|avif|svg)$/i.test(name));
 </script>
 
 <Card interactive>
-	{#each remove.fields.allIssues() ?? [] as issue, i (i)}
-		<Issue>{issue.message}</Issue>
-	{/each}
+	{#if drop.error}
+		<Issue>{drop.error.message}</Issue>
+	{/if}
 
 	<div class="row">
 		{#if image}
@@ -33,7 +33,7 @@
 			<span class="meta">
 				{size(file.size)}
 				{#if file.lastModified}
-					· {f.ago(file.lastModified.toISOString())}
+					· {f.ago(file.lastModified)}
 				{/if}
 			</span>
 		</div>
@@ -41,15 +41,15 @@
 		<div class="actions">
 			<a class="download" {href} download={name}>Download</a>
 			<Button variant="ghost" onclick={onedit}>Rename</Button>
-			<form
-				{...remove.enhance(async (f) => {
-					if (!confirm(`Delete ${name}?`)) return;
-					await f.submit();
-				})}
+			<Button
+				variant="danger"
+				pending={drop.isPending}
+				onclick={() => {
+					if (confirm(`Delete ${name}?`)) drop.mutate({ path: { name } });
+				}}
 			>
-				<input {...remove.fields.name.as('hidden', name)} />
-				<Button variant="danger" type="submit" pending={!!remove.pending}>Delete</Button>
-			</form>
+				Delete
+			</Button>
 		</div>
 	</div>
 </Card>

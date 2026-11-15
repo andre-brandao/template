@@ -16,7 +16,7 @@
 
 	let value = $state('Drop a png here, or use the + button.');
 
-	// Stands in for the app's uploader, which returns a `/files/...` path. Slow on purpose so the
+	// Stands in for the app's uploader, which returns an `/api/file/...` path. Slow on purpose so the
 	// pending state is visible; data: and blob: URLs would be stripped by the parser.
 	const upload = () =>
 		new Promise<string | null>((ok) => setTimeout(() => ok('/favicon.svg'), 1200));

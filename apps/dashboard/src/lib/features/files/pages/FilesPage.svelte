@@ -1,35 +1,30 @@
 <script lang="ts">
-	import { Drawer, Empty, Issue } from '@template/ui';
-	import type { Storage } from '@template/core/storage';
+	import { createQuery } from '@tanstack/svelte-query';
+	import { Drawer, Empty, Issue, Skeleton } from '@template/ui';
+	import type { File as Entry } from '@template/sdk/query';
 	import * as Header from '$lib/components/header';
 	import { size } from '$lib/utils/size';
-	import { getFiles } from '../api/files.remote';
+	import { list, upload } from '../api/files.query';
 	import FileCard from '../components/FileCard.svelte';
 	import FileForm from '../components/FileForm.svelte';
 	import Upload from '../components/Upload.svelte';
 
-	const files = $derived(await getFiles());
+	const files = createQuery(() => list());
+	const put = upload();
 
-	let editing = $state<Storage.Entry | null>(null);
+	let editing = $state<Entry | null>(null);
 	let open = $state(false);
 	let uploading = $state(false);
 	let failed = $state<string[]>([]);
 	let drag = $state(0);
 
-	async function upload(picked: FileList) {
+	async function send(picked: FileList) {
+		const all = [...picked];
 		uploading = true;
 		failed = [];
-		const results = await Promise.all(
-			[...picked].map(async (file) => {
-				const body = new FormData();
-				body.append('file', file);
-				const res = await fetch('/files', { method: 'POST', body });
-				return res.ok ? null : file.name;
-			})
-		);
-		failed = results.filter((name): name is string => name !== null);
+		const results = await Promise.allSettled(all.map((file) => put.mutateAsync({ body: { file } })));
+		failed = all.filter((_, i) => results[i].status === 'rejected').map((file) => file.name);
 		uploading = false;
-		await getFiles().refresh();
 	}
 
 	function enter(e: DragEvent) {
@@ -41,9 +36,8 @@
 	function drop(e: DragEvent) {
 		e.preventDefault();
 		drag = 0;
-		if (e.dataTransfer?.files.length) upload(e.dataTransfer.files);
+		if (e.dataTransfer?.files.length) send(e.dataTransfer.files);
 	}
-
 </script>
 
 <div
@@ -56,10 +50,12 @@
 	ondrop={drop}
 >
 	<Header.Root title="Files" lead="Uploads kept in storage. Drop files anywhere on the page.">
-		<Header.Item label="Files">{files.length}</Header.Item>
-		<Header.Item label="Total size">{size(files.reduce((sum, file) => sum + file.size, 0))}</Header.Item>
+		<Header.Item label="Files">{files.data?.length ?? '–'}</Header.Item>
+		<Header.Item label="Total size">
+			{files.data ? size(files.data.reduce((sum, file) => sum + file.size, 0)) : '–'}
+		</Header.Item>
 		{#snippet actions()}
-			<Upload {upload} pending={uploading} />
+			<Upload upload={send} pending={uploading} />
 		{/snippet}
 	</Header.Root>
 
@@ -67,20 +63,29 @@
 		<Issue>Upload failed: {name}</Issue>
 	{/each}
 
-	<div class="list">
-		{#each files as file (file.key)}
-			<FileCard
-				{file}
-				onedit={() => {
-					editing = file;
-					open = true;
-				}}
-			/>
-		{/each}
-		{#if files.length === 0}
-			<Empty>No files yet. Drop one here or use Upload.</Empty>
-		{/if}
-	</div>
+	{#if files.isPending}
+		<div class="list">
+			{#each [0, 1, 2] as i (i)}
+				<Skeleton h="4em" />
+			{/each}
+		</div>
+	{:else if files.isError}
+		<Issue>{files.error.message}</Issue>
+	{:else if files.data.length === 0}
+		<Empty>No files yet. Drop one here or use Upload.</Empty>
+	{:else}
+		<div class="list">
+			{#each files.data as file (file.key)}
+				<FileCard
+					{file}
+					onedit={() => {
+						editing = file;
+						open = true;
+					}}
+				/>
+			{/each}
+		</div>
+	{/if}
 
 	{#if drag > 0}
 		<div class="overlay">Drop files to upload</div>

@@ -1,37 +1,36 @@
 <script lang="ts">
-	import { Button, Field, FormBoundary, Input, Issue } from '@template/ui';
-	import type { Storage } from '@template/core/storage';
-	import { renameFile } from '../api/files.remote';
+	import { Button, Field, Input, Issue } from '@template/ui';
+	import type { File as Entry } from '@template/sdk/query';
+	import { rename } from '../api/files.query';
 
-	let { file, onsuccess }: { file: Storage.Entry; onsuccess?: () => void } = $props();
+	let { file, onsuccess }: { file: Entry; onsuccess?: () => void } = $props();
 
 	const name = $derived(file.key.split('/').at(-1) ?? file.key);
-	const rename = $derived(renameFile.for(file.key));
+	const save = rename({ onSuccess: () => onsuccess?.() });
+
+	// Reset whenever the drawer switches to another file.
+	let to = $derived(name);
 </script>
 
-<FormBoundary>
-	{#each rename.fields.allIssues() ?? [] as issue, i (i)}
-		<Issue>{issue.message}</Issue>
-	{/each}
+{#if save.error}
+	<Issue>{save.error.message}</Issue>
+{/if}
 
-	<form
-		class="edit"
-		{...rename.enhance(async (f) => {
-			await f.submit();
-			onsuccess?.();
-		})}
-	>
-		<input {...rename.fields.name.as('hidden', name)} />
+<form
+	class="edit"
+	onsubmit={(e) => {
+		e.preventDefault();
+		save.mutate({ path: { name }, body: { name: to } });
+	}}
+>
+	<Field label="Name">
+		<Input required value={to} oninput={(e) => (to = e.currentTarget.value)} />
+	</Field>
 
-		<Field label="Name">
-			<Input {...rename.fields.to.as('text', name)} />
-		</Field>
-
-		<div class="footer">
-			<Button type="submit" pending={!!rename.pending}>Save</Button>
-		</div>
-	</form>
-</FormBoundary>
+	<div class="footer">
+		<Button type="submit" pending={save.isPending}>Save</Button>
+	</div>
+</form>
 
 <style>
 	.edit {

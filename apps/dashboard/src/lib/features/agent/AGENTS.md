@@ -24,14 +24,15 @@ the DDL (`conversation`, `conversation_message`) lives in core, at
   sample for the model). Saved specs go through core's `Panel` (`@template/core/panel`, one
   JSON per panel in Storage under `panels/<userID>/`). Its `draft` tool checks a spec
   server-side; the last ok one is its result.
-- `api/serve.ts` — the SSE endpoint behind `routes/(app)/agent/+server.ts`. Reads
-  `forwardedProps` (`page`, `thread`, `model`) and mints a short-lived `orchestrator`
-  delegation (`agt-`) per request as the MCP bearer, so every MCP call runs as
+- `api/serve.ts` — the SSE endpoint behind `routes/(app)/agent/+server.ts`. Records under
+  the AG-UI `threadId`, reads `forwardedProps` (`page`, `model`) and mints a short-lived
+  `orchestrator` delegation (`agt-`) per request as the MCP bearer, so every MCP call runs as
   orchestrator-for-the-user. The session never leaves the dashboard.
 - `api/<slice>.query.ts` — TanStack factories over the remote functions (`agent`: models and
   history; `panel`: saved panels and a block's rows), with plain array keys.
-- `agent.svelte.ts` — `createAgent` (root layout context) and `agent()`. `Agent.svelte` equips
-  the chat once with its page tools (`page.ts`, `ask/`, `panel/`) and their views.
+- `agent.svelte.ts` — `createAgent` (root layout context) and `agent()`. A chat's `threadId`
+  is the conversation, so a new or resumed one swaps in a new chat. `Agent.svelte` equips
+  it with its page tools (`page.ts`, `ask/`, `panel/`) and their views.
 - `components/Dock.svelte` — the drawer, Mod+J to toggle and Escape to close.
   `routes/+layout.svelte` composes it into the Shell through its `side` snippet; shared layout
   never imports a feature.

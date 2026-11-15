@@ -19,8 +19,6 @@ After you create, change or remove data, call \`refresh\` so the user's page sho
  */
 export async function orchestrator(
   input: Agent.Run & {
-    /** The conversation it is recorded under; `threadId` defaults to it. */
-    thread: string;
     messages: Array<UIMessage | ModelMessage>;
     prompts?: string[];
     model?: string;
@@ -30,11 +28,11 @@ export async function orchestrator(
   },
 ) {
   const link = Agent.attach(await Agent.mcp(input.token));
-  const child = panel({ thread: input.thread, model: input.model });
+  const child = panel({ thread: input.threadId, model: input.model });
   return chat({
     adapter: Agent.adapter(input.model),
     messages: input.messages,
-    threadId: input.threadId ?? input.thread,
+    threadId: input.threadId,
     runId: input.runId,
     parentRunId: input.parentRunId,
     subagentRunId: input.subagentRunId,
@@ -49,7 +47,7 @@ export async function orchestrator(
     tools: input.tools ?? [],
     mcp: link.mcp,
     subagents: child ? { agents: [child] } : undefined,
-    middleware: [relax, Agent.recorder({ agent: "orchestrator", thread: input.thread })],
+    middleware: [relax, Agent.recorder({ agent: "orchestrator", thread: input.threadId })],
     abortController: input.abortController,
   });
 }

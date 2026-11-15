@@ -11,11 +11,17 @@
 	let { todo, depth = 0 }: { todo: Todo.Info; depth?: number } = $props();
 
 	let renaming = $state(false);
+	let actions: Actions | undefined = $state();
 </script>
 
 <Delete id={todo.id} title={todo.title}>
 	{#snippet children(ask, deleting)}
-		<li class={['row', { deleting }]} aria-busy={deleting} style:--depth={depth}>
+		<li
+			class={['row', { deleting }]}
+			aria-busy={deleting}
+			style:--depth={depth}
+			oncontextmenu={(e) => actions?.at(e)}
+		>
 			<StatusPicker {todo} compact />
 			<div class="main">
 				<Title {todo} bind:renaming busy={deleting} />
@@ -26,7 +32,7 @@
 				<Day {todo} />
 				<Assignee {todo} />
 			</span>
-			<Actions {todo} {deleting} {ask} onrename={() => (renaming = true)} />
+			<Actions bind:this={actions} {todo} {deleting} {ask} onrename={() => (renaming = true)} />
 		</li>
 	{/snippet}
 </Delete>

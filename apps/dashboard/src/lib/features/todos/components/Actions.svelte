@@ -1,5 +1,9 @@
-<!-- The ⋯ menu on a todo row or card. Destructive last. -->
+<!--
+	The ⋯ menu on a todo row or card. Its container also wires `oncontextmenu` to `at`, so a
+	right-click opens these same items at the pointer. Destructive last.
+-->
 <script lang="ts">
+	import type { Snippet } from 'svelte';
 	import { goto } from '$app/navigation';
 	import type { Todo } from '@template/core/todo';
 	import { Menu, modal } from '@template/ui';
@@ -11,20 +15,34 @@
 		todo,
 		deleting,
 		ask,
-		onrename
-	}: { todo: Todo.Info; deleting: boolean; ask: () => void; onrename: () => void } = $props();
+		onrename,
+		children
+	}: {
+		todo: Todo.Info;
+		deleting: boolean;
+		ask: () => void;
+		/** Left out where the title can't turn into a field, like the table. */
+		onrename?: () => void;
+		/** Extra items before Delete, like the table's Indent and Outdent. */
+		children?: Snippet;
+	} = $props();
 
 	const attach = link();
+	let menu: Menu.Root | undefined = $state();
+
+	export function at(e: MouseEvent) {
+		menu?.at(e);
+	}
 </script>
 
-<Menu.Root label="{todo.title} actions" align="end">
+<Menu.Root bind:this={menu} label="{todo.title} actions" align="end">
 	{#snippet trigger(attrs)}
 		<button class="dots" aria-label="{todo.title} actions" {...attrs}>
 			<Ellipsis size={16} strokeWidth={1.75} />
 		</button>
 	{/snippet}
 	<Menu.Item onselect={() => goto(`/todos/${todo.id}`)}>Open</Menu.Item>
-	<Menu.Item disabled={deleting} onselect={onrename}>Rename</Menu.Item>
+	{#if onrename}<Menu.Item disabled={deleting} onselect={onrename}>Rename</Menu.Item>{/if}
 	<Menu.Item
 		disabled={deleting}
 		onselect={() =>
@@ -35,6 +53,7 @@
 	>
 		Add link
 	</Menu.Item>
+	{@render children?.()}
 	<Menu.Separator />
 	<Menu.Item danger disabled={deleting} onselect={ask}>Delete</Menu.Item>
 </Menu.Root>

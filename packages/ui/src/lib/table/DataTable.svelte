@@ -8,12 +8,15 @@
 	let {
 		table,
 		detail,
-		empty = 'Nothing here'
+		empty = 'Nothing here',
+		oncontextmenu
 	}: {
 		table: Table<Features, TData>;
 		/** Full-width row under an expanded row — sub-components, raw JSON. */
 		detail?: Snippet<[Row<Features, TData>]>;
 		empty?: string;
+		/** Per row: hand it to that row's `Menu.at(e)` for a right-click menu. */
+		oncontextmenu?: (e: MouseEvent, row: Row<Features, TData>) => void;
 	} = $props();
 
 	const rows = $derived(table.getRowModel().rows);
@@ -56,7 +59,7 @@
 		</thead>
 		<tbody>
 			{#each rows as row (row.id)}
-				<tr>
+				<tr oncontextmenu={(e) => oncontextmenu?.(e, row)}>
 					{#each row.getAllCells() as cell (cell.id)}
 						<td data-col={cell.column.id}><FlexRender {cell} /></td>
 					{/each}

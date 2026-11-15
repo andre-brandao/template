@@ -44,13 +44,21 @@
 	} = $props();
 
 	const name = $derived(label ?? (typeof title === 'string' ? `${title} actions` : 'Actions'));
+	// Held, not reactive: only the right-click handler reads it. (`state` is a prop here.)
+	const ref: { menu?: Menu.Root } = {};
 </script>
 
 {#snippet text()}
 	{#if typeof title === 'string'}{title}{:else}{@render title()}{/if}
 {/snippet}
 
-<li class={['row', { muted }]} aria-busy={muted || state === 'pending'} data-row>
+<!-- Right-click (or Shift+F10 inside the row) opens the same ⋯ menu at the pointer. -->
+<li
+	class={['row', { muted }]}
+	aria-busy={muted || state === 'pending'}
+	data-row
+	oncontextmenu={(e) => ref.menu?.at(e)}
+>
 	{#if lead}<span class="lead">{@render lead()}</span>{/if}
 
 	<div class="main">
@@ -76,7 +84,7 @@
 	{#if actions}<span class="actions">{@render actions()}</span>{/if}
 
 	{#if menu}
-		<Menu.Root label={name} align="end">
+		<Menu.Root bind:this={ref.menu} label={name} align="end">
 			{#snippet trigger(attrs)}
 				<span class="more">
 					<IconButton label={name} size="sm" {...attrs}>

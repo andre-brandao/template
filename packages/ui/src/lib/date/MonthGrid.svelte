@@ -39,7 +39,8 @@
 		outside?: boolean;
 		/** Marks the tab stop `autofocus`, so a popover lands on it. */
 		autofocus?: boolean;
-		onpick?: (day: Day) => void;
+		/** The click comes along, so a caller can open a popover at the pointer. */
+		onpick?: (day: Day, e: MouseEvent) => void;
 		onhover?: (day: Day | undefined) => void;
 		cell?: Snippet<[Cell]>;
 	} = $props();
@@ -115,9 +116,9 @@
 		aria-label={label(info.day)}
 		aria-current={info.today ? 'date' : undefined}
 		aria-disabled={info.disabled}
-		onclick={() => {
+		onclick={(e) => {
 			focus = info.day;
-			if (!info.disabled) onpick?.(info.day);
+			if (!info.disabled) onpick?.(info.day, e);
 		}}
 		onpointerenter={() => onhover?.(info.day)}
 		onfocus={() => onhover?.(info.day)}

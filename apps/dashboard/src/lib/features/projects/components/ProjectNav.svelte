@@ -36,14 +36,12 @@
 			<Combobox.List label="Projects">
 				{#each projects.data?.data ?? [] as p (p.id)}
 					<Combobox.Item value={p.id} label={p.name} href="/projects/{p.id}{sub}">
-						{#if p.image}
-							<Avatar name={p.name} image={p.image} size={16} />
-						{/if}
+						<Avatar name={p.name} image={p.image} size={16} />
 						<span class="name">{p.name}</span>
 					</Combobox.Item>
 				{/each}
 			</Combobox.List>
-			<Combobox.Empty>No project by that name.</Combobox.Empty>
+			<Combobox.Empty>{projects.error?.message ?? 'No project by that name.'}</Combobox.Empty>
 		</Combobox.Content>
 	</Combobox.Root>
 </div>

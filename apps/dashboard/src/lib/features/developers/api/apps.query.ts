@@ -15,18 +15,18 @@ import {
 
 // `apps` is the list, `app` one App and its keys: separate roots, so a delete never refetches its own row.
 // Minted keys and secrets live only in mutation data; `gcTime: 0` drops it on unmount.
-export const apps = () => ({ queryKey: ["apps"], queryFn: call(() => getApps()) });
+export const list = () => ({ queryKey: ["apps"], queryFn: call(() => getApps()) });
 
-export const app = (id: string) => ({ queryKey: ["app", id], queryFn: call(() => getApp(id)) });
+export const get = (id: string) => ({ queryKey: ["app", id], queryFn: call(() => getApp(id)) });
 
-export const owned = (id: string) => ({
+export const keys = (id: string) => ({
   queryKey: ["app", id, "keys"],
   queryFn: call(() => getAppKeys(id)),
 });
 
-// Server config, so it never changes under a page.
+// Server config under its own root, so no `app` write refetches it.
 export const endpoint = (id: string) => ({
-  queryKey: ["app", id, "endpoint"],
+  queryKey: ["endpoint", id],
   queryFn: call(() => getEndpoint(id)),
   staleTime: Infinity,
 });
@@ -53,7 +53,7 @@ export const remove = (opts?: Done<typeof removeApp>) =>
     ...opts,
   }));
 
-export const issue = (opts?: Done<typeof createAppKey>) =>
+export const mint = (opts?: Done<typeof createAppKey>) =>
   createMutation(() => ({
     mutationFn: call(createAppKey),
     gcTime: 0,
@@ -61,7 +61,7 @@ export const issue = (opts?: Done<typeof createAppKey>) =>
     ...opts,
   }));
 
-export const retire = (opts?: Done<typeof revokeAppKey>) =>
+export const revoke = (opts?: Done<typeof revokeAppKey>) =>
   createMutation(() => ({
     mutationFn: call(revokeAppKey),
     meta: { invalidates: [["app"]] },

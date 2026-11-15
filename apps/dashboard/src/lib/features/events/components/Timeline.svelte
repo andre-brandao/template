@@ -1,9 +1,10 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import type { Event } from '@template/core/event';
-	import { Empty } from '@template/ui';
-	import { getEvents } from '../api/events.remote';
+	import { createQuery } from '@tanstack/svelte-query';
+	import { Empty, Issue, Skeleton } from '@template/ui';
 	import { fmt } from '$lib/utils/fmt';
+	import { timeline } from '../api/events.query';
 
 	let {
 		source,
@@ -20,7 +21,7 @@
 	} = $props();
 
 	const f = fmt();
-	const events = $derived((await getEvents({ source, sourceID })).data);
+	const events = createQuery(() => timeline(source, sourceID));
 </script>
 
 <div class="timeline">
@@ -28,11 +29,17 @@
 		<h2>{title}</h2>
 	{/if}
 
-	{#if events.length === 0}
+	{#if events.isPending}
+		<div class="loading" aria-busy="true">
+			{#each { length: 3 }, i (i)}<Skeleton h="1.1em" />{/each}
+		</div>
+	{:else if events.isError}
+		<Issue retry={() => events.refetch()}>{events.error.message}</Issue>
+	{:else if events.data.data.length === 0}
 		<Empty>{empty}</Empty>
 	{:else}
 		<ol>
-			{#each events as event (event.id)}
+			{#each events.data.data as event (event.id)}
 				<li>
 					<span class="dot"></span>
 					<div class="row">
@@ -49,6 +56,11 @@
 	h2 {
 		margin: 0 0 0.75em;
 		font-size: 1em;
+	}
+
+	.loading {
+		display: grid;
+		gap: 0.9em;
 	}
 
 	ol {

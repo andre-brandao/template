@@ -34,6 +34,11 @@
       "file": "packages/ui/src/lib/*/index.ts",
       "exports": ["Root", "Item", "Row"],
     },
+    // Query factories share CRUD verbs per resource (`list`, `create`), imported per module.
+    {
+      "file": "apps/*/src/lib/features/*/api/*.query.ts",
+      "exports": ["list", "get", "create", "update", "remove"],
+    },
     // The agent's two json-render catalogs (`ask`, `panel`) are parallel modules with the
     // same surface, imported as namespaces (`* as ask`, `* as panel`) where both meet.
     {

@@ -1,17 +1,18 @@
 <script lang="ts">
 	import { createQuery } from '@tanstack/svelte-query';
-	import { Button, Empty, Issue, Skeleton } from '@template/ui';
+	import { createHotkey } from '@tanstack/svelte-hotkeys';
+	import { hotkeys } from '$lib/hotkeys';
+	import { Button, Empty, Issue, Kbd, List } from '@template/ui';
 	import * as Header from '$lib/components/header';
 	import { size } from '$lib/utils/size';
 	import { list, upload } from '../api/files.query';
 	import Pending from '../components/Pending.svelte';
 	import Row from '../components/Row.svelte';
-	import Upload from '../components/Upload.svelte';
 
 	const files = createQuery(() => list());
 	const put = upload();
 
-	let up: Upload | undefined = $state();
+	let picker: HTMLInputElement | undefined;
 	let sending = $state<{ id: string; file: File; error?: string }[]>([]);
 	let drag = $state(0);
 
@@ -29,6 +30,11 @@
 			);
 		});
 	}
+
+	// Each file shows its own progress row, so picking never waits on a send.
+	const pick = () => picker?.click();
+
+	createHotkey(hotkeys.create, pick);
 
 	function enter(e: DragEvent) {
 		if (!e.dataTransfer?.types.includes('Files')) return;
@@ -52,18 +58,33 @@
 	ondragleave={() => (drag = Math.max(0, drag - 1))}
 	ondrop={drop}
 >
-	<Header.Root title="Files" lead="Uploads kept in storage. Drop files anywhere on the page.">
-		<Header.Item label="Files">{files.data?.length ?? '–'}</Header.Item>
-		<Header.Item label="Total size">
-			{files.data ? size(files.data.reduce((sum, file) => sum + file.size, 0)) : '–'}
-		</Header.Item>
+	<Header.Root title="Files" lead="Your uploads. Drop files anywhere on the page to add more.">
+		{#if files.data?.length}
+			<Header.Item label="Files">{files.data.length}</Header.Item>
+			<Header.Item label="Total size">
+				{size(files.data.reduce((sum, file) => sum + file.size, 0))}
+			</Header.Item>
+		{/if}
 		{#snippet actions()}
-			<Upload bind:this={up} upload={send} />
+			<input
+				type="file"
+				name="files"
+				multiple
+				hidden
+				onchange={(e) => {
+					if (e.currentTarget.files?.length) send(e.currentTarget.files);
+					e.currentTarget.value = '';
+				}}
+				{@attach (el) => {
+					picker = el;
+				}}
+			/>
+			<Button variant="primary" onclick={pick}>Upload <Kbd keys="C" /></Button>
 		{/snippet}
 	</Header.Root>
 
 	{#if sending.length}
-		<ul class="list" aria-label="Uploads">
+		<List.Root label="Uploads">
 			{#each sending as one (one.id)}
 				<Pending
 					file={one.file}
@@ -71,30 +92,21 @@
 					ondismiss={() => (sending = sending.filter((x) => x.id !== one.id))}
 				/>
 			{/each}
-		</ul>
+		</List.Root>
 	{/if}
 
 	{#if files.isPending}
-		<div class="skeleton" aria-busy="true">
-			{#each [0, 1, 2, 3, 4] as i (i)}
-				<Skeleton h="2.6em" />
-			{/each}
-		</div>
+		<List.Loading rows={5} />
 	{:else if files.isError}
-		<Issue>{files.error.message}</Issue>
+		<Issue retry={() => files.refetch()}>{files.error.message}</Issue>
 	{:else if files.data.length === 0 && !sending.length}
-		<Empty>
-			No files yet. Drop one anywhere on the page, or pick some to upload.
-			{#snippet action()}
-				<Button onclick={() => up?.open()}>Upload files</Button>
-			{/snippet}
-		</Empty>
+		<Empty>No files yet. Drop some anywhere on the page, or press <Kbd keys="C" /> to pick them.</Empty>
 	{:else}
-		<ul class="list">
+		<List.Root label="Files">
 			{#each files.data as file (file.key)}
 				<Row {file} />
 			{/each}
-		</ul>
+		</List.Root>
 	{/if}
 
 	{#if drag > 0}
@@ -106,18 +118,6 @@
 	.page {
 		position: relative;
 		min-height: 60vh;
-	}
-
-	.list {
-		margin: 0;
-		padding: 0;
-		list-style: none;
-	}
-
-	.skeleton {
-		display: flex;
-		flex-direction: column;
-		gap: 2px;
 	}
 
 	.overlay {

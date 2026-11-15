@@ -1,9 +1,8 @@
 <script lang="ts">
 	import { dev } from '$app/environment';
-	import { Field, Input, Issue } from '@template/ui';
+	import { Dialog, Field, Input } from '@template/ui';
 	import { Types } from '@template/core/webhook/types';
-	import { subscribe } from '../../api/webhooks.query';
-	import Actions from '../Actions.svelte';
+	import { create } from '../../api/webhooks.query';
 
 	// Modal content. `owner` files the subscription under that App.
 	let { owner, close }: { owner?: string; close: () => void } = $props();
@@ -23,24 +22,22 @@
 		pick = pick.includes(entity) ? pick.filter((e) => e !== entity) : [...pick, entity];
 	}
 
-	const save = subscribe({ onSuccess: () => close() });
+	const save = create({ onSuccess: () => close() });
 </script>
 
-<h2>New webhook</h2>
-
-<form
-	onsubmit={(e) => {
-		e.preventDefault();
-		save.mutate({ url, types: pick.length ? [...list] : undefined, userID: owner });
-	}}
+<Dialog
+	title="New webhook"
+	submit="Create webhook"
+	pending={save.isPending}
+	error={save.error?.message}
+	{close}
+	onsubmit={() => save.mutate({ url, types: pick.length ? [...list] : undefined, userID: owner })}
 >
-	{#if save.error}
-		<Issue>{save.error.message}</Issue>
-	{/if}
 	<Field label="Endpoint URL">
 		<Input
 			type="url"
 			required
+			autofocus
 			placeholder="https://example.com/hooks"
 			value={url}
 			oninput={(e) => (url = e.currentTarget.value)}
@@ -79,26 +76,12 @@
 			{/each}
 		</div>
 	</fieldset>
-
-	<Actions {close} pending={save.isPending} />
-</form>
+</Dialog>
 
 <style>
-	h2 {
-		margin: 0 0 1em;
-		font-size: 1.05em;
-	}
-
-
-	form {
-		display: flex;
-		flex-direction: column;
-		gap: 1.2em;
-	}
-
 	.local {
 		align-self: flex-start;
-		margin-top: -0.8em;
+		margin-top: -0.6em;
 		padding: 0;
 		border: 0;
 		background: none;

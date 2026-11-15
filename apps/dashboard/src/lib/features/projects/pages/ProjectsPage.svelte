@@ -6,7 +6,7 @@
 	import { hotkeys } from '$lib/hotkeys';
 	import { query } from '$lib/utils/params';
 	import { debounce } from '$lib/utils/debounce';
-	import { Button, Empty, Input, Issue, Kbd, Skeleton, modal } from '@template/ui';
+	import { Button, Empty, Input, Issue, Kbd, List, modal } from '@template/ui';
 	import * as Header from '$lib/components/header';
 	import ProjectForm from '../components/ProjectForm.svelte';
 	import Row from '../components/Row.svelte';
@@ -28,7 +28,7 @@
 </script>
 
 <Header.Root title="Projects" lead="Each project files its own todos, stages and insights.">
-	<Header.Item label="Projects">{projects.data?.total ?? '–'}</Header.Item>
+	<Header.Item label={params.q ? 'Matches' : 'Projects'}>{projects.data?.total ?? '–'}</Header.Item>
 	{#snippet actions()}
 		{@render extra?.()}
 		<Button variant="primary" onclick={add}>New project <Kbd keys="C" /></Button>
@@ -51,20 +51,16 @@
 		</Header.Group>
 		{#if params.q}
 			<Header.Group end>
-				<Button variant="ghost" onclick={() => params.update({ q: undefined })}>Clear filters</Button>
+				<Button variant="ghost" onclick={() => params.update({ q: undefined })}>Clear search</Button>
 			</Header.Group>
 		{/if}
 	{/snippet}
 </Header.Root>
 
 {#if projects.isPending}
-	<div class="skeleton">
-		{#each [0, 1, 2, 3] as i (i)}
-			<Skeleton h="3.25em" />
-		{/each}
-	</div>
+	<List.Loading rows={4} />
 {:else if projects.isError}
-	<Issue>{projects.error.message}</Issue>
+	<Issue retry={() => projects.refetch()}>{projects.error.message}</Issue>
 {:else if projects.data.data.length === 0}
 	{#if params.q}
 		<Empty>
@@ -74,31 +70,12 @@
 			{/snippet}
 		</Empty>
 	{:else}
-		<Empty>
-			No projects yet. Create one to start filing todos.
-			{#snippet action()}
-				<Button onclick={add}>New project <Kbd keys="C" /></Button>
-			{/snippet}
-		</Empty>
+		<Empty>No projects yet. Press <Kbd keys="C" /> to create one and start filing todos.</Empty>
 	{/if}
 {:else}
-	<ul>
+	<List.Root label="Projects">
 		{#each projects.data.data as project (project.id)}
 			<Row {project} />
 		{/each}
-	</ul>
+	</List.Root>
 {/if}
-
-<style>
-	ul {
-		list-style: none;
-		margin: 0;
-		padding: 0;
-		border-top: 1px solid var(--border);
-	}
-
-	.skeleton {
-		display: grid;
-		gap: 0.35em;
-	}
-</style>

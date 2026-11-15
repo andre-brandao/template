@@ -1,18 +1,28 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { createQuery } from '@tanstack/svelte-query';
-	import { invalidate } from '$lib/query';
-	import { Button, Field, Inline, Issue, Section, Skeleton } from '@template/ui';
+	import { Button, Field, Inline, Issue, Section, Skeleton, Status } from '@template/ui';
 	import * as Header from '$lib/components/header';
 	import AvatarUpload from '$lib/components/AvatarUpload.svelte';
 	import Can from '$lib/components/Can.svelte';
-	import { get, update } from '../api/projects.query';
-	import Delete from '../components/Delete.svelte';
+	import { ask } from '$lib/ask';
+	import { get, refresh, remove, update } from '../api/projects.query';
 
 	let { id }: { id: string } = $props();
 
 	const project = createQuery(() => get(id));
 	const save = update();
+	const drop = remove({ onSuccess: () => goto('/projects') });
+
+	async function del(name: string) {
+		const ok = await ask({
+			title: 'Delete project',
+			name,
+			warn: 'This removes {name} with its stages and insights. Its todos are kept.',
+			verify: true
+		});
+		if (ok) drop.mutate({ path: { id } });
+	}
 </script>
 
 {#snippet back()}<a href="/projects/{id}">{project.data?.name ?? 'Project'}</a>{/snippet}
@@ -22,33 +32,33 @@
 {#if project.isPending}
 	<Skeleton h="12em" />
 {:else if project.isError}
-	<Issue>{project.error.message}</Issue>
+	<Issue retry={() => project.refetch()}>{project.error.message}</Issue>
 {:else}
+	{@const name = project.data.name}
 	<Section title="Details" description="Shown on the projects page and in the project switcher.">
 		<AvatarUpload
 			name={project.data.name}
 			image={project.data.image}
 			url="/avatars/project/{id}"
-			onchange={() => invalidate([{ tags: ['Project'] }])}
+			onchange={refresh}
 		/>
 
-		<!-- Inline keeps the typed value with a dot while it saves, and reverts on failure. -->
 		<Field as="div" label="Name">
 			<Inline
 				label="Name"
+				required
+				flush
 				value={project.data.name}
-				onsave={(name) => {
-					if (!name) throw new Error('A project needs a name');
-					return save.mutateAsync({ path: { id }, body: { name } });
-				}}
+				onsave={(name) => save.mutateAsync({ path: { id }, body: { name } })}
 			/>
 		</Field>
 
 		<Field as="div" label="Description">
 			<Inline
 				label="Description"
-				placeholder="What is this for?"
+				placeholder="Add a description"
 				multiline
+				flush
 				value={project.data.description ?? ''}
 				onsave={(text) => save.mutateAsync({ path: { id }, body: { description: text || null } })}
 			/>
@@ -62,12 +72,21 @@
 			title="Delete project"
 			description="Takes its stages and insights with it. Its todos are kept."
 		>
-			<Delete {id} name={project.data.name} ondone={() => goto('/projects')}>
-				{#snippet children(ask, pending)}
-					<!-- A block wrapper so the button keeps its own width in the stretched column. -->
-					<div><Button variant="danger" {pending} onclick={ask}>Delete project</Button></div>
-				{/snippet}
-			</Delete>
+			<div class="danger">
+				<Button variant="danger" pending={drop.isPending} onclick={() => del(name)}>
+					Delete project
+				</Button>
+				{#if drop.error}<Status state="failed" message={drop.error.message} />{/if}
+			</div>
 		</Section>
 	</Can>
 {/if}
+
+<style>
+	/* Keeps the button its own width in the stretched column. */
+	.danger {
+		display: flex;
+		align-items: center;
+		gap: 0.6em;
+	}
+</style>

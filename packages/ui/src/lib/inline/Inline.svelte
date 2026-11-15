@@ -5,7 +5,7 @@
 <script lang="ts">
 	import { tick } from 'svelte';
 	import { matchesKeyboardEvent } from '@tanstack/svelte-hotkeys';
-	import Spinner from '../spinner/Spinner.svelte';
+	import Status from '../status/Status.svelte';
 
 	let {
 		value,
@@ -130,7 +130,7 @@
 			{shown || placeholder}
 		</button>
 	{/if}
-	{#if pending}<span class="spin"><Spinner /></span>{/if}
+	{#if pending || failed}<span class="spin"><Status state={pending ? 'pending' : 'failed'} /></span>{/if}
 </span>
 
 <style>

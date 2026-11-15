@@ -174,11 +174,9 @@
 			<Card>
 				<Section wide title="Links">
 					<Links
-						id={todo.id}
 						links={todo.metadata.links}
-						add={linkTodo.for(`${todo.id}:editor`)}
-						drop={(url) => unlinkTodo.for(`${todo.id}:${url}`)}
-						onsaved={saved}
+						add={(link) => linkTodo({ id: todo.id, ...link }).then(saved)}
+						drop={(url) => unlinkTodo({ id: todo.id, url }).then(saved)}
 					/>
 				</Section>
 				{#if Object.keys(todo.metadata.annotations).length}

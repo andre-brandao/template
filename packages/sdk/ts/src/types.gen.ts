@@ -1176,6 +1176,108 @@ export type PatchProjectByIdResponses = {
 
 export type PatchProjectByIdResponse = PatchProjectByIdResponses[keyof PatchProjectByIdResponses];
 
+export type DeleteProjectByIdLinkData = {
+  body?: never;
+  path: {
+    /**
+     * Unique object identifier.
+     * The format and length of IDs may change over time.
+     */
+    id: string;
+  };
+  query: {
+    /**
+     * The link to drop.
+     */
+    url: string;
+  };
+  url: "/project/{id}/link";
+};
+
+export type DeleteProjectByIdLinkErrors = {
+  /**
+   * Bad Request
+   */
+  400: ErrorResponse;
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
+   * Not Found
+   */
+  404: ErrorResponse;
+  /**
+   * Internal Server Error
+   */
+  500: ErrorResponse;
+};
+
+export type DeleteProjectByIdLinkError =
+  DeleteProjectByIdLinkErrors[keyof DeleteProjectByIdLinkErrors];
+
+export type DeleteProjectByIdLinkResponses = {
+  /**
+   * A container for todos. Todos point at it through source/sourceID.
+   */
+  200: Project;
+};
+
+export type DeleteProjectByIdLinkResponse =
+  DeleteProjectByIdLinkResponses[keyof DeleteProjectByIdLinkResponses];
+
+export type PostProjectByIdLinkData = {
+  body: Link;
+  path: {
+    /**
+     * Unique object identifier.
+     * The format and length of IDs may change over time.
+     */
+    id: string;
+  };
+  query?: never;
+  url: "/project/{id}/link";
+};
+
+export type PostProjectByIdLinkErrors = {
+  /**
+   * Bad Request
+   */
+  400: ErrorResponse;
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
+   * Not Found
+   */
+  404: ErrorResponse;
+  /**
+   * Internal Server Error
+   */
+  500: ErrorResponse;
+};
+
+export type PostProjectByIdLinkError = PostProjectByIdLinkErrors[keyof PostProjectByIdLinkErrors];
+
+export type PostProjectByIdLinkResponses = {
+  /**
+   * A container for todos. Todos point at it through source/sourceID.
+   */
+  200: Project;
+};
+
+export type PostProjectByIdLinkResponse =
+  PostProjectByIdLinkResponses[keyof PostProjectByIdLinkResponses];
+
 export type GetFileData = {
   body?: never;
   path?: never;

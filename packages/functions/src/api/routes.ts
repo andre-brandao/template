@@ -1,4 +1,4 @@
-import { Hono } from "hono";
+import { Hono, type ErrorHandler } from "hono";
 import { logger } from "hono/logger";
 import { HTTPException } from "hono/http-exception";
 import { VisibleError, ErrorCodes, type ErrorResponseType } from "@template/core/error";
@@ -14,49 +14,58 @@ import { health } from "../health";
 
 const log = Log.create({ namespace: "api" });
 
-export const app = new Hono();
+// On both apps: an error thrown by `auth()` never reaches the inner router's handler.
+const fail: ErrorHandler = (error, c) => {
+  if (error instanceof VisibleError) {
+    return c.json<ErrorResponseType>(error.toResponse(), error.statusCode());
+  }
 
-// Mounted before logger/auth so probes don't spam request logs or provide an actor.
-app.route("/", health);
+  if (error instanceof HTTPException) {
+    return c.json(
+      {
+        type: "validation",
+        code: ErrorCodes.Validation.INVALID_PARAMETER,
+        message: "Invalid request",
+      },
+      400,
+    );
+  }
 
-app
-  .use(logger())
-  .use(async (c, next) => {
-    c.header("Cache-Control", "no-store");
-    return next();
-  })
-  .use(auth());
+  log.error(error instanceof Error ? error : new Error(String(error)));
+  return c.json(
+    {
+      type: "internal",
+      code: ErrorCodes.Server.INTERNAL_ERROR,
+      message: "Internal server error",
+    },
+    500,
+  );
+};
 
-export const routes = app
+/**
+ * The bare router: no bearer auth. Mounted directly by a caller that has already entered an
+ * `Identity` — the dashboard's `/api` proxy, under the session cookie.
+ */
+export const routes = new Hono()
   .route("/", UserApi.route)
   .route("/key", KeyApi.route)
   .route("/todo", TodoApi.route)
   .route("/project", ProjectApi.route)
   .route("/file", FileApi.route)
   .route("/hook", HookApi.route)
-  .onError((error, c) => {
-    if (error instanceof VisibleError) {
-      return c.json<ErrorResponseType>(error.toResponse(), error.statusCode());
-    }
+  .onError(fail);
 
-    if (error instanceof HTTPException) {
-      return c.json(
-        {
-          type: "validation",
-          code: ErrorCodes.Validation.INVALID_PARAMETER,
-          message: "Invalid request",
-        },
-        400,
-      );
-    }
+export const app = new Hono()
+  // Mounted before logger/auth so probes don't spam request logs or provide an actor.
+  .route("/", health)
+  .use(logger())
+  .use(async (c, next) => {
+    c.header("Cache-Control", "no-store");
+    return next();
+  })
+  .use(auth())
+  .route("/", routes)
+  .onError(fail);
 
-    log.error(error instanceof Error ? error : new Error(String(error)));
-    return c.json(
-      {
-        type: "internal",
-        code: ErrorCodes.Server.INTERNAL_ERROR,
-        message: "Internal server error",
-      },
-      500,
-    );
-  });
+/** `routes` under `/api`, for a host that already entered an `Identity` (the dashboard hook). */
+export const embed = new Hono().route("/api", routes);

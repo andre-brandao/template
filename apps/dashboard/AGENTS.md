@@ -1,7 +1,7 @@
 # dashboard
 
 SvelteKit 5 on :5173. Calls `@template/core` **directly** from remote functions — same
-process, no HTTP hop. The SDK is for the CLI, not for this app.
+process, no HTTP hop. The SDK is for the CLI, except `@template/sdk/query` (TanStack Query, below).
 
 TypeScript, Tailwind, bun. Svelte components: use the Svelte MCP server
 (`list-sections` → `get-documentation` → `svelte-autofixer`) before writing, and keep
@@ -13,6 +13,7 @@ calling `svelte-autofixer` until it is quiet.
 src/lib/
   features/<slice>/        one vertical slice
     api/<slice>.remote.ts  remote functions — the only place core is called
+    api/<slice>.query.ts   TanStack query builders + mutation factories
     components/            slice-local components
     pages/                 whole-page components, rendered by a route
   components/layout/       shell, nav
@@ -43,6 +44,22 @@ export const saveTodo = remote.form(schema, handler); // errors land as form iss
   everything else throws a status the error page owns. Never pass the mode by hand.
 - `can()` is role-level only. Ownership-scoped checks (`:own` grants) need the row, so they
   stay inside core.
+
+## TanStack Query
+
+Reference: `features/projects`. `$lib/query` owns the client; `/api/*` proxies the Hono router in-process.
+
+- `api/<slice>.query.ts` holds query builders without opts (`list = (q) => getXOptions(...)`) and
+  mutation factories that accept only `onSuccess`: `create({ onSuccess: (x) => goto(...) })`. No cache code in components.
+- `meta: { invalidates: [key] }` takes query keys, partially matched: `getXQueryKey()` hits every list,
+  `[{ tags: ["X"] }]` the whole resource. No meta invalidates everything. That cache-level pass always
+  runs (and settles) before any `onSuccess`, so a component can't skip it.
+- Precise update: the factory's own `onSuccess(data, vars, result, ctx)` calls `ctx.client.setQueryData(...)`.
+- After a remote-function write, call `invalidate(key)` from `$lib/query`.
+- Keep remote functions for internal-only data (no API route) and forms needing `enhance` or field issues.
+- SSR is opt-in per page with an inline `+page.ts` (let `content-type` through `filterSerializedResponseHeaders`):
+  ``const data = await event.parent(); await data.queries.prefetchQuery(getXOptions({ baseUrl: `${event.url.origin}/api`, fetch: event.fetch, ... }))``
+- App-wide providers (query client, contexts) live in `components/layout/ShellProvider.svelte`.
 
 ## Rules
 

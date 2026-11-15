@@ -8,6 +8,7 @@
     "./client": "./src/client/index.ts",
     "./core": "./src/core/index.ts",
     "./fetch": "./fetch.ts",
+    "./query": "./src/query/index.ts",
     "./*": "./src/*.ts"
   },
   "scripts": {
@@ -15,7 +16,16 @@
   },
   "devDependencies": {
     "@hey-api/openapi-ts": "catalog:build",
+    "@tanstack/svelte-query": "catalog:frontend",
     "@types/bun": "catalog:",
     "typescript": "5.9.3"
+  },
+  "peerDependencies": {
+    "@tanstack/svelte-query": "catalog:frontend"
+  },
+  "peerDependenciesMeta": {
+    "@tanstack/svelte-query": {
+      "optional": true
+    }
   }
 }

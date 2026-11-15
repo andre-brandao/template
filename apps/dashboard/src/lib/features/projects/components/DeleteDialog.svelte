@@ -1,11 +1,13 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { Button, modal, toast } from '@template/ui';
-	import { removeProject } from '../api/projects.remote';
+	import { remove } from '../api/projects.query';
 
 	let { id, name }: { id: string; name: string } = $props();
 
-	async function drop() {
+	const drop = remove({ onSuccess: () => goto('/projects') });
+
+	async function ask() {
 		const ok = await modal.confirm({
 			title: 'Delete project',
 			action: 'Delete project',
@@ -15,15 +17,12 @@
 		if (!ok) return;
 		// The toast reports a failure; there is nothing else to do with it here.
 		toast
-			.promise(removeProject(id), {
+			.promise(drop.mutateAsync({ path: { id } }), {
 				loading: 'Deleting project…',
 				success: 'Project deleted',
 				error: (e) => (e as Error)?.message ?? 'Could not delete project'
 			})
-			.then(
-				() => goto('/projects'),
-				() => {}
-			);
+			.catch(() => {});
 	}
 </script>
 
@@ -32,4 +31,4 @@
 	and stay in the Todos list.
 {/snippet}
 
-<Button variant="danger" onclick={drop}>Delete project</Button>
+<Button variant="danger" onclick={ask}>Delete project</Button>

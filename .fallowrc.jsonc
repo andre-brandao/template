@@ -14,7 +14,8 @@
     "**/build.ts",
     "**/adapter/*.ts",
   ],
-  "ignorePatterns": ["**/*.gen.ts"],
+  // The query SDK's generated client barrel is never imported; consumers use client.gen.
+  "ignorePatterns": ["**/*.gen.ts", "packages/sdk/ts/src/query/client/index.ts"],
   // Every *.story.svelte colocates its metadata in the module script and is
   // consumed only as a namespace (`import * as button` in ui/src/lib/story.ts),
   // so the shared `story` name is never ambiguous at an import site.
@@ -79,11 +80,13 @@
   // globals, so removing it risks breaking the Cloudflare target. Suppress the false positive.
   // @sveltejs/package is only invoked as the `svelte-package` CLI in ui's prepack script,
   // which import tracing can't see.
+  // @tanstack/svelte-query backs the sdk's generated query plugin, which sits in ignored *.gen.ts.
   "ignoreDependencies": [
     "@hono/standard-validator",
     "@template/ui",
     "@cloudflare/workers-types",
     "@sveltejs/package",
+    "@tanstack/svelte-query",
   ],
   "ignoreUnresolvedImports": ["@template/ui"],
   "boundaries": {

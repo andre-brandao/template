@@ -16,6 +16,8 @@ import type {
   DeleteKeyByIdErrors,
   DeleteKeyByIdResponses,
   DeleteProjectByIdErrors,
+  DeleteProjectByIdLinkErrors,
+  DeleteProjectByIdLinkResponses,
   DeleteProjectByIdResponses,
   DeleteTodoByIdErrors,
   DeleteTodoByIdResponses,
@@ -52,6 +54,8 @@ import type {
   PostHookByAppResponses,
   PostKeyErrors,
   PostKeyResponses,
+  PostProjectByIdLinkErrors,
+  PostProjectByIdLinkResponses,
   PostProjectErrors,
   PostProjectResponses,
   PostTodoByIdMoveErrors,
@@ -673,6 +677,81 @@ export class TemplateSdk extends HeyApiClient {
     >({
       security: [{ scheme: "bearer", type: "http" }],
       url: "/project/{id}",
+      ...options,
+      ...params,
+      headers: {
+        "Content-Type": "application/json",
+        ...options?.headers,
+        ...params.headers,
+      },
+    });
+  }
+
+  /**
+   * Unlink project
+   *
+   * Drop the link at a url from a project.
+   */
+  public deleteProjectByIdLink<ThrowOnError extends boolean = false>(
+    parameters: {
+      id: string;
+      url: string;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<DeleteProjectByIdLinkResponses, DeleteProjectByIdLinkErrors, ThrowOnError> {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "path", key: "id" },
+            { in: "query", key: "url" },
+          ],
+        },
+      ],
+    );
+    return (options?.client ?? this.client).delete<
+      DeleteProjectByIdLinkResponses,
+      DeleteProjectByIdLinkErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/project/{id}/link",
+      ...options,
+      ...params,
+    });
+  }
+
+  /**
+   * Link project
+   *
+   * Attach an outside link to a project, or retitle the one at that url.
+   */
+  public postProjectByIdLink<ThrowOnError extends boolean = false>(
+    parameters: {
+      id: string;
+      link: Link;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<PostProjectByIdLinkResponses, PostProjectByIdLinkErrors, ThrowOnError> {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "path", key: "id" },
+            { key: "link", map: "body" },
+          ],
+        },
+      ],
+    );
+    return (options?.client ?? this.client).post<
+      PostProjectByIdLinkResponses,
+      PostProjectByIdLinkErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/project/{id}/link",
       ...options,
       ...params,
       headers: {

@@ -1,66 +1,73 @@
 <script lang="ts">
-	import Issues from '$lib/components/Issues.svelte';
-	import { resets } from '$lib/utils/form';
-	import type { RemoteForm } from '@sveltejs/kit';
-	import { Button, Input } from '@template/ui';
+	import { Button, Input, Issue } from '@template/ui';
 	import type { Link } from '@template/core/util/meta';
 	import { label } from '$lib/utils/link';
 	import X from '@lucide/svelte/icons/x';
 
-	// The forms differ per slice (todo vs project), so they come in; the fields don't.
-	type Add = Omit<RemoteForm<{ id: string; url: string; title?: string }, unknown>, 'for'>;
-	type Drop = Omit<RemoteForm<{ id: string; url: string }, unknown>, 'for'>;
-
+	// The writes differ per slice (todo vs project), so they come in; the fields don't.
 	let {
-		id,
 		links,
 		add,
-		drop,
-		onsaved
+		drop
 	}: {
-		id: string;
 		links: Link[];
-		add: Add;
-		drop: (url: string) => Drop;
-		onsaved: () => Promise<unknown>;
+		add: (link: { url: string; title?: string }) => Promise<unknown>;
+		drop: (url: string) => Promise<unknown>;
 	} = $props();
+
+	let pending = $state(false);
+	let error = $state<string>();
+
+	// A remote command rejects with `{ body: { message } }`, the query SDK with the body itself.
+	function run(job: Promise<unknown>) {
+		pending = true;
+		error = undefined;
+		return job
+			.then(
+				() => true,
+				(err: { message?: string; body?: { message?: string } }) => {
+					error = err.body?.message ?? err.message ?? 'Could not save the link';
+					return false;
+				}
+			)
+			.finally(() => (pending = false));
+	}
+
+	async function submit(e: SubmitEvent & { currentTarget: HTMLFormElement }) {
+		e.preventDefault();
+		const form = e.currentTarget;
+		const data = new FormData(form);
+		const title = String(data.get('title') ?? '').trim();
+		if (await run(add({ url: String(data.get('url')), title: title || undefined }))) form.reset();
+	}
 </script>
 
 {#if links.length}
 	<ul>
 		{#each links as link (link.url)}
-			{@const form = drop(link.url)}
 			<li>
 				<a href={link.url} target="_blank" rel="noopener noreferrer" title={link.url}>
 					{label(link)}
 				</a>
-				<form
-					{...form.enhance(async (f) => {
-						await f.submit();
-						await onsaved();
-					})}
+				<button
+					type="button"
+					aria-label="Remove {label(link)}"
+					disabled={pending}
+					onclick={() => run(drop(link.url))}
 				>
-					<input {...form.fields.id.as('hidden', id)} />
-					<input {...form.fields.url.as('hidden', link.url)} />
-					<button type="submit" aria-label="Remove {label(link)}" disabled={!!form.pending}>
-						<X size={14} strokeWidth={1.75} />
-					</button>
-				</form>
+					<X size={14} strokeWidth={1.75} />
+				</button>
 			</li>
 		{/each}
 	</ul>
 {/if}
 
-<Issues issues={add.fields.allIssues()} />
+{#if error}<Issue>{error}</Issue>{/if}
 
-<form
-	class="add"
-	{...add.enhance(resets(onsaved))}
->
-	<input {...add.fields.id.as('hidden', id)} />
-	<Input placeholder="https://…" {...add.fields.url.as('url')} />
-	<Input placeholder="Title (optional)" {...add.fields.title.as('text')} />
-	<Button type="submit" variant="secondary" pending={!!add.pending}>Add link</Button>
+<form class="add" onsubmit={submit}>
+	<Input type="url" name="url" placeholder="https://…" required />
+	<Input name="title" placeholder="Title (optional)" maxlength={200} />
+	<Button type="submit" variant="secondary" {pending}>Add link</Button>
 </form>
 
 <style>
@@ -94,9 +101,6 @@
 		text-decoration: underline;
 	}
 
-	li form {
-		display: contents;
-	}
 
 	li button {
 		display: inline-flex;

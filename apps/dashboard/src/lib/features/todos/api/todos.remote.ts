@@ -132,15 +132,7 @@ export const removeTodo = remote.form(
   Todo.remove,
 );
 
-const title = z
-  .string()
-  .max(200)
-  .optional()
-  .transform((s) => s?.trim() || undefined);
+// Commands, not forms: the shared Links component takes plain callbacks.
+export const linkTodo = remote.core(Todo.link).command();
 
-export const linkTodo = remote.form(
-  z.object({ id: Todo.Info.shape.id, url: z.url(), title }),
-  Todo.link,
-);
-
-export const unlinkTodo = remote.form(Todo.unlink.schema, Todo.unlink);
+export const unlinkTodo = remote.core(Todo.unlink).command();

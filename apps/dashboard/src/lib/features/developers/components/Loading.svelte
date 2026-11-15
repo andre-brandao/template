@@ -4,10 +4,11 @@
 
 	// Row-height placeholders, so the real list lands without a jump.
 	let { rows = 3 }: { rows?: number } = $props();
+	const lines = $derived(Array.from({ length: rows }, (_, i) => i));
 </script>
 
 <List>
-	{#each { length: rows }, i (i)}
+	{#each lines as i (i)}
 		<li>
 			{#each ['9em', '12em', '6em'] as w (w)}
 				<span style:width={w}><Skeleton h="0.9em" /></span>

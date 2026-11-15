@@ -150,9 +150,13 @@
 		border: 1px solid var(--border);
 	}
 
-	.icon {
+	.icon,
+	.dots {
 		display: grid;
 		place-items: center;
+	}
+
+	.icon {
 		color: var(--dim);
 	}
 
@@ -184,9 +188,13 @@
 	}
 
 	/* Inline pads its box; pull it back so the text stays on the name's line. */
-	.edit {
+	.edit,
+	.dots {
 		position: relative;
 		z-index: 1;
+	}
+
+	.edit {
 		margin: -0.2em -0.4em;
 	}
 
@@ -209,10 +217,6 @@
 	}
 
 	.dots {
-		position: relative;
-		z-index: 1;
-		display: grid;
-		place-items: center;
 		width: 1.9em;
 		height: 1.9em;
 		border: none;

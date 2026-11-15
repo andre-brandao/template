@@ -94,10 +94,9 @@
 		};
 		// Flips to the opposite side when there is no room, rather than covering the trigger.
 		const to = fits[side] || !fits[flip[side]] ? side : flip[side];
-		const left = vertical ? along : edge[to];
-		const top = vertical ? edge[to] : along;
-		panel.style.left = `${Math.max(gap, Math.min(left, innerWidth - own.width - gap))}px`;
-		panel.style.top = `${Math.max(gap, Math.min(top, innerHeight - own.height - gap))}px`;
+		const pos = vertical ? { left: along, top: edge[to] } : { left: edge[to], top: along };
+		panel.style.left = `${Math.max(gap, Math.min(pos.left, innerWidth - own.width - gap))}px`;
+		panel.style.top = `${Math.max(gap, Math.min(pos.top, innerHeight - own.height - gap))}px`;
 	}
 
 	function toggle(e: ToggleEvent) {

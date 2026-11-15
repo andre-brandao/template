@@ -42,6 +42,6 @@ describe("webhook", () => {
   test("DELETE /webhook/:id", async () => {
     const hook = await Webhook.create({ url: "https://example.com/gone" });
     await validateOpenAPIRoute("delete", "/webhook/:id", { id: hook.id });
-    expect((await Webhook.list()).map((row) => row.id)).not.toContain(hook.id);
+    expect((await Webhook.list(undefined)).map((row) => row.id)).not.toContain(hook.id);
   });
 });

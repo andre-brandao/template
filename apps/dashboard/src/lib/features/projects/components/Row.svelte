@@ -133,9 +133,13 @@
 		min-width: 0;
 	}
 
-	.title {
+	.title,
+	.meta {
 		display: flex;
 		align-items: center;
+	}
+
+	.title {
 		gap: 0.5em;
 		min-width: 0;
 	}
@@ -181,8 +185,6 @@
 	}
 
 	.meta {
-		display: flex;
-		align-items: center;
 		gap: 1em;
 		color: var(--dim);
 		font-size: 0.82em;

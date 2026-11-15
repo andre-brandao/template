@@ -56,6 +56,37 @@ curl -X POST ${url} -H "x-webhook-timestamp: $ts" -H "x-webhook-signature: $sig"
 	Its keys, inbound secret and webhooks stop working immediately.
 {/snippet}
 
+{#snippet listed()}
+	{#if keys.isPending}
+		<Loading rows={2} />
+	{:else if keys.isError}
+		<Issue>{keys.error.message}</Issue>
+	{:else}
+		<KeyList keys={keys.data} app={id} create={key} />
+	{/if}
+{/snippet}
+
+{#snippet subscribed()}
+	{#if subs.isPending}
+		<Loading rows={2} />
+	{:else if subs.isError}
+		<Issue>{subs.error.message}</Issue>
+	{:else if subs.data.length === 0}
+		<Empty>
+			No webhooks for this app.
+			{#snippet action()}
+				<Button onclick={hook}>New webhook</Button>
+			{/snippet}
+		</Empty>
+	{:else}
+		<List>
+			{#each subs.data as one (one.id)}
+				<WebhookRow row={one} />
+			{/each}
+		</List>
+	{/if}
+{/snippet}
+
 {#if row.isPending}
 	<Skeleton h="12em" />
 {:else if row.isError}
@@ -67,13 +98,7 @@ curl -X POST ${url} -H "x-webhook-timestamp: $ts" -H "x-webhook-signature: $sig"
 			<Button variant="secondary" onclick={key}>New key</Button>
 		</header>
 		<p class="hint">Send as <code>Authorization: Bearer &lt;key&gt;</code>; each key acts as the App.</p>
-		{#if keys.isPending}
-			<Loading rows={2} />
-		{:else if keys.isError}
-			<Issue>{keys.error.message}</Issue>
-		{:else}
-			<KeyList keys={keys.data} app={id} create={key} />
-		{/if}
+		{@render listed()}
 	</section>
 
 	<section>
@@ -97,24 +122,7 @@ curl -X POST ${url} -H "x-webhook-timestamp: $ts" -H "x-webhook-signature: $sig"
 			<h2>Webhooks</h2>
 			<Button variant="secondary" onclick={hook}>New webhook</Button>
 		</header>
-		{#if subs.isPending}
-			<Loading rows={2} />
-		{:else if subs.isError}
-			<Issue>{subs.error.message}</Issue>
-		{:else if subs.data.length === 0}
-			<Empty>
-				No webhooks for this app.
-				{#snippet action()}
-					<Button onclick={hook}>New webhook</Button>
-				{/snippet}
-			</Empty>
-		{:else}
-			<List>
-				{#each subs.data as one (one.id)}
-					<WebhookRow row={one} />
-				{/each}
-			</List>
-		{/if}
+		{@render subscribed()}
 	</section>
 
 	<section class="danger">

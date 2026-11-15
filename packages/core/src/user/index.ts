@@ -160,21 +160,34 @@ export namespace User {
     ),
   );
 
-  /** Directory behind assignee pickers. Not in the HTTP API — the dashboard reads core directly. */
-  export const list = fn(z.object({ search: z.string().optional() }).optional(), (input) =>
-    Database.use((tx) =>
-      tx
-        .select({
-          id: UserTable.id,
-          name: UserTable.name,
-          email: UserTable.email,
-          image: UserTable.image,
-        })
-        .from(UserTable)
-        .where(input?.search ? ilike(UserTable.name, `%${input.search}%`) : undefined)
-        .orderBy(asc(UserTable.name))
-        .limit(100),
-    ),
+  export const Summary = Info.pick({ id: true, name: true, email: true, image: true }).meta({
+    ref: "UserSummary",
+    description: "A user as the directory lists them.",
+  });
+
+  /** Directory behind assignee pickers. */
+  export const list = fn(
+    z.object({ search: z.string().optional().meta({ description: "Part of a name." }) }),
+    (input) => {
+      Identity.check({ user: ["read"] });
+      return Database.use((tx) =>
+        tx
+          .select({
+            id: UserTable.id,
+            name: UserTable.name,
+            email: UserTable.email,
+            image: UserTable.image,
+          })
+          .from(UserTable)
+          .where(input.search ? ilike(UserTable.name, `%${input.search}%`) : undefined)
+          .orderBy(asc(UserTable.name))
+          .limit(100),
+      );
+    },
+    {
+      title: "List users",
+      description: "The user directory by name, at most 100, optionally narrowed by a name search.",
+    },
   );
 
   /**

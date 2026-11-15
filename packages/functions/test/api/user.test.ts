@@ -10,6 +10,13 @@ describe("user", () => {
     expect(response.id).toBe(userID());
   });
 
+  test("GET /user", async () => {
+    const name = `Directory ${crypto.randomUUID()}`;
+    const user = await createUser({ name, email: `${crypto.randomUUID()}@example.com` });
+    const response = await validateOpenAPIRoute("get", "/user", { search: name });
+    expect(response.map((row: { id: string }) => row.id)).toEqual([user.id]);
+  });
+
   test("GET /user/:id", async () => {
     const mate = await createUser({
       name: "Mate",

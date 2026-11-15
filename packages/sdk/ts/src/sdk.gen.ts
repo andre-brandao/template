@@ -20,6 +20,8 @@ import type {
   DeleteProjectByIdLinkResponses,
   DeleteProjectByIdResponses,
   DeleteTodoByIdErrors,
+  DeleteTodoByIdLinkErrors,
+  DeleteTodoByIdLinkResponses,
   DeleteTodoByIdResponses,
   GetFileByNameContentErrors,
   GetFileByNameContentResponses,
@@ -38,6 +40,18 @@ import type {
   GetTodoByIdErrors,
   GetTodoByIdResponses,
   GetTodoErrors,
+  GetTodoInsightsActivityErrors,
+  GetTodoInsightsActivityResponses,
+  GetTodoInsightsCalendarErrors,
+  GetTodoInsightsCalendarResponses,
+  GetTodoInsightsDueErrors,
+  GetTodoInsightsDueResponses,
+  GetTodoInsightsLoadErrors,
+  GetTodoInsightsLoadResponses,
+  GetTodoInsightsStatsErrors,
+  GetTodoInsightsStatsResponses,
+  GetTodoInsightsStatusErrors,
+  GetTodoInsightsStatusResponses,
   GetTodoResponses,
   GetTodoStageErrors,
   GetTodoStageResponses,
@@ -45,6 +59,8 @@ import type {
   GetUserByIdHistoryErrors,
   GetUserByIdHistoryResponses,
   GetUserByIdResponses,
+  GetUserErrors,
+  GetUserResponses,
   Link,
   PatchFileByNameErrors,
   PatchFileByNameResponses,
@@ -52,6 +68,8 @@ import type {
   PatchProjectByIdResponses,
   PatchTodoByIdErrors,
   PatchTodoByIdResponses,
+  PatchTodoStageErrors,
+  PatchTodoStageResponses,
   PostFileErrors,
   PostFileResponses,
   PostHookByAppErrors,
@@ -62,6 +80,8 @@ import type {
   PostProjectByIdLinkResponses,
   PostProjectErrors,
   PostProjectResponses,
+  PostTodoByIdLinkErrors,
+  PostTodoByIdLinkResponses,
   PostTodoByIdMoveErrors,
   PostTodoByIdMoveResponses,
   PostTodoErrors,
@@ -121,6 +141,26 @@ export class TemplateSdk extends HeyApiClient {
   constructor(args?: { client?: Client; key?: string }) {
     super(args);
     TemplateSdk.__registry.set(this, args?.key);
+  }
+
+  /**
+   * List users
+   *
+   * The user directory by name, at most 100, optionally narrowed by a name search.
+   */
+  public getUser<ThrowOnError extends boolean = false>(
+    parameters?: {
+      search?: string;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<GetUserResponses, GetUserErrors, ThrowOnError> {
+    const params = buildClientParams([parameters], [{ args: [{ in: "query", key: "search" }] }]);
+    return (options?.client ?? this.client).get<GetUserResponses, GetUserErrors, ThrowOnError>({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/user",
+      ...options,
+      ...params,
+    });
   }
 
   /**
@@ -419,6 +459,280 @@ export class TemplateSdk extends HeyApiClient {
   }
 
   /**
+   * Rename stage
+   *
+   * Rename a stage across every todo wearing it.
+   */
+  public patchTodoStage<ThrowOnError extends boolean = false>(
+    parameters: {
+      from: string;
+      to: string;
+      source?: string;
+      sourceID?: string;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<PatchTodoStageResponses, PatchTodoStageErrors, ThrowOnError> {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "body", key: "from" },
+            { in: "body", key: "to" },
+            { in: "body", key: "source" },
+            { in: "body", key: "sourceID" },
+          ],
+        },
+      ],
+    );
+    return (options?.client ?? this.client).patch<
+      PatchTodoStageResponses,
+      PatchTodoStageErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/todo/stage",
+      ...options,
+      ...params,
+      headers: {
+        "Content-Type": "application/json",
+        ...options?.headers,
+        ...params.headers,
+      },
+    });
+  }
+
+  /**
+   * Todo stats
+   *
+   * Created, done, active and blocked counts for a range, plus overdue all time.
+   */
+  public getTodoInsightsStats<ThrowOnError extends boolean = false>(
+    parameters: {
+      source?: string;
+      sourceID?: string;
+      start: string;
+      end: string;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<GetTodoInsightsStatsResponses, GetTodoInsightsStatsErrors, ThrowOnError> {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "query", key: "source" },
+            { in: "query", key: "sourceID" },
+            { in: "query", key: "start" },
+            { in: "query", key: "end" },
+          ],
+        },
+      ],
+    );
+    return (options?.client ?? this.client).get<
+      GetTodoInsightsStatsResponses,
+      GetTodoInsightsStatsErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/todo/insights/stats",
+      ...options,
+      ...params,
+    });
+  }
+
+  /**
+   * Todos by status
+   *
+   * Todos created in a range, totalled per status in pipeline order.
+   */
+  public getTodoInsightsStatus<ThrowOnError extends boolean = false>(
+    parameters: {
+      source?: string;
+      sourceID?: string;
+      start: string;
+      end: string;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<GetTodoInsightsStatusResponses, GetTodoInsightsStatusErrors, ThrowOnError> {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "query", key: "source" },
+            { in: "query", key: "sourceID" },
+            { in: "query", key: "start" },
+            { in: "query", key: "end" },
+          ],
+        },
+      ],
+    );
+    return (options?.client ?? this.client).get<
+      GetTodoInsightsStatusResponses,
+      GetTodoInsightsStatusErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/todo/insights/status",
+      ...options,
+      ...params,
+    });
+  }
+
+  /**
+   * Todos by assignee
+   *
+   * Todos created in a range, per assignee and status, busiest first.
+   */
+  public getTodoInsightsLoad<ThrowOnError extends boolean = false>(
+    parameters: {
+      source?: string;
+      sourceID?: string;
+      start: string;
+      end: string;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<GetTodoInsightsLoadResponses, GetTodoInsightsLoadErrors, ThrowOnError> {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "query", key: "source" },
+            { in: "query", key: "sourceID" },
+            { in: "query", key: "start" },
+            { in: "query", key: "end" },
+          ],
+        },
+      ],
+    );
+    return (options?.client ?? this.client).get<
+      GetTodoInsightsLoadResponses,
+      GetTodoInsightsLoadErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/todo/insights/load",
+      ...options,
+      ...params,
+    });
+  }
+
+  /**
+   * Next due todos
+   *
+   * The five open todos coming due soonest.
+   */
+  public getTodoInsightsDue<ThrowOnError extends boolean = false>(
+    parameters?: {
+      source?: string;
+      sourceID?: string;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<GetTodoInsightsDueResponses, GetTodoInsightsDueErrors, ThrowOnError> {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "query", key: "source" },
+            { in: "query", key: "sourceID" },
+          ],
+        },
+      ],
+    );
+    return (options?.client ?? this.client).get<
+      GetTodoInsightsDueResponses,
+      GetTodoInsightsDueErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/todo/insights/due",
+      ...options,
+      ...params,
+    });
+  }
+
+  /**
+   * Todo calendar
+   *
+   * Todos created per day in a range, in the reader's timezone.
+   */
+  public getTodoInsightsCalendar<ThrowOnError extends boolean = false>(
+    parameters: {
+      source?: string;
+      sourceID?: string;
+      start: string;
+      end: string;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<GetTodoInsightsCalendarResponses, GetTodoInsightsCalendarErrors, ThrowOnError> {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "query", key: "source" },
+            { in: "query", key: "sourceID" },
+            { in: "query", key: "start" },
+            { in: "query", key: "end" },
+          ],
+        },
+      ],
+    );
+    return (options?.client ?? this.client).get<
+      GetTodoInsightsCalendarResponses,
+      GetTodoInsightsCalendarErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/todo/insights/calendar",
+      ...options,
+      ...params,
+    });
+  }
+
+  /**
+   * Todo activity
+   *
+   * Todos created and completed per day, week or month, coarser as the range grows.
+   */
+  public getTodoInsightsActivity<ThrowOnError extends boolean = false>(
+    parameters: {
+      source?: string;
+      sourceID?: string;
+      start: string;
+      end: string;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<GetTodoInsightsActivityResponses, GetTodoInsightsActivityErrors, ThrowOnError> {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "query", key: "source" },
+            { in: "query", key: "sourceID" },
+            { in: "query", key: "start" },
+            { in: "query", key: "end" },
+          ],
+        },
+      ],
+    );
+    return (options?.client ?? this.client).get<
+      GetTodoInsightsActivityResponses,
+      GetTodoInsightsActivityErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/todo/insights/activity",
+      ...options,
+      ...params,
+    });
+  }
+
+  /**
    * Delete todo
    *
    * Soft-delete a todo. Its sub-issues move up to its parent.
@@ -556,6 +870,81 @@ export class TemplateSdk extends HeyApiClient {
     >({
       security: [{ scheme: "bearer", type: "http" }],
       url: "/todo/{id}/move",
+      ...options,
+      ...params,
+      headers: {
+        "Content-Type": "application/json",
+        ...options?.headers,
+        ...params.headers,
+      },
+    });
+  }
+
+  /**
+   * Unlink todo
+   *
+   * Drop the link at a url from a todo.
+   */
+  public deleteTodoByIdLink<ThrowOnError extends boolean = false>(
+    parameters: {
+      id: string;
+      url: string;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<DeleteTodoByIdLinkResponses, DeleteTodoByIdLinkErrors, ThrowOnError> {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "path", key: "id" },
+            { in: "query", key: "url" },
+          ],
+        },
+      ],
+    );
+    return (options?.client ?? this.client).delete<
+      DeleteTodoByIdLinkResponses,
+      DeleteTodoByIdLinkErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/todo/{id}/link",
+      ...options,
+      ...params,
+    });
+  }
+
+  /**
+   * Link todo
+   *
+   * Attach an outside link to a todo, or retitle the one at that url.
+   */
+  public postTodoByIdLink<ThrowOnError extends boolean = false>(
+    parameters: {
+      id: string;
+      link: Link;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<PostTodoByIdLinkResponses, PostTodoByIdLinkErrors, ThrowOnError> {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "path", key: "id" },
+            { key: "link", map: "body" },
+          ],
+        },
+      ],
+    );
+    return (options?.client ?? this.client).post<
+      PostTodoByIdLinkResponses,
+      PostTodoByIdLinkErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/todo/{id}/link",
       ...options,
       ...params,
       headers: {

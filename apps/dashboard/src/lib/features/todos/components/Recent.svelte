@@ -2,8 +2,9 @@
      self-contained beats extracting presentation coincidence. -->
 <!-- fallow-ignore-file code-duplication -->
 <script lang="ts">
-	import { Empty, Skeleton } from '@template/ui';
-	import { getTodos } from '../api/todos.remote';
+	import { createQuery } from '@tanstack/svelte-query';
+	import { Empty, Issue, Skeleton } from '@template/ui';
+	import { list } from '../api/todos.query';
 	import StatusPill from './StatusPill.svelte';
 	import { late } from '../status';
 	import { fmt } from '$lib/utils/fmt';
@@ -12,29 +13,30 @@
 	let { scope = {} }: { scope?: { source?: string; sourceID?: string } } = $props();
 
 	const f = fmt();
+	const todos = createQuery(() => list(scope));
 </script>
 
-<svelte:boundary>
-	{#snippet pending()}<Skeleton h="128px" />{/snippet}
-	{@const todos = await getTodos(scope)}
-	{#if todos.length === 0}
-		<Empty>Nothing here yet.</Empty>
-	{:else}
-		<ul>
-			{#each todos.slice(0, 8) as todo (todo.id)}
-				<li>
-					<a href="/todos/{todo.id}">{todo.title}</a>
-					<span class="meta">
-						<span class={['when', { late: late(todo) }]}>
-							{todo.dueDate ? f.date(todo.dueDate) : '—'}
-						</span>
-						<StatusPill status={todo.status} />
+{#if todos.isPending}
+	<Skeleton h="128px" />
+{:else if todos.isError}
+	<Issue>{todos.error.message}</Issue>
+{:else if todos.data.data.length === 0}
+	<Empty>Nothing here yet.</Empty>
+{:else}
+	<ul>
+		{#each todos.data.data.slice(0, 8) as todo (todo.id)}
+			<li>
+				<a href="/todos/{todo.id}">{todo.title}</a>
+				<span class="meta">
+					<span class={['when', { late: late(todo) }]}>
+						{todo.dueDate ? f.date(todo.dueDate) : '—'}
 					</span>
-				</li>
-			{/each}
-		</ul>
-	{/if}
-</svelte:boundary>
+					<StatusPill status={todo.status} />
+				</span>
+			</li>
+		{/each}
+	</ul>
+{/if}
 
 <style>
 	/* Shared list chrome with Stages.svelte — the row layouts differ, and keeping

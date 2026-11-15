@@ -2,7 +2,8 @@
 	import { z } from 'zod';
 	import { query } from '$lib/utils/params';
 	import * as Header from '$lib/components/header';
-	import { RangePicker, Skeleton, last, valid, type Range } from '@template/ui';
+	import { useIsFetching } from '@tanstack/svelte-query';
+	import { RangePicker, Status, last, valid } from '@template/ui';
 	import { debounce } from '$lib/utils/debounce';
 	import StatsSection from '../components/insights/StatsSection.svelte';
 	import ActivitySection from '../components/insights/ActivitySection.svelte';
@@ -26,6 +27,8 @@
 	const picked = $derived(valid(params) ? { start: params.start, end: params.end } : fallback);
 	const range = $derived({ ...picked, ...scope });
 	const commit = debounce(params.update, 250);
+	// Every insight carries the Todo tag; the dot pulses while a new range loads.
+	const fetching = useIsFetching({ queryKey: [{ tags: ['Todo'] }] });
 </script>
 
 <!-- Scoped to a project, the project rides above the title as the way back. -->
@@ -38,46 +41,19 @@
 		<Header.Group label="Period">
 			<RangePicker range={picked} onchange={commit} />
 		</Header.Group>
-		{#if $effect.pending()}
-			<Header.Group end><span class="updating">updating…</span></Header.Group>
+		{#if fetching.current}
+			<Header.Group end><Status state="pending" /></Header.Group>
 		{/if}
 	{/snippet}
 </Header.Root>
 
-<div class={['sections', { stale: $effect.pending() }]}>
-	<div class="span">
-		<svelte:boundary>
-			<StatsSection {range} />
-			{#snippet pending()}<Skeleton h="88px" />{/snippet}
-		</svelte:boundary>
-	</div>
-
-	<svelte:boundary>
-		<ActivitySection {range} />
-		{#snippet pending()}<Skeleton h="382px" />{/snippet}
-	</svelte:boundary>
-
-	<svelte:boundary>
-		<StatusSection {range} />
-		{#snippet pending()}<Skeleton h="382px" />{/snippet}
-	</svelte:boundary>
-
-	<svelte:boundary>
-		<CalendarSection {range} />
-		{#snippet pending()}<Skeleton h="276px" />{/snippet}
-	</svelte:boundary>
-
-	<svelte:boundary>
-		<DueSection {scope} />
-		{#snippet pending()}<Skeleton h="276px" />{/snippet}
-	</svelte:boundary>
-
-	<div class="span">
-		<svelte:boundary>
-			<LoadSection {range} />
-			{#snippet pending()}<Skeleton h="264px" />{/snippet}
-		</svelte:boundary>
-	</div>
+<div class="sections">
+	<div class="span"><StatsSection {range} /></div>
+	<ActivitySection {range} />
+	<StatusSection {range} />
+	<CalendarSection {range} />
+	<DueSection {scope} />
+	<div class="span"><LoadSection {range} /></div>
 </div>
 
 <style>
@@ -85,7 +61,6 @@
 		display: grid;
 		grid-template-columns: 1fr;
 		gap: 1.25em;
-		transition: opacity 0.15s ease;
 	}
 
 	/* Two-up on desktop, columns in golden ratio: the busy chart gets the major share. */
@@ -97,15 +72,5 @@
 		.span {
 			grid-column: 1 / -1;
 		}
-	}
-
-	.sections.stale {
-		opacity: 0.55;
-	}
-
-	.updating {
-		font-family: var(--font-mono);
-		font-size: 0.78em;
-		color: var(--dim);
 	}
 </style>

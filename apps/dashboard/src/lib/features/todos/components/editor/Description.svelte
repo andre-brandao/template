@@ -2,18 +2,16 @@
 	import { Button, Markdown, MarkdownEditor } from '@template/ui';
 	import { upload } from '$lib/upload';
 	import type { Todo } from '@template/core/todo';
-	import type { updateTodo } from '../../api/todos.remote';
 
 	let {
 		todo,
-		update,
-		onsaved
+		pending,
+		onsave
 	}: {
 		todo: Todo.Info;
-		update: ReturnType<typeof updateTodo.for>;
-		onsaved: () => Promise<void>;
+		pending: boolean;
+		onsave: (body: string) => Promise<unknown>;
 	} = $props();
-
 
 	let editing = $state(false);
 	let body = $state('');
@@ -22,22 +20,22 @@
 		body = todo.body ?? '';
 		editing = true;
 	}
+
+	// A failed save keeps the draft open; the caller shows the error.
+	function submit(e: SubmitEvent) {
+		e.preventDefault();
+		onsave(body).then(
+			() => (editing = false),
+			() => {}
+		);
+	}
 </script>
 
 {#if editing}
-	<form
-		class="edit"
-		{...update.enhance(async (f) => {
-			await f.submit();
-			await onsaved();
-			editing = false;
-		})}
-	>
-		<input {...update.fields.id.as('hidden', todo.id)} />
+	<form class="edit" onsubmit={submit}>
 		<MarkdownEditor bind:value={body} {upload} />
-		<input {...update.fields.body.as('hidden', body)} />
-		<div class="edit-actions">
-			<Button type="submit" pending={!!update.pending}>Save</Button>
+		<div class="row">
+			<Button type="submit" {pending}>Save</Button>
 			<Button variant="ghost" type="button" onclick={() => (editing = false)}>Cancel</Button>
 		</div>
 	</form>
@@ -47,7 +45,7 @@
 			<Markdown value={todo.body} />
 		</div>
 	{:else}
-		<p class="empty-body">No description yet.</p>
+		<p class="blank">No description yet.</p>
 	{/if}
 	<Button variant="ghost" onclick={edit}>
 		{todo.body ? 'Edit description' : 'Add description'}
@@ -59,7 +57,7 @@
 		margin-top: 1em;
 	}
 
-	.empty-body {
+	.blank {
 		color: var(--dim);
 		font-size: 0.9em;
 		font-style: italic;
@@ -70,7 +68,7 @@
 		margin-top: 1em;
 	}
 
-	.edit-actions {
+	.row {
 		display: flex;
 		gap: 0.5em;
 		margin-top: 0.6em;

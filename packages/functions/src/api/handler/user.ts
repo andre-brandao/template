@@ -13,6 +13,16 @@ export namespace UserApi {
 
   export const route = new Hono()
     .get(
+      "/user",
+      doc(User.list.meta, {
+        200: doc.list(User.Summary),
+        ...doc.errors(400, 401, 403, 500),
+      }),
+      authRequired,
+      validator("query", User.list.schema),
+      async (c) => c.json(await User.list(c.req.valid("query")), 200),
+    )
+    .get(
       "/me",
       // Literal: the route reads the actor rather than taking an id, so `User.fromID`'s docs
       // would name the wrong operation.

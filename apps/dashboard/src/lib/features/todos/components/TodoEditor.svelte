@@ -1,29 +1,21 @@
 <script lang="ts">
-	import { Button, Card, Field, Input, Issue, Section } from '@template/ui';
-	import * as Header from '$lib/components/header';
-	import Source from '$lib/features/events/components/Source.svelte';
-	import { fmt } from '$lib/utils/fmt';
+	import { createQuery } from '@tanstack/svelte-query';
+	import { Button, Card, Inline, Issue, Section, Skeleton } from '@template/ui';
 	import type { Event } from '@template/core/event';
-	import {
-		getTodo,
-		linkTodo,
-		planTodo,
-		removeTodo,
-		unlinkTodo,
-		updateTodo
-	} from '../api/todos.remote';
+	import { get, link, unlink, update } from '../api/todos.query';
 	import Timeline from '$lib/features/events/components/Timeline.svelte';
 	import StatusPill from './StatusPill.svelte';
 	import StatusPicker from './StatusPicker.svelte';
-	import AssigneePicker from './AssigneePicker.svelte';
-	import StagePicker from './StagePicker.svelte';
 	import TagList from './TagList.svelte';
+	import Head from './editor/Head.svelte';
 	import Facts from './editor/Facts.svelte';
 	import Description from './editor/Description.svelte';
+	import Delete from "./Delete.svelte";
+	import Plan from "./editor/Plan.svelte";
 	import SubIssues from './editor/SubIssues.svelte';
 	import Links from '$lib/components/Links.svelte';
 	import Annotations from '$lib/components/Annotations.svelte';
-	import { color, late } from '../status';
+	import { color } from '../status';
 
 	let {
 		id,
@@ -35,30 +27,13 @@
 		page?: boolean;
 		onremove: () => void;
 	} = $props();
-	const f = fmt();
-	// `$derived(await query())` only re-subscribes when its args change, not when the
-	// query is refreshed in place — `gen` is read (and bumped after a save) purely to
-	// force this derived to re-evaluate and pick up the refreshed value.
-	let gen = $state(0);
-	const todo = $derived((void gen, await getTodo(id)));
-	// A form instance can only attach to one <form> — the row/card behind the drawer
-	// already holds `removeTodo.for(id)`, so the editor namespaces its own instances.
-	const remove = $derived(removeTodo.for(`${todo.id}:editor`));
-	const update = $derived(updateTodo.for(`${todo.id}:editor`));
-	const plan = $derived(planTodo.for(`${todo.id}:editor`));
 
-	const scope = $derived({
-		source: todo.source ?? undefined,
-		sourceID: todo.sourceID ?? undefined
-	});
-	const day = (at: string | null) => at?.slice(0, 10) ?? '';
+	const query = createQuery(() => get(id));
+	const save = update();
+	const attach = link();
+	const detach = unlink();
 
-	async function saved() {
-		await getTodo(todo.id).refresh();
-		gen++;
-	}
-
-	const eventLabels: Record<string, string> = {
+	const labels: Record<string, string> = {
 		'todo.created': 'Created',
 		'todo.updated': 'Updated',
 		'todo.status': 'Status',
@@ -66,136 +41,100 @@
 		'todo.removed': 'Removed'
 	};
 
-	function eventLabel(event: Event.Info) {
-		const base = eventLabels[event.type] ?? event.type;
+	function describe(event: Event.Info) {
+		const base = labels[event.type] ?? event.type;
 		if (event.type === 'todo.status')
 			return `${base} → ${event.data.to}${event.data.reason ? ` (${event.data.reason})` : ''}`;
 		return base;
 	}
 </script>
 
-{#snippet parent()}
-	{#if todo.source === 'project' && todo.sourceID}
-		<a href="/projects/{todo.sourceID}">
-			<Source source={todo.source} sourceID={todo.sourceID} fallback="Project" />
-		</a>
-		<span aria-hidden="true">/</span>
-		<a href="/projects/{todo.sourceID}/todos">Todos</a>
-	{:else}
-		<a href="/todos">Todos</a>
-	{/if}
-{/snippet}
+{#if query.isPending}
+	<Skeleton h="320px" />
+{:else if query.isError}
+	<Issue>{query.error.message}</Issue>
+{:else}
+	{@const todo = query.data}
+	{#if page}<Head {todo} />{/if}
 
-{#if page}
-	<Header.Root title={todo.title} eyebrow={parent}>
-		<Header.Item label="Status"><StatusPill status={todo.status} reason={todo.reason} /></Header.Item>
-		<Header.Item label="Assignee">{todo.assignee?.name ?? 'Unassigned'}</Header.Item>
-		<Header.Item label="Stage">{todo.stage ?? '—'}</Header.Item>
-		<Header.Item label="Due">
-			<span class={{ late: late(todo) }}>{todo.dueDate ? f.date(todo.dueDate) : '—'}</span>
-		</Header.Item>
-	</Header.Root>
-{/if}
-
-<div class="editor">
-	<div class="grid">
-		<div class="main">
-			{#if !page}
-				<!-- Flat, like a page header: the title is the hierarchy, a hairline closes it. -->
-				<header class="head">
-					<h1>{todo.title}</h1>
-					<div class="pills">
-						<StatusPill status={todo.status} reason={todo.reason} />
-					</div>
-				</header>
-			{/if}
-
-			<!-- fallow-ignore-next-line code-duplication -->
-			<Card accent={color(todo.status)}>
-				<TagList tags={todo.tags} />
-
-				<Description {todo} {update} onsaved={saved} />
-			</Card>
-
-			<SubIssues {todo} />
-		</div>
-
-		<aside class="side">
-			<Card>
-				<Facts {todo} />
-
-				<form
-					class="plan"
-					{...plan.enhance(async (f) => {
-						await f.submit();
-						await saved();
-					})}
-				>
-					<input {...plan.fields.id.as('hidden', todo.id)} />
-					<Field label="Stage">
-						<StagePicker {scope} {...plan.fields.stage.as('text', todo.stage ?? '')} />
-					</Field>
-					<Field label="Assignee">
-						<AssigneePicker
-							selected={todo.assignee}
-							{...plan.fields.assignee.as('select', todo.assignee?.id ?? '')}
-						/>
-					</Field>
-					<div class="pair">
-						<Field label="Start">
-							<Input {...plan.fields.startDate.as('date', day(todo.startDate))} />
-						</Field>
-						<Field label="Due">
-							<Input {...plan.fields.dueDate.as('date', day(todo.dueDate))} />
-						</Field>
-					</div>
-					<Button type="submit" variant="secondary" pending={!!plan.pending}>Save plan</Button>
-				</form>
-
-				{#each remove.fields.allIssues() ?? [] as issue, i (i)}
-					<Issue>{issue.message}</Issue>
-				{/each}
-
-				<div class="actions">
-					<StatusPicker {todo} />
-					<!-- fallow-ignore-next-line code-duplication -->
-					<form
-						{...remove.enhance(async (f) => {
-							await f.submit();
-							onremove();
-						})}
-					>
-						<input {...remove.fields.id.as('hidden', todo.id)} />
-						<Button variant="danger" type="submit" pending={!!remove.pending}>Delete</Button>
-					</form>
-				</div>
-			</Card>
-
-			<Card>
-				<Section wide title="Links">
-					<Links
-						links={todo.metadata.links}
-						add={(link) => linkTodo({ id: todo.id, ...link }).then(saved)}
-						drop={(url) => unlinkTodo({ id: todo.id, url }).then(saved)}
-					/>
-				</Section>
-				{#if Object.keys(todo.metadata.annotations).length}
-					<Section wide divider title="Annotations">
-						<Annotations annotations={todo.metadata.annotations} />
-					</Section>
+	<div class="editor">
+		<div class="grid">
+			<div class="main">
+				{#if !page}
+					<!-- Flat, like a page header: the title is the hierarchy, a hairline closes it. -->
+					<header class="head">
+						<h1>
+							<Inline
+								label="Title"
+								value={todo.title}
+								onsave={(next) => save.mutateAsync({ path: { id }, body: { title: next } })}
+							/>
+						</h1>
+						<div class="pills">
+							<StatusPill status={todo.status} reason={todo.reason} />
+						</div>
+					</header>
 				{/if}
-			</Card>
-		</aside>
 
-		<div class="logs">
-			<Timeline source="todo" sourceID={todo.id} title="Logs">
-				{#snippet label(event)}
-					{eventLabel(event)}
-				{/snippet}
-			</Timeline>
+				<!-- fallow-ignore-next-line code-duplication -->
+				<Card accent={color(todo.status)}>
+					<TagList tags={todo.tags} />
+
+					{#if save.error}
+						<Issue>{save.error.message}</Issue>
+					{/if}
+
+					<Description
+						{todo}
+						pending={save.isPending}
+						onsave={(body) => save.mutateAsync({ path: { id }, body: { body: body || null } })}
+					/>
+				</Card>
+
+				<SubIssues {todo} />
+			</div>
+
+			<aside class="side">
+				<Card>
+					<Facts {todo} />
+					<Plan {todo} />
+
+					<div class="actions">
+						<StatusPicker {todo} />
+						<Delete {id} title={todo.title} ondone={onremove}>
+							{#snippet children(ask, deleting)}
+								<Button variant="danger" pending={deleting} onclick={ask}>Delete</Button>
+							{/snippet}
+						</Delete>
+					</div>
+				</Card>
+
+				<Card>
+					<Section wide title="Links">
+						<Links
+							links={todo.metadata.links}
+							add={(next) => attach.mutateAsync({ path: { id }, body: next })}
+							drop={(url) => detach.mutateAsync({ path: { id }, query: { url } })}
+						/>
+					</Section>
+					{#if Object.keys(todo.metadata.annotations).length}
+						<Section wide divider title="Annotations">
+							<Annotations annotations={todo.metadata.annotations} />
+						</Section>
+					{/if}
+				</Card>
+			</aside>
+
+			<div class="logs">
+				<Timeline source="todo" sourceID={todo.id} title="Logs">
+					{#snippet label(event)}
+						{describe(event)}
+					{/snippet}
+				</Timeline>
+			</div>
 		</div>
 	</div>
-</div>
+{/if}
 
 <style>
 	/* The editor sizes its columns off its own box, not the viewport, so the same
@@ -240,10 +179,6 @@
 		}
 	}
 
-	.late {
-		color: var(--danger);
-	}
-
 	.head {
 		display: flex;
 		align-items: center;
@@ -265,22 +200,6 @@
 		font-size: 1.4em;
 		line-height: 1.25;
 		overflow-wrap: anywhere;
-	}
-
-	.plan {
-		display: flex;
-		flex-direction: column;
-		align-items: stretch;
-		gap: 0.75em;
-		margin-top: 1em;
-		padding-top: 1em;
-		border-top: 1px solid var(--border);
-	}
-
-	.plan .pair {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(8em, 1fr));
-		gap: 0.75em;
 	}
 
 	.actions {

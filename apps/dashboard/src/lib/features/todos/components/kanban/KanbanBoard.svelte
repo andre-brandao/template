@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Todo } from '@template/core/todo';
-	import { Empty, Scroll } from '@template/ui';
+	import { Scroll } from '@template/ui';
 	import TodoCard from '../card/TodoCard.svelte';
 	import { group, type By } from '../../group';
 
@@ -24,15 +24,12 @@
 							<TodoCard {todo} />
 						{/each}
 						{#if column.items.length === 0}
-							<Empty>No tasks</Empty>
+							<p class="none">Nothing here</p>
 						{/if}
 					</div>
 				</Scroll>
 			</div>
 		{/each}
-		{#if columns.length === 0}
-			<Empty>No tasks match this filter</Empty>
-		{/if}
 	</div>
 </Scroll>
 
@@ -50,10 +47,10 @@
 		background: var(--surface-2);
 		border: 1px solid var(--border);
 		border-radius: 8px;
-		padding: 0.75em;
+		padding: 0.6em;
 		display: flex;
 		flex-direction: column;
-		gap: 0.6em;
+		gap: 0.5em;
 		min-height: 8em;
 	}
 
@@ -89,6 +86,13 @@
 	.column-body {
 		display: flex;
 		flex-direction: column;
-		gap: 0.6em;
+		gap: 0.4em;
+	}
+
+	.none {
+		margin: 0;
+		padding: 0.6em 0.2em;
+		color: var(--dim);
+		font-size: 0.82em;
 	}
 </style>

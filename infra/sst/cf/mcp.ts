@@ -1,5 +1,6 @@
 /// <reference path="../../../.sst/platform/config.d.ts" />
 import { database, hyperdrive } from "./database";
+import { jobs } from "./queue";
 import { environment } from "./secrets";
 import { subdomain } from "./stage";
 
@@ -8,7 +9,7 @@ const mcp = new sst.cloudflare.Worker("Mcp", {
   domain: subdomain("mcp"),
   url: true,
   environment,
-  link: [database, hyperdrive],
+  link: [database, hyperdrive, jobs],
   placement: {
     region: "aws:sa-east-1",
   },

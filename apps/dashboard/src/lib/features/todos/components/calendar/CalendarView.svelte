@@ -24,6 +24,7 @@
 	import { goto, pushState } from '$app/navigation';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { createHotkey, setHotkeysContext } from '@tanstack/svelte-hotkeys';
+	import { hotkeys } from '$lib/hotkeys';
 	import ChevronLeft from '@lucide/svelte/icons/chevron-left';
 	import ChevronRight from '@lucide/svelte/icons/chevron-right';
 	import {
@@ -176,11 +177,11 @@
 		more?.show({ x: e.clientX, y: e.clientY });
 	}
 
-	createHotkey('T', () => go(today(f.zone)));
-	createHotkey('[', () => step(-1));
-	createHotkey(']', () => step(1));
-	createHotkey('M', () => swap('month'));
-	createHotkey('W', () => swap('week'));
+	createHotkey(hotkeys.today, () => go(today(f.zone)));
+	createHotkey(hotkeys.back, () => step(-1));
+	createHotkey(hotkeys.next, () => step(1));
+	createHotkey(hotkeys.month, () => swap('month'));
+	createHotkey(hotkeys.week, () => swap('week'));
 
 	const title = $derived(
 		mode === 'month'

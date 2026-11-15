@@ -77,7 +77,6 @@ State lives in Cloudflare (`Cloudflare.state()`): the first deploy offers to cre
 | Bundling is rolldown, not esbuild | Uses `workerd` export conditions by default, so `postgres` resolves its CF build. Smoke each worker after the first deploy. |
 | `new_module_registry` compat flag | Alchemy adds it by default for these compatibility dates; SST doesn't. |
 | Dashboard is a `Command.Build` + plain Worker | `Website.SvelteKit` needs `@sveltejs/kit` >= 3.0.0-next.27 (the dashboard is on 2.x), and its own build would skip `vite.config.ts`'s `SVELTE_ADAPTER`-gated `polyfillRequire: false`. The build re-runs when non-gitignored files in `apps/dashboard` change — not on `packages/*` changes, same as SST. |
-| MCP binds `Jobs` | `mcp/target/worker.ts` reads it; `sst/cf/mcp.ts` doesn't link it. |
 | No CI workflow | `.github/workflows/deploy.yml` still deploys SST only. |
 
 ## docker

@@ -7,6 +7,7 @@
 	import type { User } from '@template/core/user';
 	import { zone, type Prefs } from '@template/core/user/prefs';
 	import { setDates } from '@template/ui';
+	import { hotkeys } from '$lib/hotkeys';
 	import { createUser } from '$lib/utils/context';
 	import { createRail } from './rail.svelte';
 	import DevToolsProvider from './DevToolsProvider.svelte';
@@ -52,7 +53,7 @@
 
 <QueryClientProvider client={data.queryClient}>
 	<!-- The request's platform, so server-rendered Kbd labels already read ⌘ or Ctrl. -->
-	<HotkeysProvider defaultOptions={{ platform: data.platform }}>
+	<HotkeysProvider appHotkeys={hotkeys} defaultOptions={{ platform: data.platform }}>
 		{@render children()}
 		<!-- `dev` is a build-time constant, so prod compiles the devtools out entirely. -->
 		{#if dev}<DevToolsProvider client={data.queryClient} />{/if}

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { createQuery } from '@tanstack/svelte-query';
 	import { createHotkey } from '@tanstack/svelte-hotkeys';
+	import { hotkeys } from '$lib/hotkeys';
 	import { Button, Issue, Kbd, List, modal } from '@template/ui';
 	import * as Header from '$lib/components/header';
 	import { list } from '../api/keys.query';
@@ -10,7 +11,7 @@
 	const keys = createQuery(() => list());
 	const create = () => modal(KeyForm);
 
-	createHotkey('C', create);
+	createHotkey(hotkeys.create, create);
 </script>
 
 <Header.Root title="API keys">

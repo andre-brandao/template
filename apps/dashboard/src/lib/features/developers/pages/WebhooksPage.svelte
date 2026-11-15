@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { createQuery } from '@tanstack/svelte-query';
 	import { createHotkey } from '@tanstack/svelte-hotkeys';
+	import { hotkeys } from '$lib/hotkeys';
 	import { Button, Empty, Issue, Kbd, List, modal } from '@template/ui';
 	import * as Header from '$lib/components/header';
 	import { list } from '../api/webhooks.query';
@@ -10,7 +11,7 @@
 	const hooks = createQuery(() => list());
 	const create = () => modal(WebhookForm);
 
-	createHotkey('C', create);
+	createHotkey(hotkeys.create, create);
 </script>
 
 <Header.Root title="Webhooks">

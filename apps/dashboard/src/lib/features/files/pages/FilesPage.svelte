@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { createQuery } from '@tanstack/svelte-query';
 	import { createHotkey } from '@tanstack/svelte-hotkeys';
+	import { hotkeys } from '$lib/hotkeys';
 	import { Button, Empty, Issue, Kbd, List } from '@template/ui';
 	import * as Header from '$lib/components/header';
 	import { size } from '$lib/utils/size';
@@ -33,7 +34,7 @@
 	// Each file shows its own progress row, so picking never waits on a send.
 	const pick = () => picker?.click();
 
-	createHotkey('C', pick);
+	createHotkey(hotkeys.create, pick);
 
 	function enter(e: DragEvent) {
 		if (!e.dataTransfer?.types.includes('Files')) return;

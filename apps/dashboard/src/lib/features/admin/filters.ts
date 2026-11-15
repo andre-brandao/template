@@ -19,7 +19,7 @@ const log = z.object({
   sort: keys.events.schema,
 });
 
-export const users = {
+const users = {
   schema: people,
   args: (params: z.infer<typeof people>) => ({
     search: params.q || undefined,
@@ -30,7 +30,7 @@ export const users = {
   }),
 };
 
-export const events = {
+const events = {
   schema: log,
   args: (params: z.infer<typeof log>) => ({
     search: params.q || undefined,
@@ -42,3 +42,5 @@ export const events = {
     sort: params.sort,
   }),
 };
+
+export const filters = { users, events };

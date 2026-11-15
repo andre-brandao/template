@@ -2,15 +2,12 @@
 	import Topbar from '#lib/components/layout/Topbar.svelte';
 	import Hero from '#lib/features/home/components/Hero.svelte';
 	import { brand } from '#lib/brand.ts';
-	import ThemeToggle from '#lib/features/settings/components/ThemeToggle.svelte';
 </script>
 
 <svelte:head><title>{brand.name}</title></svelte:head>
 
 <!-- The public page, outside the app shell, so it carries its own header. -->
-<Topbar user={null}>
-	{#snippet account()}<ThemeToggle />{/snippet}
-</Topbar>
+<Topbar user={null} />
 
 <main><Hero /></main>
 

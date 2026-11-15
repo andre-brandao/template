@@ -1,9 +1,8 @@
-<!-- One chat message: the user's bubble, or the agent's markdown and tool calls in order. -->
+<!-- One chat message: the user's turn, or the agent's markdown and tool calls in order. -->
 <script lang="ts">
 	import type { UIMessage } from '@tanstack/ai-svelte';
 	import { Issue, Markdown } from '@template/ui';
 	import type { ResultPart } from '../views';
-	import Avatar from './Avatar.svelte';
 	import Tool from './Tool.svelte';
 
 	let {
@@ -47,15 +46,12 @@
 	{#if part.subagent.error}<Issue>{part.subagent.error.message}</Issue>{/if}
 {/snippet}
 
-<li class={{ user }}>
-	<!-- Still: the header's mark is the one that shows activity. -->
-	{#if !user}
-		<span class="avatar"><Avatar size={24} /></span>
-	{/if}
+<!-- No mark per message: the header's is the one that shows activity. -->
+<li>
 	<div class="body">
 		{#each message.parts as part, i (i)}
 			{#if part.type === 'text' && user}
-				<p class="bubble">{part.content}</p>
+				<p class="turn">{part.content}</p>
 			{:else if part.type === 'text'}
 				<div class="text">
 					<Markdown value={part.content} caret={writing && i === message.parts.length - 1} />
@@ -71,28 +67,14 @@
 
 <style>
 	li {
-		display: flex;
-		gap: 0.65em;
 		min-width: 0;
 	}
 
 	.body {
 		display: flex;
-		flex: 1;
 		flex-direction: column;
-		gap: 0.5em;
+		gap: 0.4em;
 		min-width: 0;
-	}
-
-	li.user .body {
-		align-items: flex-end;
-	}
-
-	/* Lines the mark up with the first line of text. */
-	.avatar {
-		display: inline-flex;
-		flex: none;
-		margin-top: 0.05em;
 	}
 
 	.text {
@@ -115,12 +97,12 @@
 		cursor: pointer;
 	}
 
-	.bubble {
-		max-width: 85%;
+	/* The reader's own turn: muted and ruled, left like everything else. */
+	.turn {
 		margin: 0;
-		padding: 0.55em 0.8em;
-		border-radius: var(--radius);
-		background: var(--surface-2);
+		padding: 0.1em 0 0.1em 0.75em;
+		border-left: 2px solid var(--border);
+		color: var(--muted);
 		white-space: pre-wrap;
 		overflow-wrap: anywhere;
 	}

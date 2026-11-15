@@ -17,14 +17,11 @@
 	let {
 		nav,
 		tools,
-		account,
 		side,
 		children
 	}: {
 		nav: Config;
 		tools?: Snippet;
-		/** Extra rows in the account menu. */
-		account?: Snippet;
 		side?: Snippet;
 		children: Snippet;
 	} = $props();
@@ -111,7 +108,6 @@
 			head={nav.head && crest}
 			crumbs={trail}
 			{tools}
-			{account}
 			onmenu={() => (open = true)}
 		/>
 		<main id="main" tabindex="-1">{@render children()}</main>

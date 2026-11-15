@@ -8,6 +8,7 @@
 	import { size } from '#lib/utils/size.ts';
 	import { events, stats } from '../api/admin.query';
 	import Queue from '../components/Queue.svelte';
+	import Tables from '../components/Tables.svelte';
 
 	const f = fmt();
 	const all = createQuery(() => stats());
@@ -71,7 +72,7 @@
 	<Skeleton h="76px" w="min(100%, 64em)" />
 {/if}
 
-<nav class="places" aria-label="Back office">
+<div class="places">
 	{#if all.isSuccess}
 		<Stat
 			href="/admin/users"
@@ -93,16 +94,24 @@
 		<Skeleton h="88px" />
 	{/if}
 	{#if all.isSuccess}
+		<Stat label="Projects" value={f.number(all.data.counts.projects)} />
 		<Stat
-			href="/admin/database"
-			label="Database"
-			value={size(all.data.tables.bytes)}
-			note="total on disk"
+			label="Todos"
+			value={f.number(all.data.counts.todos)}
+			note="{all.data.counts.done} done"
 		/>
 	{:else}
 		<Skeleton h="88px" />
+		<Skeleton h="88px" />
 	{/if}
-</nav>
+</div>
+
+{#if all.isSuccess}
+	<section>
+		<h2>Tables <small>{size(all.data.tables.bytes)} on disk</small></h2>
+		<Tables tables={all.data.tables.tables} />
+	</section>
+{/if}
 
 <style>
 	small {
@@ -113,15 +122,25 @@
 	/* The rule's measure, so the tiles share its edges. */
 	.places {
 		display: grid;
-		grid-template-columns: repeat(3, 1fr);
+		grid-template-columns: repeat(4, 1fr);
 		gap: 0.75em;
 		max-width: 64em;
 		margin: 3em 0 2.5em;
 	}
 
+	section {
+		max-width: 64em;
+		margin-bottom: 2em;
+	}
+
+	h2 {
+		margin: 0 0 0.75em;
+		font-size: 0.95em;
+	}
+
 	@media (max-width: 640px) {
 		.places {
-			grid-template-columns: 1fr;
+			grid-template-columns: repeat(2, 1fr);
 		}
 	}
 </style>

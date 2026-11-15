@@ -15,7 +15,7 @@ export const getFacets = remote
   .with(z.void().transform(() => undefined))
   .query();
 
-/** One round trip for the whole database screen: four independent reads, one await. */
+/** One round trip for the whole overview: four independent reads, one await. */
 export const getStats = remote.query(z.void(), async () => {
   const [tables, queue, counts, server] = await Promise.all([
     Admin.tables(),

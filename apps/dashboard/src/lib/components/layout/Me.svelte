@@ -4,14 +4,13 @@
 	(grants, signed out) lives with the markup it guards.
 -->
 <script lang="ts">
-	import type { Snippet } from 'svelte';
 	import { resolve } from '$app/paths';
 	import type { User } from '@template/core/user';
 	import { Avatar, IconButton, Menu } from '@template/ui';
 	import { user as session } from '#lib/utils/context.ts';
 	import { account as links } from './nav';
 
-	let { user, account }: { user: User.Info | null; account?: Snippet } = $props();
+	let { user }: { user: User.Info | null } = $props();
 
 	const me = session();
 </script>
@@ -30,7 +29,6 @@
 			{#each links(user.id) as link (link.href)}
 				{#if me.can(link.grants ?? {})}<Menu.Item href={link.href}>{link.label}</Menu.Item>{/if}
 			{/each}
-			{@render account?.()}
 			<Menu.Item href={resolve('logout')}>Log out</Menu.Item>
 		</Menu.Root>
 	</div>

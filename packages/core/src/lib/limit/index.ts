@@ -29,16 +29,15 @@ export namespace Limit {
 
   export namespace Err {
     export class Exceeded extends VisibleError {
+      readonly limit: number;
+      readonly remaining: number;
       readonly retryAfter: number;
 
       constructor(result: Result) {
-        const retryAfter = result.retryAfter ?? result.resetAfter;
-        super("rate_limit", ErrorCodes.RateLimit.EXCEEDED, "Rate limit exceeded", undefined, {
-          limit: result.limit,
-          remaining: result.remaining,
-          retryAfter,
-        });
-        this.retryAfter = retryAfter;
+        super("rate_limit", ErrorCodes.RateLimit.EXCEEDED, "Rate limit exceeded");
+        this.limit = result.limit;
+        this.remaining = result.remaining;
+        this.retryAfter = result.retryAfter ?? result.resetAfter;
       }
     }
   }

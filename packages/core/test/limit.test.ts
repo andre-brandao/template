@@ -21,6 +21,8 @@ describe("rate limit", () => {
       await expect(rules.auth.login.consume(subject)).rejects.toMatchObject({
         type: "rate_limit",
         code: "rate_limit_exceeded",
+        limit: 2,
+        remaining: 0,
         retryAfter: expect.any(Number),
       });
     });

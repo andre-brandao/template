@@ -42,24 +42,6 @@ export const ErrorResponse = z
           .meta({
             description: "Every field that failed. `param` names the first of them.",
           }),
-        limit: z
-          .number()
-          .int()
-          .nonnegative()
-          .optional()
-          .meta({ description: "Maximum attempts in the active window." }),
-        remaining: z
-          .number()
-          .int()
-          .nonnegative()
-          .optional()
-          .meta({ description: "Attempts remaining in the active window." }),
-        retryAfter: z
-          .number()
-          .int()
-          .nonnegative()
-          .optional()
-          .meta({ description: "Seconds until the caller can retry." }),
       })
       .optional()
       .meta({ description: "Additional error context information" }),
@@ -115,7 +97,7 @@ export class VisibleError extends Error {
     public code: string,
     public override message: string,
     public param?: string,
-    public details?: ErrorResponseType["details"],
+    public details?: any,
   ) {
     super(message);
   }

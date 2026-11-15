@@ -23,8 +23,9 @@
 			style:--c={color(todo.status)}
 			oncontextmenu={(e) => actions?.at(e)}
 		>
-			<div class="head">
-				<div class="main"><Title {todo} bind:renaming busy={deleting} /></div>
+			<Title {todo} bind:renaming busy={deleting} clamp />
+			<!-- Floats over the corner on hover or focus, so the title gets the full width. -->
+			<div class="menu">
 				<Actions bind:this={actions} {todo} {deleting} {ask} onrename={() => (renaming = true)} />
 			</div>
 			{#if todo.stage || todo.tags.length}
@@ -72,16 +73,25 @@
 		pointer-events: none;
 	}
 
-	.head {
-		display: grid;
-		grid-template-columns: minmax(0, 1fr) auto;
-		align-items: center;
-		gap: 0.4em;
-		margin-right: -0.3em;
+	.menu {
+		position: absolute;
+		top: 0.25em;
+		right: 0.25em;
+		z-index: 1;
+		border-radius: var(--radius-sm);
+		background: var(--surface);
+		opacity: var(--dots, 0);
+		transition: opacity 140ms ease;
 	}
 
-	.main {
-		min-width: 0;
+	.menu:has(:global([aria-expanded='true'])) {
+		opacity: 1;
+	}
+
+	@media (hover: none) {
+		.menu {
+			opacity: 1;
+		}
 	}
 
 	.tags {
@@ -116,7 +126,8 @@
 	}
 
 	@media (prefers-reduced-motion: reduce) {
-		.card {
+		.card,
+		.menu {
 			transition: none;
 		}
 	}

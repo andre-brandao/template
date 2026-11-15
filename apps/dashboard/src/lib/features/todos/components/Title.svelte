@@ -9,8 +9,15 @@
 	let {
 		todo,
 		renaming = $bindable(false),
-		busy = false
-	}: { todo: Todo.Info; renaming?: boolean; busy?: boolean } = $props();
+		busy = false,
+		clamp = false
+	}: {
+		todo: Todo.Info;
+		renaming?: boolean;
+		busy?: boolean;
+		/** Wrap to two lines instead of one, like on a board card. */
+		clamp?: boolean;
+	} = $props();
 
 	const save = update();
 	// The typed title stays up until the refetch lands; a failure falls back to the stored one.
@@ -42,7 +49,8 @@
 {:else}
 	<span class="title">
 		<a
-			class="name"
+			class={['name', { clamp }]}
+			title={shown}
 			href="/todos/{todo.id}"
 			onclick={peek({ selected: todo.id })}
 			{@attach (el) => {
@@ -69,6 +77,15 @@
 		text-overflow: ellipsis;
 		white-space: nowrap;
 		outline: none;
+	}
+
+	.clamp {
+		display: -webkit-box;
+		-webkit-box-orient: vertical;
+		-webkit-line-clamp: 2;
+		line-clamp: 2;
+		white-space: normal;
+		overflow-wrap: anywhere;
 	}
 
 	/* Stretched over the row or card, so anywhere that isn't a control opens the todo. */

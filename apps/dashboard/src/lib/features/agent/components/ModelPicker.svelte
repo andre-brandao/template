@@ -4,7 +4,7 @@
 -->
 <script lang="ts">
 	import { browser } from '$app/environment';
-	import { Badge, Combobox, Kbd, Skeleton } from '@template/ui';
+	import { Badge, Combobox, Kbd, Skeleton, type Row } from '@template/ui';
 	import { createHotkey } from '@tanstack/svelte-hotkeys';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { hotkeys } from '$lib/hotkeys';
@@ -106,6 +106,31 @@
 	}
 </script>
 
+{#snippet face(one: Model | undefined)}
+	{#if one}
+		<span class="vendor">{one.vendor}</span>
+		<span class="dot">·</span>
+		<span class="name">{one.name}</span>
+	{/if}
+{/snippet}
+
+{#snippet entry(one: Model, row: Row)}
+	{#if one.id === current}<span class="vendor">{one.vendor} ·</span>{/if}
+	<span class={['name', { snap: one.id !== current && tuck.has(one.id) }]}>
+		{@render row.marked(one.name)}
+	</span>
+	{#if one.id === list.data?.default}<Badge>default</Badge>{/if}
+{/snippet}
+
+{#snippet hints()}
+	{#if tuck.size}
+		<button type="button" class="snaps" aria-pressed={snaps} onclick={() => (snaps = !snaps)}>
+			{snaps ? 'Hide' : 'Show'} snapshots <span class="count">{tuck.size}</span>
+		</button>
+	{/if}
+	<span class="key"><Kbd keys="Mod+/" /></span>
+{/snippet}
+
 <div class="picker">
 	{#if list.isPending}
 		<Skeleton h="1.4em" w="9em" />
@@ -127,30 +152,10 @@
 			label="Model"
 			placeholder="Search models"
 			side="top"
-		>
-			{#snippet trigger(one)}
-				{#if one}
-					<span class="vendor">{one.vendor}</span>
-					<span class="dot">·</span>
-					<span class="name">{one.name}</span>
-				{/if}
-			{/snippet}
-			{#snippet item(one, row)}
-				{#if one.id === current}<span class="vendor">{one.vendor} ·</span>{/if}
-				<span class={['name', { snap: one.id !== current && tuck.has(one.id) }]}>
-					{@render row.marked(one.name)}
-				</span>
-				{#if one.id === list.data?.default}<Badge>default</Badge>{/if}
-			{/snippet}
-			{#snippet foot()}
-				{#if tuck.size}
-					<button type="button" class="snaps" aria-pressed={snaps} onclick={() => (snaps = !snaps)}>
-						{snaps ? 'Hide' : 'Show'} snapshots <span class="count">{tuck.size}</span>
-					</button>
-				{/if}
-				<span class="key"><Kbd keys="Mod+/" /></span>
-			{/snippet}
-		</Combobox>
+			trigger={face}
+			item={entry}
+			foot={hints}
+		/>
 	{/if}
 </div>
 

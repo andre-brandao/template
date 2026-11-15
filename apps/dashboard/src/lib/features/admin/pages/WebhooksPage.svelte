@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Button, Drawer, Empty } from '@template/ui';
-	import Header from '$lib/components/Header.svelte';
+	import * as Header from '$lib/components/header';
 	import { getWebhooks } from '../api/admin.remote';
 	import WebhookForm from '../components/WebhookForm.svelte';
 	import WebhookRow from '../components/WebhookRow.svelte';
@@ -10,15 +10,14 @@
 	let creating = $state(false);
 </script>
 
-<Header title="Webhooks">
+<Header.Root title="Webhooks">
+	{#snippet lead()}POSTed by the queue worker, signed with <code>x-webhook-signature</code>.{/snippet}
 	{#snippet actions()}
 		<Button onclick={() => (creating = true)}>New webhook</Button>
 	{/snippet}
-	Published events are POSTed from the queue worker, so nothing here slows a request down.
-	Each delivery carries an <code>x-webhook-signature</code> — an HMAC-SHA256 of the body and
-	the <code>x-webhook-timestamp</code>, keyed on this endpoint's secret. A failing endpoint is
-	retried on its own and disables itself after 20 consecutive failures.
-</Header>
+	<Header.Item label="Registered">{hooks.length}</Header.Item>
+	<Header.Item label="Enabled">{hooks.filter((hook) => hook.enabled).length}</Header.Item>
+</Header.Root>
 
 <Drawer bind:open={creating}>
 	<h2>New webhook</h2>

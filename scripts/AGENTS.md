@@ -11,6 +11,9 @@ Bun scripts for running and populating the stack locally. Run from the repo root
 
 ## bun dev
 
+`bun dev web` (or `api`, `mcp`, several at once) starts the database, the essentials
+(`auth`, `queue`) and only the named apps. No names starts everything.
+
 `DB=docker` (default) runs Postgres from `infra/docker/compose.yml`; `DB=pglite` runs it
 in-process. `RESET=1` wipes first — which only matters for docker, since pglite starts
 empty anyway.

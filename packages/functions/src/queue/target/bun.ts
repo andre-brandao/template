@@ -22,7 +22,11 @@ process.on("SIGTERM", bye);
 
 await Context.withProviders(
   () => Queue.work({ signal: abort.signal, run }),
-  Database.provider(Database.connect()),
+  // PG_RELEASE (pglite) has one connection to share: the 1s poll never idles the pool for
+  // the default 20s, so drop the socket between polls or api/auth/dashboard time out.
+  Database.provider(
+    Database.connect(undefined, process.env.PG_RELEASE === "true" ? { idle_timeout: 0.5 } : {}),
+  ),
   Storage.provider(Storage.fromEnv(process.env)),
   Email.provider(Email.fromEnv(process.env)),
   Queue.provider(Queue.Providers.db({ use: Database.use })),

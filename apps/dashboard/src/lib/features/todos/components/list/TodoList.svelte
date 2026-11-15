@@ -2,13 +2,14 @@
 	import type { Todo } from '@template/core/todo';
 	import { Empty } from '@template/ui';
 	import TodoCard from '../card/TodoCard.svelte';
+	import { tree } from '../../tree';
 
 	let { todos }: { todos: Todo.Info[] } = $props();
 </script>
 
 <div class="list">
-	{#each todos as todo (todo.id)}
-		<TodoCard {todo} />
+	{#each tree(todos) as todo (todo.id)}
+		<div style="margin-left: {todo.depth * 1.5}em"><TodoCard {todo} /></div>
 	{/each}
 	{#if todos.length === 0}
 		<Empty>No tasks match this filter</Empty>

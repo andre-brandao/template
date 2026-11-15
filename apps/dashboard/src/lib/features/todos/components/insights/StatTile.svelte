@@ -25,10 +25,7 @@
 	}
 
 	.label {
-		font-family: var(--font-mono);
-		font-size: 0.72em;
-		letter-spacing: 0.04em;
-		text-transform: uppercase;
+		font-size: 0.86em;
 		color: var(--muted);
 	}
 

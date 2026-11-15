@@ -9,6 +9,8 @@ const BASE: Todo.Info = {
   assignee: null,
   source: null,
   sourceID: null,
+  parentID: null,
+  position: 0,
   stage: null,
   title: "",
   body: null,
@@ -19,6 +21,7 @@ const BASE: Todo.Info = {
   dueDate: null,
   timeStarted: null,
   timeDone: null,
+  metadata: { annotations: {}, links: [] },
   timeCreated: "2026-06-07T00:00:00.000Z",
 };
 

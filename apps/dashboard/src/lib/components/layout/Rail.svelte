@@ -25,7 +25,7 @@
 		min-width: 0;
 		flex-shrink: 0;
 		height: var(--topbar);
-		padding-inline: 0.75em;
+		padding-inline: 1.25em 0.625em;
 		border-bottom: 1px solid var(--border);
 	}
 

@@ -15,8 +15,8 @@ import { KeyTable } from "./key.sql";
 /**
  * Dashboard logins. Nothing is signed, so there is no secret to hold or rotate: the cookie
  * is `<id>.<secret>`, the row is what makes it true, and revoking one is a delete. Shares
- * the `key` table under `type: "session"`; `Key.verify` resolves `api` alone, so a session
- * can never authenticate as a bearer token.
+ * the `key` table under `type: "session"`; `Key.verify` resolves `api` alone; the API
+ * middleware takes a session bearer only through `Session.verify`, for the dashboard copilot.
  */
 export namespace Session {
   export const Info = z

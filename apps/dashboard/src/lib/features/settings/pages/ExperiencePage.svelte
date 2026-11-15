@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { invalidateAll } from '$app/navigation';
-	import { Field, Select } from '@template/ui';
+	import { Field, Section, Select } from '@template/ui';
 	import { Locales, Prefs, type Patch } from '@template/core/user/prefs';
 	import { user } from '$lib/utils/context';
-	import Header from '$lib/components/Header.svelte';
+	import * as Header from '$lib/components/header';
 	import { save } from '../api/prefs.remote';
 	import ThemePicker from '../components/ThemePicker.svelte';
 	import Formats from '../components/Formats.svelte';
@@ -32,36 +32,27 @@
 	}
 </script>
 
-<Header title="Experience" />
+<Header.Root title="Experience" lead="Theme, language and how dates read. Saved as you pick." />
 
-<h2>Appearance</h2>
-<p class="lead">Pick a colour scheme, or follow whatever your device is set to.</p>
-<ThemePicker value={prefs.theme} onpick={(theme) => pick({ theme })} />
+<Section title="Appearance" description="A colour scheme, or whatever your device is set to.">
+	<ThemePicker value={prefs.theme} onpick={(theme) => pick({ theme })} />
+</Section>
 
-<h2>Language</h2>
-<p class="lead">Sets how dates and numbers are written. The interface itself stays in English.</p>
-<Field label="Language" style="max-width: 28em">
-	<Select
-		name="locale"
-		options={locales}
-		value={prefs.locale}
-		onchange={(e) => pick({ locale: e.currentTarget.value as (typeof Locales)[number] })}
-	/>
-</Field>
+<Section
+	divider
+	title="Language"
+	description="How dates and numbers are written. The interface stays in English."
+>
+	<Field label="Language" style="max-width: 28em">
+		<Select
+			name="locale"
+			options={locales}
+			value={prefs.locale}
+			onchange={(e) => pick({ locale: e.currentTarget.value as (typeof Locales)[number] })}
+		/>
+	</Field>
+</Section>
 
-<h2>Date and time</h2>
-<p class="lead">How timestamps are shown across the app.</p>
-<Formats {prefs} onpick={pick} />
-
-<style>
-	h2 {
-		margin: 2.25em 0 0.4em;
-		font-size: 1.1em;
-	}
-
-	.lead {
-		margin: 0 0 1.25em;
-		color: var(--muted);
-		max-width: 60ch;
-	}
-</style>
+<Section divider title="Date and time" description="How timestamps are shown across the app.">
+	<Formats {prefs} onpick={pick} />
+</Section>

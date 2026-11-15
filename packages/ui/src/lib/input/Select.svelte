@@ -15,28 +15,33 @@
 </select>
 
 <style>
-	/* The same box as a closed `Combobox.Trigger` — the two sit side by side in forms and
-	   read as one control family. */
+	/* The same box as `Input` and a closed `Combobox.Trigger` — the three sit side by side in
+	   forms and read as one control family. The chevron is drawn, so it takes the theme. */
 	select {
 		width: 100%;
 		min-width: 0;
+		min-height: 2.25em;
 		font: inherit;
-		font-family: var(--font-mono, monospace);
-		font-size: 0.8em;
-		padding: 0.5em 0.6em;
-		border: 1px solid var(--border, #333);
-		border-radius: var(--radius, 8px);
-		background: var(--surface-2, #eee);
+		padding: 0.4em 2em 0.4em 0.7em;
+		border: 1px solid var(--border, #ddd);
+		border-radius: var(--radius-sm, 6px);
+		background:
+			linear-gradient(45deg, transparent 50%, var(--muted, #666) 50%) calc(100% - 0.95em) 52% / 0.3em 0.3em no-repeat,
+			linear-gradient(-45deg, transparent 50%, var(--muted, #666) 50%) calc(100% - 0.75em) 52% / 0.3em 0.3em no-repeat,
+			var(--surface, #fff);
 		color: var(--ink, #111);
+		box-shadow: var(--shadow-1, 0 1px 2px rgb(0 0 0 / 0.05));
+		appearance: none;
 		cursor: pointer;
 	}
 
 	select:hover {
-		border-color: var(--border-bright, #555);
+		border-color: var(--border-bright, #ccc);
 	}
 
 	select:focus-visible {
-		border-color: var(--accent, #4fa98f);
+		border-color: var(--accent, #2f7f68);
+		box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent, #2f7f68) 16%, transparent);
 		outline: none;
 	}
 </style>

@@ -33,8 +33,8 @@
 		width: min(30em, calc(100vw - 2em));
 		max-width: none;
 		border: 1px solid var(--border, #333);
-		border-radius: var(--radius, 8px);
-		padding: 1.4em;
+		border-radius: calc(var(--radius, 8px) + 4px);
+		padding: 1.5em;
 		background: var(--surface, #fff);
 		color: var(--ink, #111);
 		box-shadow: var(--shadow-2, 0 12px 28px -14px rgb(0 0 0 / 0.6));
@@ -60,7 +60,7 @@
 	}
 
 	dialog::backdrop {
-		background: rgb(0 0 0 / 0.45);
+		background: rgb(0 0 0 / 0.32);
 		opacity: 1;
 		transition:
 			opacity 0.2s ease,

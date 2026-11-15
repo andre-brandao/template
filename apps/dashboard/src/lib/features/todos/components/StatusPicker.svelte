@@ -94,10 +94,7 @@
 		background: color-mix(in srgb, var(--c) 12%, transparent);
 		color: var(--c);
 		font: inherit;
-		font-family: var(--font-mono);
-		font-size: 0.78em;
-		text-transform: uppercase;
-		letter-spacing: 0.03em;
+		font-size: 0.86em;
 		padding: 0.35em 0.7em;
 		cursor: pointer;
 	}
@@ -156,10 +153,7 @@
 	}
 
 	.note span {
-		font-family: var(--font-mono);
-		font-size: 0.68em;
-		text-transform: uppercase;
-		letter-spacing: 0.04em;
+		font-size: 0.86em;
 		color: var(--muted);
 	}
 

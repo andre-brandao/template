@@ -36,9 +36,10 @@ Actor.assert("user"); // assert type and return typed actor
 
 Middleware sets the actor via `Actor.provide(type, properties, next)` — handlers never call `provide` directly.
 
-**Auth** — a request carries `Authorization: Bearer <token>`, and `middleware.ts` resolves it two
-ways: an `sk-` prefix is a user-minted API key looked up in Postgres (`Key.verify`), anything else
-is a JWT from the OpenAuth issuer, verified statelessly against its JWKS. Both collapse to a bare
+**Auth** — a request carries `Authorization: Bearer <token>`, and `middleware.ts` resolves it three
+ways: an `sk-` prefix is a user-minted API key looked up in Postgres (`Key.verify`), a `.ses-` token
+is a dashboard session the copilot forwards to the MCP (`Session.verify`), anything else is a JWT
+from the OpenAuth issuer, verified statelessly against its JWKS. All three collapse to a bare
 user id, and the role always comes from the user row — so an API key can never outlive the
 permissions of whoever minted it. No header at all means the `public` actor.
 

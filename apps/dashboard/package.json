@@ -16,8 +16,14 @@
     "test:e2e:ui": "playwright test -c e2e/playwright.config.ts --ui"
   },
   "dependencies": {
+    "@json-render/core": "0.21.1",
+    "@json-render/svelte": "0.21.1",
     "@lucide/svelte": "^1.31.0",
     "@openauthjs/openauth": "catalog:",
+    "@tanstack/ai": "^0.70.0",
+    "@tanstack/ai-mcp": "^0.9.1",
+    "@tanstack/ai-openai": "^0.30.1",
+    "@tanstack/ai-svelte": "^0.26.0",
     "@tanstack/charts": "0.9.0",
     "@tanstack/svelte-table": "^9.1.2",
     "@template/core": "workspace:*",

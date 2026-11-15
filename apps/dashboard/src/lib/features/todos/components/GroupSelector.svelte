@@ -1,45 +1,22 @@
+<!-- How the board and timeline split their rows; a `Header.Group` for the filter strip. -->
 <script lang="ts">
+	import { Select } from '@template/ui';
+	import * as Header from '$lib/components/header';
 	import type { By } from '../group';
 
 	let { by = 'status', onchange }: { by?: By; onchange: (by: By) => void } = $props();
 </script>
 
-<label class="group">
-	<span>Group</span>
-	<select name="group" value={by} onchange={(e) => onchange(e.currentTarget.value as By)}>
-		<option value="status">Status</option>
-		<option value="stage">Stage</option>
-		<option value="assignee">Assignee</option>
-	</select>
-</label>
-
-<style>
-	.group {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.4em;
-	}
-
-	span {
-		font-family: var(--font-mono);
-		font-size: 0.72em;
-		text-transform: uppercase;
-		letter-spacing: 0.04em;
-		color: var(--muted);
-	}
-
-	select {
-		font: inherit;
-		font-size: 0.85em;
-		padding: 0.35em 0.5em;
-		border: 1px solid var(--border);
-		border-radius: 6px;
-		background: var(--surface);
-		color: var(--ink);
-	}
-
-	select:focus-visible {
-		border-color: var(--accent);
-		outline: none;
-	}
-</style>
+<Header.Group label="Group">
+	<Select
+		name="group"
+		aria-label="Group by"
+		value={by}
+		options={[
+			{ value: 'status', label: 'Status' },
+			{ value: 'stage', label: 'Stage' },
+			{ value: 'assignee', label: 'Assignee' }
+		]}
+		onchange={(e) => onchange(e.currentTarget.value as By)}
+	/>
+</Header.Group>

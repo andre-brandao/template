@@ -43,7 +43,6 @@
 		background: var(--surface, #fff);
 		border: 1px solid var(--border, #333);
 		border-radius: var(--radius, 8px);
-		box-shadow: var(--shadow-1);
 		padding: 1.1em;
 	}
 
@@ -69,8 +68,7 @@
 
 	.card.interactive:hover {
 		border-color: var(--border-bright, #555);
-		box-shadow: var(--shadow-2);
-		transform: translateY(-1px);
+		box-shadow: var(--shadow-1, 0 1px 2px rgb(0 0 0 / 0.05));
 	}
 
 	.card.interactive.accent:hover {

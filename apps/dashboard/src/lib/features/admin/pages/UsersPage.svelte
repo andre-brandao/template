@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { Fill, Input, Pagination, Scroll } from '@template/ui';
-	import Header from '$lib/components/Header.svelte';
+	import { Button, Fill, Input, Pagination, Scroll, Toggle } from '@template/ui';
+	import * as Header from '$lib/components/header';
 	import { debounce } from '$lib/utils/debounce';
 	import { getUsers } from '../api/admin.remote';
 	import UsersTable from '../components/UsersTable.svelte';
@@ -22,41 +22,43 @@
 	});
 	const page = $derived(await getUsers(args));
 
-	// Typing resets to the first page — page 4 of the old result set means nothing here.
-	const commit = debounce((value: string) => {
-		search = value;
+	// Every narrowing lands back on page one — page 4 of the old result set means nothing here.
+	function pick(next: { search?: string; deleted?: boolean }) {
+		search = next.search ?? search;
+		deleted = next.deleted ?? deleted;
 		at = 1;
-	}, 300);
+	}
+	const commit = debounce((value: string) => pick({ search: value }), 300);
 </script>
 
 <!-- Same shape as the log: header and filters hold still, only the list scrolls. -->
 <Fill>
-	<Header title="Users">
-		Everyone with an account on this instance. Changing a role takes effect on that person's
-		next request; disabling one turns them away at login and hides them from every actor lookup.
-	</Header>
-
-	<div class="bar">
-		<Input
-			type="search"
-			name="search"
-			autocomplete="off"
-			placeholder="Search name or email"
-			oninput={(e) => commit(e.currentTarget.value)}
-		/>
-		<label class="show">
-			<input
-				type="checkbox"
-				name="deleted"
-				checked={deleted}
-				onchange={(e) => {
-					deleted = e.currentTarget.checked;
-					at = 1;
-				}}
-			/>
-			Show disabled
-		</label>
-	</div>
+	<Header.Root title="Users">
+		<Header.Item label={deleted ? 'Users' : 'Active'}>{page.total.toLocaleString()}</Header.Item>
+		{#snippet strip()}
+			<Header.Group>
+				<Input
+					type="search"
+					name="search"
+					autocomplete="off"
+					aria-label="Search users"
+					placeholder="Search name or email"
+					value={search}
+					oninput={(e) => commit(e.currentTarget.value)}
+				/>
+			</Header.Group>
+			<Header.Group label="Show">
+				<Toggle pressed={deleted} onclick={(on) => pick({ deleted: on })}>Disabled</Toggle>
+			</Header.Group>
+			{#if search || deleted}
+				<Header.Group end>
+					<Button variant="ghost" onclick={() => pick({ search: '', deleted: false })}>
+						Clear filters
+					</Button>
+				</Header.Group>
+			{/if}
+		{/snippet}
+	</Header.Root>
 
 	<Scroll fill>
 		<UsersTable
@@ -72,22 +74,3 @@
 
 	<Pagination of={page} onchange={(next) => (at = next)} label="users" />
 </Fill>
-
-<style>
-	.bar {
-		display: flex;
-		align-items: center;
-		gap: 1em;
-		margin-bottom: 1em;
-	}
-
-	.show {
-		display: flex;
-		align-items: center;
-		gap: 0.4em;
-		font-size: 0.9em;
-		color: var(--muted);
-		white-space: nowrap;
-	}
-
-</style>

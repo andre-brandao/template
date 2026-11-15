@@ -7,7 +7,7 @@ Five deployment paths, all optional to local development.
 | `sst/cf/`        | **Live.** SST 4: Cloudflare Workers + Hyperdrive. `sst.config.ts` imports this. |
 | `sst/aws/`       | Alternate SST wiring: Lambda + VPC + RDS.                                   |
 | `terraform/`     | OpenTofu. Same Cloudflare stack as `sst/cf`, independently. See its `README.md`. |
-| `alchemy/`       | Alchemy v2 (beta). Same Cloudflare stack as `sst/cf`, independently. See its `README.md`. |
+| `alchemy/`       | Alchemy v2 (beta): `cf/` mirrors `sst/cf`, `docker/` mirrors `docker/`. See its `README.md`. |
 | `docker/`        | Self-contained Compose stack, no SST. See its `README.md`.                  |
 
 Each SST module exports its resources plus an `outputs` object, which `sst.config.ts`
@@ -20,8 +20,8 @@ workers read their bindings by name — `Hyperdrive`, `Files`, `Jobs`, `AuthKv`,
 `SEND_EMAIL`, declared in `packages/functions/src/cf.ts` — and never import SST's
 `Resource`.
 
-Services map to `packages/functions/src/*/target/` — `sst/cf/`, `terraform/` and `alchemy/` deploy the
-`worker` targets, `sst/aws/` the `lambda` ones, `docker/` the `bun` ones. See
+Services map to `packages/functions/src/*/target/` — `sst/cf/`, `terraform/` and `alchemy/cf/` deploy the
+`worker` targets, `sst/aws/` the `lambda` ones, `docker/` and `alchemy/docker/` the `bun` ones. See
 [`docs/runtime.md`](../docs/runtime.md).
 
 ## Rules
@@ -36,5 +36,5 @@ Services map to `packages/functions/src/*/target/` — `sst/cf/`, `terraform/` a
   plain env var (Alchemy).
 - The Cloudflare paths must not contend for account-scoped names. `terraform/` keeps
   `var.project = "template-tf"` and a `tf.` domain, `alchemy/` the `template-alc` stack name
-  and an `alc.` domain, for exactly that reason —
+  and an `alc.` domain, and `alchemy/docker/` compose's host ports + 10000, for exactly that reason —
   don't align them "for consistency".

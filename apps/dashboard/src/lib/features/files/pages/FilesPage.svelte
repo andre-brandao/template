@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { Drawer, Empty, Issue } from '@template/ui';
 	import type { Storage } from '@template/core/storage';
-	import Header from '$lib/components/Header.svelte';
+	import * as Header from '$lib/components/header';
+	import { size } from '$lib/utils/size';
 	import { getFiles } from '../api/files.remote';
 	import FileCard from '../components/FileCard.svelte';
 	import FileForm from '../components/FileForm.svelte';
@@ -46,8 +47,7 @@
 </script>
 
 <div
-	class="page"
-	class:drop={drag > 0}
+	class={['page', { drop: drag > 0 }]}
 	role="region"
 	aria-label="Files"
 	ondragenter={enter}
@@ -55,11 +55,13 @@
 	ondragleave={() => (drag = Math.max(0, drag - 1))}
 	ondrop={drop}
 >
-	<Header title="Files">
+	<Header.Root title="Files" lead="Uploads kept in storage. Drop files anywhere on the page.">
+		<Header.Item label="Files">{files.length}</Header.Item>
+		<Header.Item label="Total size">{size(files.reduce((sum, file) => sum + file.size, 0))}</Header.Item>
 		{#snippet actions()}
 			<Upload {upload} pending={uploading} />
 		{/snippet}
-	</Header>
+	</Header.Root>
 
 	{#each failed as name (name)}
 		<Issue>Upload failed: {name}</Issue>
@@ -76,7 +78,7 @@
 			/>
 		{/each}
 		{#if files.length === 0}
-			<Empty>No files yet — drop one here</Empty>
+			<Empty>No files yet. Drop one here or use Upload.</Empty>
 		{/if}
 	</div>
 

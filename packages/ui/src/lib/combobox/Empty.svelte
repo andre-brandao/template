@@ -15,8 +15,7 @@
 	.empty {
 		margin: 0;
 		padding: 0.9em 0.55em;
-		font-family: var(--font-mono, monospace);
-		font-size: 0.78em;
+		font-size: 0.9em;
 		text-align: center;
 		color: var(--dim, #888);
 	}

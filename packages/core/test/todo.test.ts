@@ -170,6 +170,94 @@ describe("todo", () => {
     });
   });
 
+  withTestUser("sub-issues join the parent's owner, last among siblings", async () => {
+    const src = project();
+    const epic = await Todo.create({ title: "Epic", ...src });
+    const first = await Todo.create({ title: "First", parentID: epic.id });
+    const second = await Todo.create({ title: "Second", parentID: epic.id });
+    expect(first.source).toBe("project");
+    expect(first.sourceID).toBe(src.sourceID);
+    expect([first.position, second.position]).toEqual([0, 1]);
+    const kids = await Todo.list({ parentID: epic.id, sort: ["position"] });
+    expect(kids.data.map((todo) => todo.title)).toEqual(["First", "Second"]);
+    expect((await Todo.list({ ...src, parentID: "none" })).data.map((t) => t.id)).toEqual([
+      epic.id,
+    ]);
+  });
+
+  withTestUser("move reorders siblings and refuses cycles", async () => {
+    const src = project();
+    const epic = await Todo.create({ title: "Epic", ...src });
+    const a = await Todo.create({ title: "A", parentID: epic.id });
+    const b = await Todo.create({ title: "B", parentID: epic.id });
+    const c = await Todo.create({ title: "C", parentID: epic.id });
+
+    await Todo.move({ id: c.id, parentID: epic.id, position: 0 });
+    const order = await Todo.list({ parentID: epic.id, sort: ["position"] });
+    expect(order.data.map((todo) => todo.title)).toEqual(["C", "A", "B"]);
+
+    // Out to the top level: the gap closes behind it.
+    await Todo.move({ id: a.id, parentID: null });
+    expect((await Todo.fromID(a.id))?.position).toBe(1);
+    expect((await Todo.fromID(b.id))?.position).toBe(1);
+
+    await Todo.move({ id: b.id, parentID: c.id });
+    await expect(Todo.move({ id: epic.id, parentID: b.id })).rejects.toThrow(/under itself/);
+    await expect(
+      Todo.move({ id: b.id, parentID: (await Todo.create({ title: "Other", ...project() })).id }),
+    ).rejects.toThrow(/same owner/);
+  });
+
+  withTestUser("removing a parent promotes its sub-issues", async () => {
+    const src = project();
+    const epic = await Todo.create({ title: "Epic", ...src });
+    const kid = await Todo.create({ title: "Kid", parentID: epic.id });
+    await Todo.remove(epic.id);
+    const after = await Todo.fromID(kid.id);
+    expect(after?.parentID).toBeNull();
+    expect(after?.position).toBe(0);
+  });
+
+  withTestUser("annotations merge and drop keys; links swap without touching them", async () => {
+    const { id } = await Todo.create({ title: "Annotated", links: [{ url: "https://a.dev" }] });
+    await Todo.annotate({ id, set: { "example.com/a": "1", "example.com/b": "2" } });
+    const after = await Todo.annotate({ id, unset: ["example.com/a"] });
+    expect(after.metadata.annotations).toEqual({ "example.com/b": "2" });
+
+    await Todo.update({ id, links: [{ url: "https://b.dev", title: "B" }] });
+    const todo = await Todo.fromID(id);
+    expect(todo?.metadata.links).toEqual([{ url: "https://b.dev", title: "B" }]);
+    expect(todo?.metadata.annotations).toEqual({ "example.com/b": "2" });
+  });
+
+  withTestUser("concurrent link edits all land; a repeated url retitles", async () => {
+    const { id } = await Todo.create({ title: "Linked" });
+    await Promise.all(["a", "b", "c"].map((name) => Todo.link({ id, url: `https://${name}.dev` })));
+    await Todo.link({ id, url: "https://b.dev", title: "B" });
+    const after = await Todo.unlink({ id, url: "https://a.dev" });
+    expect(after.metadata.links.map((item) => item.url).sort()).toEqual([
+      "https://b.dev",
+      "https://c.dev",
+    ]);
+    expect(after.metadata.links.find((item) => item.url === "https://b.dev")?.title).toBe("B");
+  });
+
+  withTestUser("github annotations belong to the sync engine, one todo per issue", async () => {
+    const { id } = await Todo.create({ title: "Mirrored" });
+    await expect(Todo.annotate({ id, set: { "github.com/issue": "acme/api#1" } })).rejects.toThrow(
+      /written by their integration/,
+    );
+
+    const issue = String(Math.floor(Math.random() * 1e9));
+    const other = await Todo.create({ title: "Duplicate" });
+    await Actor.provide("system", {}, async () => {
+      await Todo.annotate({ id, set: { "github.com/issue-id": issue } });
+      await expect(
+        Todo.annotate({ id: other.id, set: { "github.com/issue-id": issue } }),
+      ).rejects.toThrow();
+    });
+  });
+
   withTestUser("system bypasses enforcement", async () => {
     const { id } = await Todo.create({ title: "Batch" });
     await Actor.provide("system", {}, async () => {

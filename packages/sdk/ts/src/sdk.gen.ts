@@ -39,6 +39,7 @@ import type {
   GetTodoResponses,
   GetTodoStageErrors,
   GetTodoStageResponses,
+  Link,
   PatchFileByNameErrors,
   PatchFileByNameResponses,
   PatchProjectByIdErrors,
@@ -51,6 +52,8 @@ import type {
   PostKeyResponses,
   PostProjectErrors,
   PostProjectResponses,
+  PostTodoByIdMoveErrors,
+  PostTodoByIdMoveResponses,
   PostTodoErrors,
   PostTodoResponses,
 } from "./types.gen";
@@ -203,7 +206,7 @@ export class TemplateSdk extends HeyApiClient {
   /**
    * List todos
    *
-   * List todos, optionally narrowed by status, assignee, stage, owning entity or search. Paginated.
+   * List todos, optionally narrowed by status, assignee, stage, owning entity, parent or search. Paginated.
    */
   public getTodo<ThrowOnError extends boolean = false>(
     parameters?: {
@@ -224,6 +227,8 @@ export class TemplateSdk extends HeyApiClient {
         | "-dueDate"
         | "timeCreated"
         | "-timeCreated"
+        | "position"
+        | "-position"
       >;
       status?: "backlog" | "planned" | "active" | "blocked" | "done";
       assignee?: string;
@@ -231,6 +236,7 @@ export class TemplateSdk extends HeyApiClient {
       source?: string;
       sourceID?: string;
       createdBy?: string;
+      parentID?: string;
       search?: string;
     },
     options?: Options<never, ThrowOnError>,
@@ -249,6 +255,7 @@ export class TemplateSdk extends HeyApiClient {
             { in: "query", key: "source" },
             { in: "query", key: "sourceID" },
             { in: "query", key: "createdBy" },
+            { in: "query", key: "parentID" },
             { in: "query", key: "search" },
           ],
         },
@@ -265,7 +272,7 @@ export class TemplateSdk extends HeyApiClient {
   /**
    * Create todo
    *
-   * Create a todo. Attach it to an entity with source/sourceID (e.g. source "project"), and give it a stage, assignee and planned dates to place it on the timeline.
+   * Create a todo. Attach it to an entity with source/sourceID (e.g. source "project"), and give it a stage, assignee and planned dates to place it on the timeline. Pass parentID to make it a sub-issue; it joins the parent's owner, last among its siblings.
    */
   public postTodo<ThrowOnError extends boolean = false>(
     parameters: {
@@ -273,9 +280,11 @@ export class TemplateSdk extends HeyApiClient {
       body?: string | null;
       tags?: Array<string>;
       stage?: string | null;
+      links?: Array<Link>;
       assignee?: string | null;
       source?: string | null;
       sourceID?: string | null;
+      parentID?: string | null;
       status?: "backlog" | "planned" | "active" | "blocked" | "done";
       startDate?: string | null;
       dueDate?: string | null;
@@ -291,9 +300,11 @@ export class TemplateSdk extends HeyApiClient {
             { in: "body", key: "body" },
             { in: "body", key: "tags" },
             { in: "body", key: "stage" },
+            { in: "body", key: "links" },
             { in: "body", key: "assignee" },
             { in: "body", key: "source" },
             { in: "body", key: "sourceID" },
+            { in: "body", key: "parentID" },
             { in: "body", key: "status" },
             { in: "body", key: "startDate" },
             { in: "body", key: "dueDate" },
@@ -352,7 +363,7 @@ export class TemplateSdk extends HeyApiClient {
   /**
    * Delete todo
    *
-   * Soft-delete a todo.
+   * Soft-delete a todo. Its sub-issues move up to its parent.
    */
   public deleteTodoById<ThrowOnError extends boolean = false>(
     parameters: {
@@ -414,6 +425,7 @@ export class TemplateSdk extends HeyApiClient {
       startDate?: string | null;
       dueDate?: string | null;
       assignee?: string | null;
+      links?: Array<Link>;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<PatchTodoByIdResponses, PatchTodoByIdErrors, ThrowOnError> {
@@ -432,6 +444,7 @@ export class TemplateSdk extends HeyApiClient {
             { in: "body", key: "startDate" },
             { in: "body", key: "dueDate" },
             { in: "body", key: "assignee" },
+            { in: "body", key: "links" },
           ],
         },
       ],
@@ -443,6 +456,48 @@ export class TemplateSdk extends HeyApiClient {
     >({
       security: [{ scheme: "bearer", type: "http" }],
       url: "/todo/{id}",
+      ...options,
+      ...params,
+      headers: {
+        "Content-Type": "application/json",
+        ...options?.headers,
+        ...params.headers,
+      },
+    });
+  }
+
+  /**
+   * Move todo
+   *
+   * Nest a todo under another (a sub-issue) or back to the top level with parentID null, at a position among its new siblings. The parent must share its owner and can't sit beneath it.
+   */
+  public postTodoByIdMove<ThrowOnError extends boolean = false>(
+    parameters: {
+      id: string;
+      parentID: string | null;
+      position?: number;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<PostTodoByIdMoveResponses, PostTodoByIdMoveErrors, ThrowOnError> {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "path", key: "id" },
+            { in: "body", key: "parentID" },
+            { in: "body", key: "position" },
+          ],
+        },
+      ],
+    );
+    return (options?.client ?? this.client).post<
+      PostTodoByIdMoveResponses,
+      PostTodoByIdMoveErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/todo/{id}/move",
       ...options,
       ...params,
       headers: {
@@ -583,7 +638,7 @@ export class TemplateSdk extends HeyApiClient {
   /**
    * Update project
    *
-   * Update a project's name, description or image.
+   * Update a project's name, description, image or links.
    */
   public patchProjectById<ThrowOnError extends boolean = false>(
     parameters: {
@@ -591,6 +646,7 @@ export class TemplateSdk extends HeyApiClient {
       name?: string;
       description?: string | null;
       image?: string | null;
+      links?: Array<Link>;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<PatchProjectByIdResponses, PatchProjectByIdErrors, ThrowOnError> {
@@ -603,6 +659,7 @@ export class TemplateSdk extends HeyApiClient {
             { in: "body", key: "name" },
             { in: "body", key: "description" },
             { in: "body", key: "image" },
+            { in: "body", key: "links" },
           ],
         },
       ],

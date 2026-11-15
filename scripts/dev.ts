@@ -20,6 +20,7 @@ const pgport = Number(process.env.PGPORT ?? 5432);
 const url =
   process.env.DATABASE_URL ?? `postgresql://postgres:password@127.0.0.1:${pgport}/postgres`;
 const authport = Number(process.env.AUTH_PORT ?? 3002);
+const mcpport = Number(process.env.MCP_PORT ?? 3001);
 const env = {
   ...process.env,
   DATABASE_URL: url,
@@ -31,10 +32,13 @@ const env = {
   AUTH_URL: process.env.AUTH_URL ?? `http://localhost:${authport}`,
   // `db` so pushes land in the job table for the queue worker; `sync` would run them inline.
   QUEUE_DRIVER: process.env.QUEUE_DRIVER ?? "db",
+  // The copilot: LiteLLM for models (set LLM_KEY in .env), the local MCP for tools.
+  LLM_URL: process.env.LLM_URL ?? "https://llm.developing.company/v1",
+  LLM_MODEL: process.env.LLM_MODEL ?? "openai/gpt-6-luna",
+  MCP_URL: process.env.MCP_URL ?? `http://localhost:${mcpport}/mcp`,
 };
 
 const apiport = Number(process.env.API_PORT ?? 3000);
-const mcpport = Number(process.env.MCP_PORT ?? 3001);
 const webport = Number(process.env.WEB_PORT ?? 5173);
 
 // docker's postgres is a container, not a child, so its port never leaks here
@@ -49,6 +53,7 @@ const servers = [
     cmd: ["bun", "run", "--hot", "src/api/target/bun.ts"],
     env: { API_PORT: String(apiport) },
     color: paint.cyan,
+    url: `http://localhost:${apiport}`,
   },
   {
     name: "mcp",
@@ -56,6 +61,7 @@ const servers = [
     cmd: ["bun", "run", "--hot", "src/mcp/target/bun.ts"],
     env: { MCP_PORT: String(mcpport) },
     color: paint.magenta,
+    url: `http://localhost:${mcpport}/mcp`,
   },
   {
     name: "auth",
@@ -63,6 +69,8 @@ const servers = [
     cmd: ["bun", "run", "--hot", "src/auth/target/bun.ts"],
     env: { PORT: String(authport) },
     color: paint.blue,
+    url: `http://localhost:${authport}`,
+    essential: true,
   },
   {
     name: "queue",
@@ -70,6 +78,8 @@ const servers = [
     cmd: ["bun", "run", "--hot", "src/queue/target/bun.ts"],
     env: {},
     color: paint.red,
+    url: "worker, no http",
+    essential: true,
   },
   {
     name: "web",
@@ -78,8 +88,20 @@ const servers = [
     cmd: ["bun", "--bun", "run", "dev", "--port", String(webport), "--strictPort"],
     env: {},
     color: paint.yellow,
+    url: `http://localhost:${webport}`,
   },
-] as const;
+];
+
+// `bun dev web` runs that plus the essentials (auth, queue); no names runs it all.
+const names = process.argv.slice(2).filter((arg) => !arg.startsWith("-"));
+const unknown = names.filter((name) => !servers.some((server) => server.name === name));
+if (unknown.length)
+  throw new Error(
+    `Unknown app: ${unknown.join(", ")}. Pick from ${servers.map((server) => server.name).join(", ")}`,
+  );
+const picked = servers.filter(
+  (server) => !names.length || server.essential || names.includes(server.name),
+);
 
 function spawn(
   cmd: readonly string[],
@@ -194,22 +216,18 @@ if (code !== 0) {
   process.exit(code);
 }
 
-const separatorWidth = Math.max(...servers.map((server) => server.name.length));
+const separatorWidth = Math.max(...picked.map((server) => server.name.length));
 
 console.log(
   boxed([
     "STACK RUNNING",
     "",
-    `web    http://localhost:${webport}`,
-    `api    http://localhost:${apiport}`,
-    `mcp    http://localhost:${mcpport}/mcp`,
-    `auth   http://localhost:${authport}`,
-    "queue  worker, no http",
+    ...picked.map((server) => `${server.name.padEnd(separatorWidth)} ${server.url}`),
   ]),
 );
 
 const exit = await Promise.race(
-  servers.map((server) => {
+  picked.map((server) => {
     const child = spawn(server.cmd, server.cwd, "pipe", "pipe", server.env);
     const tag = `${server.color(server.name.padEnd(separatorWidth))} │ `;
     for (const stream of [child.stdout, child.stderr]) {

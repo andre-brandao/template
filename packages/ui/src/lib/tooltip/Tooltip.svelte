@@ -80,8 +80,7 @@
 		border-radius: var(--radius, 6px);
 		background: var(--ink, #111);
 		color: var(--surface, #fff);
-		font-family: var(--font-mono, monospace);
-		font-size: 0.72em;
+		font-size: 0.81em;
 		line-height: 1.35;
 		text-align: center;
 		pointer-events: none;

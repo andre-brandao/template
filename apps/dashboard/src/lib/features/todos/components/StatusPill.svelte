@@ -14,10 +14,7 @@
 		display: inline-flex;
 		align-items: center;
 		gap: 0.4em;
-		font-family: var(--font-mono);
-		font-size: 0.72em;
-		letter-spacing: 0.03em;
-		text-transform: uppercase;
+		font-size: 0.86em;
 		white-space: nowrap;
 		padding: 0.25em 0.6em;
 		border-radius: 999px;

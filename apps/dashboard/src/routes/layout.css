@@ -4,18 +4,26 @@
    the only thing `data-theme` has to do is pin that — see the two rules below. */
 :root {
   color-scheme: light dark;
-  --bg: light-dark(#f7f6f3, #17181a);
-  --surface: light-dark(#ffffff, #1f2022);
-  --surface-2: light-dark(#eeece7, #26282b);
-  --border: light-dark(#dedbd4, #2e3033);
-  --border-bright: light-dark(#c6c2b8, #3c3e42);
-  --ink: light-dark(#22231f, #e4e3df);
-  --muted: light-dark(#6b6a64, #8b8a84);
-  --dim: light-dark(#94928a, #5c5b56);
+  /* Paper content on a barely-warm frame, and its mirror. Hairlines, not fills, split
+     the layers: the sidebar sits on --bg, the content column on --surface. */
+  --bg: light-dark(#f7f7f5, #111110);
+  --surface: light-dark(#ffffff, #181817);
+  --surface-2: light-dark(#f2f1ee, #222220);
+  --border: light-dark(#e6e5e1, #2a2927);
+  --border-bright: light-dark(#d3d1cc, #3b3a37);
+  --ink: light-dark(#1c1b19, #ecebe7);
+  --muted: light-dark(#64625d, #a3a19b);
+  --dim: light-dark(#8e8c86, #6f6d68);
   /* The dark-mode teal fails AA on white, so light mode gets a deeper one — and the
      text that sits *on* the accent flips from near-black to white. */
   --accent: light-dark(#2f7f68, #4fa98f);
   --accent-ink: light-dark(#ffffff, #0d1110);
+  /* The primary action is ink on paper; the accent stays the one marker of state. */
+  --primary: var(--ink);
+  --primary-ink: light-dark(#ffffff, #111110);
+  /* Row states over any surface: hover lifts with ink, selected is an accent wash. */
+  --hover: color-mix(in oklab, var(--ink) 6%, transparent);
+  --selected: color-mix(in oklab, var(--accent) 14%, transparent);
   --pending: light-dark(#6b6a64, #8b8a84);
   --progress: light-dark(#a3672a, #c98a3f);
   --done: light-dark(#2f7f68, #4fa98f);
@@ -30,21 +38,24 @@
   --cal-3: color-mix(in oklab, var(--accent) 76%, var(--surface-2));
   --cal-4: var(--accent);
   --radius: 8px;
+  --radius-sm: 6px;
   /* The app frame. The topbar's left cell and the sidebar share `--rail` so they line
      up as one column, and `--topbar` is fixed so its contents can't change its height. */
-  --rail: 220px;
-  --rail-tight: 60px;
+  --rail: 232px;
+  --rail-tight: 56px;
   /* A peeked column widens over the page instead of pushing it — the width grows while the
      margin shrinks by the same amount on the same curve. Both halves use the pair. */
   --peek: calc(var(--rail-tight) - var(--rail));
   --slide: width 160ms ease, margin-right 160ms ease;
-  --topbar: 60px;
+  --topbar: 48px;
   /* Sidebar strip and content footer share this so their top borders draw one line. */
   --footer: 52px;
   --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-mono: ui-monospace, "JetBrains Mono", "SF Mono", "Cascadia Code", monospace;
-  --shadow-1: 0 1px 2px light-dark(rgb(0 0 0 / 0.08), rgb(0 0 0 / 0.3));
-  --shadow-2: 0 12px 28px -14px light-dark(rgb(0 0 0 / 0.18), rgb(0 0 0 / 0.6));
+  --shadow-1: 0 1px 2px light-dark(rgb(0 0 0 / 0.04), rgb(0 0 0 / 0.3));
+  --shadow-2:
+    0 16px 32px -12px light-dark(rgb(0 0 0 / 0.16), rgb(0 0 0 / 0.6)),
+    0 0 0 1px light-dark(rgb(0 0 0 / 0.04), rgb(255 255 255 / 0.04));
 }
 
 /* `system` matches neither rule, so it falls through to `light dark` and follows the OS.
@@ -57,8 +68,11 @@
   color-scheme: dark;
 }
 
+/* The scrollbar is chrome: thin and on the neutral scale. */
 * {
   box-sizing: border-box;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-bright) transparent;
 }
 
 html,
@@ -68,6 +82,23 @@ body {
   background: var(--bg);
   color: var(--ink);
   font-family: var(--font-sans);
+  /* Row size. Components size in `em`, so this one value sets the app's density. */
+  font-size: 0.875rem;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  background: color-mix(in oklab, var(--accent) 26%, transparent);
+}
+
+h1,
+h2,
+h3 {
+  font-weight: 600;
+  letter-spacing: -0.011em;
+  text-wrap: balance;
 }
 
 a {

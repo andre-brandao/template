@@ -36,3 +36,16 @@ export const updateProject = remote.form(
 // A command, not a form: it is only ever reached through `modal.confirm`, and the caller
 // navigates away to the list, which remounts its query.
 export const removeProject = remote.core(Project.remove).command();
+
+const title = z
+  .string()
+  .max(200)
+  .optional()
+  .transform((s) => s?.trim() || undefined);
+
+export const linkProject = remote.form(
+  z.object({ id: Project.Info.shape.id, url: z.url(), title }),
+  Project.link,
+);
+
+export const unlinkProject = remote.form(Project.unlink.schema, Project.unlink);

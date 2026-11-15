@@ -261,6 +261,59 @@
           "current": false
         }
       },
+      "Link": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "description": "Where it points."
+          },
+          "title": {
+            "description": "Label shown in place of the url.",
+            "type": "string",
+            "maxLength": 200
+          },
+          "type": {
+            "description": "Free kind hint, like `doc` or `design`.",
+            "type": "string",
+            "maxLength": 64
+          }
+        },
+        "required": ["url"],
+        "description": "A plain reference to an outside resource."
+      },
+      "Metadata": {
+        "type": "object",
+        "properties": {
+          "annotations": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string",
+              "maxLength": 128,
+              "pattern": "^[a-z0-9.-]+\\/[a-z0-9.-]+$"
+            },
+            "additionalProperties": {
+              "type": "string",
+              "maxLength": 2000
+            },
+            "description": "Namespaced keys an integration owns, like `github.com/issue`. String values.",
+            "example": {
+              "github.com/issue": "acme/api#12"
+            }
+          },
+          "links": {
+            "maxItems": 50,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Link"
+            },
+            "description": "Outside references."
+          }
+        },
+        "required": ["annotations", "links"],
+        "description": "Backstage-style annotations and links."
+      },
       "Todo": {
         "type": "object",
         "properties": {
@@ -325,6 +378,23 @@
               }
             ],
             "description": "Id of the owning entity, paired with `source`."
+          },
+          "parentID": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The todo this is a sub-issue of. Null at the top level."
+          },
+          "position": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "description": "Order among its siblings, from 0."
           },
           "stage": {
             "anyOf": [
@@ -435,6 +505,9 @@
             ],
             "description": "When it went `done`. Null while it is unfinished."
           },
+          "metadata": {
+            "$ref": "#/components/schemas/Metadata"
+          },
           "timeCreated": {
             "type": "string",
             "format": "date-time",
@@ -448,6 +521,8 @@
           "assignee",
           "source",
           "sourceID",
+          "parentID",
+          "position",
           "stage",
           "title",
           "body",
@@ -458,6 +533,7 @@
           "dueDate",
           "timeStarted",
           "timeDone",
+          "metadata",
           "timeCreated"
         ],
         "description": "A unit of work, owned by whatever entity created it.",
@@ -471,6 +547,8 @@
           },
           "source": "project",
           "sourceID": "prj_XXXXXXXXXXXXXXXXXXXXXXXXX",
+          "parentID": null,
+          "position": 0,
           "stage": "Sprint 1",
           "title": "Write the quarterly report",
           "body": null,
@@ -481,6 +559,10 @@
           "dueDate": "2026-06-14T00:00:00.000Z",
           "timeStarted": "2026-06-07T09:12:00.000Z",
           "timeDone": null,
+          "metadata": {
+            "annotations": {},
+            "links": []
+          },
           "timeCreated": "2026-06-07T00:00:00.000Z"
         }
       },
@@ -565,6 +647,9 @@
             ],
             "description": "Cover image URL, or null for none."
           },
+          "metadata": {
+            "$ref": "#/components/schemas/Metadata"
+          },
           "timeCreated": {
             "type": "string",
             "format": "date-time",
@@ -572,7 +657,7 @@
             "description": "When it was created."
           }
         },
-        "required": ["id", "createdBy", "name", "description", "image", "timeCreated"],
+        "required": ["id", "createdBy", "name", "description", "image", "metadata", "timeCreated"],
         "description": "A container for todos. Todos point at it through source/sourceID.",
         "example": {
           "id": "prj_XXXXXXXXXXXXXXXXXXXXXXXXX",
@@ -580,6 +665,10 @@
           "name": "Quarterly close",
           "description": null,
           "image": null,
+          "metadata": {
+            "annotations": {},
+            "links": []
+          },
           "timeCreated": "2026-06-07T00:00:00.000Z"
         }
       },
@@ -1017,7 +1106,7 @@
         "operationId": "getTodo",
         "tags": ["Todo"],
         "summary": "List todos",
-        "description": "List todos, optionally narrowed by status, assignee, stage, owning entity or search. Paginated.",
+        "description": "List todos, optionally narrowed by status, assignee, stage, owning entity, parent or search. Paginated.",
         "responses": {
           "200": {
             "content": {
@@ -1063,6 +1152,8 @@
                         },
                         "source": "project",
                         "sourceID": "prj_XXXXXXXXXXXXXXXXXXXXXXXXX",
+                        "parentID": null,
+                        "position": 0,
                         "stage": "Sprint 1",
                         "title": "Write the quarterly report",
                         "body": null,
@@ -1073,6 +1164,10 @@
                         "dueDate": "2026-06-14T00:00:00.000Z",
                         "timeStarted": "2026-06-07T09:12:00.000Z",
                         "timeDone": null,
+                        "metadata": {
+                          "annotations": {},
+                          "links": []
+                        },
                         "timeCreated": "2026-06-07T00:00:00.000Z"
                       }
                     ],
@@ -1093,6 +1188,8 @@
                       },
                       "source": "project",
                       "sourceID": "prj_XXXXXXXXXXXXXXXXXXXXXXXXX",
+                      "parentID": null,
+                      "position": 0,
                       "stage": "Sprint 1",
                       "title": "Write the quarterly report",
                       "body": null,
@@ -1103,6 +1200,10 @@
                       "dueDate": "2026-06-14T00:00:00.000Z",
                       "timeStarted": "2026-06-07T09:12:00.000Z",
                       "timeDone": null,
+                      "metadata": {
+                        "annotations": {},
+                        "links": []
+                      },
                       "timeCreated": "2026-06-07T00:00:00.000Z"
                     }
                   ],
@@ -1231,11 +1332,13 @@
                   "dueDate",
                   "-dueDate",
                   "timeCreated",
-                  "-timeCreated"
+                  "-timeCreated",
+                  "position",
+                  "-position"
                 ]
               }
             },
-            "description": "Sort keys in priority order, one of: title, status, stage, assignee, startDate, dueDate, timeCreated. Prefix with `-` for descending."
+            "description": "Sort keys in priority order, one of: title, status, stage, assignee, startDate, dueDate, timeCreated, position. Prefix with `-` for descending."
           },
           {
             "in": "query",
@@ -1288,6 +1391,14 @@
           },
           {
             "in": "query",
+            "name": "parentID",
+            "schema": {
+              "type": "string"
+            },
+            "description": "A todo id for its sub-issues, or \"none\" for top-level todos."
+          },
+          {
+            "in": "query",
             "name": "search",
             "schema": {
               "type": "string"
@@ -1299,7 +1410,7 @@
         "operationId": "postTodo",
         "tags": ["Todo"],
         "summary": "Create todo",
-        "description": "Create a todo. Attach it to an entity with source/sourceID (e.g. source \"project\"), and give it a stage, assignee and planned dates to place it on the timeline.",
+        "description": "Create a todo. Attach it to an entity with source/sourceID (e.g. source \"project\"), and give it a stage, assignee and planned dates to place it on the timeline. Pass parentID to make it a sub-issue; it joins the parent's owner, last among its siblings.",
         "responses": {
           "200": {
             "content": {
@@ -1317,6 +1428,8 @@
                   },
                   "source": "project",
                   "sourceID": "prj_XXXXXXXXXXXXXXXXXXXXXXXXX",
+                  "parentID": null,
+                  "position": 0,
                   "stage": "Sprint 1",
                   "title": "Write the quarterly report",
                   "body": null,
@@ -1327,6 +1440,10 @@
                   "dueDate": "2026-06-14T00:00:00.000Z",
                   "timeStarted": "2026-06-07T09:12:00.000Z",
                   "timeDone": null,
+                  "metadata": {
+                    "annotations": {},
+                    "links": []
+                  },
                   "timeCreated": "2026-06-07T00:00:00.000Z"
                 }
               }
@@ -1450,6 +1567,13 @@
                     ],
                     "description": "Pipeline stage, a free-text label. Null when unstaged."
                   },
+                  "links": {
+                    "maxItems": 50,
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/Link"
+                    }
+                  },
                   "assignee": {
                     "anyOf": [
                       {
@@ -1482,6 +1606,17 @@
                       }
                     ],
                     "description": "Id of the owning entity, paired with `source`."
+                  },
+                  "parentID": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "The todo this is a sub-issue of. Null at the top level."
                   },
                   "status": {
                     "type": "string",
@@ -1654,6 +1789,8 @@
                   },
                   "source": "project",
                   "sourceID": "prj_XXXXXXXXXXXXXXXXXXXXXXXXX",
+                  "parentID": null,
+                  "position": 0,
                   "stage": "Sprint 1",
                   "title": "Write the quarterly report",
                   "body": null,
@@ -1664,6 +1801,10 @@
                   "dueDate": "2026-06-14T00:00:00.000Z",
                   "timeStarted": "2026-06-07T09:12:00.000Z",
                   "timeDone": null,
+                  "metadata": {
+                    "annotations": {},
+                    "links": []
+                  },
                   "timeCreated": "2026-06-07T00:00:00.000Z"
                 }
               }
@@ -1790,6 +1931,8 @@
                   },
                   "source": "project",
                   "sourceID": "prj_XXXXXXXXXXXXXXXXXXXXXXXXX",
+                  "parentID": null,
+                  "position": 0,
                   "stage": "Sprint 1",
                   "title": "Write the quarterly report",
                   "body": null,
@@ -1800,6 +1943,10 @@
                   "dueDate": "2026-06-14T00:00:00.000Z",
                   "timeStarted": "2026-06-07T09:12:00.000Z",
                   "timeDone": null,
+                  "metadata": {
+                    "annotations": {},
+                    "links": []
+                  },
                   "timeCreated": "2026-06-07T00:00:00.000Z"
                 }
               }
@@ -2002,6 +2149,13 @@
                         "type": "null"
                       }
                     ]
+                  },
+                  "links": {
+                    "maxItems": 50,
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/Link"
+                    }
                   }
                 }
               }
@@ -2013,7 +2167,7 @@
         "operationId": "deleteTodoById",
         "tags": ["Todo"],
         "summary": "Delete todo",
-        "description": "Soft-delete a todo.",
+        "description": "Soft-delete a todo. Its sub-issues move up to its parent.",
         "responses": {
           "200": {
             "content": {
@@ -2126,6 +2280,180 @@
         ]
       }
     },
+    "/todo/{id}/move": {
+      "post": {
+        "operationId": "postTodoByIdMove",
+        "tags": ["Todo"],
+        "summary": "Move todo",
+        "description": "Nest a todo under another (a sub-issue) or back to the top level with parentID null, at a position among its new siblings. The parent must share its owner and can't sit beneath it.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Todo"
+                },
+                "example": {
+                  "id": "tod_XXXXXXXXXXXXXXXXXXXXXXXXX",
+                  "createdBy": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX",
+                  "assignee": {
+                    "id": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX",
+                    "name": "John Doe",
+                    "image": null
+                  },
+                  "source": "project",
+                  "sourceID": "prj_XXXXXXXXXXXXXXXXXXXXXXXXX",
+                  "parentID": null,
+                  "position": 0,
+                  "stage": "Sprint 1",
+                  "title": "Write the quarterly report",
+                  "body": null,
+                  "status": "active",
+                  "reason": null,
+                  "tags": [],
+                  "startDate": "2026-06-07T00:00:00.000Z",
+                  "dueDate": "2026-06-14T00:00:00.000Z",
+                  "timeStarted": "2026-06-07T09:12:00.000Z",
+                  "timeDone": null,
+                  "metadata": {
+                    "annotations": {},
+                    "links": []
+                  },
+                  "timeCreated": "2026-06-07T00:00:00.000Z"
+                }
+              }
+            },
+            "description": "A unit of work, owned by whatever entity created it."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "validation",
+                  "code": "invalid_parameter",
+                  "message": "Invalid input: expected string, received undefined",
+                  "param": "email",
+                  "details": {
+                    "issues": [
+                      {
+                        "path": "email",
+                        "message": "Invalid input: expected string, received undefined"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "authentication",
+                  "code": "unauthorized",
+                  "message": "Authentication required"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "forbidden",
+                  "code": "permission_denied",
+                  "message": "You do not have permission"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "not_found",
+                  "code": "resource_not_found",
+                  "message": "The requested resource could not be found"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "internal",
+                  "code": "internal_error",
+                  "message": "Internal server error"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string",
+              "example": "tod_XXXXXXXXXXXXXXXXXXXXXXXXX"
+            },
+            "required": true,
+            "description": "Unique object identifier.\nThe format and length of IDs may change over time."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "parentID": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "The todo this is a sub-issue of. Null at the top level."
+                  },
+                  "position": {
+                    "description": "Slot among the new siblings, from 0. Last when omitted.",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": ["parentID"]
+              }
+            }
+          }
+        }
+      }
+    },
     "/project": {
       "get": {
         "operationId": "getProject",
@@ -2173,6 +2501,10 @@
                         "name": "Quarterly close",
                         "description": null,
                         "image": null,
+                        "metadata": {
+                          "annotations": {},
+                          "links": []
+                        },
                         "timeCreated": "2026-06-07T00:00:00.000Z"
                       }
                     ],
@@ -2189,6 +2521,10 @@
                       "name": "Quarterly close",
                       "description": null,
                       "image": null,
+                      "metadata": {
+                        "annotations": {},
+                        "links": []
+                      },
                       "timeCreated": "2026-06-07T00:00:00.000Z"
                     }
                   ],
@@ -2335,6 +2671,10 @@
                   "name": "Quarterly close",
                   "description": null,
                   "image": null,
+                  "metadata": {
+                    "annotations": {},
+                    "links": []
+                  },
                   "timeCreated": "2026-06-07T00:00:00.000Z"
                 }
               }
@@ -2463,6 +2803,10 @@
                   "name": "Quarterly close",
                   "description": null,
                   "image": null,
+                  "metadata": {
+                    "annotations": {},
+                    "links": []
+                  },
                   "timeCreated": "2026-06-07T00:00:00.000Z"
                 }
               }
@@ -2571,7 +2915,7 @@
         "operationId": "patchProjectById",
         "tags": ["Project"],
         "summary": "Update project",
-        "description": "Update a project's name, description or image.",
+        "description": "Update a project's name, description, image or links.",
         "responses": {
           "200": {
             "content": {
@@ -2585,6 +2929,10 @@
                   "name": "Quarterly close",
                   "description": null,
                   "image": null,
+                  "metadata": {
+                    "annotations": {},
+                    "links": []
+                  },
                   "timeCreated": "2026-06-07T00:00:00.000Z"
                 }
               }
@@ -2723,6 +3071,13 @@
                       }
                     ],
                     "description": "Cover image URL, or null for none."
+                  },
+                  "links": {
+                    "maxItems": 50,
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/Link"
+                    }
                   }
                 }
               }

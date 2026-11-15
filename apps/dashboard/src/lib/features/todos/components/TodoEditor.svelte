@@ -1,7 +1,17 @@
 <script lang="ts">
-	import { Button, Card, Input, Issue } from '@template/ui';
+	import { Button, Card, Field, Input, Issue, Section } from '@template/ui';
+	import * as Header from '$lib/components/header';
+	import Source from '$lib/features/events/components/Source.svelte';
+	import { fmt } from '$lib/utils/fmt';
 	import type { Event } from '@template/core/event';
-	import { getTodo, planTodo, removeTodo, updateTodo } from '../api/todos.remote';
+	import {
+		getTodo,
+		linkTodo,
+		planTodo,
+		removeTodo,
+		unlinkTodo,
+		updateTodo
+	} from '../api/todos.remote';
 	import Timeline from '$lib/features/events/components/Timeline.svelte';
 	import StatusPill from './StatusPill.svelte';
 	import StatusPicker from './StatusPicker.svelte';
@@ -10,9 +20,22 @@
 	import TagList from './TagList.svelte';
 	import Facts from './editor/Facts.svelte';
 	import Description from './editor/Description.svelte';
-	import { color } from '../status';
+	import SubIssues from './editor/SubIssues.svelte';
+	import Links from '$lib/components/Links.svelte';
+	import Annotations from '$lib/components/Annotations.svelte';
+	import { color, late } from '../status';
 
-	let { id, onremove }: { id: string; onremove: () => void } = $props();
+	let {
+		id,
+		page = false,
+		onremove
+	}: {
+		id: string;
+		/** On its own route: the record header with facts, instead of the drawer's compact head. */
+		page?: boolean;
+		onremove: () => void;
+	} = $props();
+	const f = fmt();
 	// `$derived(await query())` only re-subscribes when its args change, not when the
 	// query is refreshed in place — `gen` is read (and bumped after a save) purely to
 	// force this derived to re-evaluate and pick up the refreshed value.
@@ -51,20 +74,50 @@
 	}
 </script>
 
+{#snippet parent()}
+	{#if todo.source === 'project' && todo.sourceID}
+		<a href="/projects/{todo.sourceID}">
+			<Source source={todo.source} sourceID={todo.sourceID} fallback="Project" />
+		</a>
+		<span aria-hidden="true">/</span>
+		<a href="/projects/{todo.sourceID}/todos">Todos</a>
+	{:else}
+		<a href="/todos">Todos</a>
+	{/if}
+{/snippet}
+
+{#if page}
+	<Header.Root title={todo.title} eyebrow={parent}>
+		<Header.Item label="Status"><StatusPill status={todo.status} reason={todo.reason} /></Header.Item>
+		<Header.Item label="Assignee">{todo.assignee?.name ?? 'Unassigned'}</Header.Item>
+		<Header.Item label="Stage">{todo.stage ?? '—'}</Header.Item>
+		<Header.Item label="Due">
+			<span class={{ late: late(todo) }}>{todo.dueDate ? f.date(todo.dueDate) : '—'}</span>
+		</Header.Item>
+	</Header.Root>
+{/if}
+
 <div class="editor">
 	<div class="grid">
 		<div class="main">
+			{#if !page}
+				<!-- Flat, like a page header: the title is the hierarchy, a hairline closes it. -->
+				<header class="head">
+					<h1>{todo.title}</h1>
+					<div class="pills">
+						<StatusPill status={todo.status} reason={todo.reason} />
+					</div>
+				</header>
+			{/if}
+
 			<!-- fallow-ignore-next-line code-duplication -->
 			<Card accent={color(todo.status)}>
-				<div class="head">
-					<h1>{todo.title}</h1>
-					<StatusPill status={todo.status} reason={todo.reason} />
-				</div>
-
 				<TagList tags={todo.tags} />
 
 				<Description {todo} {update} onsaved={saved} />
 			</Card>
+
+			<SubIssues {todo} />
 		</div>
 
 		<aside class="side">
@@ -79,26 +132,22 @@
 					})}
 				>
 					<input {...plan.fields.id.as('hidden', todo.id)} />
-					<label>
-						<span>Stage</span>
+					<Field label="Stage">
 						<StagePicker {scope} {...plan.fields.stage.as('text', todo.stage ?? '')} />
-					</label>
-					<label>
-						<span>Assignee</span>
+					</Field>
+					<Field label="Assignee">
 						<AssigneePicker
 							selected={todo.assignee}
 							{...plan.fields.assignee.as('select', todo.assignee?.id ?? '')}
 						/>
-					</label>
+					</Field>
 					<div class="pair">
-						<label>
-							<span>Start</span>
+						<Field label="Start">
 							<Input {...plan.fields.startDate.as('date', day(todo.startDate))} />
-						</label>
-						<label>
-							<span>Due</span>
+						</Field>
+						<Field label="Due">
 							<Input {...plan.fields.dueDate.as('date', day(todo.dueDate))} />
-						</label>
+						</Field>
 					</div>
 					<Button type="submit" variant="secondary" pending={!!plan.pending}>Save plan</Button>
 				</form>
@@ -120,6 +169,23 @@
 						<Button variant="danger" type="submit" pending={!!remove.pending}>Delete</Button>
 					</form>
 				</div>
+			</Card>
+
+			<Card>
+				<Section wide title="Links">
+					<Links
+						id={todo.id}
+						links={todo.metadata.links}
+						add={linkTodo.for(`${todo.id}:editor`)}
+						drop={(url) => unlinkTodo.for(`${todo.id}:${url}`)}
+						onsaved={saved}
+					/>
+				</Section>
+				{#if Object.keys(todo.metadata.annotations).length}
+					<Section wide divider title="Annotations">
+						<Annotations annotations={todo.metadata.annotations} />
+					</Section>
+				{/if}
 			</Card>
 		</aside>
 
@@ -149,11 +215,17 @@
 	.main {
 		grid-area: main;
 		min-width: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 1.25em;
 	}
 
 	.side {
 		grid-area: side;
 		min-width: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 1.25em;
 	}
 
 	.logs {
@@ -170,18 +242,31 @@
 		}
 	}
 
+	.late {
+		color: var(--danger);
+	}
+
 	.head {
 		display: flex;
-		align-items: start;
+		align-items: center;
 		justify-content: space-between;
-		gap: 0.75em;
-		margin-bottom: 0.6em;
+		gap: 0.9em;
+		padding-bottom: 1em;
+		border-bottom: 1px solid var(--border);
+	}
+
+	.pills {
+		display: flex;
+		align-items: center;
+		gap: 0.5em;
+		flex: none;
 	}
 
 	h1 {
 		margin: 0;
-		font-size: 1.3em;
-		word-break: break-word;
+		font-size: 1.4em;
+		line-height: 1.25;
+		overflow-wrap: anywhere;
 	}
 
 	.plan {
@@ -194,24 +279,10 @@
 		border-top: 1px solid var(--border);
 	}
 
-	.plan label {
-		display: flex;
-		flex-direction: column;
-		gap: 0.25em;
-	}
-
 	.plan .pair {
 		display: grid;
 		grid-template-columns: repeat(auto-fit, minmax(8em, 1fr));
 		gap: 0.75em;
-	}
-
-	.plan span {
-		font-family: var(--font-mono);
-		font-size: 0.68em;
-		text-transform: uppercase;
-		letter-spacing: 0.04em;
-		color: var(--dim);
 	}
 
 	.actions {

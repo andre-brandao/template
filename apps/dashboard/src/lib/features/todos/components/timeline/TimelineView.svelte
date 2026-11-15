@@ -231,10 +231,7 @@
 	.tag {
 		writing-mode: vertical-rl;
 		transform: rotate(180deg);
-		font-family: var(--font-mono);
-		font-size: 0.66em;
-		letter-spacing: 0.12em;
-		text-transform: uppercase;
+		font-size: 0.86em;
 		color: var(--muted);
 		white-space: nowrap;
 		overflow: hidden;

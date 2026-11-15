@@ -23,6 +23,7 @@ export namespace Examples {
     name: "Quarterly close",
     description: null,
     image: null,
+    metadata: { annotations: {}, links: [] },
     timeCreated: "2026-06-07T00:00:00.000Z",
   } as const;
 
@@ -32,6 +33,8 @@ export namespace Examples {
     assignee: { id: Id("user"), name: "John Doe", image: null },
     source: "project",
     sourceID: Id("project"),
+    parentID: null,
+    position: 0,
     stage: "Sprint 1",
     title: "Write the quarterly report",
     body: null,
@@ -42,6 +45,7 @@ export namespace Examples {
     dueDate: "2026-06-14T00:00:00.000Z",
     timeStarted: "2026-06-07T09:12:00.000Z",
     timeDone: null,
+    metadata: { annotations: {}, links: [] },
     timeCreated: "2026-06-07T00:00:00.000Z",
   } as const;
 

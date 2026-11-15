@@ -3,6 +3,7 @@ import { Actor } from "@template/core/actor";
 import { Feedback } from "$lib/features/feedback/api/feedback";
 import { User } from "@template/core/user";
 import { DEFAULTS } from "@template/core/user/prefs";
+import { Agent } from "$lib/features/agent/api/core";
 import * as theme from "$lib/server/theme";
 import * as zone from "$lib/server/zone";
 import type { LayoutServerLoad } from "./$types";
@@ -33,5 +34,5 @@ export const load: LayoutServerLoad = async (event) => {
   // and from then on it is the user's, so a deliberate choice is never overwritten.
   const seed = await zone.seed(event, user.prefs.zone);
 
-  return { user, prefs: { ...user.prefs, zone: seed }, feedback, rail };
+  return { user, prefs: { ...user.prefs, zone: seed }, feedback, rail, agent: Agent.ready() };
 };

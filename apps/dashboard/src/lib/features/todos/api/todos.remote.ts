@@ -27,6 +27,7 @@ export const getTodos = remote.query(
     stage: z.string().optional(),
     source: z.string().optional(),
     sourceID: z.string().optional(),
+    parentID: z.string().optional(),
     q: z.string().optional(),
     sort: Todo.list.schema.shape.sort,
   }),
@@ -63,6 +64,7 @@ export const createTodo = remote.form(
     assignee: blank,
     source: blank,
     sourceID: blank,
+    parentID: blank,
     startDate: day,
     dueDate: day,
   }),
@@ -122,7 +124,23 @@ export const updateTodo = remote.form(
   Todo.update,
 );
 
+/** Indent, outdent and reorder; the caller refreshes. */
+export const moveTodo = remote.core(Todo.move).command();
+
 export const removeTodo = remote.form(
   z.object({ id: Todo.Info.shape.id }).transform((input) => input.id),
   Todo.remove,
 );
+
+const title = z
+  .string()
+  .max(200)
+  .optional()
+  .transform((s) => s?.trim() || undefined);
+
+export const linkTodo = remote.form(
+  z.object({ id: Todo.Info.shape.id, url: z.url(), title }),
+  Todo.link,
+);
+
+export const unlinkTodo = remote.form(Todo.unlink.schema, Todo.unlink);

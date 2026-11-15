@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { Avatar, Combobox, Tooltip } from '@template/ui';
 	import { createQuery } from '@tanstack/svelte-query';
@@ -17,8 +18,17 @@
 	<span class="ph" class:tight></span>
 {:else}
 <div class="switcher" class:tight>
-	<Combobox.Root value={id}>
-		<Combobox.Trigger caret={!tight}>
+	<Combobox
+		items={projects.data?.data ?? []}
+		key={(p) => p.id}
+		text={(p) => p.name}
+		value={id}
+		label="Projects"
+		placeholder="Find a project"
+		caret={!tight}
+		onchange={(next) => goto(`/projects/${next}${sub}`)}
+	>
+		{#snippet trigger()}
 			{#if tight}
 				<Tooltip tip={label} side="right">
 					<!-- Collapsed the avatar is all that is left, and Avatar falls back to an
@@ -29,21 +39,13 @@
 				<Avatar name={label} image={current?.image} size={16} />
 				<span class="name">{label}</span>
 			{/if}
-		</Combobox.Trigger>
-
-		<Combobox.Content title="Projects">
-			<Combobox.Search placeholder="Find a project" />
-			<Combobox.List label="Projects">
-				{#each projects.data?.data ?? [] as p (p.id)}
-					<Combobox.Item value={p.id} label={p.name} href="/projects/{p.id}{sub}">
-						<Avatar name={p.name} image={p.image} size={16} />
-						<span class="name">{p.name}</span>
-					</Combobox.Item>
-				{/each}
-			</Combobox.List>
-			<Combobox.Empty>{projects.error?.message ?? 'No project by that name.'}</Combobox.Empty>
-		</Combobox.Content>
-	</Combobox.Root>
+		{/snippet}
+		{#snippet item(p, row)}
+			<Avatar name={p.name} image={p.image} size={16} />
+			<span class="name">{@render row.marked(p.name)}</span>
+		{/snippet}
+		{#snippet empty()}{projects.error?.message ?? 'No project by that name.'}{/snippet}
+	</Combobox>
 </div>
 {/if}
 

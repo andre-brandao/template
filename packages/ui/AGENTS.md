@@ -17,7 +17,7 @@ src/lib/badge/
 ```
 
 `input/`, `date/`, `markdown/` and `pane/` group a family in one folder. A family of parts lands as a
-namespace instead (`Combobox.Root`, `Combobox.Item`) via `export * as`.
+namespace instead (`Menu.Root`, `Menu.Item`) via `export * as`.
 
 Every component is re-exported from `src/lib/index.ts`, and every story is registered in
 `src/lib/story.ts`. Adding a component means touching both.
@@ -39,7 +39,7 @@ Every component is re-exported from `src/lib/index.ts`, and every story is regis
 | Group    | Parts                                                                                             |
 | -------- | ------------------------------------------------------------------------------------------------- |
 | Controls | `Button`, `IconButton`, `Input`, `Textarea`, `Select`, `LazySelect`, `Toggle`                     |
-| Choosers | `Combobox.*`, `Menu.*` (Root, Item, Label, Separator), `Tabs.*`, `Command`                        |
+| Choosers | `Combobox`, `Menu.*` (Root, Item, Label, Separator), `Tabs.*`, `Command`                          |
 | Dates    | `Calendar`, `MonthGrid`, `DatePicker`, `RangePicker`                                              |
 | Layers   | `Popover`, `Tooltip`, `Drawer`, `Modals` + `modal()` + `Dialog`, `Toaster` + `toast`              |
 | Content  | `List.*` (Root, Row, Loading), `Card`, `Stat`, `Meter`, `Section`, `Field`, `Inline`, `DataTable` |
@@ -63,6 +63,8 @@ Every component is re-exported from `src/lib/index.ts`, and every story is regis
 - **Saves return promises.** `Inline.onsave` gets `mutateAsync`, not `mutate`, so a rejection
   can revert and mark the field failed.
 - **Dialogs** share `modal/dialog.ts`: an unlabelled one is named after its first heading.
+- **Pickers.** `Combobox` and `Command` share `command/model.ts` (`step`, `bucket`, `mark`):
+  focus stays in the search box and the arrows move `aria-activedescendant`.
 - **Placement** of anything in the top layer goes through `popover/place.ts`.
 - Callbacks: a DOM event keeps its DOM name (`onclick`); a picked value is `onchange`, a run
   action `onselect`.

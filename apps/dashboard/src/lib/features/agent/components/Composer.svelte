@@ -1,15 +1,13 @@
 <!-- The message box, the model picker, and send or stop. Typed while a form waits, it answers it. -->
 <script lang="ts">
-	import { createQuery } from '@tanstack/svelte-query';
-	import { IconButton, Kbd, Skeleton, Textarea } from '@template/ui';
+	import { IconButton, Kbd, Textarea } from '@template/ui';
 	import Send from '@lucide/svelte/icons/send-horizontal';
 	import Square from '@lucide/svelte/icons/square';
-	import { models } from '../api/agent.query';
 	import { agent } from '../agent.svelte';
 	import { talking, waiting } from '../ask/pending';
+	import ModelPicker from './ModelPicker.svelte';
 
 	const ctx = agent();
-	const list = createQuery(() => models());
 	let text = $state('');
 
 	const busy = $derived(ctx.chat.isLoading && !waiting.size);
@@ -48,21 +46,7 @@
 		/>
 	</div>
 	<div class="row">
-		<!-- A failed list leaves the picker out: the server falls back to its default model. -->
-		{#if list.isPending}
-			<Skeleton w="8em" h="1.4em" />
-		{:else if list.isSuccess}
-			<select
-				aria-label="Model"
-				bind:value={() => ctx.model ?? list.data.default, (value) => (ctx.model = value)}
-			>
-				{#each list.data.ids as id (id)}
-					<option value={id}>{id}</option>
-				{/each}
-			</select>
-		{:else}
-			<span></span>
-		{/if}
+		<ModelPicker bind:value={ctx.model} />
 		<span class="send">
 			<span class="key"><Kbd keys="Enter" /></span>
 			{#if busy}
@@ -112,18 +96,6 @@
 
 	.key {
 		display: inline-flex;
-		font-size: 0.8em;
-	}
-
-	select {
-		min-width: 0;
-		max-width: 70%;
-		padding: 0.25em 0.4em;
-		border: 1px solid var(--border);
-		border-radius: var(--radius-sm);
-		background: var(--surface);
-		color: var(--muted);
-		font: inherit;
 		font-size: 0.8em;
 	}
 </style>

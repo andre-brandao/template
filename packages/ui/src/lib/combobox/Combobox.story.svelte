@@ -1,54 +1,67 @@
 <script module lang="ts">
 	import type { Story } from '../story';
-	import * as Combobox from './index';
-	import Root from './Combobox.svelte';
+	import Combobox from './Combobox.svelte';
 
 	export const story: Story = {
 		title: 'Combobox',
 		blurb:
-			'Composed from parts rather than configured: `Root` owns the open state and the query, and every `Item` filters itself against it. Under the root’s `narrow` breakpoint the content leaves the popover and comes up as a bottom drawer — resize the window to see it. Arrow keys walk the options that survived the query; an `Item` with `href` navigates instead of selecting.',
-		of: Root
+			'A picker over data on a `Popover`. Focus stays in the search box and ↑/↓/Home/End move `aria-activedescendant`, as in `Command`; Enter picks, Escape closes back to the trigger. Words match substrings or prefixes of successive letter and digit runs, so “g6 luna” finds `gpt-6-luna`, and the hit is marked. `group` gives sticky headers, `facet` a chip row counted against the query, `filters` extra controls beside it. The trigger opens on ↑/↓ or on any printable key, already searching for it. Rows mount only while open, and off-screen ones skip paint.',
+		of: Combobox
 	};
 
-	const langs = [
-		{ id: 'ts', name: 'TypeScript', hint: 'structural' },
-		{ id: 'rs', name: 'Rust', hint: 'affine' },
-		{ id: 'ml', name: 'OCaml', hint: 'inferred' },
-		{ id: 'ex', name: 'Elixir', hint: 'dynamic' },
-		{ id: 'go', name: 'Go', hint: 'structural' },
-		{ id: 'zg', name: 'Zig', hint: 'comptime' }
-	];
+	// About 150 gateway ids over four providers, dated snapshots included.
+	const families = {
+		openai: ['gpt-6', 'gpt-6-luna', 'gpt-5.4', 'gpt-5.4-mini', 'gpt-5.4-nano', 'o5', 'o5-mini', 'gpt-4.1', 'gpt-4.1-mini', 'o4-mini'],
+		anthropic: ['claude-opus-5-5', 'claude-sonnet-5', 'claude-haiku-5', 'claude-sonnet-4-5', 'claude-opus-4-1', 'claude-3-7-sonnet'],
+		google: ['gemini-3-pro', 'gemini-3-flash', 'gemini-3-flash-lite', 'gemma-4-27b', 'gemini-2.5-pro', 'gemini-2.5-flash'],
+		mistral: ['mistral-large-3', 'mistral-medium-3', 'codestral-3', 'ministral-8b', 'pixtral-large', 'mistral-small-3']
+	};
+	const dates = ['2026-03-17', '2026-01-08', '2025-11-20', '2025-09-02', '2025-06-14', '2025-04-01'];
+	const ids = Object.entries(families).flatMap((entry) =>
+		entry[1].flatMap((name, i) => [
+			`${entry[0]}/${name}`,
+			...dates.slice(0, 3 + (i % 4)).map((date) => `${entry[0]}/${name}-${date}`)
+		])
+	);
+	const names: Record<string, string> = {
+		openai: 'OpenAI',
+		anthropic: 'Anthropic',
+		google: 'Google',
+		mistral: 'Mistral'
+	};
+	const vendor = (id: string) => names[id.split('/')[0]] ?? 'Other';
+	const model = (id: string) => id.slice(id.indexOf('/') + 1);
 </script>
 
 <script lang="ts">
 	// import { Combobox } from '@template/ui';
 
-	let value = $state('ts');
-
-	const current = $derived(langs.find((one) => one.id === value));
+	let value = $state('openai/gpt-6-luna');
+	let filter = $state('');
 </script>
 
 <div class="frame">
-	<Combobox.Root bind:value>
-		<Combobox.Trigger>
-			<span class="face">{current?.name ?? 'Pick a language'}</span>
-		</Combobox.Trigger>
+	<div class="pick">
+	<Combobox
+		items={ids}
+		key={(id) => id}
+		group={vendor}
+		facet={vendor}
+		bind:value
+		bind:filter
+		label="Model"
+		placeholder="Search {ids.length} models"
+	>
+		{#snippet trigger(id)}
+			{#if id}<span class="dim">{vendor(id)} ·</span> {model(id)}{/if}
+		{/snippet}
+		{#snippet item(id, row)}
+			<span class="name">{@render row.marked(model(id))}</span>
+		{/snippet}
+	</Combobox>
+	</div>
 
-		<Combobox.Content title="Languages">
-			<Combobox.Search placeholder="Filter languages" />
-			<Combobox.List label="Languages">
-				{#each langs as lang (lang.id)}
-					<Combobox.Item value={lang.id} label="{lang.name} {lang.hint}">
-						<span class="name">{lang.name}</span>
-						<span class="hint">{lang.hint}</span>
-					</Combobox.Item>
-				{/each}
-			</Combobox.List>
-			<Combobox.Empty>Nothing matches that.</Combobox.Empty>
-		</Combobox.Content>
-	</Combobox.Root>
-
-	<p class="picked">selected <code>{value}</code></p>
+	<p class="picked">selected <code>{value}</code>{filter ? ` · in ${filter}` : ''}</p>
 </div>
 
 <style>
@@ -58,27 +71,19 @@
 		gap: 1em;
 	}
 
-	.frame :global(.combobox) {
-		width: 14em;
+	.pick {
+		display: flex;
+		width: 17em;
+		font-size: 0.85em;
 	}
 
-	.face {
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
+	.dim {
+		color: var(--dim);
 	}
 
 	.name {
-		flex: 1;
-		min-width: 0;
 		overflow: hidden;
 		text-overflow: ellipsis;
-		white-space: nowrap;
-	}
-
-	.hint {
-		color: var(--dim);
-		font-size: 0.85em;
 	}
 
 	.picked {

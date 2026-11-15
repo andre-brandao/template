@@ -44,8 +44,7 @@ export { default as Badge, type Tone } from "./badge/Badge.svelte";
 export { default as Card } from "./card/Card.svelte";
 export { default as Code } from "./code/Code.svelte";
 export { default as Command, type Action } from "./command/Command.svelte";
-// A family of parts, so it lands as a namespace: `<Combobox.Root>`, `<Combobox.Item>`.
-export * as Combobox from "./combobox";
+export { default as Combobox, type Row } from "./combobox/Combobox.svelte";
 export { default as DataTable } from "./table/DataTable.svelte";
 export { features, type Features } from "./table/table";
 export { default as Drawer, type Side } from "./drawer/Drawer.svelte";
@@ -74,7 +73,7 @@ export { default as Skeleton } from "./skeleton/Skeleton.svelte";
 export { default as Spinner } from "./spinner/Spinner.svelte";
 export { default as Stat } from "./stat/Stat.svelte";
 export { default as Status, type State } from "./status/Status.svelte";
-// A container and its items, so it lands as a namespace like Combobox.
+// A container and its items, so it lands as a namespace like List.
 export * as Tabs from "./tabs";
 export { default as Toaster } from "./toast/Toaster.svelte";
 export { default as Toggle } from "./toggle/Toggle.svelte";

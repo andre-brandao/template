@@ -1,18 +1,21 @@
 <script lang="ts">
-	import * as Combobox from './index';
+	import Combobox from './Combobox.svelte';
 
-	let { items, value = 'a' }: { items: { id: string; name: string }[]; value?: string } = $props();
+	let {
+		items,
+		value = $bindable('a'),
+		open = $bindable(false)
+	}: { items: { id: string; name: string; kind: string }[]; value?: string; open?: boolean } =
+		$props();
 </script>
 
-<Combobox.Root bind:value>
-	<Combobox.Trigger>pick</Combobox.Trigger>
-	<Combobox.Content>
-		<Combobox.Search />
-		<Combobox.List>
-			{#each items as item (item.id)}
-				<Combobox.Item value={item.id} label={item.name}>{item.name}</Combobox.Item>
-			{/each}
-		</Combobox.List>
-		<Combobox.Empty>Nothing matches.</Combobox.Empty>
-	</Combobox.Content>
-</Combobox.Root>
+<Combobox
+	{items}
+	key={(one) => one.id}
+	text={(one) => one.name}
+	group={(one) => one.kind}
+	facet={(one) => one.kind}
+	bind:value
+	bind:open
+	label="Pick"
+/>

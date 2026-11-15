@@ -16,6 +16,7 @@ export const hotkeys = defineAppHotkeys({
   next: { hotkey: "]", meta: { name: "Next period", group: "Calendar" } },
   month: { hotkey: "M", meta: { name: "Month view", group: "Calendar" } },
   week: { hotkey: "W", meta: { name: "Week view", group: "Calendar" } },
+  model: { hotkey: "Mod+/", meta: { name: "Pick a model", group: "Assistant" } },
 });
 
 declare module "@tanstack/svelte-hotkeys" {

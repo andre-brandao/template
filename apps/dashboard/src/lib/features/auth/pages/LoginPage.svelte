@@ -1,42 +1,44 @@
 <script lang="ts">
 	import { Card } from '@template/ui';
 	import type { ProviderId } from '@template/core/user/provider.sql';
+	import Frame from '../components/Frame.svelte';
 	import LoginForm from '../components/LoginForm.svelte';
 	import OauthList from '../components/OauthList.svelte';
 
 	let { oauth }: { oauth: ProviderId[] } = $props();
 </script>
 
-<div class="auth">
+<Frame>
 	<!-- One box for both: there is no separate signup, because a code for an address nobody
 	     holds creates the account. Saying so is the only thing that makes that discoverable. -->
-	<h1>Log in or sign up</h1>
-	<p class="sub">Enter your email. If you're new, the code creates your account.</p>
+	<header>
+		<h1>Log in or sign up</h1>
+		<p class="sub">Enter your email. If you're new, the code creates your account.</p>
+	</header>
 
 	<Card>
 		<LoginForm />
 	</Card>
 
 	<OauthList providers={oauth} />
-</div>
+</Frame>
 
 <style>
-	.auth {
-		display: flex;
-		flex-direction: column;
-		gap: 1em;
-		width: min(380px, 100%);
-		margin: 2.5em auto 0;
+	header {
+		margin-bottom: 0.4em;
 	}
 
 	h1 {
-		margin: 0;
-		font-size: 1.3em;
+		margin: 0 0 0.35em;
+		font-size: 1.4em;
+		font-weight: 600;
+		letter-spacing: -0.015em;
 	}
 
 	.sub {
-		margin: -0.6em 0 0;
-		font-size: 0.85em;
-		color: var(--dim);
+		margin: 0;
+		font-size: 0.88em;
+		line-height: 1.45;
+		color: var(--muted);
 	}
 </style>

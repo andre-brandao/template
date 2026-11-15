@@ -1,6 +1,7 @@
 import { redirect, error } from "@sveltejs/kit";
 import { exchange } from "$lib/server/auth";
 import * as session from "$lib/server/session";
+import * as next from "$lib/server/next";
 import type { RequestHandler } from "./$types";
 
 export const GET: RequestHandler = async (event) => {
@@ -11,5 +12,5 @@ export const GET: RequestHandler = async (event) => {
 
   const tokens = await exchange(event.url.origin, code);
   await session.write(event, tokens.userID);
-  redirect(303, "/");
+  redirect(303, next.take(event));
 };

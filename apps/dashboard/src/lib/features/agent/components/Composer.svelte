@@ -69,13 +69,13 @@
 	form {
 		display: flex;
 		flex-direction: column;
-		gap: 0.5em;
-		padding: 0.75em var(--gutter, 0.75em);
+		padding-top: 0.75em;
 		border-top: 1px solid var(--border);
 		flex-shrink: 0;
 	}
 
 	textarea {
+		margin: 0 var(--gutter, 0.75em) 0.75em;
 		padding: 0.5em 0.7em;
 		border: 1px solid var(--border);
 		border-radius: var(--radius-sm);
@@ -86,11 +86,15 @@
 		box-shadow: var(--shadow-1);
 	}
 
+	/* The page footer's height and rule, so its top border runs on through the dock. */
 	.row {
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
 		gap: 0.5em;
+		height: var(--footer);
+		padding-inline: var(--gutter, 0.75em);
+		border-top: 1px solid var(--border);
 	}
 
 	select {

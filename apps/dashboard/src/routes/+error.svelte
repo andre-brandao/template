@@ -60,7 +60,7 @@
 		<div class="acts">
 			<a class="act primary" href={resolve('/')}>Go home</a>
 			{#if page.status === 401}
-				<a class="act" href={resolve('/login')}>Log in</a>
+				<a class="act" href="{resolve('/login')}?next={encodeURIComponent(page.url.pathname + page.url.search)}">Log in</a>
 			{:else}
 				<Button variant="secondary" onclick={() => history.back()}>Go back</Button>
 			{/if}

@@ -4,12 +4,14 @@ import { z } from "zod";
 import { Auth } from "@template/core/user/auth";
 import { remote } from "$lib/server/remote";
 import * as session from "$lib/server/session";
+import * as next from "$lib/server/next";
 
 // Core resolves a login to a `userID` and stops there, so the cookie is minted here — the
 // same call `/callback` makes after the issuer. Nothing below needs the issuer running.
 async function enter(user: string) {
-  await session.write(getRequestEvent(), user);
-  redirect(303, "/");
+  const event = getRequestEvent();
+  await session.write(event, user);
+  redirect(303, next.take(event));
 }
 
 /**

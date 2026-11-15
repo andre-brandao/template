@@ -1,15 +1,18 @@
 <script lang="ts">
 	import { Button, Card, Field, FormBoundary, Input, Issue } from '@template/ui';
 	import { onboard } from '../api/profile.remote';
+	import Frame from '../components/Frame.svelte';
 
 	let { email }: { email: string } = $props();
 
 	const issues = $derived(onboard.fields.allIssues() ?? []);
 </script>
 
-<div class="welcome">
-	<h1>Welcome</h1>
-	<p class="sub">Signed in as {email}. What should everyone else call you?</p>
+<Frame>
+	<header>
+		<h1>Welcome</h1>
+		<p class="sub">Signed in as {email}. What should everyone else call you?</p>
+	</header>
 
 	<Card>
 		<FormBoundary>
@@ -27,24 +30,24 @@
 	</Card>
 
 	<p class="hint">You can add a password later from Settings — the emailed code always works.</p>
-</div>
+</Frame>
 
 <style>
-	.welcome {
-		display: flex;
-		flex-direction: column;
-		gap: 1em;
-		width: min(420px, 100%);
-		margin: 3.5em auto 0;
+	header {
+		margin-bottom: 0.4em;
 	}
 
 	h1 {
-		margin: 0;
+		margin: 0 0 0.35em;
 		font-size: 1.4em;
+		font-weight: 600;
+		letter-spacing: -0.015em;
 	}
 
 	.sub {
-		margin: -0.6em 0 0;
+		margin: 0;
+		font-size: 0.88em;
+		line-height: 1.45;
 		color: var(--muted);
 	}
 

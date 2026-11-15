@@ -7,6 +7,7 @@
 	the input; arrows move `aria-activedescendant`, so typing and choosing never fight.
 -->
 <script lang="ts">
+	import type { Snippet } from 'svelte';
 	import { HotkeysProvider } from '@tanstack/svelte-hotkeys';
 	import { dialog } from '../modal/dialog';
 
@@ -14,12 +15,15 @@
 		open = $bindable(false),
 		commands,
 		placeholder = 'Type a command or search',
-		empty = 'No matching commands'
+		empty = 'No matching commands',
+		foot
 	}: {
 		open?: boolean;
 		commands: Action[];
 		placeholder?: string;
 		empty?: string;
+		/** A strip under the list, e.g. key hints. */
+		foot?: Snippet;
 	} = $props();
 
 	const id = $props.id();
@@ -122,6 +126,7 @@
 				<p class="empty">{empty}</p>
 			{/each}
 		</div>
+		{#if foot}<div class="foot">{@render foot()}</div>{/if}
 		</HotkeysProvider>
 	{/if}
 </dialog>
@@ -227,6 +232,17 @@
 		color: var(--dim, #75736d);
 		font-size: 0.9em;
 		text-align: center;
+	}
+
+	.foot {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.4em 1em;
+		padding: 0.5em 1em;
+		border-top: 1px solid var(--border, #e6e5e1);
+		color: var(--dim, #75736d);
+		font-size: 0.78em;
 	}
 
 	@media (prefers-reduced-motion: reduce) {

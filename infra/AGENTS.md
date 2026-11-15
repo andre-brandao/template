@@ -1,6 +1,7 @@
 # infra
 
-Five deployment paths, all optional to local development.
+Five deployment paths, all optional to local development. Only `sst/cf/` and `docker/` are
+supported; [`README.md`](README.md) marks the rest experimental.
 
 | Path             | What                                                                        |
 | ---------------- | --------------------------------------------------------------------------- |

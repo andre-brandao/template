@@ -1,7 +1,7 @@
-import { index, integer, jsonb, pgTable as table, text } from "drizzle-orm/pg-core";
+import { index, integer, jsonb, snakeCase, text } from "drizzle-orm/pg-core";
 import { id, timestamp, timestamps } from "../../drizzle/types";
 
-export const JobTable = table(
+export const JobTable = snakeCase.table(
   "job",
   {
     id: id(),
@@ -13,11 +13,11 @@ export const JobTable = table(
     attempts: integer().notNull().default(0),
     error: text(),
     /** When the job becomes runnable — push delay and retry backoff both move it forward. */
-    timeAvailable: timestamp("time_available").notNull().defaultNow(),
+    timeAvailable: timestamp().notNull().defaultNow(),
     /** Set while a worker holds the job; cleared on release, stale ones are reclaimed. */
-    timeReserved: timestamp("time_reserved"),
+    timeReserved: timestamp(),
     /** Set when retries run out. Buried rows are kept so failures stay inspectable. */
-    timeFailed: timestamp("time_failed"),
+    timeFailed: timestamp(),
   },
   (table) => [index("job_reserve").on(table.timeFailed, table.timeAvailable)],
 );

@@ -1,18 +1,18 @@
-import { index, jsonb, pgTable as table, text } from "drizzle-orm/pg-core";
+import { index, jsonb, snakeCase, text } from "drizzle-orm/pg-core";
 import { id, timestamps, ulid } from "../../drizzle/types";
 import type { Identity } from "../../identity";
 
-export const EventTable = table(
+export const EventTable = snakeCase.table(
   "event",
   {
     id: id(),
     ...timestamps,
-    userID: ulid("user_id"),
+    userID: ulid(),
     // The whole identity as it stood: an agent's name and scope, the role it held.
     identity: jsonb().$type<Identity.Info>().notNull().default({ type: "public", properties: {} }),
     type: text().notNull(),
     source: text(),
-    sourceID: ulid("source_id"),
+    sourceID: ulid(),
     tags: text().array().notNull().default([]),
     data: jsonb().notNull().default({}),
   },

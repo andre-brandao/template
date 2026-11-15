@@ -1,18 +1,14 @@
 import { char, timestamp as rawTs } from "drizzle-orm/pg-core";
 
-export const ulid = (name: string) => char(name, { length: 26 + 4 });
+// Unnamed: `casing: "snake_case"` derives the column from the key.
+export const ulid = () => char({ length: 26 + 4 });
 
-export const id = () => ulid("id").notNull();
+export const id = () => ulid().notNull();
 
-export const timestamp = (name: string) =>
-  rawTs(name, {
-    precision: 3,
-    mode: "date",
-    withTimezone: true,
-  });
+export const timestamp = () => rawTs({ precision: 3, mode: "date", withTimezone: true });
 
 export const timestamps = {
-  timeCreated: timestamp("time_created").notNull().defaultNow(),
-  timeUpdated: timestamp("time_updated").notNull().defaultNow(),
-  timeDeleted: timestamp("time_deleted"),
+  timeCreated: timestamp().notNull().defaultNow(),
+  timeUpdated: timestamp().notNull().defaultNow(),
+  timeDeleted: timestamp(),
 };

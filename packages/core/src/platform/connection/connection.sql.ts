@@ -1,4 +1,4 @@
-import { index, pgTable as table, text, uniqueIndex, varchar } from "drizzle-orm/pg-core";
+import { index, snakeCase, text, uniqueIndex, varchar } from "drizzle-orm/pg-core";
 import { id, timestamp, timestamps, ulid } from "../../drizzle/types";
 
 /**
@@ -6,20 +6,20 @@ import { id, timestamp, timestamps, ulid } from "../../drizzle/types";
  * Not a login: those are `provider` rows and carry no tokens. Tokens are plaintext, like the
  * secrets an integration must replay, so a dump exposes them; only `Connection.tokens` reads them.
  */
-export const ConnectionTable = table(
+export const ConnectionTable = snakeCase.table(
   "connection",
   {
     id: id(),
     ...timestamps,
-    userID: ulid("user_id").notNull(),
+    userID: ulid().notNull(),
     /** Free-form, so an app adds integrations without touching an enum: `github`, `slack`. */
     provider: varchar({ length: 64 }).notNull(),
     /** The account at the provider, so a reconnect can tell a different account apart. */
-    accountId: varchar("account_id", { length: 255 }),
+    accountId: varchar({ length: 255 }),
     scopes: text().array().notNull().default([]),
-    accessToken: text("access_token").notNull(),
-    refreshToken: text("refresh_token"),
-    tokenExpiresAt: timestamp("token_expires_at"),
+    accessToken: text().notNull(),
+    refreshToken: text(),
+    tokenExpiresAt: timestamp(),
   },
   (table) => [
     uniqueIndex("connection_user_provider").on(table.userID, table.provider),

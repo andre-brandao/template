@@ -29,6 +29,18 @@ import type {
   GetFileResponses,
   GetFileSignedErrors,
   GetFileSignedResponses,
+  GetInsightsActivityErrors,
+  GetInsightsActivityResponses,
+  GetInsightsCalendarErrors,
+  GetInsightsCalendarResponses,
+  GetInsightsDueErrors,
+  GetInsightsDueResponses,
+  GetInsightsLoadErrors,
+  GetInsightsLoadResponses,
+  GetInsightsStatsErrors,
+  GetInsightsStatsResponses,
+  GetInsightsStatusErrors,
+  GetInsightsStatusResponses,
   GetKeyErrors,
   GetKeyResponses,
   GetMeErrors,
@@ -40,18 +52,6 @@ import type {
   GetTodoByIdErrors,
   GetTodoByIdResponses,
   GetTodoErrors,
-  GetTodoInsightsActivityErrors,
-  GetTodoInsightsActivityResponses,
-  GetTodoInsightsCalendarErrors,
-  GetTodoInsightsCalendarResponses,
-  GetTodoInsightsDueErrors,
-  GetTodoInsightsDueResponses,
-  GetTodoInsightsLoadErrors,
-  GetTodoInsightsLoadResponses,
-  GetTodoInsightsStatsErrors,
-  GetTodoInsightsStatsResponses,
-  GetTodoInsightsStatusErrors,
-  GetTodoInsightsStatusResponses,
   GetTodoResponses,
   GetTodoStageErrors,
   GetTodoStageResponses,
@@ -304,7 +304,7 @@ export class TemplateSdk extends HeyApiClient {
   /**
    * List todos
    *
-   * List todos, optionally narrowed by status, assignee, stage, owning entity, parent or search. Paginated.
+   * List todos, optionally narrowed by status, assignee, stage, owning entity, parent, search, or a from/to window their planned span overlaps (`unscheduled` for undated ones). Paginated.
    */
   public getTodo<ThrowOnError extends boolean = false>(
     parameters?: {
@@ -336,6 +336,9 @@ export class TemplateSdk extends HeyApiClient {
       createdBy?: string;
       parentID?: string;
       search?: string;
+      from?: string;
+      to?: string;
+      unscheduled?: boolean;
     },
     options?: Options<never, ThrowOnError>,
   ): RequestResult<GetTodoResponses, GetTodoErrors, ThrowOnError> {
@@ -355,6 +358,9 @@ export class TemplateSdk extends HeyApiClient {
             { in: "query", key: "createdBy" },
             { in: "query", key: "parentID" },
             { in: "query", key: "search" },
+            { in: "query", key: "from" },
+            { in: "query", key: "to" },
+            { in: "query", key: "unscheduled" },
           ],
         },
       ],
@@ -499,236 +505,6 @@ export class TemplateSdk extends HeyApiClient {
         ...options?.headers,
         ...params.headers,
       },
-    });
-  }
-
-  /**
-   * Todo stats
-   *
-   * Created, done, active and blocked counts for a range, plus overdue all time.
-   */
-  public getTodoInsightsStats<ThrowOnError extends boolean = false>(
-    parameters: {
-      source?: string;
-      sourceID?: string;
-      start: string;
-      end: string;
-    },
-    options?: Options<never, ThrowOnError>,
-  ): RequestResult<GetTodoInsightsStatsResponses, GetTodoInsightsStatsErrors, ThrowOnError> {
-    const params = buildClientParams(
-      [parameters],
-      [
-        {
-          args: [
-            { in: "query", key: "source" },
-            { in: "query", key: "sourceID" },
-            { in: "query", key: "start" },
-            { in: "query", key: "end" },
-          ],
-        },
-      ],
-    );
-    return (options?.client ?? this.client).get<
-      GetTodoInsightsStatsResponses,
-      GetTodoInsightsStatsErrors,
-      ThrowOnError
-    >({
-      security: [{ scheme: "bearer", type: "http" }],
-      url: "/todo/insights/stats",
-      ...options,
-      ...params,
-    });
-  }
-
-  /**
-   * Todos by status
-   *
-   * Todos created in a range, totalled per status in pipeline order.
-   */
-  public getTodoInsightsStatus<ThrowOnError extends boolean = false>(
-    parameters: {
-      source?: string;
-      sourceID?: string;
-      start: string;
-      end: string;
-    },
-    options?: Options<never, ThrowOnError>,
-  ): RequestResult<GetTodoInsightsStatusResponses, GetTodoInsightsStatusErrors, ThrowOnError> {
-    const params = buildClientParams(
-      [parameters],
-      [
-        {
-          args: [
-            { in: "query", key: "source" },
-            { in: "query", key: "sourceID" },
-            { in: "query", key: "start" },
-            { in: "query", key: "end" },
-          ],
-        },
-      ],
-    );
-    return (options?.client ?? this.client).get<
-      GetTodoInsightsStatusResponses,
-      GetTodoInsightsStatusErrors,
-      ThrowOnError
-    >({
-      security: [{ scheme: "bearer", type: "http" }],
-      url: "/todo/insights/status",
-      ...options,
-      ...params,
-    });
-  }
-
-  /**
-   * Todos by assignee
-   *
-   * Todos created in a range, per assignee and status, busiest first.
-   */
-  public getTodoInsightsLoad<ThrowOnError extends boolean = false>(
-    parameters: {
-      source?: string;
-      sourceID?: string;
-      start: string;
-      end: string;
-    },
-    options?: Options<never, ThrowOnError>,
-  ): RequestResult<GetTodoInsightsLoadResponses, GetTodoInsightsLoadErrors, ThrowOnError> {
-    const params = buildClientParams(
-      [parameters],
-      [
-        {
-          args: [
-            { in: "query", key: "source" },
-            { in: "query", key: "sourceID" },
-            { in: "query", key: "start" },
-            { in: "query", key: "end" },
-          ],
-        },
-      ],
-    );
-    return (options?.client ?? this.client).get<
-      GetTodoInsightsLoadResponses,
-      GetTodoInsightsLoadErrors,
-      ThrowOnError
-    >({
-      security: [{ scheme: "bearer", type: "http" }],
-      url: "/todo/insights/load",
-      ...options,
-      ...params,
-    });
-  }
-
-  /**
-   * Next due todos
-   *
-   * The five open todos coming due soonest.
-   */
-  public getTodoInsightsDue<ThrowOnError extends boolean = false>(
-    parameters?: {
-      source?: string;
-      sourceID?: string;
-    },
-    options?: Options<never, ThrowOnError>,
-  ): RequestResult<GetTodoInsightsDueResponses, GetTodoInsightsDueErrors, ThrowOnError> {
-    const params = buildClientParams(
-      [parameters],
-      [
-        {
-          args: [
-            { in: "query", key: "source" },
-            { in: "query", key: "sourceID" },
-          ],
-        },
-      ],
-    );
-    return (options?.client ?? this.client).get<
-      GetTodoInsightsDueResponses,
-      GetTodoInsightsDueErrors,
-      ThrowOnError
-    >({
-      security: [{ scheme: "bearer", type: "http" }],
-      url: "/todo/insights/due",
-      ...options,
-      ...params,
-    });
-  }
-
-  /**
-   * Todo calendar
-   *
-   * Todos created per day in a range, in the reader's timezone.
-   */
-  public getTodoInsightsCalendar<ThrowOnError extends boolean = false>(
-    parameters: {
-      source?: string;
-      sourceID?: string;
-      start: string;
-      end: string;
-    },
-    options?: Options<never, ThrowOnError>,
-  ): RequestResult<GetTodoInsightsCalendarResponses, GetTodoInsightsCalendarErrors, ThrowOnError> {
-    const params = buildClientParams(
-      [parameters],
-      [
-        {
-          args: [
-            { in: "query", key: "source" },
-            { in: "query", key: "sourceID" },
-            { in: "query", key: "start" },
-            { in: "query", key: "end" },
-          ],
-        },
-      ],
-    );
-    return (options?.client ?? this.client).get<
-      GetTodoInsightsCalendarResponses,
-      GetTodoInsightsCalendarErrors,
-      ThrowOnError
-    >({
-      security: [{ scheme: "bearer", type: "http" }],
-      url: "/todo/insights/calendar",
-      ...options,
-      ...params,
-    });
-  }
-
-  /**
-   * Todo activity
-   *
-   * Todos created and completed per day, week or month, coarser as the range grows.
-   */
-  public getTodoInsightsActivity<ThrowOnError extends boolean = false>(
-    parameters: {
-      source?: string;
-      sourceID?: string;
-      start: string;
-      end: string;
-    },
-    options?: Options<never, ThrowOnError>,
-  ): RequestResult<GetTodoInsightsActivityResponses, GetTodoInsightsActivityErrors, ThrowOnError> {
-    const params = buildClientParams(
-      [parameters],
-      [
-        {
-          args: [
-            { in: "query", key: "source" },
-            { in: "query", key: "sourceID" },
-            { in: "query", key: "start" },
-            { in: "query", key: "end" },
-          ],
-        },
-      ],
-    );
-    return (options?.client ?? this.client).get<
-      GetTodoInsightsActivityResponses,
-      GetTodoInsightsActivityErrors,
-      ThrowOnError
-    >({
-      security: [{ scheme: "bearer", type: "http" }],
-      url: "/todo/insights/activity",
-      ...options,
-      ...params,
     });
   }
 
@@ -952,6 +728,236 @@ export class TemplateSdk extends HeyApiClient {
         ...options?.headers,
         ...params.headers,
       },
+    });
+  }
+
+  /**
+   * Todo stats
+   *
+   * Created, done, active and blocked counts for a range, plus overdue all time.
+   */
+  public getInsightsStats<ThrowOnError extends boolean = false>(
+    parameters: {
+      source?: string;
+      sourceID?: string;
+      start: string;
+      end: string;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<GetInsightsStatsResponses, GetInsightsStatsErrors, ThrowOnError> {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "query", key: "source" },
+            { in: "query", key: "sourceID" },
+            { in: "query", key: "start" },
+            { in: "query", key: "end" },
+          ],
+        },
+      ],
+    );
+    return (options?.client ?? this.client).get<
+      GetInsightsStatsResponses,
+      GetInsightsStatsErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/insights/stats",
+      ...options,
+      ...params,
+    });
+  }
+
+  /**
+   * Todos by status
+   *
+   * Todos created in a range, totalled per status in pipeline order.
+   */
+  public getInsightsStatus<ThrowOnError extends boolean = false>(
+    parameters: {
+      source?: string;
+      sourceID?: string;
+      start: string;
+      end: string;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<GetInsightsStatusResponses, GetInsightsStatusErrors, ThrowOnError> {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "query", key: "source" },
+            { in: "query", key: "sourceID" },
+            { in: "query", key: "start" },
+            { in: "query", key: "end" },
+          ],
+        },
+      ],
+    );
+    return (options?.client ?? this.client).get<
+      GetInsightsStatusResponses,
+      GetInsightsStatusErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/insights/status",
+      ...options,
+      ...params,
+    });
+  }
+
+  /**
+   * Todos by assignee
+   *
+   * Todos created in a range, per assignee and status, busiest first.
+   */
+  public getInsightsLoad<ThrowOnError extends boolean = false>(
+    parameters: {
+      source?: string;
+      sourceID?: string;
+      start: string;
+      end: string;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<GetInsightsLoadResponses, GetInsightsLoadErrors, ThrowOnError> {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "query", key: "source" },
+            { in: "query", key: "sourceID" },
+            { in: "query", key: "start" },
+            { in: "query", key: "end" },
+          ],
+        },
+      ],
+    );
+    return (options?.client ?? this.client).get<
+      GetInsightsLoadResponses,
+      GetInsightsLoadErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/insights/load",
+      ...options,
+      ...params,
+    });
+  }
+
+  /**
+   * Next due todos
+   *
+   * The five open todos coming due soonest.
+   */
+  public getInsightsDue<ThrowOnError extends boolean = false>(
+    parameters?: {
+      source?: string;
+      sourceID?: string;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<GetInsightsDueResponses, GetInsightsDueErrors, ThrowOnError> {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "query", key: "source" },
+            { in: "query", key: "sourceID" },
+          ],
+        },
+      ],
+    );
+    return (options?.client ?? this.client).get<
+      GetInsightsDueResponses,
+      GetInsightsDueErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/insights/due",
+      ...options,
+      ...params,
+    });
+  }
+
+  /**
+   * Todo calendar
+   *
+   * Todos created per day in a range, in the reader's timezone.
+   */
+  public getInsightsCalendar<ThrowOnError extends boolean = false>(
+    parameters: {
+      source?: string;
+      sourceID?: string;
+      start: string;
+      end: string;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<GetInsightsCalendarResponses, GetInsightsCalendarErrors, ThrowOnError> {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "query", key: "source" },
+            { in: "query", key: "sourceID" },
+            { in: "query", key: "start" },
+            { in: "query", key: "end" },
+          ],
+        },
+      ],
+    );
+    return (options?.client ?? this.client).get<
+      GetInsightsCalendarResponses,
+      GetInsightsCalendarErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/insights/calendar",
+      ...options,
+      ...params,
+    });
+  }
+
+  /**
+   * Todo activity
+   *
+   * Todos created and completed per day, week or month, coarser as the range grows.
+   */
+  public getInsightsActivity<ThrowOnError extends boolean = false>(
+    parameters: {
+      source?: string;
+      sourceID?: string;
+      start: string;
+      end: string;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<GetInsightsActivityResponses, GetInsightsActivityErrors, ThrowOnError> {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "query", key: "source" },
+            { in: "query", key: "sourceID" },
+            { in: "query", key: "start" },
+            { in: "query", key: "end" },
+          ],
+        },
+      ],
+    );
+    return (options?.client ?? this.client).get<
+      GetInsightsActivityResponses,
+      GetInsightsActivityErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/insights/activity",
+      ...options,
+      ...params,
     });
   }
 

@@ -2,17 +2,21 @@
 <script lang="ts">
 	import { createQuery } from '@tanstack/svelte-query';
 	import * as Header from '$lib/components/header';
+	import { toDay, today } from '@template/ui';
+	import { fmt } from '$lib/utils/fmt';
 	import { list, stages } from '../api/todos.query';
 
 	let { scope }: { scope: { source: string; sourceID: string } } = $props();
 
+	const f = fmt();
 	const todos = createQuery(() => list(scope));
 	const spans = createQuery(() => stages(scope));
-	const today = new Date().toISOString().slice(0, 10);
+	const now = $derived(today(f.zone));
 
 	const stage = $derived(
 		spans.data?.find(
-			(one) => one.start && one.end && one.start.slice(0, 10) <= today && today <= one.end.slice(0, 10)
+			(one) =>
+				one.start && one.end && toDay(one.start, f.zone) <= now && now <= toDay(one.end, f.zone)
 		) ?? spans.data?.find((one) => one.done < one.total)
 	);
 </script>

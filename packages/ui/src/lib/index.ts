@@ -1,12 +1,35 @@
-// input and markdown group a family; everything else is one folder per component,
+// input, date and markdown group a family; everything else is one folder per component,
 // holding its story, tests and css.
 
 // input
 export { default as Button } from "./input/Button.svelte";
 export { default as Input } from "./input/Input.svelte";
 export { default as LazySelect } from "./input/LazySelect.svelte";
-export { default as RangePicker, last, valid, type Range } from "./input/RangePicker.svelte";
 export { default as Select, type Option } from "./input/Select.svelte";
+
+// date
+export { default as Calendar, type Mode } from "./date/Calendar.svelte";
+export { default as DatePicker } from "./date/DatePicker.svelte";
+export { default as MonthGrid, type Cell, type Look } from "./date/MonthGrid.svelte";
+export { default as RangePicker } from "./date/RangePicker.svelte";
+export { dates, setDates, type Dates } from "./date/ctx";
+export {
+  at,
+  format,
+  fromDay,
+  last,
+  shift,
+  split,
+  toDay,
+  today,
+  valid,
+  week,
+  weekdays,
+  weekStart,
+  type Day,
+  type Range,
+  type Weekday,
+} from "./date/day";
 
 // markdown
 export { default as Markdown } from "./markdown/Markdown.svelte";

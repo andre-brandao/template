@@ -265,6 +265,17 @@ export namespace Todo {
         .optional()
         .meta({ description: 'A todo id for its sub-issues, or "none" for top-level todos.' }),
       search: z.string().optional(),
+      from: z.iso.datetime().optional().meta({
+        description: "Window start (inclusive). Keeps todos whose start-to-due span reaches it.",
+        example: "2026-06-01T00:00:00.000Z",
+      }),
+      to: z.iso.datetime().optional().meta({
+        description: "Window end (inclusive). Keeps todos whose start-to-due span begins by it.",
+        example: "2026-06-30T23:59:59.999Z",
+      }),
+      unscheduled: z.boolean().optional().meta({
+        description: "Only todos with neither a start nor a due date; a window skips those.",
+      }),
     }),
     (input) => {
       Identity.check({ todo: ["read"] });
@@ -291,7 +302,7 @@ export namespace Todo {
             : eq(TodoTable.parentID, input.parentID),
         );
       if (input.search) conditions.push(ilike(TodoTable.title, `%${input.search}%`));
-      const where = and(...conditions);
+      const where = and(...conditions, ...window(input));
       return Database.use(async (tx) => {
         const [rows, totalRows] = await Promise.all([
           tx
@@ -310,7 +321,7 @@ export namespace Todo {
     {
       title: "List todos",
       description:
-        "List todos, optionally narrowed by status, assignee, stage, owning entity, parent or search. Paginated.",
+        "List todos, optionally narrowed by status, assignee, stage, owning entity, parent, search, or a from/to window their planned span overlaps (`unscheduled` for undated ones). Paginated.",
     },
   );
 
@@ -581,6 +592,18 @@ export namespace Todo {
       description: "Soft-delete a todo. Its sub-issues move up to its parent.",
     },
   );
+
+  /** A one-dated todo is a point; a null coalesce fails the compare, so undated rows drop. */
+  function window(input: { from?: string; to?: string; unscheduled?: boolean }) {
+    const from = input.from
+      ? [sql`coalesce(${TodoTable.dueDate}, ${TodoTable.startDate}) >= ${input.from}::timestamptz`]
+      : [];
+    const to = input.to
+      ? [sql`coalesce(${TodoTable.startDate}, ${TodoTable.dueDate}) <= ${input.to}::timestamptz`]
+      : [];
+    const none = input.unscheduled ? [isNull(TodoTable.startDate), isNull(TodoTable.dueDate)] : [];
+    return [...from, ...to, ...none];
+  }
 
   function serialize(row: { todo: typeof TodoTable.$inferSelect; user: Assignee }): Info {
     return {

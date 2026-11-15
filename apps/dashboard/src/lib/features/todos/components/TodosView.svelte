@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type { ComponentProps } from 'svelte';
 	import type { Todo } from '@template/core/todo';
 	import type { By } from '../group';
 	import type { View } from './ViewSelector.svelte';
@@ -6,8 +7,20 @@
 	import KanbanBoard from './kanban/KanbanBoard.svelte';
 	import TodoTable from './table/TodoTable.svelte';
 	import TimelineView from './timeline/TimelineView.svelte';
+	import CalendarView from './calendar/CalendarView.svelte';
 
-	let { todos, view, by = 'status' }: { todos: Todo.Info[]; view: View; by?: By } = $props();
+	let {
+		todos = [],
+		view,
+		by = 'status',
+		calendar
+	}: {
+		todos?: Todo.Info[];
+		view: View;
+		by?: By;
+		/** The calendar fetches its own window, so it takes filters instead of `todos`. */
+		calendar?: ComponentProps<typeof CalendarView>;
+	} = $props();
 </script>
 
 <!-- Wrapped so the swap has one element to name. `sort` and `q` are deliberately unclaimed:
@@ -17,6 +30,8 @@
 		<KanbanBoard {todos} {by} />
 	{:else if view === 'timeline'}
 		<TimelineView {todos} by={by === 'status' ? 'stage' : by} />
+	{:else if view === 'calendar'}
+		{#if calendar}<CalendarView {...calendar} />{/if}
 	{:else if view === 'table'}
 		<TodoTable {todos} />
 	{:else}

@@ -25,24 +25,27 @@
 			status: z.enum(['all', ...STATUSES]).default('all'),
 			assignee: z.string().default(''),
 			stage: z.string().default(''),
-			view: z.enum(['list', 'board', 'table', 'timeline']).default('table'),
+			view: z.enum(['list', 'board', 'table', 'timeline', 'calendar']).default('table'),
 			group: z.enum(['status', 'stage', 'assignee']).default('status'),
+			mode: z.enum(['month', 'week']).default('month'),
+			at: z.iso.date().optional(),
 			sort: sort.schema
 		})
 	);
 
 	const scope = $derived({ source, sourceID });
 
-	const todos = createQuery(() =>
-		list({
-			...scope,
-			status: params.status === 'all' ? undefined : params.status,
-			assignee: params.assignee || undefined,
-			stage: params.stage || undefined,
-			search: params.q || undefined,
-			sort: params.sort
-		})
-	);
+	const filters = $derived({
+		...scope,
+		status: params.status === 'all' ? undefined : params.status,
+		assignee: params.assignee || undefined,
+		stage: params.stage || undefined,
+		search: params.q || undefined,
+		sort: params.sort
+	});
+
+	// The calendar asks for its own window, so this page-wide list sits out.
+	const todos = createQuery(() => ({ ...list(filters), enabled: params.view !== 'calendar' }));
 
 	const add = () => modal(TodoForm, { scope });
 	createHotkey('C', add);
@@ -99,7 +102,17 @@
 	{/if}
 </Drawer>
 
-{#if todos.isPending}
+{#if params.view === 'calendar'}
+	<TodosView
+		view="calendar"
+		calendar={{
+			filters,
+			mode: params.mode,
+			at: params.at,
+			onchange: (next) => params.update(next)
+		}}
+	/>
+{:else if todos.isPending}
 	<div class="skeleton">
 		{#each [0, 1, 2, 3, 4, 5] as i (i)}
 			<Skeleton h="2.6em" />

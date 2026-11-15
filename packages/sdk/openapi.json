@@ -2183,7 +2183,7 @@
         "operationId": "getTodo",
         "tags": ["Todo"],
         "summary": "List todos",
-        "description": "List todos, optionally narrowed by status, assignee, stage, owning entity, parent or search. Paginated.",
+        "description": "List todos, optionally narrowed by status, assignee, stage, owning entity, parent, search, or a from/to window their planned span overlaps (`unscheduled` for undated ones). Paginated.",
         "responses": {
           "200": {
             "content": {
@@ -2480,6 +2480,36 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "example": "2026-06-01T00:00:00.000Z",
+              "type": "string",
+              "format": "date-time",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+            },
+            "description": "Window start (inclusive). Keeps todos whose start-to-due span reaches it."
+          },
+          {
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "example": "2026-06-30T23:59:59.999Z",
+              "type": "string",
+              "format": "date-time",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+            },
+            "description": "Window end (inclusive). Keeps todos whose start-to-due span begins by it."
+          },
+          {
+            "in": "query",
+            "name": "unscheduled",
+            "schema": {
+              "type": "boolean"
+            },
+            "description": "Only todos with neither a start nor a due date; a window skips those."
           }
         ]
       },
@@ -2960,772 +2990,6 @@
             }
           }
         }
-      }
-    },
-    "/todo/insights/stats": {
-      "get": {
-        "operationId": "getTodoInsightsStats",
-        "tags": ["Todo"],
-        "summary": "Todo stats",
-        "description": "Created, done, active and blocked counts for a range, plus overdue all time.",
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/InsightStats"
-                }
-              }
-            },
-            "description": "The headline counts for a range."
-          },
-          "400": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "validation",
-                  "code": "invalid_parameter",
-                  "message": "Invalid input: expected string, received undefined",
-                  "param": "email",
-                  "details": {
-                    "issues": [
-                      {
-                        "path": "email",
-                        "message": "Invalid input: expected string, received undefined"
-                      }
-                    ]
-                  }
-                }
-              }
-            },
-            "description": "Bad Request"
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "authentication",
-                  "code": "unauthorized",
-                  "message": "Authentication required"
-                }
-              }
-            },
-            "description": "Unauthorized"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "forbidden",
-                  "code": "permission_denied",
-                  "message": "You do not have permission"
-                }
-              }
-            },
-            "description": "Forbidden"
-          },
-          "500": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "internal",
-                  "code": "internal_error",
-                  "message": "Internal server error"
-                }
-              }
-            },
-            "description": "Internal Server Error"
-          }
-        },
-        "parameters": [
-          {
-            "in": "query",
-            "name": "source",
-            "schema": {
-              "type": "string"
-            },
-            "description": "The owning entity type, e.g. \"project\"."
-          },
-          {
-            "in": "query",
-            "name": "sourceID",
-            "schema": {
-              "type": "string"
-            },
-            "description": "Id of the owning entity."
-          },
-          {
-            "in": "query",
-            "name": "start",
-            "schema": {
-              "type": "string",
-              "format": "date",
-              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
-              "example": "2026-06-07"
-            },
-            "required": true,
-            "description": "First day of the range (inclusive)."
-          },
-          {
-            "in": "query",
-            "name": "end",
-            "schema": {
-              "type": "string",
-              "format": "date",
-              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
-              "example": "2026-07-06"
-            },
-            "required": true,
-            "description": "Last day of the range (inclusive)."
-          }
-        ]
-      }
-    },
-    "/todo/insights/status": {
-      "get": {
-        "operationId": "getTodoInsightsStatus",
-        "tags": ["Todo"],
-        "summary": "Todos by status",
-        "description": "Todos created in a range, totalled per status in pipeline order.",
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/InsightStatuses"
-                }
-              }
-            },
-            "description": "Todos created in range, by status."
-          },
-          "400": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "validation",
-                  "code": "invalid_parameter",
-                  "message": "Invalid input: expected string, received undefined",
-                  "param": "email",
-                  "details": {
-                    "issues": [
-                      {
-                        "path": "email",
-                        "message": "Invalid input: expected string, received undefined"
-                      }
-                    ]
-                  }
-                }
-              }
-            },
-            "description": "Bad Request"
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "authentication",
-                  "code": "unauthorized",
-                  "message": "Authentication required"
-                }
-              }
-            },
-            "description": "Unauthorized"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "forbidden",
-                  "code": "permission_denied",
-                  "message": "You do not have permission"
-                }
-              }
-            },
-            "description": "Forbidden"
-          },
-          "500": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "internal",
-                  "code": "internal_error",
-                  "message": "Internal server error"
-                }
-              }
-            },
-            "description": "Internal Server Error"
-          }
-        },
-        "parameters": [
-          {
-            "in": "query",
-            "name": "source",
-            "schema": {
-              "type": "string"
-            },
-            "description": "The owning entity type, e.g. \"project\"."
-          },
-          {
-            "in": "query",
-            "name": "sourceID",
-            "schema": {
-              "type": "string"
-            },
-            "description": "Id of the owning entity."
-          },
-          {
-            "in": "query",
-            "name": "start",
-            "schema": {
-              "type": "string",
-              "format": "date",
-              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
-              "example": "2026-06-07"
-            },
-            "required": true,
-            "description": "First day of the range (inclusive)."
-          },
-          {
-            "in": "query",
-            "name": "end",
-            "schema": {
-              "type": "string",
-              "format": "date",
-              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
-              "example": "2026-07-06"
-            },
-            "required": true,
-            "description": "Last day of the range (inclusive)."
-          }
-        ]
-      }
-    },
-    "/todo/insights/load": {
-      "get": {
-        "operationId": "getTodoInsightsLoad",
-        "tags": ["Todo"],
-        "summary": "Todos by assignee",
-        "description": "Todos created in a range, per assignee and status, busiest first.",
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/InsightLoad"
-                }
-              }
-            },
-            "description": "Todos created in range, by assignee and status."
-          },
-          "400": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "validation",
-                  "code": "invalid_parameter",
-                  "message": "Invalid input: expected string, received undefined",
-                  "param": "email",
-                  "details": {
-                    "issues": [
-                      {
-                        "path": "email",
-                        "message": "Invalid input: expected string, received undefined"
-                      }
-                    ]
-                  }
-                }
-              }
-            },
-            "description": "Bad Request"
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "authentication",
-                  "code": "unauthorized",
-                  "message": "Authentication required"
-                }
-              }
-            },
-            "description": "Unauthorized"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "forbidden",
-                  "code": "permission_denied",
-                  "message": "You do not have permission"
-                }
-              }
-            },
-            "description": "Forbidden"
-          },
-          "500": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "internal",
-                  "code": "internal_error",
-                  "message": "Internal server error"
-                }
-              }
-            },
-            "description": "Internal Server Error"
-          }
-        },
-        "parameters": [
-          {
-            "in": "query",
-            "name": "source",
-            "schema": {
-              "type": "string"
-            },
-            "description": "The owning entity type, e.g. \"project\"."
-          },
-          {
-            "in": "query",
-            "name": "sourceID",
-            "schema": {
-              "type": "string"
-            },
-            "description": "Id of the owning entity."
-          },
-          {
-            "in": "query",
-            "name": "start",
-            "schema": {
-              "type": "string",
-              "format": "date",
-              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
-              "example": "2026-06-07"
-            },
-            "required": true,
-            "description": "First day of the range (inclusive)."
-          },
-          {
-            "in": "query",
-            "name": "end",
-            "schema": {
-              "type": "string",
-              "format": "date",
-              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
-              "example": "2026-07-06"
-            },
-            "required": true,
-            "description": "Last day of the range (inclusive)."
-          }
-        ]
-      }
-    },
-    "/todo/insights/due": {
-      "get": {
-        "operationId": "getTodoInsightsDue",
-        "tags": ["Todo"],
-        "summary": "Next due todos",
-        "description": "The five open todos coming due soonest.",
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/InsightDue"
-                  },
-                  "description": "An open todo coming due."
-                }
-              }
-            },
-            "description": "An open todo coming due."
-          },
-          "400": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "validation",
-                  "code": "invalid_parameter",
-                  "message": "Invalid input: expected string, received undefined",
-                  "param": "email",
-                  "details": {
-                    "issues": [
-                      {
-                        "path": "email",
-                        "message": "Invalid input: expected string, received undefined"
-                      }
-                    ]
-                  }
-                }
-              }
-            },
-            "description": "Bad Request"
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "authentication",
-                  "code": "unauthorized",
-                  "message": "Authentication required"
-                }
-              }
-            },
-            "description": "Unauthorized"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "forbidden",
-                  "code": "permission_denied",
-                  "message": "You do not have permission"
-                }
-              }
-            },
-            "description": "Forbidden"
-          },
-          "500": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "internal",
-                  "code": "internal_error",
-                  "message": "Internal server error"
-                }
-              }
-            },
-            "description": "Internal Server Error"
-          }
-        },
-        "parameters": [
-          {
-            "in": "query",
-            "name": "source",
-            "schema": {
-              "type": "string"
-            },
-            "description": "The owning entity type, e.g. \"project\"."
-          },
-          {
-            "in": "query",
-            "name": "sourceID",
-            "schema": {
-              "type": "string"
-            },
-            "description": "Id of the owning entity."
-          }
-        ]
-      }
-    },
-    "/todo/insights/calendar": {
-      "get": {
-        "operationId": "getTodoInsightsCalendar",
-        "tags": ["Todo"],
-        "summary": "Todo calendar",
-        "description": "Todos created per day in a range, in the reader's timezone.",
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/InsightCalendar"
-                }
-              }
-            },
-            "description": "Todos created per day, for a contribution grid."
-          },
-          "400": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "validation",
-                  "code": "invalid_parameter",
-                  "message": "Invalid input: expected string, received undefined",
-                  "param": "email",
-                  "details": {
-                    "issues": [
-                      {
-                        "path": "email",
-                        "message": "Invalid input: expected string, received undefined"
-                      }
-                    ]
-                  }
-                }
-              }
-            },
-            "description": "Bad Request"
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "authentication",
-                  "code": "unauthorized",
-                  "message": "Authentication required"
-                }
-              }
-            },
-            "description": "Unauthorized"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "forbidden",
-                  "code": "permission_denied",
-                  "message": "You do not have permission"
-                }
-              }
-            },
-            "description": "Forbidden"
-          },
-          "500": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "internal",
-                  "code": "internal_error",
-                  "message": "Internal server error"
-                }
-              }
-            },
-            "description": "Internal Server Error"
-          }
-        },
-        "parameters": [
-          {
-            "in": "query",
-            "name": "source",
-            "schema": {
-              "type": "string"
-            },
-            "description": "The owning entity type, e.g. \"project\"."
-          },
-          {
-            "in": "query",
-            "name": "sourceID",
-            "schema": {
-              "type": "string"
-            },
-            "description": "Id of the owning entity."
-          },
-          {
-            "in": "query",
-            "name": "start",
-            "schema": {
-              "type": "string",
-              "format": "date",
-              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
-              "example": "2026-06-07"
-            },
-            "required": true,
-            "description": "First day of the range (inclusive)."
-          },
-          {
-            "in": "query",
-            "name": "end",
-            "schema": {
-              "type": "string",
-              "format": "date",
-              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
-              "example": "2026-07-06"
-            },
-            "required": true,
-            "description": "Last day of the range (inclusive)."
-          }
-        ]
-      }
-    },
-    "/todo/insights/activity": {
-      "get": {
-        "operationId": "getTodoInsightsActivity",
-        "tags": ["Todo"],
-        "summary": "Todo activity",
-        "description": "Todos created and completed per day, week or month, coarser as the range grows.",
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/InsightActivity"
-                }
-              }
-            },
-            "description": "Created and completed per day, week or month, coarser as the range grows."
-          },
-          "400": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "validation",
-                  "code": "invalid_parameter",
-                  "message": "Invalid input: expected string, received undefined",
-                  "param": "email",
-                  "details": {
-                    "issues": [
-                      {
-                        "path": "email",
-                        "message": "Invalid input: expected string, received undefined"
-                      }
-                    ]
-                  }
-                }
-              }
-            },
-            "description": "Bad Request"
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "authentication",
-                  "code": "unauthorized",
-                  "message": "Authentication required"
-                }
-              }
-            },
-            "description": "Unauthorized"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "forbidden",
-                  "code": "permission_denied",
-                  "message": "You do not have permission"
-                }
-              }
-            },
-            "description": "Forbidden"
-          },
-          "500": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "internal",
-                  "code": "internal_error",
-                  "message": "Internal server error"
-                }
-              }
-            },
-            "description": "Internal Server Error"
-          }
-        },
-        "parameters": [
-          {
-            "in": "query",
-            "name": "source",
-            "schema": {
-              "type": "string"
-            },
-            "description": "The owning entity type, e.g. \"project\"."
-          },
-          {
-            "in": "query",
-            "name": "sourceID",
-            "schema": {
-              "type": "string"
-            },
-            "description": "Id of the owning entity."
-          },
-          {
-            "in": "query",
-            "name": "start",
-            "schema": {
-              "type": "string",
-              "format": "date",
-              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
-              "example": "2026-06-07"
-            },
-            "required": true,
-            "description": "First day of the range (inclusive)."
-          },
-          {
-            "in": "query",
-            "name": "end",
-            "schema": {
-              "type": "string",
-              "format": "date",
-              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
-              "example": "2026-07-06"
-            },
-            "required": true,
-            "description": "Last day of the range (inclusive)."
-          }
-        ]
       }
     },
     "/todo/{id}": {
@@ -4717,6 +3981,772 @@
             },
             "required": true,
             "description": "The link to drop."
+          }
+        ]
+      }
+    },
+    "/insights/stats": {
+      "get": {
+        "operationId": "getInsightsStats",
+        "tags": ["Insights"],
+        "summary": "Todo stats",
+        "description": "Created, done, active and blocked counts for a range, plus overdue all time.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InsightStats"
+                }
+              }
+            },
+            "description": "The headline counts for a range."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "validation",
+                  "code": "invalid_parameter",
+                  "message": "Invalid input: expected string, received undefined",
+                  "param": "email",
+                  "details": {
+                    "issues": [
+                      {
+                        "path": "email",
+                        "message": "Invalid input: expected string, received undefined"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "authentication",
+                  "code": "unauthorized",
+                  "message": "Authentication required"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "forbidden",
+                  "code": "permission_denied",
+                  "message": "You do not have permission"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "internal",
+                  "code": "internal_error",
+                  "message": "Internal server error"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "parameters": [
+          {
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            },
+            "description": "The owning entity type, e.g. \"project\"."
+          },
+          {
+            "in": "query",
+            "name": "sourceID",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Id of the owning entity."
+          },
+          {
+            "in": "query",
+            "name": "start",
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+              "example": "2026-06-07"
+            },
+            "required": true,
+            "description": "First day of the range (inclusive)."
+          },
+          {
+            "in": "query",
+            "name": "end",
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+              "example": "2026-07-06"
+            },
+            "required": true,
+            "description": "Last day of the range (inclusive)."
+          }
+        ]
+      }
+    },
+    "/insights/status": {
+      "get": {
+        "operationId": "getInsightsStatus",
+        "tags": ["Insights"],
+        "summary": "Todos by status",
+        "description": "Todos created in a range, totalled per status in pipeline order.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InsightStatuses"
+                }
+              }
+            },
+            "description": "Todos created in range, by status."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "validation",
+                  "code": "invalid_parameter",
+                  "message": "Invalid input: expected string, received undefined",
+                  "param": "email",
+                  "details": {
+                    "issues": [
+                      {
+                        "path": "email",
+                        "message": "Invalid input: expected string, received undefined"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "authentication",
+                  "code": "unauthorized",
+                  "message": "Authentication required"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "forbidden",
+                  "code": "permission_denied",
+                  "message": "You do not have permission"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "internal",
+                  "code": "internal_error",
+                  "message": "Internal server error"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "parameters": [
+          {
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            },
+            "description": "The owning entity type, e.g. \"project\"."
+          },
+          {
+            "in": "query",
+            "name": "sourceID",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Id of the owning entity."
+          },
+          {
+            "in": "query",
+            "name": "start",
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+              "example": "2026-06-07"
+            },
+            "required": true,
+            "description": "First day of the range (inclusive)."
+          },
+          {
+            "in": "query",
+            "name": "end",
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+              "example": "2026-07-06"
+            },
+            "required": true,
+            "description": "Last day of the range (inclusive)."
+          }
+        ]
+      }
+    },
+    "/insights/load": {
+      "get": {
+        "operationId": "getInsightsLoad",
+        "tags": ["Insights"],
+        "summary": "Todos by assignee",
+        "description": "Todos created in a range, per assignee and status, busiest first.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InsightLoad"
+                }
+              }
+            },
+            "description": "Todos created in range, by assignee and status."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "validation",
+                  "code": "invalid_parameter",
+                  "message": "Invalid input: expected string, received undefined",
+                  "param": "email",
+                  "details": {
+                    "issues": [
+                      {
+                        "path": "email",
+                        "message": "Invalid input: expected string, received undefined"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "authentication",
+                  "code": "unauthorized",
+                  "message": "Authentication required"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "forbidden",
+                  "code": "permission_denied",
+                  "message": "You do not have permission"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "internal",
+                  "code": "internal_error",
+                  "message": "Internal server error"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "parameters": [
+          {
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            },
+            "description": "The owning entity type, e.g. \"project\"."
+          },
+          {
+            "in": "query",
+            "name": "sourceID",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Id of the owning entity."
+          },
+          {
+            "in": "query",
+            "name": "start",
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+              "example": "2026-06-07"
+            },
+            "required": true,
+            "description": "First day of the range (inclusive)."
+          },
+          {
+            "in": "query",
+            "name": "end",
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+              "example": "2026-07-06"
+            },
+            "required": true,
+            "description": "Last day of the range (inclusive)."
+          }
+        ]
+      }
+    },
+    "/insights/due": {
+      "get": {
+        "operationId": "getInsightsDue",
+        "tags": ["Insights"],
+        "summary": "Next due todos",
+        "description": "The five open todos coming due soonest.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/InsightDue"
+                  },
+                  "description": "An open todo coming due."
+                }
+              }
+            },
+            "description": "An open todo coming due."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "validation",
+                  "code": "invalid_parameter",
+                  "message": "Invalid input: expected string, received undefined",
+                  "param": "email",
+                  "details": {
+                    "issues": [
+                      {
+                        "path": "email",
+                        "message": "Invalid input: expected string, received undefined"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "authentication",
+                  "code": "unauthorized",
+                  "message": "Authentication required"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "forbidden",
+                  "code": "permission_denied",
+                  "message": "You do not have permission"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "internal",
+                  "code": "internal_error",
+                  "message": "Internal server error"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "parameters": [
+          {
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            },
+            "description": "The owning entity type, e.g. \"project\"."
+          },
+          {
+            "in": "query",
+            "name": "sourceID",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Id of the owning entity."
+          }
+        ]
+      }
+    },
+    "/insights/calendar": {
+      "get": {
+        "operationId": "getInsightsCalendar",
+        "tags": ["Insights"],
+        "summary": "Todo calendar",
+        "description": "Todos created per day in a range, in the reader's timezone.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InsightCalendar"
+                }
+              }
+            },
+            "description": "Todos created per day, for a contribution grid."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "validation",
+                  "code": "invalid_parameter",
+                  "message": "Invalid input: expected string, received undefined",
+                  "param": "email",
+                  "details": {
+                    "issues": [
+                      {
+                        "path": "email",
+                        "message": "Invalid input: expected string, received undefined"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "authentication",
+                  "code": "unauthorized",
+                  "message": "Authentication required"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "forbidden",
+                  "code": "permission_denied",
+                  "message": "You do not have permission"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "internal",
+                  "code": "internal_error",
+                  "message": "Internal server error"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "parameters": [
+          {
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            },
+            "description": "The owning entity type, e.g. \"project\"."
+          },
+          {
+            "in": "query",
+            "name": "sourceID",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Id of the owning entity."
+          },
+          {
+            "in": "query",
+            "name": "start",
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+              "example": "2026-06-07"
+            },
+            "required": true,
+            "description": "First day of the range (inclusive)."
+          },
+          {
+            "in": "query",
+            "name": "end",
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+              "example": "2026-07-06"
+            },
+            "required": true,
+            "description": "Last day of the range (inclusive)."
+          }
+        ]
+      }
+    },
+    "/insights/activity": {
+      "get": {
+        "operationId": "getInsightsActivity",
+        "tags": ["Insights"],
+        "summary": "Todo activity",
+        "description": "Todos created and completed per day, week or month, coarser as the range grows.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InsightActivity"
+                }
+              }
+            },
+            "description": "Created and completed per day, week or month, coarser as the range grows."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "validation",
+                  "code": "invalid_parameter",
+                  "message": "Invalid input: expected string, received undefined",
+                  "param": "email",
+                  "details": {
+                    "issues": [
+                      {
+                        "path": "email",
+                        "message": "Invalid input: expected string, received undefined"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "authentication",
+                  "code": "unauthorized",
+                  "message": "Authentication required"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "forbidden",
+                  "code": "permission_denied",
+                  "message": "You do not have permission"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "internal",
+                  "code": "internal_error",
+                  "message": "Internal server error"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "parameters": [
+          {
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string"
+            },
+            "description": "The owning entity type, e.g. \"project\"."
+          },
+          {
+            "in": "query",
+            "name": "sourceID",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Id of the owning entity."
+          },
+          {
+            "in": "query",
+            "name": "start",
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+              "example": "2026-06-07"
+            },
+            "required": true,
+            "description": "First day of the range (inclusive)."
+          },
+          {
+            "in": "query",
+            "name": "end",
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+              "example": "2026-07-06"
+            },
+            "required": true,
+            "description": "Last day of the range (inclusive)."
           }
         ]
       }

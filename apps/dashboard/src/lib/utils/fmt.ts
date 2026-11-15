@@ -1,4 +1,5 @@
 import { zone, type Prefs } from "@template/core/user/prefs";
+import { fromDay, toDay } from "@template/ui";
 import { user } from "./context";
 
 // A fixed instant, so the format pickers preview the same date every time.
@@ -53,6 +54,12 @@ export function ago(iso: string, prefs: Prefs) {
 /** The zone the browser resolves — what `zone: null` means in practice. */
 export const local = () => Intl.DateTimeFormat().resolvedOptions().timeZone;
 
+/** A planned date as its day in the zone; legacy UTC-midnight values keep their UTC day. */
+function day(value: string | Date, prefs: Prefs) {
+  const where = zone(prefs);
+  return date(fromDay(toDay(value, where), where), prefs);
+}
+
 /**
  * Formatters bound to the signed-in user's preferences. Call during component init —
  * it reads context — then use the returned helpers anywhere in the template.
@@ -61,8 +68,12 @@ export function fmt() {
   const me = user();
   return {
     date: (value: string | Date) => date(value, me.prefs),
+    day: (value: string | Date) => day(value, me.prefs),
     time: (value: string | Date) => time(value, me.prefs),
     stamp: (value: string | Date) => stamp(value, me.prefs),
     ago: (iso: string) => ago(iso, me.prefs),
+    get zone() {
+      return zone(me.prefs);
+    },
   };
 }

@@ -6,6 +6,7 @@ import { Log } from "@template/core/util/log";
 import { KeyApi } from "./handler/key";
 import { UserApi } from "./handler/user";
 import { TodoApi } from "./handler/todo";
+import { InsightsApi } from "./handler/insights";
 import { ProjectApi } from "./handler/project";
 import { FileApi } from "./handler/file";
 import { HookApi } from "./handler/hook";
@@ -50,6 +51,7 @@ export const routes = new Hono()
   .route("/", UserApi.route)
   .route("/key", KeyApi.route)
   .route("/todo", TodoApi.route)
+  .route("/insights", InsightsApi.route)
   .route("/project", ProjectApi.route)
   .route("/file", FileApi.route)
   .route("/hook", HookApi.route)

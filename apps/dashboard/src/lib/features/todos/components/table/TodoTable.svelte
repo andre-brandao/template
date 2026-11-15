@@ -9,18 +9,15 @@
 	import type { Todo } from '@template/core/todo';
 	import { query } from '$lib/utils/params';
 	import { peek } from '$lib/utils/peek';
-	import { fmt } from '$lib/utils/fmt';
+	import Day from '../Day.svelte';
 	import StatusPicker from '../StatusPicker.svelte';
 	import TagList from '../TagList.svelte';
-	import { late } from '../../status';
 	import { move } from '../../api/todos.query';
 	import Delete from '../Delete.svelte';
 	import { moves, tree, visible, type Node } from '../../tree';
 	import { sort } from '../../sort';
 
 	let { todos }: { todos: Todo.Info[] } = $props();
-
-	const f = fmt();
 
 	// Collapsed parents. Rows are pre-flattened, so TanStack's expanding stays on `detail`.
 	const closed = new SvelteSet<string>();
@@ -105,8 +102,7 @@
 	<span class="tree" style="padding-left: {node.depth * 1.25}em">
 		{#if node.total}
 			<button
-				class="chevron"
-				class:open={!closed.has(node.id)}
+				class={['chevron', { open: !closed.has(node.id) }]}
 				aria-expanded={!closed.has(node.id)}
 				aria-label={closed.has(node.id) ? 'Expand sub-issues' : 'Collapse sub-issues'}
 				onclick={() => toggle(node.id)}>▸</button
@@ -135,9 +131,7 @@
 {/snippet}
 
 {#snippet due(row: Cell)}
-	<span class="dim" class:late={late(row.original)}>
-		{row.original.dueDate ? f.date(row.original.dueDate) : '—'}
-	</span>
+	<Day todo={row.original} />
 {/snippet}
 
 {#snippet tags(row: Cell)}
@@ -181,10 +175,6 @@
 		color: var(--muted);
 		font-variant-numeric: tabular-nums;
 		white-space: nowrap;
-	}
-
-	.dim.late {
-		color: var(--danger);
 	}
 
 	.dots {

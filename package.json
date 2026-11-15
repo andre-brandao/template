@@ -9,7 +9,7 @@
       "drizzle-kit": "1.0.0-rc.5-ab785fc",
       "drizzle-orm": "1.0.0-rc.5-ab785fc",
       "hono": "^4.13.18",
-      "postgres": "^3.4.9",
+      "postgres": "^4.1.1",
       "sst": "4.17.1",
       "typescript": "^7.0.2",
       "ulid": "^3.0.2",

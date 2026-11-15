@@ -25,8 +25,8 @@ const env = {
   ...process.env,
   DATABASE_URL: url,
   PGPORT: String(pgport),
-  // pglite's socket server accepts exactly one connection; docker postgres pools. The
-  // one connection also has to travel between processes, so bun targets close it per request.
+  // pglite's socket server runs one query at a time across all connections; docker postgres
+  // pools. Bun targets still close theirs per request so an idle one never holds it.
   PG_MAX: process.env.PG_MAX ?? (driver === "pglite" ? "1" : "10"),
   PG_RELEASE: process.env.PG_RELEASE ?? String(driver === "pglite"),
   AUTH_URL: process.env.AUTH_URL ?? `http://localhost:${authport}`,

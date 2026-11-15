@@ -4,8 +4,8 @@ import * as child_process from "node:child_process";
 
 function cloudflaredPg(): PluginOption {
   return {
-    // Bundle postgres's CF Workers build instead of the Node one — it reaches
-    // cloudflare:sockets via dynamic import, so net/tls never need stubbing.
+    // Bundle postgres's `workerd` entry (src/cf.js) instead of the Node one; the SSR
+    // resolve doesn't apply that export condition, so swap the file by hand.
     name: "postgres-cloudflare",
     enforce: "pre",
     // fallow-ignore-next-line complexity
@@ -16,13 +16,12 @@ function cloudflaredPg(): PluginOption {
           skipSelf: true,
         });
         if (resolved && !resolved.external) {
-          const cfPath = resolved.id.replace(/\/src\/index\.js$/, "/cf/src/index.js");
+          const cfPath = resolved.id.replace(/\/src\/index\.js$/, "/src/cf.js");
           if (cfPath !== resolved.id) return cfPath;
         }
       }
       // Leave cloudflare:* imports as external — resolved at CF Workers runtime.
-      // The dynamic import('cloudflare:sockets') in postgres/cf/polyfills.js is
-      // only called at runtime inside Socket.connect(), never during the build.
+      // postgres/src/cf.js imports cloudflare:sockets, which only workerd provides.
       if (id.startsWith("cloudflare:")) {
         return { id, external: true };
       }

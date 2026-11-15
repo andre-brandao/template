@@ -1,18 +1,17 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import { Card } from '@template/ui';
+	import * as Header from '$lib/components/header';
 
 	let { data } = $props();
 </script>
 
-<div class="intro">
-	<h1>Mail</h1>
-	<p>
-		Every template in <code>packages/core/src/lib/email/template.ts</code>, rendered against
-		stand-in props. Nothing is sent — the builders are pure, so this reads the same html a driver
-		would receive.
-	</p>
-</div>
+<Header.Root title="Mail">
+	{#snippet lead()}
+		Every template in <code>packages/core/src/lib/email/template.ts</code>, rendered against stand-in
+		props. Nothing is sent.
+	{/snippet}
+</Header.Root>
 
 <div class="grid">
 	{#each data.mails as one (one.name)}
@@ -25,17 +24,6 @@
 </div>
 
 <style>
-	.intro h1 {
-		margin: 0 0 0.4em;
-		font-size: 1.5em;
-	}
-
-	.intro p {
-		max-width: 60ch;
-		color: var(--muted);
-		font-size: 0.9em;
-	}
-
 	.grid {
 		display: grid;
 		grid-template-columns: repeat(auto-fill, minmax(19em, 1fr));
@@ -47,7 +35,7 @@
 		font-size: 1em;
 	}
 
-	.grid p {
+	p {
 		margin: 0;
 		color: var(--muted);
 		font-size: 0.85em;

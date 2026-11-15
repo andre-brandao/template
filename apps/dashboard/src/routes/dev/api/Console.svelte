@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
-	import { Button, Field } from '@template/ui';
+	import { createHotkey } from '@tanstack/svelte-hotkeys';
+	import { Button, Field, Kbd, Textarea } from '@template/ui';
+	import { message } from '$lib/query';
 	import Params from './Params.svelte';
 	import Responses from './Responses.svelte';
 	import Result from './Result.svelte';
@@ -45,9 +47,12 @@
 			path: url,
 			token: auth.current,
 			body: op.mime === 'application/json' ? body : ''
-		}).catch((err) => ({ status: 0, ms: 0, headers: {}, text: String(err) }));
+		}).catch((err) => ({ status: 0, ms: 0, headers: {}, text: message(err) }));
 		busy = false;
 	}
+
+	// Sends from anywhere, the body included: the textarea takes Enter for itself.
+	createHotkey('Mod+Enter', () => !busy && !upload && run());
 </script>
 
 <!-- The method and path live in the bar below, where they are editable — not repeated here. -->
@@ -62,7 +67,9 @@
 		<!-- Sticky within the card: Send keeps its place however tall the request grows. -->
 		<div class="bar">
 			<Url method={op.method} {base} path={op.path} {search} bind:values />
-			<Button variant="primary" onclick={run} pending={busy} disabled={upload}>Send</Button>
+			<Button variant="primary" onclick={run} pending={busy} disabled={upload}>
+				Send <Kbd keys="Mod+Enter" />
+			</Button>
 		</div>
 
 		{#if upload}
@@ -75,7 +82,12 @@
 
 		{#if op.mime === 'application/json'}
 			<Field label="body" style="margin-bottom: 1.2em">
-				<textarea rows="10" spellcheck="false" bind:value={body}></textarea>
+				<Textarea
+					rows={10}
+					spellcheck="false"
+					style="font-family: var(--font-mono); font-size: 0.78em"
+					bind:value={body}
+				/>
 			</Field>
 		{/if}
 
@@ -233,23 +245,6 @@
 	.schema summary code {
 		text-transform: none;
 		letter-spacing: 0;
-	}
-
-	textarea {
-		font: inherit;
-		font-family: var(--font-mono);
-		font-size: 0.78em;
-		resize: vertical;
-		padding: 0.6em 0.8em;
-		border: 1px solid var(--border);
-		border-radius: var(--radius);
-		background: var(--surface);
-		color: var(--ink);
-	}
-
-	textarea:focus-visible {
-		border-color: var(--accent);
-		outline: none;
 	}
 
 	.note {

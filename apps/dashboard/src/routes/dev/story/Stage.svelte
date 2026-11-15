@@ -2,7 +2,7 @@
 	import { untrack } from 'svelte';
 	import type { Control, Entry } from '@template/ui/story';
 	import Controls from './Controls.svelte';
-	import Code from './Code.svelte';
+	import Listing from './Listing.svelte';
 	import { markup, snippet } from './snippet';
 
 	let { entry }: { entry: Entry } = $props();
@@ -65,7 +65,7 @@
 				<div class="reveal">
 					<div class="listing" class:open>
 						{#each codes as one (one.label)}
-							<Code text={one.text} label={one.label} />
+							<Listing text={one.text} label={one.label} />
 						{/each}
 					</div>
 					<button onclick={() => (open = !open)} aria-expanded={open}>

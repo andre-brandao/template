@@ -75,7 +75,7 @@
 						onclick={(e) => {
 							e.stopPropagation();
 							onmore(info.day, e);
-						}}>+{day.more} more</span
+						}}>+{day.more}<span class="word"> more</span></span
 					>
 				{/if}
 			</span>
@@ -146,5 +146,12 @@
 	.more:hover {
 		color: var(--ink);
 		text-decoration: underline;
+	}
+
+	/* A phone's day cell fits "+12" but not the word, which wrapped up into the chips. */
+	@media (max-width: 700px) {
+		.word {
+			display: none;
+		}
 	}
 </style>

@@ -51,22 +51,25 @@
 {/snippet}
 
 <div class="split" class:tall>
-	<div class="side">
-		{#if head}{@render head()}{/if}
-		<nav aria-label={label}>
-			{#if narrow.current}
-				<details bind:open>
-					<summary>
-						<span class="face">{#if active}{@render face(active)}{:else}{label}{/if}</span>
-						<span class="chevron"><Chevron size={14} /></span>
-					</summary>
-					<div class="menu">{@render list()}</div>
-				</details>
-			{:else}
-				{@render list()}
-			{/if}
-		</nav>
-	</div>
+	<!-- Nothing to list (no prototypes yet): the pane takes the width rather than a blank rail. -->
+	{#if items.length || head}
+		<div class="side">
+			{#if head}{@render head()}{/if}
+			<nav aria-label={label}>
+				{#if narrow.current}
+					<details bind:open>
+						<summary>
+							<span class="face">{#if active}{@render face(active)}{:else}{label}{/if}</span>
+							<span class="chevron"><Chevron size={14} /></span>
+						</summary>
+						<div class="menu">{@render list()}</div>
+					</details>
+				{:else}
+					{@render list()}
+				{/if}
+			</nav>
+		</div>
+	{/if}
 	<div class="pane">{@render children()}</div>
 </div>
 

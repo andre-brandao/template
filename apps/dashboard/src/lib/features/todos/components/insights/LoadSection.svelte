@@ -40,8 +40,9 @@
 					inset: 0,
 					layout: stack({ order: [...parts] })
 				}),
+				// At the bar's end: `total` also counts backlog, which the bar leaves out.
 				text(rows, {
-					x: 'total',
+					x: (row) => parts.reduce((sum, part) => sum + row[part], 0),
 					y: (row) => trim(row.name),
 					text: 'total',
 					anchor: 'start',

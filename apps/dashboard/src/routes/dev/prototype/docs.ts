@@ -1,3 +1,5 @@
+import { existsSync } from "node:fs";
+
 // The prototype docs live outside the app, next to the repo root; vite dev runs from apps/dashboard.
 const dir = `${process.cwd()}/../../docs/prototype`;
 
@@ -17,6 +19,8 @@ function meta(text: string) {
 export const safe = (name: string) => /^[\w.-]+$/.test(name) && !name.includes("..");
 
 export async function list() {
+  // A fresh clone has no docs/prototype until the skill scaffolds one; the page has an empty state.
+  if (!existsSync(dir)) return [];
   const found = await Array.fromAsync(new Bun.Glob("*/PROTOTYPE.md").scan(dir));
   return Promise.all(
     found.sort().map(async (entry) => {

@@ -168,6 +168,17 @@
 		border-bottom: 1px solid var(--border);
 	}
 
+	/* A band whose items are all behind an `{#if}`: one hairline closes the header, or
+	   nothing when the strip under it draws its own. */
+	.band:not(:has(*)) {
+		padding: 0;
+		border-bottom: 0;
+	}
+
+	.band:not(:has(*)):not(:last-child) {
+		display: none;
+	}
+
 	.strip {
 		/* Every ui control reads it, so the row lines up without reaching into them. */
 		--control: 2rem;

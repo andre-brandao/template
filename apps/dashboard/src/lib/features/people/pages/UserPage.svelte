@@ -56,7 +56,7 @@
 				{:else}
 					<span class="name">{data.name}</span>
 				{/if}
-				{#if self}<Badge tone="accent">You</Badge>{/if}
+				{#if self}<span class="you"><Badge tone="accent">You</Badge></span>{/if}
 			</span>
 		{/snippet}
 		{#snippet eyebrow()}{data.kind === 'system' ? 'App' : 'Person'}{/snippet}
@@ -127,6 +127,12 @@
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
+	}
+
+	/* The badge sizes in em, so out of the h1 it reads as a badge, not a heading. */
+	.you {
+		font-size: 0.8rem;
+		font-weight: 400;
 	}
 
 	.role {

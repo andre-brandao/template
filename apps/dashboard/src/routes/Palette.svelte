@@ -73,7 +73,7 @@
 			: []),
 		...(me.can({ file: ['create'] }) ? [{ group: 'Actions', label: 'Upload files', run: pick }] : []),
 		...(me.can({ key: ['create'] })
-			? [{ group: 'Actions', label: 'New access token', run: () => modal(KeyForm) }]
+			? [{ group: 'Actions', label: 'New API key', run: () => modal(KeyForm) }]
 			: []),
 		...(assistant
 			? [

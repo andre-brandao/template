@@ -30,7 +30,7 @@
 
 	const shift = move();
 	// Each row's ⋯ menu, so a right-click anywhere on the row opens that same menu.
-	const menus: Record<string, Actions | null> = {};
+	const menus: Record<string, Actions | null> = $state({});
 
 	const nest = (to: { id: string; parentID: string | null; position?: number }) =>
 		shift.mutate({ path: { id: to.id }, body: { parentID: to.parentID, position: to.position } });
@@ -184,10 +184,13 @@
 		text-decoration: none;
 	}
 
+	/* The other columns don't wrap, so on a phone the title took what was left: a word a
+	   line. A floor keeps it readable and lets the table scroll sideways instead. */
 	.tree {
 		display: inline-flex;
 		align-items: center;
 		gap: 0.4em;
+		min-width: 14em;
 	}
 
 	.chevron {

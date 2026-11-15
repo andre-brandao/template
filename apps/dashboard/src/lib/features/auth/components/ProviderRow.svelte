@@ -13,17 +13,16 @@
 		google: 'Google'
 	};
 	const label = $derived(labels[provider.id]);
-	const since = $derived(
-		provider.timeCreated
-			? `connected ${f.date(provider.timeCreated)}`
-			: 'not connected'
+	// The pill already says when it isn't connected, so the sub line only adds detail.
+	const sub = $derived(
+		provider.accountId ?? (provider.timeCreated ? `connected ${f.date(provider.timeCreated)}` : '')
 	);
 </script>
 
 <li class:connected={provider.connected}>
 	<div class="meta">
 		<span class="name">{label}</span>
-		<span class="sub">{provider.accountId ?? since}</span>
+		{#if sub}<span class="sub">{sub}</span>{/if}
 	</div>
 
 	{#if provider.connected}

@@ -16,7 +16,7 @@ import { KeyTable } from "../platform/key/key.sql";
  * Dashboard logins. Nothing is signed, so there is no secret to hold or rotate: the cookie
  * is `<id>.<secret>`, the row is what makes it true, and revoking one is a delete. Shares
  * the `key` table under `type: "session"`. Never a bearer: the API and MCP refuse it, and the
- * copilot carries a `Delegation` instead.
+ * orchestrator carries a `Delegation` instead.
  */
 export namespace Session {
   export const Info = z

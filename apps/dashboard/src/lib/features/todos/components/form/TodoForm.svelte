@@ -1,7 +1,8 @@
-<!-- Raised through `modal(TodoForm, { scope })`, which passes `close`. -->
+<!-- Raised through `modal(TodoForm, { scope, due })`, which passes `close`. -->
 <script lang="ts">
-	import { Button, Field, Input, Issue, MarkdownEditor } from '@template/ui';
+	import { Button, DatePicker, Field, Input, Issue, MarkdownEditor, fromDay, toDay } from '@template/ui';
 	import { upload } from '$lib/upload';
+	import { fmt } from '$lib/utils/fmt';
 	import { create } from '../../api/todos.query';
 	import TagEditor from '../TagEditor.svelte';
 	import AssigneePicker from '../AssigneePicker.svelte';
@@ -11,11 +12,19 @@
 
 	let {
 		close,
-		scope = {}
-	}: { close: () => void; scope?: { source?: string; sourceID?: string } } = $props();
+		scope = {},
+		due
+	}: {
+		close: () => void;
+		scope?: { source?: string; sourceID?: string };
+		/** A `YYYY-MM-DD` the due field starts on, like a clicked calendar day. */
+		due?: string;
+	} = $props();
 
 	let body = $state('');
 	let tags = $state<string[]>([]);
+	let start = $state<string>();
+	const f = fmt();
 	const save = create({ onSuccess: () => close() });
 
 	function submit(e: SubmitEvent & { currentTarget: HTMLFormElement }) {
@@ -26,8 +35,8 @@
 				title: String(data.get('title')),
 				stage: text(data, 'stage'),
 				assignee: text(data, 'assignee'),
-				startDate: day(data, 'startDate'),
-				dueDate: day(data, 'dueDate'),
+				startDate: day(data, 'startDate', f.zone),
+				dueDate: day(data, 'dueDate', f.zone),
 				status: STATUSES.find((one) => one === data.get('status')),
 				tags: tags.length ? tags : undefined,
 				body: body || undefined,
@@ -60,12 +69,20 @@
 	</div>
 
 	<div class="pair">
-		<Field label="Start">
-			<Input type="date" name="startDate" />
+		<Field label="Start" as="div">
+			<DatePicker bind:value={start} name="startDate" label="Start" placeholder="No start" time clearable />
 		</Field>
 
-		<Field label="Due">
-			<Input type="date" name="dueDate" />
+		<Field label="Due" as="div">
+			<DatePicker
+				name="dueDate"
+				label="Due"
+				placeholder="No due date"
+				value={due && fromDay(due, f.zone)}
+				min={start && toDay(start, f.zone)}
+				time
+				clearable
+			/>
 		</Field>
 	</div>
 

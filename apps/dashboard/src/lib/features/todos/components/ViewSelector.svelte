@@ -1,5 +1,5 @@
 <script module lang="ts">
-	export type View = 'list' | 'board' | 'table' | 'timeline';
+	export type View = 'list' | 'board' | 'table' | 'timeline' | 'calendar';
 </script>
 
 <script lang="ts">
@@ -9,7 +9,7 @@
 </script>
 
 <Tabs.Root>
-	{#each ['table', 'board', 'timeline', 'list'] as const as v (v)}
+	{#each ['table', 'board', 'timeline', 'calendar', 'list'] as const as v (v)}
 		<Tabs.Item active={view === v} style="text-transform: capitalize" onclick={() => onchange(v)}>
 			{v}
 		</Tabs.Item>

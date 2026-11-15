@@ -160,7 +160,9 @@
 </table>
 
 <style>
+	/* The size tokens let a page grow the grid into a full calendar. */
 	.grid {
+		width: var(--grid-width, auto);
 		border-collapse: collapse;
 		table-layout: fixed;
 		font-size: 0.85em;
@@ -180,8 +182,8 @@
 
 	.day {
 		position: relative;
-		width: 2.3em;
-		height: 2.1em;
+		width: var(--day-width, 2.3em);
+		height: var(--day-height, 2.1em);
 		padding: 0;
 		border: none;
 		border-radius: var(--radius-sm, 6px);

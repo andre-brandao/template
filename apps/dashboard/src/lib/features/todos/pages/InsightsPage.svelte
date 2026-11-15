@@ -3,8 +3,9 @@
 	import { query } from '$lib/utils/params';
 	import * as Header from '$lib/components/header';
 	import { useIsFetching } from '@tanstack/svelte-query';
-	import { RangePicker, Status, last, valid } from '@template/ui';
+	import { RangePicker, Status, last, today, valid } from '@template/ui';
 	import { debounce } from '$lib/utils/debounce';
+	import { fmt } from '$lib/utils/fmt';
 	import StatsSection from '../components/insights/StatsSection.svelte';
 	import ActivitySection from '../components/insights/ActivitySection.svelte';
 	import CalendarSection from '../components/insights/CalendarSection.svelte';
@@ -15,7 +16,10 @@
 
 	let { source, sourceID }: { source?: string; sourceID?: string } = $props();
 
-	const fallback = last(30);
+	const f = fmt();
+	// The stored zone's today, so the server render and the browser agree on the range.
+	const now = today(f.zone);
+	const fallback = last(30, now);
 	const params = query(
 		z.object({
 			start: z.iso.date().default(fallback.start),
@@ -27,8 +31,8 @@
 	const picked = $derived(valid(params) ? { start: params.start, end: params.end } : fallback);
 	const range = $derived({ ...picked, ...scope });
 	const commit = debounce(params.update, 250);
-	// Every insight carries the Todo tag; the dot pulses while a new range loads.
-	const fetching = useIsFetching({ queryKey: [{ tags: ['Todo'] }] });
+	// Every insight carries the Insights tag; the dot pulses while a new range loads.
+	const fetching = useIsFetching({ queryKey: [{ tags: ['Insights'] }] });
 </script>
 
 <!-- Scoped to a project, the project rides above the title as the way back. -->
@@ -39,7 +43,8 @@
 <Header.Root title="Insights" eyebrow={source && sourceID ? parent : undefined}>
 	{#snippet strip()}
 		<Header.Group label="Period">
-			<RangePicker range={picked} onchange={commit} />
+			<!-- 30d and 90d tabs cover the month and quarter; 366 is core's Insights.Range cap. -->
+			<RangePicker range={picked} presets={[7, 30, 90, 365]} max={now} maxSpan={366} onchange={commit} />
 		</Header.Group>
 		{#if fetching.current}
 			<Header.Group end><Status state="pending" /></Header.Group>

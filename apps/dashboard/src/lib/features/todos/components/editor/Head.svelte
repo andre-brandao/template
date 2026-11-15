@@ -29,7 +29,7 @@
 		<Header.Item label="Assignee">{todo.assignee?.name ?? 'Unassigned'}</Header.Item>
 		<Header.Item label="Stage">{todo.stage ?? '—'}</Header.Item>
 		<Header.Item label="Due">
-			<span class={{ late: late(todo, f.zone) }}>{todo.dueDate ? f.date(todo.dueDate) : '—'}</span>
+			<span class={{ late: late(todo, f.zone) }}>{todo.dueDate ? f.day(todo.dueDate) : '—'}</span>
 		</Header.Item>
 </Header.Root>
 

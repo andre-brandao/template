@@ -53,7 +53,7 @@ const components = {
   },
 };
 
-/** What the `panel` tool can build. Data blocks carry their own SQL; the model never sees rows. */
+/** What a panel can be built from. Data blocks carry their own SQL; the model never sees rows. */
 export const catalog = defineCatalog(schema, { components, actions: {} });
 
 type Name = keyof typeof components;
@@ -66,7 +66,7 @@ const element = <T extends Name>(type: T) =>
     children: z.array(z.string()),
   });
 
-/** The `panel` tool's input: the spec's elements as a list, turned back into a spec by `clean`. */
+/** `show` and `draft` input: the elements as a list, turned back into a spec by `clean`. */
 export const shape = z.object({
   root: z.string(),
   elements: z.array(
@@ -90,19 +90,19 @@ export type Block<K extends Name> = BaseComponentProps<
 export const data = new Set(["Metric", "Chart", "Table"]);
 
 /**
- * The tool's description. Not `catalog.prompt()`: that one teaches JSONL patches, state and
- * forms, where here every number comes from SQL.
+ * A spec tool's description, after its own `lead`. Not `catalog.prompt()`: that one teaches
+ * JSONL patches, state and forms, where here every number comes from SQL.
  */
-export function instructions() {
+export function instructions(lead: string) {
   const blocks = Object.entries(catalog.data.components).map(([key, def]) => {
     const props = Object.keys(def.props.shape).join(", ") || "no props";
     const kids = "slots" in def ? " [takes children]" : "";
     return `- ${key} { ${props} }${kids}: ${def.description}`;
   });
   return [
-    "Shows the user a UI built from the components below, rendered in the chat while you write it.",
+    lead,
     'Format: { "root": "<id>", "elements": [{ "id", "type", "props", "children": ["<id>", …] }, …] }. The root is any element, usually a Card; Cards and Rows nest freely; ids are short and unique; every element has `children` (empty when it has none); absent props go as null.',
-    "Each Metric, Chart and Table runs its own SQL, already tested with `sql`, in the user's browser. You get back only a per-block summary (rows, columns or error): fix errored blocks by calling `panel` again.",
+    "Each Metric, Chart and Table runs its own SQL, already tested with `sql`. You get back only a per-block summary (rows, columns or error): fix errored blocks and call again.",
     "Components:",
     ...blocks,
   ].join("\n");

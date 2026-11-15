@@ -1,5 +1,5 @@
 import { createMutation } from "@tanstack/svelte-query";
-import { call, type Done } from "./call";
+import { call, type Done } from "$lib/query";
 import {
   createApp,
   createAppKey,

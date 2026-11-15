@@ -149,13 +149,3 @@ variable "dashboard_subdomain" {
   type        = string
   default     = "dashboard"
 }
-
-variable "mcp_bind_queue" {
-  description = <<-EOT
-    Give the MCP worker the `Jobs` binding. Its target reads env.Jobs, but
-    infra/sst/cf/mcp.ts never links the queue, so on SST that provider is built
-    over undefined. Bound here by default; see the note in mcp.tf.
-  EOT
-  type        = bool
-  default     = true
-}

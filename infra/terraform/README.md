@@ -238,7 +238,6 @@ nothing else will create them.
 | No regional placement | Every SST worker pins `placement.region = "aws:sa-east-1"`. The provider exposes `placement.mode` only; `region` is read-only. Expect higher latency to a São Paulo Hyperdrive origin. |
 | Bundling is `Bun.build`, not SST's esbuild + unenv pipeline | Every bundle was checked to import only prefixed `node:*` builtins, which `nodejs_compat` provides — but different polyfill behaviour is still possible at runtime. Smoke each worker after a deploy. |
 | State holds a live Postgres password | Hyperdrive needs the plaintext, so `planetscale_postgres_redacted_branch_role` is unusable. Use the R2 backend or OpenTofu state encryption rather than leaving `terraform.tfstate` on disk. |
-| MCP gets a `Jobs` binding here, but not on SST | `mcp/target/worker.ts` reads `env.Jobs` and `infra/sst/cf/mcp.ts` never links the queue — a bug on that side. `var.mcp_bind_queue` controls it. |
 
 ## Provider versions
 

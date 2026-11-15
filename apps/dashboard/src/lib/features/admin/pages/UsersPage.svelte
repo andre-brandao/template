@@ -1,40 +1,48 @@
 <script lang="ts">
-	import { Button, Fill, Input, Pagination, Scroll, Toggle } from '@template/ui';
+	import { z } from 'zod';
+	import { createQuery } from '@tanstack/svelte-query';
+	import { Button, Fill, Input, Issue, Pagination, Scroll, Skeleton, Toggle } from '@template/ui';
 	import * as Header from '$lib/components/header';
 	import { debounce } from '$lib/utils/debounce';
-	import { getUsers } from '../api/admin.remote';
+	import { fmt } from '$lib/utils/fmt';
+	import { query } from '$lib/utils/params';
+	import { users as list } from '../api/admin.query';
 	import UsersTable from '../components/UsersTable.svelte';
 	import { users } from '../sort';
 
-	let search = $state('');
-	let deleted = $state(false);
-	let at = $state(1);
-	// Local, not the URL: this page keeps every control in component state.
-	let keys = $state<ReturnType<typeof users.encode>>([]);
+	// In the URL, like the log: a narrowed list can be linked, reloaded and stepped back through.
+	const params = query(
+		z.object({
+			q: z.string().default(''),
+			deleted: z.coerce.boolean().default(false),
+			page: z.coerce.number().int().min(1).default(1),
+			sort: users.schema
+		})
+	);
 
+	const f = fmt();
 	// `undefined` rather than empty/false so the query key stays stable while typing nothing.
-	const args = $derived({
-		search: search || undefined,
-		deleted: deleted || undefined,
-		page: at,
-		pageSize: 20,
-		sort: keys
-	});
-	const page = $derived(await getUsers(args));
+	const page = createQuery(() =>
+		list({
+			search: params.q || undefined,
+			deleted: params.deleted || undefined,
+			page: params.page,
+			pageSize: 20,
+			sort: params.sort
+		})
+	);
 
-	// Every narrowing lands back on page one — page 4 of the old result set means nothing here.
-	function pick(next: { search?: string; deleted?: boolean }) {
-		search = next.search ?? search;
-		deleted = next.deleted ?? deleted;
-		at = 1;
-	}
-	const commit = debounce((value: string) => pick({ search: value }), 300);
+	// `undefined` drops the key, so every narrowing lands back on page one.
+	const pick = (next: Partial<typeof params>) => params.update({ ...next, page: undefined });
+	const commit = debounce((q: string) => pick({ q }), 300);
 </script>
 
 <!-- Same shape as the log: header and filters hold still, only the list scrolls. -->
 <Fill>
 	<Header.Root title="Users">
-		<Header.Item label={deleted ? 'Users' : 'Active'}>{page.total.toLocaleString()}</Header.Item>
+		<Header.Item label={params.deleted ? 'Users' : 'Active'}>
+			{page.data ? f.number(page.data.total) : '–'}
+		</Header.Item>
 		{#snippet strip()}
 			<Header.Group>
 				<Input
@@ -43,16 +51,16 @@
 					autocomplete="off"
 					aria-label="Search users"
 					placeholder="Search name or email"
-					value={search}
+					value={params.q}
 					oninput={(e) => commit(e.currentTarget.value)}
 				/>
 			</Header.Group>
 			<Header.Group label="Show">
-				<Toggle pressed={deleted} onclick={(on) => pick({ deleted: on })}>Disabled</Toggle>
+				<Toggle pressed={params.deleted} onclick={(on) => pick({ deleted: on })}>Disabled</Toggle>
 			</Header.Group>
-			{#if search || deleted}
+			{#if params.q || params.deleted}
 				<Header.Group end>
-					<Button variant="ghost" onclick={() => pick({ search: '', deleted: false })}>
+					<Button variant="ghost" onclick={() => pick({ q: '', deleted: false })}>
 						Clear filters
 					</Button>
 				</Header.Group>
@@ -60,17 +68,18 @@
 		{/snippet}
 	</Header.Root>
 
-	<Scroll fill>
-		<UsersTable
-			rows={page.data}
-			sorting={users.decode(keys)}
-			onsort={(next) => {
-				keys = next;
-				at = 1;
-			}}
-			onchange={() => getUsers(args).refresh()}
-		/>
-	</Scroll>
-
-	<Pagination of={page} onchange={(next) => (at = next)} label="users" />
+	{#if page.isSuccess}
+		<Scroll fill>
+			<UsersTable
+				rows={page.data.data}
+				sorting={users.decode(params.sort)}
+				onsort={(sort) => pick({ sort })}
+			/>
+		</Scroll>
+		<Pagination of={page.data} onchange={(next) => params.update({ page: next })} label="users" />
+	{:else if page.isError}
+		<Issue>{page.error.message}</Issue>
+	{:else}
+		<Skeleton h="12em" />
+	{/if}
 </Fill>

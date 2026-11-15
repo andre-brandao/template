@@ -3,7 +3,7 @@
 	import Copy from '@lucide/svelte/icons/copy';
 	import { createTable, renderComponent, renderSnippet } from '@tanstack/svelte-table';
 	import type { ColumnDef, Row } from '@tanstack/svelte-table';
-	import { Avatar, DataTable, features } from '@template/ui';
+	import { Avatar, DataTable, IconButton, features } from '@template/ui';
 	import type { User } from '@template/core/user';
 	import { user } from '$lib/utils/context';
 	import RoleForm from './RoleForm.svelte';
@@ -13,13 +13,11 @@
 	let {
 		rows,
 		sorting,
-		onsort,
-		onchange
+		onsort
 	}: {
 		rows: User.Info[];
 		sorting: ReturnType<typeof users.decode>;
 		onsort: (next: ReturnType<typeof users.encode>) => void;
-		onchange: () => void;
 	} = $props();
 
 	const me = user();
@@ -46,14 +44,14 @@
 			header: 'Role',
 			accessorFn: (one) => one.role,
 			cell: ({ row }) =>
-				renderComponent(RoleForm, { row: row.original, self: self(row.original), onchange })
+				renderComponent(RoleForm, { row: row.original, self: self(row.original) })
 		},
 		{
 			id: 'access',
 			header: '',
 			enableSorting: false,
 			cell: ({ row }) =>
-				renderComponent(AccessForm, { row: row.original, self: self(row.original), onchange })
+				renderComponent(AccessForm, { row: row.original, self: self(row.original) })
 		}
 	];
 
@@ -88,18 +86,19 @@
 {#snippet mail(row: Cell)}
 	<span class="email">
 		{row.original.email}
-		<button
-			class="copy"
-			type="button"
-			onclick={() => copy(row.original.email, row.original.id)}
-			title={copied === row.original.id ? 'Copied' : 'Copy email'}
-		>
-			{#if copied === row.original.id}<Check size={13} />{:else}<Copy size={13} />{/if}
-		</button>
+		<span class="copy">
+			<IconButton
+				size="sm"
+				label={copied === row.original.id ? 'Copied' : 'Copy email'}
+				onclick={() => copy(row.original.email, row.original.id)}
+			>
+				{#if copied === row.original.id}<Check size={13} />{:else}<Copy size={13} />{/if}
+			</IconButton>
+		</span>
 	</span>
 {/snippet}
 
-<DataTable {table} empty="No users match." />
+<div class="users"><DataTable {table} empty="No users match." /></div>
 
 <style>
 	.who {
@@ -143,24 +142,21 @@
 
 	/* Dim until the row is hovered — the address is the content, the button a convenience. */
 	.copy {
-		display: grid;
-		place-items: center;
-		padding: 0.15em;
-		border: 0;
-		border-radius: calc(var(--radius) - 3px);
-		background: none;
-		color: var(--dim);
-		cursor: pointer;
+		display: inline-flex;
 		opacity: 0.4;
 		transition: opacity 0.15s ease;
 	}
 
 	:global(tr:hover) .copy,
-	.copy:focus-visible {
+	.copy:focus-within {
 		opacity: 1;
 	}
 
-	.copy:hover {
-		color: var(--ink);
+	/* On a phone Name and Role need the row; the address is one tap away on the profile. */
+	@media (max-width: 700px) {
+		.users :global(th[data-col='email']),
+		.users :global(td[data-col='email']) {
+			display: none;
+		}
 	}
 </style>

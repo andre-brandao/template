@@ -1,73 +1,75 @@
 <script lang="ts">
-	import { Empty } from '@template/ui';
+	import { createQuery } from '@tanstack/svelte-query';
+	import { Empty, Issue, Meter, Skeleton, Stat } from '@template/ui';
 	import * as Header from '$lib/components/header';
 	import { fmt } from '$lib/utils/fmt';
 	import { size } from '$lib/utils/size';
-	import { getStats } from '../api/admin.remote';
-	import Stat from '../components/Stat.svelte';
+	import { stats } from '../api/admin.query';
+	import Queue from '../components/Queue.svelte';
 
-	const stats = $derived(await getStats());
+	const all = createQuery(() => stats());
 	const f = fmt();
-	const load = $derived(stats.server.connections / Math.max(1, stats.server.max));
-
-	// Row counts come from the planner's live-tuple estimate, so the widest bar is a
-	// proportion of the largest table rather than an exact share of anything.
-	const widest = $derived(Math.max(...stats.tables.tables.map((t) => t.bytes), 1));
 </script>
 
-<!-- Queue and server are single figures, so they ride the facts band; the sections below
-     keep what needs room: row counts and the per-table breakdown. -->
-<Header.Root title="Database">
-	<Header.Item label="On disk">{size(stats.tables.bytes)}</Header.Item>
-	<Header.Item label="Queue">
-		{stats.queue.pending} pending
-		{#if stats.queue.running}<small>{stats.queue.running} running</small>{/if}
-		{#if stats.queue.failed > 0}<span class="failed">{stats.queue.failed} failed</span>{/if}
-		{#if stats.queue.oldest}<small>oldest {f.ago(stats.queue.oldest)}</small>{/if}
-	</Header.Item>
-	<Header.Item label="Connections">
-		<span class={['meter', { high: load > 0.8 }]} aria-hidden="true">
-			<i style:width="{Math.min(1, load) * 100}%"></i>
-		</span>
-		{stats.server.connections}
-		<small>of {stats.server.max}</small>
-	</Header.Item>
-	<Header.Item label="Postgres">{stats.server.version}</Header.Item>
-	<Header.Item label="Up">
-		<span title={stats.server.started ? f.stamp(stats.server.started) : undefined}>
-			{stats.server.started ? f.ago(stats.server.started) : '—'}
-		</span>
-	</Header.Item>
-</Header.Root>
+{#if all.isSuccess}
+	{@const s = all.data}
+	{@const load = s.server.connections / Math.max(1, s.server.max)}
+	<!-- Bars are bytes relative to the largest table. -->
+	{@const widest = Math.max(...s.tables.tables.map((t) => t.bytes), 1)}
+	<Header.Root title="Database">
+		<Header.Item label="On disk">{size(s.tables.bytes)}</Header.Item>
+		<Header.Item label="Queue"><Queue queue={s.queue} /></Header.Item>
+		<Header.Item label="Connections">
+			<span class="meter"><Meter value={load} tone={load > 0.8 ? 'danger' : 'accent'} /></span>
+			{s.server.connections}
+			<small>of {s.server.max}</small>
+		</Header.Item>
+		<Header.Item label="Postgres">{s.server.version}</Header.Item>
+		<Header.Item label="Up">
+			<span title={s.server.started ? f.stamp(s.server.started) : undefined}>
+				{s.server.started ? f.ago(s.server.started) : '—'}
+			</span>
+		</Header.Item>
+	</Header.Root>
 
-<section>
-	<h2>Instance</h2>
-	<div class="stats">
-		<Stat label="Users" value={stats.counts.users} note={`${stats.counts.disabled} disabled`} />
-		<Stat label="Projects" value={stats.counts.projects} />
-		<Stat label="Todos" value={stats.counts.todos} note={`${stats.counts.done} done`} />
-	</div>
-</section>
+	<section>
+		<h2>Instance</h2>
+		<div class="stats">
+			<Stat
+				label="Users"
+				value={f.number(s.counts.users)}
+				note="{s.counts.disabled} disabled"
+			/>
+			<Stat label="Projects" value={f.number(s.counts.projects)} />
+			<Stat label="Todos" value={f.number(s.counts.todos)} note="{s.counts.done} done" />
+		</div>
+	</section>
 
-<section>
-	<h2>Tables</h2>
-	{#if stats.tables.tables.length === 0}
-		<Empty>No tables yet.</Empty>
+	<section>
+		<h2>Tables</h2>
+		{#if s.tables.tables.length === 0}
+			<Empty>No tables yet.</Empty>
+		{:else}
+			<ul>
+				{#each s.tables.tables as table (table.name)}
+					<li>
+						<span class="name">{table.name}</span>
+						<span class="bar"><Meter value={table.bytes} max={widest} /></span>
+						<span class="rows">{f.number(table.rows)} rows</span>
+						<span class="bytes">{size(table.bytes)}</span>
+					</li>
+				{/each}
+			</ul>
+		{/if}
+	</section>
+{:else}
+	<Header.Root title="Database" />
+	{#if all.isError}
+		<Issue>{all.error.message}</Issue>
 	{:else}
-		<ul>
-			{#each stats.tables.tables as table (table.name)}
-				<li>
-					<span class="name">{table.name}</span>
-					<span class="bar" aria-hidden="true">
-						<span class="fill" style="width: {(table.bytes / widest) * 100}%"></span>
-					</span>
-					<span class="rows">{table.rows.toLocaleString()} rows</span>
-					<span class="bytes">{size(table.bytes)}</span>
-				</li>
-			{/each}
-		</ul>
+		<Skeleton h="16em" />
 	{/if}
-</section>
+{/if}
 
 <style>
 	small {
@@ -75,28 +77,9 @@
 		color: var(--dim);
 	}
 
-	.failed {
-		color: var(--danger);
-	}
-
 	.meter {
 		flex: none;
-		display: block;
 		width: 4em;
-		height: 0.4em;
-		border-radius: 2px;
-		background: var(--border);
-		overflow: hidden;
-	}
-
-	.meter i {
-		display: block;
-		height: 100%;
-		background: var(--done);
-	}
-
-	.meter.high i {
-		background: var(--danger);
 	}
 
 	section {
@@ -125,7 +108,7 @@
 
 	li {
 		display: grid;
-		grid-template-columns: 10em 1fr auto auto;
+		grid-template-columns: minmax(0, 10em) 1fr auto auto;
 		align-items: center;
 		gap: 1em;
 		padding: 0.5em 0.9em;
@@ -141,19 +124,6 @@
 		text-overflow: ellipsis;
 	}
 
-	.bar {
-		height: 0.4em;
-		border-radius: 999px;
-		background: var(--raised, var(--border));
-		overflow: hidden;
-	}
-
-	.fill {
-		display: block;
-		height: 100%;
-		background: var(--accent);
-	}
-
 	.rows,
 	.bytes {
 		color: var(--muted);
@@ -166,14 +136,25 @@
 		text-align: right;
 	}
 
-	/* The bar is decoration; below the fold of a phone the numbers carry it alone. */
+	/* On a phone the numbers carry it alone; the name takes the row and wraps the rest under. */
 	@media (max-width: 40em) {
 		li {
 			grid-template-columns: 1fr auto;
+			gap: 0.25em 1em;
 		}
 
 		.bar {
 			display: none;
+		}
+
+		.rows {
+			grid-column: 1;
+			font-size: 0.85em;
+		}
+
+		.bytes {
+			grid-row: 1;
+			grid-column: 2;
 		}
 	}
 </style>

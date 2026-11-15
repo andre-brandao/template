@@ -1,15 +1,17 @@
 <script lang="ts">
 	import RotateCcw from '@lucide/svelte/icons/rotate-ccw';
-	import Trash2 from '@lucide/svelte/icons/trash-2';
-	import { FormBoundary, Issue, Spinner, modal } from '@template/ui';
+	import UserX from '@lucide/svelte/icons/user-x';
+	import { Button, FormBoundary, IconButton, Issue, Status, modal } from '@template/ui';
 	import type { User } from '@template/core/user';
+	import { invalidate } from '$lib/query';
 	import { fmt } from '$lib/utils/fmt';
 	import { disableUser, enableUser } from '../api/admin.remote';
 
-	let { row, self, onchange }: { row: User.Info; self: boolean; onchange: () => void } = $props();
+	let { row, self }: { row: User.Info; self: boolean } = $props();
 
 	const f = fmt();
 	const toggle = $derived((row.timeDeleted ? enableUser : disableUser).for(row.id));
+	const failed = $derived(!!toggle.fields.allIssues()?.length);
 
 	// Restoring an account needs no warning; taking one away does.
 	function ask() {
@@ -19,8 +21,8 @@
 </script>
 
 {#snippet warn()}
-	<b>{row.name}</b> is turned away at login on their next request and drops out of every actor
-	lookup. Nothing they filed is deleted, and enabling the account again restores access.
+	<b>{row.name}</b> is signed out and can't sign in until you enable the account again. Nothing
+	they created is deleted.
 {/snippet}
 
 <FormBoundary>
@@ -40,19 +42,25 @@
 				{...toggle.enhance(async (form) => {
 					if (!(await ask())) return;
 					await form.submit();
-					onchange();
+					await invalidate(['users']);
 				})}
 			>
 				<input {...toggle.fields.id.as('hidden', row.id)} />
+				{#if failed}<Status state="failed" />{/if}
 				{#if row.timeDeleted}
-					<button class="back" type="submit" disabled={!!toggle.pending} title="Restore access">
-						{#if toggle.pending}<Spinner />{:else}<RotateCcw size={14} />{/if}
+					<Button type="submit" pending={!!toggle.pending}>
+						<RotateCcw size={14} />
 						Enable
-					</button>
+					</Button>
 				{:else}
-					<button class="drop" type="submit" disabled={!!toggle.pending} title="Disable user">
-						<Trash2 size={16} />
-					</button>
+					<IconButton
+						type="submit"
+						size="sm"
+						label="Disable {row.name}"
+						disabled={!!toggle.pending}
+					>
+						<UserX size={15} />
+					</IconButton>
 				{/if}
 			</form>
 		{/if}
@@ -60,7 +68,8 @@
 </FormBoundary>
 
 <style>
-	.acts {
+	.acts,
+	form {
 		display: flex;
 		align-items: center;
 		justify-content: flex-end;
@@ -72,43 +81,5 @@
 		font-family: var(--font-mono);
 		color: var(--dim);
 		white-space: nowrap;
-	}
-
-	.drop,
-	.back {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		gap: 0.4em;
-		padding: 0.5em;
-		border: 1px solid var(--border);
-		border-radius: calc(var(--radius) - 2px);
-		background: var(--bg);
-		color: var(--dim);
-		font: inherit;
-		font-size: 0.85em;
-		cursor: pointer;
-		transition:
-			color 0.15s ease,
-			border-color 0.15s ease;
-	}
-
-	.drop:hover {
-		border-color: var(--danger, #c0392b);
-		color: var(--danger, #c0392b);
-	}
-
-	.back {
-		padding: 0.45em 0.7em;
-	}
-
-	.back:hover:not(:disabled) {
-		border-color: var(--accent);
-		color: var(--accent);
-	}
-
-	.back:disabled {
-		cursor: default;
-		opacity: 0.6;
 	}
 </style>

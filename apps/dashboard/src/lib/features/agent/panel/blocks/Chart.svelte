@@ -1,5 +1,6 @@
 <!-- Horizontal HTML bars, one per row; without a numeric column it falls back to a table. -->
 <script lang="ts">
+	import { Meter } from '@template/ui';
 	import { fmt } from '$lib/utils/fmt';
 	import { limits, type Block } from '../catalog';
 	import { bars, formatter } from '../numbers';
@@ -22,7 +23,7 @@
 					{#each list as row, i (i)}
 						<li>
 							<span class="label" title={row.label}>{row.label}</span>
-							<span class="track"><span class="bar" style:width="{row.width}%"></span></span>
+							<Meter value={row.width} max={100} />
 							<span class="value">{format(row.value)}</span>
 						</li>
 					{/each}
@@ -57,19 +58,6 @@
 		text-overflow: ellipsis;
 		white-space: nowrap;
 		color: var(--muted);
-	}
-
-	.track {
-		height: 0.8em;
-		border-radius: var(--radius);
-		background: var(--surface-2);
-	}
-
-	.bar {
-		display: block;
-		height: 100%;
-		border-radius: var(--radius);
-		background: var(--accent);
 	}
 
 	.value {

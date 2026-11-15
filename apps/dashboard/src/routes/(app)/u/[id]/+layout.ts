@@ -26,7 +26,7 @@ export const load: LayoutLoad = async (event) => {
       nav: {
         back: { href: "/developers/apps", label: "Apps" },
         crumbs: [
-          { href: "/", label: "Home" },
+          { href: "/home", label: "Home" },
           { href: "/developers", label: "Developers" },
           { href: "/developers/apps", label: "Apps" },
           { href: base, label },

@@ -38,7 +38,7 @@ test("breadcrumbs show the current settings hierarchy", async ({ page, as }) => 
   await page.goto("/settings/experience");
 
   const crumbs = page.getByRole("navigation", { name: "Breadcrumb" });
-  await expect(crumbs.getByRole("link", { name: "Home" })).toHaveAttribute("href", "/");
+  await expect(crumbs.getByRole("link", { name: "Home" })).toHaveAttribute("href", "/home");
   await expect(crumbs.getByRole("link", { name: "Settings" })).toHaveAttribute("href", "/settings");
   await expect(crumbs.getByText("Experience", { exact: true })).toHaveAttribute(
     "aria-current",

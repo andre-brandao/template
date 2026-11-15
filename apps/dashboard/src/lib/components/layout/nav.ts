@@ -58,7 +58,7 @@ export const section = (root: string, label: string, top: Section[]): Nav => ({
   root,
   back: { label: "Back" },
   crumbs: [
-    { href: "/", label: "Home" },
+    { href: "/home", label: "Home" },
     { href: root, label },
   ],
   sections: { top },

@@ -3,11 +3,14 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import { brand } from '$lib/brand';
+	import { user } from '$lib/utils/context';
 
 	let { word = false }: { word?: boolean } = $props();
+
+	const me = user();
 </script>
 
-<a href={resolve('/')} class="brand" aria-label="Home">
+<a href={resolve(me.current ? '/home' : '/')} class="brand" aria-label="Home">
 	<span class="dot"></span>
 	{#if word}<span>{brand.name}</span>{/if}
 </a>

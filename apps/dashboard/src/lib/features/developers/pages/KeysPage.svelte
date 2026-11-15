@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { createQuery } from '@tanstack/svelte-query';
 	import { createHotkey } from '@tanstack/svelte-hotkeys';
+	import { hotkeys } from '$lib/hotkeys';
 	import { Button, Issue, Kbd, modal } from '@template/ui';
 	import * as Header from '$lib/components/header';
 	import { keys } from '../api/keys.query';
@@ -11,7 +12,7 @@
 	const list = createQuery(() => keys());
 	const create = () => modal(KeyForm);
 
-	createHotkey('C', create);
+	createHotkey(hotkeys.create, create);
 </script>
 
 <Header.Root title="Personal access tokens">

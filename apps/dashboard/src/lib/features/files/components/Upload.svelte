@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Button, Kbd } from '@template/ui';
 	import { createHotkey } from '@tanstack/svelte-hotkeys';
+	import { hotkeys } from '$lib/hotkeys';
 
 	// The page owns the upload IO (it also feeds drag-and-drop); this wraps the hidden picker.
 	// Each file shows its own progress row, so the button never blocks another pick.
@@ -13,7 +14,7 @@
 		picker?.click();
 	}
 
-	createHotkey('C', open);
+	createHotkey(hotkeys.create, open);
 </script>
 
 <input

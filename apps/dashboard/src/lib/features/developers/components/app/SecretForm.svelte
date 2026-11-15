@@ -1,59 +1,52 @@
 <script lang="ts">
-	import { Button, FormBoundary, Issue, modal } from '@template/ui';
-	import { rotateSecret } from '../../api/apps.remote';
+	import { Button, Issue, modal } from '@template/ui';
+	import { rotate } from '../../api/developers.query';
 
 	let { id, held }: { id: string; held: boolean } = $props();
 
-	const rotate = $derived(rotateSecret.for(id));
-
-	// Local, not `rotate.result`: a remount must not show the last secret again.
+	// Local, not the mutation's data: a remount must not show the last secret again.
 	let secret = $state('');
 
+	const save = rotate({ onSuccess: (data) => (secret = data.secret) });
+
 	const copy = () => navigator.clipboard.writeText(secret);
+
+	async function run() {
+		// Rotating breaks whatever is signing with the current secret, so ask first.
+		if (held && !(await modal.confirm({ title: 'Rotate secret', action: 'Rotate secret', body: warn })))
+			return;
+		save.mutate({ path: { id } });
+	}
+
+	// Reset drops the secret the mutation still holds in its data.
+	function close() {
+		secret = '';
+		save.reset();
+	}
 </script>
 
 {#snippet warn()}
 	The current secret stops working immediately.
 {/snippet}
 
-<FormBoundary>
-	{#each rotate.fields.allIssues() ?? [] as issue (issue)}
-		<Issue>{issue.message}</Issue>
-	{/each}
+{#if save.error}
+	<Issue>{save.error.message}</Issue>
+{/if}
 
-	{#if secret}
-		<div class="minted">
-			<p>Copy it now — it is never shown again. Rotating replaces it at once.</p>
-			<code>{secret}</code>
-			<div class="actions">
-				<Button onclick={copy}>Copy</Button>
-				<Button onclick={() => (secret = '')}>Done</Button>
-			</div>
+{#if secret}
+	<div class="minted">
+		<p>Copy it now — it is never shown again. Rotating replaces it at once.</p>
+		<code>{secret}</code>
+		<div class="actions">
+			<Button onclick={copy}>Copy</Button>
+			<Button onclick={close}>Done</Button>
 		</div>
-	{:else}
-		<form
-			{...rotate.enhance(async (form) => {
-				// Rotating breaks whatever is signing with the current secret, so ask first.
-				if (
-					held &&
-					!(await modal.confirm({
-						title: 'Rotate secret',
-						action: 'Rotate secret',
-						body: warn
-					}))
-				)
-					return;
-				await form.submit();
-				secret = (await rotate.result)?.secret ?? '';
-			})}
-		>
-			<input {...rotate.fields.id.as('hidden', id)} />
-			<Button type="submit" pending={!!rotate.pending}>
-				{held ? 'Rotate secret' : 'Generate secret'}
-			</Button>
-		</form>
-	{/if}
-</FormBoundary>
+	</div>
+{:else}
+	<Button pending={save.isPending} onclick={run}>
+		{held ? 'Rotate secret' : 'Generate secret'}
+	</Button>
+{/if}
 
 <style>
 	.minted {

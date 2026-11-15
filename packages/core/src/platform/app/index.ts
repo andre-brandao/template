@@ -29,7 +29,7 @@ const SKEW = 5 * 60;
  * its inbound secret lets it post events in. Admin-only — `app:*` is not a member grant.
  */
 export namespace App {
-  const assert = Assert.create("App");
+  export const assert = Assert.create("App");
 
   export const Info = z
     .object({
@@ -60,27 +60,43 @@ export namespace App {
     }),
   );
 
-  export const create = fn(Info.pick({ name: true }), async (input) => {
-    Identity.check({ app: ["create"] });
-    const account = await User.create({
-      name: input.name,
-      // Apps never log in, but the column is unique and required. `.invalid` can't resolve.
-      email: `${Identifier.create("user").toLowerCase()}@app.invalid`,
-      kind: "system",
-      ownerID: Identity.userID(),
-    });
-    return assert.exists(fromID(account.id));
-  });
+  export const create = fn(
+    Info.pick({ name: true }),
+    async (input) => {
+      Identity.check({ app: ["create"] });
+      const account = await User.create({
+        name: input.name,
+        // Apps never log in, but the column is unique and required. `.invalid` can't resolve.
+        email: `${Identifier.create("user").toLowerCase()}@app.invalid`,
+        kind: "system",
+        ownerID: Identity.userID(),
+      });
+      return assert.exists(fromID(account.id));
+    },
+    {
+      title: "Create app",
+      description:
+        "Register an external system as a system account owned by the current admin. Admin-only.",
+    },
+  );
 
-  export const list = fn(z.void(), () => {
-    Identity.check({ app: ["read"] });
-    return query().then((rows) => rows.map(serialize));
-  });
+  export const list = fn(
+    z.void(),
+    () => {
+      Identity.check({ app: ["read"] });
+      return query().then((rows) => rows.map(serialize));
+    },
+    { title: "List apps", description: "List every registered app, by name. Admin-only." },
+  );
 
-  export const fromID = fn(Info.shape.id, (id) => {
-    Identity.check({ app: ["read"] });
-    return query(id).then((rows) => (rows[0] ? serialize(rows[0]) : null));
-  });
+  export const fromID = fn(
+    Info.shape.id,
+    (id) => {
+      Identity.check({ app: ["read"] });
+      return query(id).then((rows) => (rows[0] ? serialize(rows[0]) : null));
+    },
+    { title: "Get app", description: "Get one registered app by id. Admin-only." },
+  );
 
   /** Renames the App or swaps its avatar — the account's own profile fields, which only admins edit. */
   export const update = fn(
@@ -99,24 +115,41 @@ export namespace App {
           .where(eq(UserTable.id, input.id)),
       );
     },
+    { title: "Update app", description: "Rename an app or change its avatar. Admin-only." },
   );
 
   /** Disables the account. Its keys stop resolving at once, and its webhooks stop with them. */
-  export const remove = fn(Info.shape.id, async (id) => {
-    Identity.check({ app: ["delete"] });
-    await assert.exists(fromID(id));
-    await Database.transaction(async (tx) => {
-      await tx.update(UserTable).set({ timeDeleted: new Date() }).where(eq(UserTable.id, id));
-      for (const hook of await Webhook.list(id)) await Webhook.remove(hook.id);
-    });
-  });
+  export const remove = fn(
+    Info.shape.id,
+    async (id) => {
+      Identity.check({ app: ["delete"] });
+      await assert.exists(fromID(id));
+      await Database.transaction(async (tx) => {
+        await tx.update(UserTable).set({ timeDeleted: new Date() }).where(eq(UserTable.id, id));
+        for (const hook of await Webhook.list(id)) await Webhook.remove(hook.id);
+      });
+    },
+    {
+      title: "Remove app",
+      description:
+        "Disable an app's account. Its keys stop authenticating and its webhooks are removed. Admin-only.",
+    },
+  );
 
   /** The App's API keys. A key acts as the App, capped at its owner's role. */
-  export const keys = fn(Info.shape.id, async (id) => {
-    Identity.check({ app: ["read"] });
-    await assert.exists(fromID(id));
-    return Key.owned(id);
-  });
+  export const keys = fn(
+    Info.shape.id,
+    async (id) => {
+      Identity.check({ app: ["read"] });
+      await assert.exists(fromID(id));
+      return Key.owned(id);
+    },
+    {
+      title: "List app keys",
+      description:
+        "List an app's live API keys. Secrets are stored hashed, so `key` is null here. Admin-only.",
+    },
+  );
 
   export const key = fn(
     z.object({
@@ -131,31 +164,46 @@ export namespace App {
     },
   );
 
-  export const revoke = fn(z.object({ app: Info.shape.id, id: Key.Info.shape.id }), (input) => {
-    Identity.check({ app: ["update"] });
-    return Key.revoke({ id: input.id, user: input.app });
-  });
+  export const revoke = fn(
+    z.object({ app: Info.shape.id, id: Key.Info.shape.id }),
+    (input) => {
+      Identity.check({ app: ["update"] });
+      return Key.revoke({ id: input.id, user: input.app });
+    },
+    {
+      title: "Revoke app key",
+      description: "Revoke one of an app's API keys. It stops authenticating at once. Admin-only.",
+    },
+  );
 
   /**
    * Mints the inbound secret, retiring the last one. Plaintext in the `key` table under
    * `type: "hook"`, like a webhook's: verifying an HMAC needs the secret itself.
    */
-  export const secret = fn(Info.shape.id, async (id) => {
-    Identity.check({ app: ["update"] });
-    await assert.exists(fromID(id));
-    const value = token("whsec_");
-    await Database.transaction(async (tx) => {
-      await tx.delete(KeyTable).where(and(eq(KeyTable.userID, id), eq(KeyTable.type, "hook")));
-      await tx.insert(KeyTable).values({
-        id: Identifier.create("key"),
-        userID: id,
-        name: "inbound",
-        key: value,
-        type: "hook",
+  export const secret = fn(
+    Info.shape.id,
+    async (id) => {
+      Identity.check({ app: ["update"] });
+      await assert.exists(fromID(id));
+      const value = token("whsec_");
+      await Database.transaction(async (tx) => {
+        await tx.delete(KeyTable).where(and(eq(KeyTable.userID, id), eq(KeyTable.type, "hook")));
+        await tx.insert(KeyTable).values({
+          id: Identifier.create("key"),
+          userID: id,
+          name: "inbound",
+          key: value,
+          type: "hook",
+        });
       });
-    });
-    return value;
-  });
+      return value;
+    },
+    {
+      title: "Rotate app secret",
+      description:
+        "Mint the app's inbound signing secret, retiring the last one. Returned once, so copy it then. Admin-only.",
+    },
+  );
 
   /**
    * An inbound post: `{ type, data }`, signed the way outbound deliveries are — HMAC over

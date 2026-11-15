@@ -1,24 +1,20 @@
 <script lang="ts">
-	import { Button, FormBoundary, Issue } from '@template/ui';
-	import { removeKey } from '../api/keys.remote';
+	import { Button, Issue } from '@template/ui';
+	import { retire, revoke } from '../api/developers.query';
 
 	let { id, app, label = 'Revoke' }: { id: string; app?: string; label?: string } = $props();
 
-	const revoke = $derived(removeKey.for(id));
-	const issues = $derived(revoke.fields.allIssues() ?? []);
-	const pending = $derived(!!revoke.pending);
+	// With `app` the key is the App's, revoked through its own route.
+	const own = revoke();
+	const its = retire();
+	const drop = $derived(app ? its : own);
+
+	const run = () =>
+		app ? its.mutate({ path: { id: app, key: id } }) : own.mutate({ path: { id } });
 </script>
 
-<FormBoundary>
-	{#each issues as issue (issue)}
-		<Issue>{issue.message}</Issue>
-	{/each}
+{#if drop.error}
+	<Issue>{drop.error.message}</Issue>
+{/if}
 
-	<form {...revoke}>
-		<input {...revoke.fields.id.as('hidden', id)} />
-		{#if app}
-			<input {...revoke.fields.app.as('hidden', app)} />
-		{/if}
-		<Button variant="danger" type="submit" {pending}>{label}</Button>
-	</form>
-</FormBoundary>
+<Button variant="danger" pending={drop.isPending} onclick={run}>{label}</Button>

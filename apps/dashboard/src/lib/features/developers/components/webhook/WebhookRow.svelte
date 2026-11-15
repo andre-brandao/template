@@ -4,22 +4,24 @@
 	import EyeOff from '@lucide/svelte/icons/eye-off';
 	import Power from '@lucide/svelte/icons/power';
 	import Trash2 from '@lucide/svelte/icons/trash-2';
-	import { Card, FormBoundary, Issue, modal } from '@template/ui';
+	import { Card, Issue, modal } from '@template/ui';
 	import type { Webhook } from '@template/core/webhook';
 	import { fmt } from '$lib/utils/fmt';
-	import { disableWebhook, enableWebhook, removeWebhook } from '../../api/webhooks.remote';
+	import { toggle, unsubscribe } from '../../api/developers.query';
 
 	let { row }: { row: Webhook.Info } = $props();
 
 	const f = fmt();
 	let shown = $state(false);
 
-	const toggle = $derived((row.enabled ? disableWebhook : enableWebhook).for(row.id));
-	const drop = $derived(removeWebhook.for(row.id));
-	const issues = $derived([
-		...(toggle.fields.allIssues() ?? []),
-		...(drop.fields.allIssues() ?? [])
-	]);
+	const flip = toggle();
+	const drop = unsubscribe();
+	const error = $derived(flip.error ?? drop.error);
+
+	async function ask() {
+		const ok = await modal.confirm({ title: 'Delete webhook', action: 'Delete webhook', body: warn });
+		if (ok) drop.mutate({ path: { id: row.id } });
+	}
 
 	const scope = $derived(row.types.length ? row.types.join(', ') : 'every event');
 
@@ -73,46 +75,31 @@
 			</button>
 		</div>
 
-		<FormBoundary>
-			{#each issues as issue (issue)}
-				<Issue>{issue.message}</Issue>
-			{/each}
+		{#if error}
+			<Issue>{error.message}</Issue>
+		{/if}
 
-			<div class="acts">
-				<form
-					{...drop.enhance(async (form) => {
-						const ok = await modal.confirm({
-							title: 'Delete webhook',
-							action: 'Delete webhook',
-							body: warn
-						});
-						if (!ok) return;
-						await form.submit();
-					})}
-				>
-					<input {...drop.fields.id.as('hidden', row.id)} />
-					<button type="submit" disabled={!!drop.pending} title="Delete webhook">
-						<Trash2 size={16} />
-					</button>
-				</form>
-			</div>
+		<div class="acts">
+			<button type="button" disabled={drop.isPending} title="Delete webhook" onclick={ask}>
+				<Trash2 size={16} />
+			</button>
+		</div>
 
-			<!-- The switch and what it produced, together — the status only means anything next to it. -->
-			<form class="power" {...toggle}>
-				<input {...toggle.fields.id.as('hidden', row.id)} />
-				<button
-					type="submit"
-					class:on={row.enabled}
-					disabled={!!toggle.pending}
-					aria-pressed={row.enabled}
-					title={row.enabled ? 'Disable' : 'Enable'}
-				>
-					<Power size={16} />
-					{row.enabled ? 'Enabled' : 'Disabled'}
-				</button>
-				<span class="status {badge.tone}">{badge.label}</span>
-			</form>
-		</FormBoundary>
+		<!-- The switch and what it produced, together — the status only means anything next to it. -->
+		<div class="power">
+			<button
+				type="button"
+				class:on={row.enabled}
+				disabled={flip.isPending}
+				aria-pressed={row.enabled}
+				title={row.enabled ? 'Disable' : 'Enable'}
+				onclick={() => flip.mutate({ path: { id: row.id }, body: { enabled: !row.enabled } })}
+			>
+				<Power size={16} />
+				{row.enabled ? 'Enabled' : 'Disabled'}
+			</button>
+			<span class="status {badge.tone}">{badge.label}</span>
+		</div>
 	</div>
 </Card>
 

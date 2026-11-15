@@ -53,7 +53,8 @@ export namespace Auth {
 
   /**
    * Resolves a login to a `userID`. Idempotent; a new provider for a known email links onto
-   * that user. Bots are never linked — nobody logs in as one.
+   * that user. Apps are never linked — nobody logs in as one. Runs as the `internal` `auth`,
+   * holding `user:create` and nothing else, so every signup is on record as the app's doing.
    */
   export const link = fn(
     z.object({
@@ -64,46 +65,51 @@ export namespace Auth {
       name: z.string().min(1).optional(),
     }),
     (input) =>
-      Database.transaction(async (tx) => {
-        const linked = await tx
-          .select({
-            userID: ProviderTable.userID,
-            timeDeleted: UserTable.timeDeleted,
-            kind: UserTable.kind,
-          })
-          .from(ProviderTable)
-          .innerJoin(UserTable, eq(UserTable.id, ProviderTable.userID))
-          .where(
-            and(
-              eq(ProviderTable.providerId, input.provider),
-              eq(ProviderTable.accountId, input.accountId),
-            ),
-          )
-          .then((rows) => rows.at(0));
-        alive(linked);
-        if (linked) return linked.userID;
+      Identity.internal("auth", { user: ["create"] }, () =>
+        Database.transaction(async (tx) => {
+          const linked = await tx
+            .select({
+              userID: ProviderTable.userID,
+              timeDeleted: UserTable.timeDeleted,
+              kind: UserTable.kind,
+            })
+            .from(ProviderTable)
+            .innerJoin(UserTable, eq(UserTable.id, ProviderTable.userID))
+            .where(
+              and(
+                eq(ProviderTable.providerId, input.provider),
+                eq(ProviderTable.accountId, input.accountId),
+              ),
+            )
+            .then((rows) => rows.at(0));
+          alive(linked);
+          if (linked) return linked.userID;
 
-        // Linking a new provider onto a disabled account would hand it back — same guard.
-        const known = await tx
-          .select({ id: UserTable.id, timeDeleted: UserTable.timeDeleted, kind: UserTable.kind })
-          .from(UserTable)
-          .where(eq(UserTable.email, input.email))
-          .then((rows) => rows.at(0));
-        alive(known);
+          // Linking a new provider onto a disabled account would hand it back — same guard.
+          const known = await tx
+            .select({ id: UserTable.id, timeDeleted: UserTable.timeDeleted, kind: UserTable.kind })
+            .from(UserTable)
+            .where(eq(UserTable.email, input.email))
+            .then((rows) => rows.at(0));
+          alive(known);
 
-        const userID =
-          known?.id ??
-          (await User.create({ name: input.name ?? input.email, email: input.email })).id;
+          const userID =
+            known?.id ??
+            (await User.create({ name: input.name ?? input.email, email: input.email })).id;
 
-        await tx.insert(ProviderTable).values({
-          id: Identifier.create("provider"),
-          userID,
-          providerId: input.provider,
-          accountId: input.accountId,
-        });
+          await tx.insert(ProviderTable).values({
+            id: Identifier.create("provider"),
+            userID,
+            providerId: input.provider,
+            accountId: input.accountId,
+          });
+          // A new account is already on record as `user.created`; a new way into an old one isn't.
+          if (known)
+            await User.Event.Linked.publish({ provider: input.provider }, { subject: userID });
 
-        return userID;
-      }),
+          return userID;
+        }),
+      ),
   );
 
   /**
@@ -140,7 +146,7 @@ export namespace Auth {
   /**
    * The identity a `userID` acts as. The role always comes from the row, so no credential can
    * outlive the permissions of the user behind it. A `name` makes it an agent acting for them;
-   * a bot carries its owner, and stops resolving once they are disabled.
+   * an App carries its owner, and stops resolving once they are disabled.
    */
   export async function identify(
     userID: string,
@@ -149,11 +155,11 @@ export namespace Auth {
     const row = await User.fromID(userID);
     if (!row) invalid("Token belongs to a user that no longer exists");
     const base = { userID, role: row.role, credential: opts.credential };
-    if (row.kind === "bot") {
+    if (row.kind === "system") {
       const owner = row.ownerID ? await User.fromID(row.ownerID) : null;
-      if (!owner) invalid("This bot's owner is no longer active");
+      if (!owner) invalid("This App's owner is no longer active");
       return {
-        type: "bot",
+        type: "system",
         properties: { ...base, owner: { userID: owner.id, role: owner.role } },
       };
     }
@@ -309,22 +315,15 @@ export namespace Auth {
    */
   export namespace Link {}
 
-  /**
-   * Signed inbound webhooks — not built. An external system posting with an HMAC over the body
-   * resolves to a `bot` identity: the secret lives in the `key` table under `type: "signing"`,
-   * owned by the bot's user row, and verifying it is the whole adapter.
-   */
-  export namespace Signature {}
-
   // === UTILS ===
 
-  /** Turn disabled accounts and bots away at login, not at the first query after. */
-  function alive(row?: { timeDeleted: Date | null; kind?: "human" | "bot" }) {
-    if (row?.kind === "bot")
+  /** Turn disabled accounts and Apps away at login, not at the first query after. */
+  function alive(row?: { timeDeleted: Date | null; kind?: "human" | "system" }) {
+    if (row?.kind === "system")
       throw new VisibleError(
         "forbidden",
         ErrorCodes.Permission.ACCOUNT_RESTRICTED,
-        "Bot accounts can't log in",
+        "App accounts can't log in",
       );
     if (!row?.timeDeleted) return;
     throw new VisibleError(

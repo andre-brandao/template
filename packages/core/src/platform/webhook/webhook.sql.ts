@@ -10,7 +10,7 @@ export const WebhookTable = table(
   {
     id: id(),
     ...timestamps,
-    /** Who it belongs to: an App's bot, or the admin who made it. */
+    /** Who it belongs to: an App's account, or the admin who made it. */
     userID: ulid("user_id").notNull(),
     url: text().notNull(),
     secret: text().notNull(),

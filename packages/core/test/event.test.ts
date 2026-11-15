@@ -5,8 +5,7 @@ import { Bus } from "../src/platform/bus";
 import { Event } from "../src/platform/event";
 import { Identifier } from "../src/identifier";
 import { Todo } from "../src/todo";
-import { User } from "../src/user";
-import { testEmail, withTestUser } from "./util";
+import { createUser, testEmail, withTestUser } from "./util";
 
 const Thing = Bus.define("test.thing", z.object({}));
 const A = Bus.define("test.a", z.object({}));
@@ -48,9 +47,7 @@ describe("event", () => {
 
   withTestUser("a pinned read shows every actor, not just the caller", async ({ userID }) => {
     const { id } = await Todo.create({ title: "Shared", source: "test", sourceID: "shared" });
-    const mate = await Identity.provide("system", {}, () =>
-      User.create({ name: "Mate", email: testEmail() }),
-    );
+    const mate = await createUser({ name: "Mate", email: testEmail() });
     await Identity.provide("user", { userID: mate.id, role: "member" }, () =>
       Todo.update({ id, status: "active" }),
     );

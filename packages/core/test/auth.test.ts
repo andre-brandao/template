@@ -2,10 +2,11 @@ import { describe, expect, it } from "bun:test";
 import { Auth } from "../src/auth";
 import { User } from "../src/user";
 import { Identity } from "../src/identity";
+import { Permission } from "../src/permission";
 import { Email } from "../src/lib/email";
 import { Key } from "../src/platform/key";
 import { Delegation } from "../src/auth/delegation";
-import { testEmail } from "./util";
+import { createUser, testEmail } from "./util";
 
 describe("auth", () => {
   it("link creates a user on first sight", async () => {
@@ -42,11 +43,11 @@ describe("auth", () => {
     expect(a).not.toBe(b);
   });
 
-  it("link refuses a bot account", async () => {
+  it("link refuses an App account", async () => {
     const email = testEmail();
-    await User.create({ name: "CI", email, kind: "bot" });
+    await createUser({ name: "CI", email, kind: "system" });
     await expect(Auth.link({ provider: "email", accountId: email, email })).rejects.toThrow(
-      "Bot accounts can't log in",
+      "App accounts can't log in",
     );
   });
 });
@@ -158,11 +159,11 @@ describe("auth resolve", () => {
     Identity.provide("user", { userID, role: "member" }, fn);
 
   it("an api key resolves to its user, a bot's key to a bot carrying its owner", async () => {
-    const human = await User.create({ name: "Ada", email: testEmail() });
-    const bot = await User.create({
+    const human = await createUser({ name: "Ada", email: testEmail() });
+    const bot = await createUser({
       name: "CI",
       email: testEmail(),
-      kind: "bot",
+      kind: "system",
       ownerID: human.id,
     });
     const one = await Key.create({ userID: human.id, name: "k" });
@@ -171,7 +172,7 @@ describe("auth resolve", () => {
     const mine = await Auth.resolve(one.key!);
     expect(mine.type === "user" && mine.properties.credential).toBe(one.id);
     expect(await Auth.resolve(two.key!)).toEqual({
-      type: "bot",
+      type: "system",
       properties: {
         userID: bot.id,
         role: "member",
@@ -182,14 +183,16 @@ describe("auth resolve", () => {
   });
 
   it("a bot never outranks its owner, and dies with them", async () => {
-    const human = await User.create({ name: "Ada", email: testEmail() });
-    const bot = await User.create({
+    const human = await createUser({ name: "Ada", email: testEmail() });
+    const bot = await createUser({
       name: "CI",
       email: testEmail(),
-      kind: "bot",
+      kind: "system",
       ownerID: human.id,
     });
-    await Identity.provide("system", {}, () => User.assign({ id: bot.id, role: "admin" }));
+    await Identity.internal("test", Permission.all, () =>
+      User.assign({ id: bot.id, role: "admin" }),
+    );
     const key = await Key.create({ userID: bot.id, name: "k" });
 
     await Identity.enter(await Auth.resolve(key.key!), async () => {
@@ -197,12 +200,12 @@ describe("auth resolve", () => {
       expect(Identity.can({ admin: ["read"] })).toBe(false);
     });
 
-    await Identity.provide("system", {}, () => User.remove(human.id));
+    await Identity.internal("test", Permission.all, () => User.remove(human.id));
     await expect(Auth.resolve(key.key!)).rejects.toThrow("owner is no longer active");
   });
 
   it("a delegation resolves to an agent acting for its user, narrowed to its scope", async () => {
-    const user = await User.create({ name: "Ada", email: testEmail() });
+    const user = await createUser({ name: "Ada", email: testEmail() });
     const token = await as(user.id, () =>
       Delegation.create({ name: "copilot", scope: { todo: ["read"] } }),
     );

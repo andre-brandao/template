@@ -18,7 +18,7 @@ export const getEndpoint = remote.query(App.Info.shape.id, (id) =>
   new URL(`/hook/${id}`, env.API_URL ?? "http://localhost:3000").toString(),
 );
 
-/** The bot's profile fields. A separate form from the user's own rename: different grant. */
+/** The App's profile fields. A separate form from the user's own rename: different grant. */
 export const renameApp = remote.form(
   z.object({ id: App.Info.shape.id, name: App.Info.shape.name }),
   (input) => App.update(input),
@@ -27,7 +27,7 @@ export const renameApp = remote.form(
 export const createApp = remote.form(App.Info.pick({ name: true }), async (input) => {
   const app = await App.create(input);
   await getApps().refresh();
-  // An App is its bot's profile: that page is where it is configured.
+  // An App is its account's profile: that page is where it is configured.
   redirect(303, `/u/${app.id}`);
 });
 

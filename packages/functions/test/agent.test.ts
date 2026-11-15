@@ -1,11 +1,12 @@
 import { beforeAll, describe, expect, it, mock } from "bun:test";
 import { Client, StreamableHTTPClientTransport } from "@modelcontextprotocol/client";
-import { User } from "@template/core/user";
 import { Session } from "@template/core/auth/session";
 import { Delegation } from "@template/core/auth/delegation";
 import { Event } from "@template/core/event";
 import { Identity } from "@template/core/identity";
+import { Permission } from "@template/core/permission";
 import { app } from "../src/mcp";
+import { createUser } from "./api/util";
 
 // The dashboard agent reaches the MCP with a delegation: it acts as `copilot` for the user.
 let token: string;
@@ -40,7 +41,7 @@ function read(result: unknown) {
 describe("mcp as a delegated agent", () => {
   beforeAll(async () => {
     console.log = mock();
-    const user = await User.create({
+    const user = await createUser({
       name: "Session User",
       email: `session-${crypto.randomUUID()}@example.com`,
     });
@@ -58,7 +59,7 @@ describe("mcp as a delegated agent", () => {
     expect(made.title).toBe("From the agent");
     await client.close();
 
-    const log = await Identity.provide("system", {}, () =>
+    const log = await Identity.internal("test", Permission.all, () =>
       Event.list({ sourceID: made.id, page: 1, pageSize: 10 }),
     );
     const created = log.data.find((e) => e.type === "todo.created");

@@ -1,5 +1,6 @@
 import { describe, expect } from "bun:test";
 import { Identity } from "../src/identity";
+import { Permission } from "../src/permission";
 import { Project } from "../src/project";
 import { Todo } from "../src/todo";
 import { withTestUser } from "./util";
@@ -64,7 +65,7 @@ describe("project", () => {
 
   withTestUser("system bypasses enforcement", async () => {
     const { id } = await Project.create({ name: "Batch" });
-    await Identity.provide("system", {}, async () => {
+    await Identity.internal("test", Permission.all, async () => {
       await Project.update({ id, name: "Renamed by a job" });
       expect((await Project.fromID(id))?.name).toBe("Renamed by a job");
     });

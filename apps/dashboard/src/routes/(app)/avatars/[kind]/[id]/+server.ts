@@ -19,15 +19,15 @@ function at(kind: string, id: string) {
 }
 
 /**
- * Uploading and clearing mutate the subject, so only its owner may — or, for a bot, an admin
+ * Uploading and clearing mutate the subject, so only its owner may — or, for an App, an admin
  * managing its App. Viewing is open to any user.
  */
 async function owned(kind: "user" | "project", id: string) {
   if (Identity.use().type !== "user") error(401, "Authentication required");
   if (kind === "project" && !(await Project.fromID(id))) error(404, "Project not found");
   if (kind !== "user" || id === Identity.userID()) return;
-  const bot = (await User.fromID(id))?.kind === "bot";
-  if (!bot || !Identity.can({ app: ["update"] })) error(403, "Not your avatar");
+  const app = (await User.fromID(id))?.kind === "system";
+  if (!app || !Identity.can({ app: ["update"] })) error(403, "Not your avatar");
 }
 
 async function save(kind: "user" | "project", id: string, image: string | null) {

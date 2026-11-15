@@ -34,14 +34,14 @@ export namespace User {
       role: z.enum(Permission.roles).meta({
         description: "Decides everything the account may do. Only `user:assign` can change it.",
       }),
-      kind: z.enum(["human", "bot"]).meta({
+      kind: z.enum(["human", "system"]).meta({
         description:
-          "A `bot` is an account nobody logs in as — an external system or CI acting through API keys.",
+          "A `system` account is an App: nobody logs in as it — an external system or CI acting through API keys.",
       }),
       ownerID: z
         .string()
         .nullable()
-        .meta({ description: "For a bot, the person answerable for it. Null for people." }),
+        .meta({ description: "For an App, the person answerable for it. Null for people." }),
       prefs: Prefs.meta({
         description: "Display preferences. Every key has a default, so this is always complete.",
       }),
@@ -60,6 +60,10 @@ export namespace User {
 
   export const Event = {
     Assigned: Bus.define("user.assigned", z.object({ from: Info.shape.role, to: Info.shape.role })),
+    // Recorded as whoever made the account: the `auth` agent on signup, an admin for an App.
+    Created: Bus.define("user.created", Info.pick({ email: true, kind: true })),
+    // A new way into an existing account — Google added to one made by emailed code.
+    Linked: Bus.define("user.linked", z.object({ provider: z.string() })),
     Removed: Bus.define("user.removed", Info.pick({ email: true })),
     Restored: Bus.define("user.restored", Info.pick({ email: true })),
   };
@@ -119,8 +123,10 @@ export namespace User {
       kind: Info.shape.kind.optional(),
       ownerID: z.string().optional(),
     }),
+    // A grant, not an open door: signup holds it through the `auth` agent, an App through its admin.
     async (input) => {
-      return Database.use((tx) =>
+      Identity.check({ user: ["create"] });
+      const user = await Database.use((tx) =>
         tx
           .insert(UserTable)
           .values({
@@ -135,6 +141,8 @@ export namespace User {
           .returning()
           .then((rows) => serialize(rows[0]!)),
       );
+      await Event.Created.publish({ email: user.email, kind: user.kind }, { subject: user.id });
+      return user;
     },
   );
 
@@ -170,7 +178,7 @@ export namespace User {
   );
 
   /**
-   * Another account as a teammate sees it: no prefs, and no address for a bot — its email is a
+   * Another account as a teammate sees it: no prefs, and no address for an App — its email is a
    * placeholder. Any signed-in reader holds `user:read`, the same grant the assignee picker uses.
    */
   export const Profile = Info.pick({
@@ -200,7 +208,7 @@ export namespace User {
       kind: row.kind,
       role: row.role,
       timeCreated: row.timeCreated,
-      email: row.kind === "bot" ? null : row.email,
+      email: row.kind === "system" ? null : row.email,
       owner: owner ? { id: owner.id, name: owner.name } : null,
     };
   });

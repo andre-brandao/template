@@ -4,22 +4,23 @@ import { Event } from "../src/platform/event";
 import { Identity } from "../src/identity";
 import { Todo } from "../src/todo";
 import { User } from "../src/user";
-import { testEmail, withTestUser } from "./util";
+import { createUser, testEmail, withTestUser } from "./util";
 
 describe("profile", () => {
   withTestUser(
     "a teammate's profile hides prefs; a bot's hides its placeholder email",
     async () => {
-      const mate = await Identity.provide("system", {}, () =>
-        User.create({ name: "Mate", email: testEmail() }),
-      );
+      const mate = await createUser({ name: "Mate", email: testEmail() });
       const seen = await User.profile(mate.id);
       expect(seen?.email).toBe(mate.email);
       expect(seen && "prefs" in seen).toBe(false);
 
-      const bot = await Identity.provide("system", {}, () =>
-        User.create({ name: "CI", email: testEmail(), kind: "bot", ownerID: mate.id }),
-      );
+      const bot = await createUser({
+        name: "CI",
+        email: testEmail(),
+        kind: "system",
+        ownerID: mate.id,
+      });
       const profile = await User.profile(bot.id);
       expect(profile?.email).toBeNull();
       expect(profile?.owner).toEqual({ id: mate.id, name: "Mate" });
@@ -30,9 +31,7 @@ describe("profile", () => {
     "a member sees only public activity; an admin sees all of it",
     async ({ userID }) => {
       await Todo.create({ title: "Mine" });
-      const mate = await Identity.provide("system", {}, () =>
-        User.create({ name: "Mate", email: testEmail() }),
-      );
+      const mate = await createUser({ name: "Mate", email: testEmail() });
       // `user.assigned` is internal, so it stays off a member's view of the admin's profile.
       await Identity.provide("user", { userID, role: "admin" }, () =>
         User.assign({ id: mate.id, role: "admin" }),

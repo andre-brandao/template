@@ -42,9 +42,18 @@ describe("actor", () => {
     });
   });
 
-  test("system bypasses every check", () => {
-    Identity.provide("system", {}, () => {
-      expect(Identity.can({ user: ["delete"] })).toBe(true);
+  test("internal holding Permission.all can do everything", () => {
+    Identity.internal("test", Permission.all, () => {
+      expect(Identity.can(Permission.all)).toBe(true);
+      expect(Identity.can({ user: ["delete"], admin: ["read"] })).toBe(true);
+    });
+  });
+
+  test("internal with a narrow scope can't exceed it", () => {
+    Identity.internal("sync", { todo: ["read"] }, () => {
+      expect(Identity.can({ todo: ["read"] })).toBe(true);
+      expect(Identity.can({ todo: ["update"] })).toBe(false);
+      expect(() => Identity.check({ user: ["create"] })).toThrow(VisibleError);
     });
   });
 

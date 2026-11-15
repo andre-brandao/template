@@ -17,9 +17,9 @@ export const load: LayoutLoad = ({ data }) => ({
       top: [
         {
           title: "You",
-          items: [{ href: "/developers/keys", label: "API keys", icon: KeyRound }],
+          items: [{ href: "/developers/keys", label: "Personal access tokens", icon: KeyRound }],
         },
-        // Admin-only for now: an App's bot and a webhook both see the whole workspace.
+        // Admin-only for now: an App's account and a webhook both see the whole workspace.
         ...(data.admin
           ? [
               {

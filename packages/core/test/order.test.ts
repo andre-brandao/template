@@ -1,18 +1,15 @@
 import { describe, expect } from "bun:test";
-import { Identity } from "../src/identity";
 import { Admin } from "../src/platform/admin";
 import { Todo } from "../src/todo";
-import { User } from "../src/user";
 import { Event } from "../src/platform/event";
 import { Identifier } from "../src/identifier";
-import { testEmail, withTestUser } from "./util";
+import { createUser, testEmail, withTestUser } from "./util";
 
 const project = () => ({ source: "project", sourceID: Identifier.create("project") });
 
 const titles = (page: { data: Todo.Info[] }) => page.data.map((todo) => todo.title);
 
-const mint = (name: string) =>
-  Identity.provide("system", {}, async () => (await User.create({ name, email: testEmail() })).id);
+const mint = async (name: string) => (await createUser({ name, email: testEmail() })).id;
 
 describe("order", () => {
   withTestUser("sorts ascending and descending on one key", async () => {

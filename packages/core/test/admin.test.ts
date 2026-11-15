@@ -1,18 +1,14 @@
 import { describe, expect } from "bun:test";
-import { Identity } from "../src/identity";
 import { Admin } from "../src/platform/admin";
 import { Event } from "../src/platform/event";
 import { Auth } from "../src/auth";
 import { User } from "../src/user";
-import { testEmail, withTestUser } from "./util";
+import { createUser, testEmail, withTestUser } from "./util";
 
 /** A second account to act on, created outside the acting actor. */
-function mate() {
+async function mate() {
   const email = testEmail();
-  return Identity.provide("system", {}, async () => ({
-    email,
-    id: (await User.create({ name: "Mate", email })).id,
-  }));
+  return { email, id: (await createUser({ name: "Mate", email })).id };
 }
 
 describe("admin stats", () => {

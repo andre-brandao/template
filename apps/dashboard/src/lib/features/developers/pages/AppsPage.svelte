@@ -11,7 +11,7 @@
 </script>
 
 <Header.Root title="Apps">
-	{#snippet lead()}External systems with their own bot account, keys, webhooks and inbound endpoint.{/snippet}
+	{#snippet lead()}External systems with their own account, keys, webhooks and inbound endpoint.{/snippet}
 	{#snippet actions()}
 		<Button onclick={() => (creating = true)}>New app</Button>
 	{/snippet}

@@ -15,9 +15,9 @@
 		app
 	}: {
 		id: string;
-		/** Rendered when the reader may change this account: their own, or a bot they manage. */
+		/** Rendered when the reader may change this account: their own, or an App they manage. */
 		edit?: Snippet<[Profile]>;
-		/** Rendered on a bot's profile for an admin: its keys, inbound endpoint and webhooks. */
+		/** Rendered on an App's profile for an admin: its keys, inbound endpoint and webhooks. */
 		app?: Snippet;
 	} = $props();
 
@@ -35,7 +35,7 @@
 				{profile.name}
 			</span>
 		{/snippet}
-		{#snippet eyebrow()}{profile.kind === 'bot' ? 'App' : 'Person'}{/snippet}
+		{#snippet eyebrow()}{profile.kind === 'system' ? 'App' : 'Person'}{/snippet}
 		<Header.Item label="Role">{profile.role}</Header.Item>
 		{#if profile.owner}
 			<Header.Item label="Owner"><a href={`/u/${profile.owner.id}`}>{profile.owner.name}</a></Header.Item>

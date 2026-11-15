@@ -1,12 +1,12 @@
 import { describe, expect, it, mock } from "bun:test";
 import { App } from "@template/core/app";
 import { Identity } from "@template/core/identity";
-import { User } from "@template/core/user";
 import { sign } from "@template/core/util/sign";
 import { app } from "../../src/api/routes";
+import { createUser } from "./util";
 
 async function setup() {
-  const admin = await User.create({ name: "Admin", email: `a-${crypto.randomUUID()}@example.com` });
+  const admin = await createUser({ name: "Admin", email: `a-${crypto.randomUUID()}@example.com` });
   return Identity.provide("user", { userID: admin.id, role: "admin" }, async () => {
     const made = await App.create({ name: "Billing" });
     return { id: made.id, secret: await App.secret(made.id) };

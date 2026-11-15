@@ -1,7 +1,6 @@
 import { describe, expect } from "bun:test";
-import { setupApiTest } from "./util";
+import { createUser, setupApiTest } from "./util";
 import { app } from "../../src/api/routes";
-import { User } from "@template/core/user";
 import { Key } from "@template/core/key";
 import { Signing } from "@template/core/key/signing";
 import { Storage } from "@template/core/storage";
@@ -111,7 +110,7 @@ describe("file", () => {
     await upload(pngFile("private.png"));
 
     const otherEmail = `test-${crypto.randomUUID()}@example.com`;
-    const { id: otherUserID } = await User.create({ name: "Other User", email: otherEmail });
+    const { id: otherUserID } = await createUser({ name: "Other User", email: otherEmail });
     const otherToken = (await Key.create({ userID: otherUserID, name: "other" })).key;
     const headers = { authorization: `Bearer ${otherToken}` };
 

@@ -24,8 +24,8 @@ import { Webhook } from "../webhook";
 const SKEW = 5 * 60;
 
 /**
- * External systems, registered in Developers. An App is a bot account (`kind: "bot"`) owned
- * by the admin who made it: its API keys act as the bot, its webhooks are filed under it, and
+ * External systems, registered in Developers. An App is a system account (`kind: "system"`) owned
+ * by the admin who made it: its API keys act as that account, its webhooks are filed under it, and
  * its inbound secret lets it post events in. Admin-only — `app:*` is not a member grant.
  */
 export namespace App {
@@ -44,12 +44,12 @@ export namespace App {
         .meta({ description: "Whether it holds a secret to post events in with." }),
       timeCreated: z.iso.datetime().meta({ description: "When it was registered." }),
     })
-    .meta({ ref: "App", description: "An external system acting through its own bot account." });
+    .meta({ ref: "App", description: "An external system acting through its own system account." });
   export type Info = z.infer<typeof Info>;
 
   /**
    * What an App posted in. Not a public type, so it never goes back out to webhooks; it is the
-   * hook a workflow subscribes to. Published as the App's bot, which the event log records.
+   * hook a workflow subscribes to. Published as the App's account, which the event log records.
    */
   export const Received = Bus.define(
     "app.received",
@@ -62,14 +62,14 @@ export namespace App {
 
   export const create = fn(Info.pick({ name: true }), async (input) => {
     Identity.check({ app: ["create"] });
-    const bot = await User.create({
+    const account = await User.create({
       name: input.name,
-      // Bots never log in, but the column is unique and required. `.invalid` can't resolve.
-      email: `${Identifier.create("user").toLowerCase()}@bot.invalid`,
-      kind: "bot",
+      // Apps never log in, but the column is unique and required. `.invalid` can't resolve.
+      email: `${Identifier.create("user").toLowerCase()}@app.invalid`,
+      kind: "system",
       ownerID: Identity.userID(),
     });
-    return assert.exists(fromID(bot.id));
+    return assert.exists(fromID(account.id));
   });
 
   export const list = fn(z.void(), () => {
@@ -82,7 +82,7 @@ export namespace App {
     return query(id).then((rows) => (rows[0] ? serialize(rows[0]) : null));
   });
 
-  /** Renames the App or swaps its avatar — the bot's own profile fields, which only admins edit. */
+  /** Renames the App or swaps its avatar — the account's own profile fields, which only admins edit. */
   export const update = fn(
     z.object({
       id: Info.shape.id,
@@ -101,7 +101,7 @@ export namespace App {
     },
   );
 
-  /** Disables the bot. Its keys stop resolving at once, and its webhooks stop with them. */
+  /** Disables the account. Its keys stop resolving at once, and its webhooks stop with them. */
   export const remove = fn(Info.shape.id, async (id) => {
     Identity.check({ app: ["delete"] });
     await assert.exists(fromID(id));
@@ -111,7 +111,7 @@ export namespace App {
     });
   });
 
-  /** The App's API keys. A key acts as the bot, capped at its owner's role. */
+  /** The App's API keys. A key acts as the App, capped at its owner's role. */
   export const keys = fn(Info.shape.id, async (id) => {
     Identity.check({ app: ["read"] });
     await assert.exists(fromID(id));
@@ -245,7 +245,7 @@ export namespace App {
         .leftJoin(KeyTable, and(eq(KeyTable.userID, UserTable.id), eq(KeyTable.type, "hook")))
         .where(
           and(
-            eq(UserTable.kind, "bot"),
+            eq(UserTable.kind, "system"),
             isNull(UserTable.timeDeleted),
             id ? eq(UserTable.id, id) : undefined,
           ),

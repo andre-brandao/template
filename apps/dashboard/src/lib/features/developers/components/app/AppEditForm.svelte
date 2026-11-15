@@ -3,7 +3,7 @@
 	import AvatarUpload from '$lib/components/AvatarUpload.svelte';
 	import { renameApp } from '../../api/apps.remote';
 
-	// A bot's name and avatar, edited by an admin. `onchange` is the profile around it.
+	// An App's name and avatar, edited by an admin. `onchange` is the profile around it.
 	let {
 		id,
 		name,

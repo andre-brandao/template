@@ -1,6 +1,7 @@
 #!/usr/bin/env bun
 
 import { Identity } from "@template/core/identity";
+import { Permission } from "@template/core/permission";
 import { Database, sql } from "@template/core/drizzle";
 import { Project } from "@template/core/project";
 import { Queue } from "@template/core/queue";
@@ -128,7 +129,7 @@ async function seed() {
   const userID = await Auth.link({ provider: "email", accountId: email, email, name });
   // The dev account owns the instance: `/admin` is otherwise unreachable without hand-writing
   // the promotion SQL. The team below stay members, so both roles are represented locally.
-  await Identity.provide("system", {}, () => User.assign({ id: userID, role: "admin" }));
+  await Identity.internal("seed", Permission.all, () => User.assign({ id: userID, role: "admin" }));
   // The login screen prefills these credentials in dev, so the dev account needs a real
   // password row for them to match — an account gains one, it never signs up with one.
   await Identity.provide("user", { userID, role: "admin" }, () => Auth.Pass.set({ password: pw }));

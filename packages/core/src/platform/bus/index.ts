@@ -46,8 +46,11 @@ export namespace Bus {
       async publish(data: z.input<S>, opts: { subject?: string; tags?: string[] } = {}) {
         const actor = Identity.use();
         const userID = Identity.known() ? Identity.userID() : undefined;
-        // An agent's events say which agent, so an audit tells "copilot for andre" from andre.
-        const agent = actor.type === "agent" ? [`agent:${actor.properties.name}`] : [];
+        // Name the agent or internal code, so an audit tells "copilot for andre" from andre.
+        const agent =
+          actor.type === "agent" || actor.type === "internal"
+            ? [`${actor.type}:${actor.properties.name}`]
+            : [];
         const event = new Envelope({
           id: Identifier.create("event"),
           source: `${app}/${source}`,

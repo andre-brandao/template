@@ -19,7 +19,7 @@
 		{#each events as event (event.id)}
 			<li>
 				<code>{label(event)}</code>
-				{#if event.identity?.type === 'bot' && event.identity.properties.credential}
+				{#if event.identity && 'credential' in event.identity.properties && event.identity.properties.credential}
 					<span class="via">via {event.identity.properties.credential}</span>
 				{/if}
 				<time datetime={event.timeCreated}>{f.date(event.timeCreated)}</time>

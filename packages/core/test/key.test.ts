@@ -5,8 +5,7 @@ import { digest, encode } from "../src/util/hash";
 import { Key } from "../src/platform/key";
 import { KeyTable } from "../src/platform/key/key.sql";
 import { Signing } from "../src/platform/key/signing";
-import { User } from "../src/user";
-import { testEmail, withTestUser } from "./util";
+import { createUser, testEmail, withTestUser } from "./util";
 
 describe("key", () => {
   withTestUser("create mints a usable key that shows up in list", async ({ userID }) => {
@@ -141,7 +140,7 @@ describe("key", () => {
   });
 
   withTestUser("a key belonging to another user is not listable or removable", async () => {
-    const { id: otherID } = await User.create({ name: "Other", email: testEmail() });
+    const { id: otherID } = await createUser({ name: "Other", email: testEmail() });
     const key = await Key.create({ userID: otherID, name: "theirs" });
 
     expect(await Key.list(undefined)).toBeEmpty();

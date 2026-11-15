@@ -10,7 +10,7 @@ export const getKeys = remote
   .with(z.void().transform(() => ""))
   .query();
 
-// One form for both owners: with `app` the key is the App's bot's, without it the caller's.
+// One form for both owners: with `app` the key is the App's, without it the caller's.
 // Returns the secret: the row only keeps a hash, so this response is the one place it exists.
 export const createKey = remote.form(
   z.object({

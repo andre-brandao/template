@@ -10,17 +10,17 @@
 	let creating = $state(false);
 </script>
 
-<Header.Root title="API keys">
-	<Header.Item label="Keys">{keys.length}</Header.Item>
+<Header.Root title="Personal access tokens">
+	<Header.Item label="Tokens">{keys.length}</Header.Item>
 	<Header.Item label="Used">{keys.filter((one) => one.timeUsed).length}</Header.Item>
-	{#snippet lead()}Your personal keys. Send as <code>Authorization: Bearer &lt;key&gt;</code> to the API, CLI or MCP.{/snippet}
+	{#snippet lead()}Tokens that act as you. Send as <code>Authorization: Bearer &lt;key&gt;</code> to the API, CLI or MCP.{/snippet}
 	{#snippet actions()}
-		<Button onclick={() => (creating = true)}>New key</Button>
+		<Button onclick={() => (creating = true)}>New token</Button>
 	{/snippet}
 </Header.Root>
 
 <Drawer bind:open={creating}>
-	<h2>New key</h2>
+	<h2>New token</h2>
 	<KeyForm onsuccess={() => (creating = false)} />
 </Drawer>
 

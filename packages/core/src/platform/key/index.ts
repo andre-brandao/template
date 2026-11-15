@@ -38,7 +38,8 @@ export namespace Key {
     })
     .meta({
       ref: "Key",
-      description: "An API key belonging to a user.",
+      description:
+        "A personal access token (or an App's API key). It acts as the user that owns it.",
       example: Examples.Key,
     });
   export type Info = z.infer<typeof Info>;
@@ -139,9 +140,9 @@ export namespace Key {
       );
     },
     {
-      title: "List keys",
+      title: "List personal access tokens",
       description:
-        "List the current user's API keys. Secrets are stored hashed, so `key` is null here — only `create` ever returns one. The key authenticating this request is flagged `current`.",
+        "List the current user's personal access tokens. Secrets are stored hashed, so `key` is null here — only `create` ever returns one. The key authenticating this request is flagged `current`.",
     },
   );
 
@@ -185,7 +186,7 @@ export namespace Key {
     ),
   );
 
-  /** Revokes an API key — the secret stops authenticating immediately. */
+  /** Revokes a personal access token — the secret stops authenticating immediately. */
   export const remove = fn(
     Info.shape.id,
     async (id) =>
@@ -207,8 +208,9 @@ export namespace Key {
         ),
       ),
     {
-      title: "Revoke key",
-      description: "Revoke an API key. The secret stops authenticating immediately.",
+      title: "Revoke personal access token",
+      description:
+        "Revoke one of your personal access tokens. The secret stops authenticating immediately.",
     },
   );
 

@@ -1,9 +1,9 @@
 import { beforeAll, describe, expect, it, mock } from "bun:test";
 import { Client, StreamableHTTPClientTransport } from "@modelcontextprotocol/client";
-import { User } from "@template/core/user";
 import { Key } from "@template/core/key";
 import { Todo } from "@template/core/todo";
 import { app } from "../src/mcp";
+import { createUser } from "./api/util";
 
 let token: string;
 
@@ -25,7 +25,7 @@ function read(result: unknown) {
 describe("mcp", () => {
   beforeAll(async () => {
     console.log = mock();
-    const { id: userID } = await User.create({
+    const { id: userID } = await createUser({
       name: "Test User",
       email: `test-${crypto.randomUUID()}@example.com`,
     });

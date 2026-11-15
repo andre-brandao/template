@@ -147,9 +147,36 @@ describe("queue", () => {
       }),
     );
 
-    // What the consumer does with each message it receives — no pusher, so system.
+    // What the consumer does with each message it receives — no pusher, so public.
     await run({ ...sent[0]!.body, attempts: 1 });
-    expect(seen).toEqual(["ada:system"]);
+    expect(seen).toEqual(["ada:public"]);
+  });
+
+  it("a job pushed as public replays as public", async () => {
+    seen.length = 0;
+    const stamp = Identity.provide("public", {}, () => Identity.stamp());
+    expect(stamp).toBeNull();
+    await run({
+      id: "job_1",
+      name: "test.greet",
+      payload: { name: "anon" },
+      identity: stamp,
+      attempts: 1,
+    });
+    expect(seen).toEqual(["anon:public"]);
+  });
+
+  it("an internal job replays as that internal, scope intact", async () => {
+    seen.length = 0;
+    const scope = { todo: ["read"] } as const;
+    const stamp = Identity.internal("sync", scope, () => Identity.stamp());
+    expect(stamp).toEqual({ type: "internal", name: "sync", scope });
+    const replay = Queue.define("test.replay", z.object({}), async () => {
+      seen.push(`${Identity.use().type}`);
+      expect(Identity.use()).toEqual({ type: "internal", properties: { name: "sync", scope } });
+    });
+    await run({ id: "job_2", name: replay.name, payload: {}, identity: stamp, attempts: 1 });
+    expect(seen).toEqual(["internal"]);
   });
 
   withTestUser("cloudflare captures the pushing user for the consumer", async ({ userID }) => {

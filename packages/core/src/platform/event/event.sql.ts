@@ -9,7 +9,7 @@ export const EventTable = table(
     ...timestamps,
     userID: ulid("user_id"),
     // The whole identity as it stood: an agent's name and scope, the role it held.
-    identity: jsonb().$type<Identity.Info>().notNull().default({ type: "system", properties: {} }),
+    identity: jsonb().$type<Identity.Info>().notNull().default({ type: "public", properties: {} }),
     type: text().notNull(),
     source: text(),
     sourceID: ulid("source_id"),

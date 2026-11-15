@@ -13,7 +13,7 @@ export namespace Permission {
     todo: ["read", "create", "update", "delete"],
     key: ["read", "create", "update", "delete"],
     webhook: ["read", "create", "update", "delete"],
-    // External systems registered in Developers: a bot account, its keys and its inbound secret.
+    // External systems registered in Developers: a system account, its keys and its inbound secret.
     app: ["read", "create", "update", "delete"],
   } as const;
 
@@ -22,6 +22,9 @@ export namespace Permission {
 
   /** What a caller asks for. Base actions only — you never *request* an own-scoped action. */
   export type Grants = { [R in Res]?: readonly Act<R>[] };
+
+  /** Every action of every resource: what a seed or a test's setup holds, since nothing skips checks. */
+  export const all: Grants = Statement;
 
   /** What a role holds. `delete:own` narrows the action to rows the actor created. */
   type Held = { [R in Res]?: readonly (Act<R> | `${Act<R>}:own`)[] };

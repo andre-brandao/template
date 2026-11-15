@@ -8,7 +8,7 @@
 	import WebhookForm from '../webhook/WebhookForm.svelte';
 	import WebhookRow from '../webhook/WebhookRow.svelte';
 
-	// What an admin configures on a bot's profile. The profile itself — header, edit, activity —
+	// What an admin configures on an App's profile. The profile itself — header, edit, activity —
 	// is the people slice's; the route puts this panel inside it.
 	let { id }: { id: string } = $props();
 
@@ -55,7 +55,7 @@ curl -X POST ${url} -H "x-webhook-timestamp: $ts" -H "x-webhook-signature: $sig"
 				</form>
 			</FormBoundary>
 		</header>
-		<p class="hint">A bot account. It never acts above its owner's role.</p>
+		<p class="hint">A system account. It never acts above its owner's role.</p>
 	</section>
 
 	<section>
@@ -63,7 +63,7 @@ curl -X POST ${url} -H "x-webhook-timestamp: $ts" -H "x-webhook-signature: $sig"
 			<h2>API keys</h2>
 			<Button onclick={() => (keying = true)}>New key</Button>
 		</header>
-		<p class="hint">Send as <code>Authorization: Bearer &lt;key&gt;</code>; it acts as the app.</p>
+		<p class="hint">Send as <code>Authorization: Bearer &lt;key&gt;</code>; each key acts as the App, not as you.</p>
 		<KeyList keys={await getAppKeys(id)} app={id} />
 	</section>
 

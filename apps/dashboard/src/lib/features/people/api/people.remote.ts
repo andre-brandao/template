@@ -5,7 +5,7 @@ import { remote } from "$lib/server/remote";
 
 /**
  * One account as the reader may see it, plus what the reader may do with it: edit it as
- * themselves, or manage it as an admin when it is a bot.
+ * themselves, or manage it as an admin when it is an App.
  */
 export const getProfile = remote.query(User.Info.shape.id, async (id) => {
   const profile = await User.profile(id);
@@ -13,7 +13,7 @@ export const getProfile = remote.query(User.Info.shape.id, async (id) => {
   return {
     ...profile,
     self: Identity.userID() === id,
-    manage: profile.kind === "bot" && Identity.can({ app: ["update"] }),
+    manage: profile.kind === "system" && Identity.can({ app: ["update"] }),
   };
 });
 

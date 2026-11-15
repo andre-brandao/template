@@ -14,7 +14,7 @@
 			<Input placeholder="e.g. Billing, CI" {...createApp.fields.name.as('text')} />
 		</Field>
 		<p class="hint">
-			Registers a bot account you own. Its keys act as the bot, never above your role.
+			Registers a system account you own. Its keys act as it, never above your role.
 		</p>
 		<Button type="submit" pending={!!createApp.pending}>Create app</Button>
 	</form>

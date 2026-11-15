@@ -36,7 +36,7 @@ export namespace Webhook {
       id: z.string().meta({ description: Common.IdDescription, example: Examples.Webhook.id }),
       url: z.url().max(2000).meta({ description: "Where deliveries are POSTed." }),
       userID: z.string().meta({
-        description: "Who it belongs to: an App's bot, or the admin who made it.",
+        description: "Who it belongs to: an App's account, or the admin who made it.",
         example: Examples.User.id,
       }),
       secret: z.string().meta({ description: "Signing secret. Handed back in full to admins." }),

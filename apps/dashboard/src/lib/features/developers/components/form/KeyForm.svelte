@@ -2,7 +2,7 @@
 	import { Button, Field, FormBoundary, Input, Issue } from '@template/ui';
 	import { createKey } from '../../api/keys.remote';
 
-	// `app` mints the key for that App's bot instead of for the signed-in user.
+	// `app` mints the key for that App instead of for the signed-in user.
 	let { app, onsuccess }: { app?: string; onsuccess?: () => void } = $props();
 
 	// The row keeps a hash, so this is the only render the secret exists in. Local, not
@@ -19,7 +19,7 @@
 
 	{#if secret}
 		<div class="minted">
-			<p>Copy it now — it is never shown again. Lose it and the key has to be replaced.</p>
+			<p>Copy it now — it is never shown again. Lose it and the {app ? "API key" : "token"} has to be replaced.</p>
 			<code>{secret}</code>
 			<div class="actions">
 				<Button onclick={copy}>Copy</Button>

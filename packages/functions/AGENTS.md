@@ -24,22 +24,26 @@ environment it runs in, so the app itself never knows where it runs. See `docs/r
 
 ## Key Patterns
 
-**Identity** — every handler runs under the identity `middleware.ts` resolved: `public`, `system`,
-`user`, `bot` (a `kind: "bot"` user acting through keys) or `agent` (software acting for a user,
-narrowed to a scope).
+**Identity** — every handler runs under the identity `middleware.ts` resolved: `public`, `user`,
+`agent` (software acting for a user, narrowed to a scope), `system` (only an App's account: a
+`kind: "system"` row, capped by its owner) or `internal` (the app's own code, like `auth`, holding
+exactly its `scope`). There is no root: seeds and test setup run as `internal` holding `Permission.all`.
 
 ```ts
 import { Identity } from "@template/core/identity";
 
 Identity.use(); // the current identity ({ type, properties })
-Identity.userID(); // who answers for the act — the user, the bot, or the agent's user
+Identity.userID(); // who answers for the act — the user, the agent's user, or the App
 Identity.check({ todo: ["read"] }); // 403 unless held (an agent also needs it in scope)
 ```
 
-Handlers never call `provide` — the middleware does, with whatever `Auth.resolve` returned.
+Handlers never call `provide` — the middleware does, with whatever `Auth.resolve` returned. To act
+as software, use `Identity.delegate(name, grants?, cb)` (for the caller, narrowed) or
+`Identity.internal(name, grants, cb)` (the app itself, e.g. `auth` signing someone up). An App or
+`public` can't delegate; `internal` only narrows to another `internal`.
 
 **Auth** — a request carries `Authorization: Bearer <token>`, and `Auth.resolve` (core) owns every
-format: `agt-` is a delegation (the copilot → `agent`), `sk-` an API key (`user` or `bot`), anything
+format: `agt-` is a delegation (the copilot → `agent`), `sk-` an API key (`user`, or `system` for an App), anything
 else a JWT from the OpenAuth issuer, verified through the `Auth.Issuer` port and linked to a local
 user. A JWT minted for an `mcp:*` client is an `agent` and only works on the MCP. The role always
 comes from the user row. Dashboard sessions are cookies only — never a bearer. No header means

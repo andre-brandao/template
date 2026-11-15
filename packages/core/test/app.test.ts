@@ -25,7 +25,7 @@ describe("app", () => {
       const key = await App.key({ app: app.id, name: "deploy" });
       expect(await App.keys(app.id)).toHaveLength(1);
       const info = await Auth.resolve(key.key!);
-      expect(info.type === "bot" && info.properties.owner.userID).toBe(userID);
+      expect(info.type === "system" && info.properties.owner.userID).toBe(userID);
 
       await App.revoke({ app: app.id, id: key.id });
       await expect(Auth.resolve(key.key!)).rejects.toThrow("Invalid or expired API key");
@@ -51,7 +51,7 @@ describe("app", () => {
 
       const log = await Event.list({ sourceID: app.id, page: 1, pageSize: 5 });
       expect(log.data[0]?.data).toEqual({ app: app.id, type: "invoice.paid", data: { n: 1 } });
-      expect(log.data[0]?.identity?.type).toBe("bot");
+      expect(log.data[0]?.identity?.type).toBe("system");
     },
     "admin",
   );

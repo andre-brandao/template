@@ -11,7 +11,7 @@
 
 <!--
 	One page per account. The people slice owns the profile; editing comes from whichever
-	slice owns that account's fields — your own from auth, a bot's from developers.
+	slice owns that account's fields — your own from auth, an App's from developers.
 	`params` swaps to the next route's mid-navigation; the guard keeps `id` defined.
 -->
 {#if params.id}

@@ -35,10 +35,10 @@
 			/>
 		</Field>
 		<div class="mint">
-			<Button variant="secondary" pending={!!mintKey.pending} onclick={mint}>Mint a test key</Button>
+			<Button variant="secondary" pending={!!mintKey.pending} onclick={mint}>Mint a test token</Button>
 			<p class="hint">
-				Expires in a day. Any other key has to be pasted — one is only readable when minted, in
-				<a href="/developers/keys">Developers</a>.
+				Expires in a day. Any other token has to be pasted — one is only readable when minted, in
+				<a href="/developers/keys">Personal access tokens</a>.
 			</p>
 		</div>
 	{/snippet}

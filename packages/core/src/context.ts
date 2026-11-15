@@ -46,6 +46,10 @@ export namespace Context {
         }
         return result;
       },
+      /** The value if one is provided, for callers that have a fallback of their own. */
+      peek() {
+        return storage.getStore();
+      },
       provide<R>(value: T, fn: () => R) {
         return storage.run(value, fn);
       },

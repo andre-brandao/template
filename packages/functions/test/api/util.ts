@@ -3,7 +3,11 @@ import { app } from "../../src/api/routes";
 import { User } from "@template/core/user";
 import { Key } from "@template/core/key";
 import { Identity } from "@template/core/identity";
+import { Permission } from "@template/core/permission";
 import { z } from "zod";
+/** `User.create` wants `user:create`; test setup holds it as `internal`. */
+export const createUser = (input: Parameters<typeof User.create>[0]) =>
+  Identity.internal("test", Permission.all, () => User.create(input));
 
 /**
  * Setup API test environment with an authenticated user and utility functions.
@@ -23,7 +27,7 @@ export function setupApiTest() {
     console.error = mock();
 
     const email = `test-${crypto.randomUUID()}@example.com`;
-    userID = (await User.create({ name: "Test User", email })).id;
+    userID = (await createUser({ name: "Test User", email })).id;
     token = (await Key.create({ userID, name: "test" })).key;
   });
 

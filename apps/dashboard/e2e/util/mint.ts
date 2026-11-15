@@ -1,6 +1,6 @@
 import { Identity } from "@template/core/identity";
 import { Database } from "@template/core/drizzle";
-import type { Permission } from "@template/core/permission";
+import { Permission } from "@template/core/permission";
 import { User } from "@template/core/user";
 import { Session } from "@template/core/auth/session";
 import { db } from "./db";
@@ -14,11 +14,13 @@ export function mint(
 ) {
   return Database.provide(db, async () => {
     const email = opts.email ?? `e2e-${crypto.randomUUID()}@example.com`;
-    const { id: userID } = await User.create({ name: opts.name ?? "E2E User", email });
+    const { id: userID } = await Identity.internal("e2e", Permission.all, () =>
+      User.create({ name: opts.name ?? "E2E User", email }),
+    );
     // Signup makes everyone a member and the session join reads the role off the row, so
     // anything else has to be written there — the cookie is opaque and carries nothing.
     if (role !== "member")
-      await Identity.provide("system", {}, () => User.assign({ id: userID, role }));
+      await Identity.internal("e2e", Permission.all, () => User.assign({ id: userID, role }));
     const cookie = await Session.create(userID);
     return { userID, email, role, cookie };
   });

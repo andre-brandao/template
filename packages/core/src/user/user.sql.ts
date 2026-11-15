@@ -14,11 +14,11 @@ export const UserTable = table(
     image: text("image"),
     // `$type` narrows `$inferSelect` to the role union, so the actor boundary needs no cast.
     role: text().$type<Permission.Role>().notNull().default("member"),
-    // A `bot` is an account nobody logs in as — an external system, CI — acting through keys.
-    kind: text({ enum: ["human", "bot"] })
+    // A `system` account is one nobody logs in as — an App: CI, an integration — acting through keys.
+    kind: text({ enum: ["human", "system"] })
       .notNull()
       .default("human"),
-    // Set for bots: the person answerable for it. A bot never outlives or outranks them.
+    // Set for Apps: the person answerable for it. An App never outlives or outranks them.
     ownerID: ulid("owner_id"),
     // Defaulting to the whole object, not `{}`, backfills existing rows in the same
     // ALTER statement — so reads never have to cope with a half-empty blob.

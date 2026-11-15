@@ -26,9 +26,9 @@ export namespace KeyApi {
       // Literal, not `Key.create.meta`: the route takes `expiresInDays` where core takes a date.
       doc(
         {
-          title: "Create key",
+          title: "Create personal access token",
           description:
-            "Mint a named API key for the current user. Pass `expiresInDays` to set an expiry; omit it for a key that never expires.",
+            "Mint a named personal access token that acts as the current user. Pass `expiresInDays` to set an expiry; omit it for a key that never expires.",
         },
         {
           200: doc.json(Key.Info),

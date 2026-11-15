@@ -1,5 +1,6 @@
 import { describe, expect } from "bun:test";
 import { Identity } from "../src/identity";
+import { Permission } from "../src/permission";
 import { Insights, Todo } from "../src/todo";
 import { Identifier } from "../src/identifier";
 import { withTestUser } from "./util";
@@ -250,7 +251,7 @@ describe("todo", () => {
 
     const issue = String(Math.floor(Math.random() * 1e9));
     const other = await Todo.create({ title: "Duplicate" });
-    await Identity.provide("system", {}, async () => {
+    await Identity.internal("test", Permission.all, async () => {
       await Todo.annotate({ id, set: { "github.com/issue-id": issue } });
       await expect(
         Todo.annotate({ id: other.id, set: { "github.com/issue-id": issue } }),
@@ -260,7 +261,7 @@ describe("todo", () => {
 
   withTestUser("system bypasses enforcement", async () => {
     const { id } = await Todo.create({ title: "Batch" });
-    await Identity.provide("system", {}, async () => {
+    await Identity.internal("test", Permission.all, async () => {
       await Todo.update({ id, title: "Renamed by a job" });
       expect((await Todo.fromID(id))?.title).toBe("Renamed by a job");
     });

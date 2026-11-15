@@ -1,6 +1,6 @@
 name: template
 
-# Shared config for the four app services that run off the one app image.
+# Shared config for the app services that run off the one app image.
 x-app: &app
   build:
     context: ../..
@@ -56,6 +56,7 @@ services:
     command: ["serve", "api"]
     environment:
       API_PORT: 3000
+      QUEUE_DRIVER: db
     ports:
       - "8080:3000"
     volumes:
@@ -72,6 +73,7 @@ services:
     command: ["serve", "mcp"]
     environment:
       MCP_PORT: 3001
+      QUEUE_DRIVER: db
     ports:
       - "3001:3001"
     depends_on:
@@ -104,6 +106,7 @@ services:
     command: ["serve", "dashboard"]
     environment:
       PORT: 3000
+      QUEUE_DRIVER: db
     ports:
       - "3000:3000"
     volumes:
@@ -116,6 +119,19 @@ services:
     healthcheck:
       <<: *probe
       test: ["CMD", "template-cli", "health", "dashboard"]
+
+  # Drains the `job` table that api, mcp and dashboard push to. No port, so no probe.
+  queue:
+    <<: *app
+    entrypoint: ["bun", "run", "packages/functions/src/queue/target/bun.ts"]
+    command: []
+    environment:
+      QUEUE_DRIVER: db
+    volumes:
+      - filedata:/data/files
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
 
 volumes:
   pgdata:

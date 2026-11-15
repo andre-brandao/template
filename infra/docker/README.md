@@ -2,7 +2,7 @@
 
 A self-contained stack that runs the whole app with no SST, Cloudflare, or
 PlanetScale — just containers. It's an alternative to the SST/Cloudflare path
-(`sst.config.ts`, `infra/cf/*`); the two coexist.
+(`sst.config.ts`, `infra/sst/cf/*`); the two coexist.
 
 ## Services
 
@@ -14,10 +14,16 @@ PlanetScale — just containers. It's an alternative to the SST/Cloudflare path
 | `mcp`       | 3001      | MCP server (`serve mcp`), path `/mcp`                 |
 | `auth`      | 3002      | OpenAuth issuer (`serve auth`)                        |
 | `dashboard` | 3000      | SvelteKit dashboard (adapter-node, `serve dashboard`) |
+| `queue`     | —         | Job worker (`functions/src/queue/target/bun.ts`)      |
 
-The four app services share one image (`template-app`) built from the repo
-root. The image's entrypoint is the `template-cli`; each service just passes a
+The app services share one image (`template-app`) built from the repo root.
+The image's entrypoint is the `template-cli`; each service just passes a
 `serve <target>` verb. Each waits for `migrate` to finish.
+
+`queue` overrides the entrypoint to run the bun queue target, the same worker
+`bun dev` starts. Compose pins `QUEUE_DRIVER=db` on api, mcp, dashboard and
+queue, so jobs land in the `job` table and honor `delay` and retries; the
+`.env` value is overridden.
 
 `migrate` runs off the same image as a one-shot `template-cli db migrate`.
 
@@ -71,8 +77,8 @@ costs no retry, and the first success ends it. Liveness has nothing to hang off 
 Docker never restarts a container for going unhealthy, so the probe would be inert.
 
 On Kubernetes the three map straight onto `livenessProbe: /healthz`, `readinessProbe:
-/readyz` and `startupProbe: /startupz`. On Lambda and Cloudflare (`infra/aws`,
-`infra/cf`) nothing calls them — neither platform probes.
+/readyz` and `startupProbe: /startupz`. On Lambda and Cloudflare (`infra/sst/aws`,
+`infra/sst/cf`) nothing calls them — neither platform probes.
 
 ## Notes
 

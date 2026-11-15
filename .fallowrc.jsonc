@@ -4,15 +4,17 @@
     // Invoked from GitHub Actions via `require('./.github/comment.cjs')` in a
     // workflow `script` step; fallow can't parse the YAML call, so mark it a root.
     ".github/comment.cjs",
-    "packages/ui/src/lib/index.ts",
-    "packages/*/src/**/*.test.ts",
-    "packages/*/test/**/*.ts",
-    "packages/functions/**/*.ts",
+    // Run as `bun run build.ts` from the sdk gen script, which fallow does not trace.
+    "packages/sdk/ts/build.ts",
+    // One process per surface and platform (bun, lambda, worker); infra and dev.ts spawn them.
+    "packages/functions/src/*/target/*.ts",
+    "packages/functions/scripts/*.ts",
     "scripts/**/*.ts",
-    "infra/**/*.ts",
     "sst.config.ts",
-    "**/build.ts",
-    "**/adapter/*.ts",
+    // Not imported by sst.config.ts, which loads only infra/sst/cf.
+    "infra/sst/aws/index.ts",
+    "infra/alchemy/*/alchemy.run.ts",
+    "infra/terraform/build.ts",
   ],
   "ignorePatterns": ["**/*.gen.ts"],
   // Every *.story.svelte colocates its metadata in the module script and is
@@ -23,6 +25,11 @@
     {
       "file": "packages/core/src/**/port.ts",
       "exports": ["Adapter"],
+    },
+    // Every SST module exports `outputs`; sst.config.ts merges them off the barrel namespace.
+    {
+      "file": "infra/sst/*/*.ts",
+      "exports": ["outputs"],
     },
     {
       "file": "**/*.story.svelte",
@@ -45,7 +52,7 @@
       "exports": ["Block", "catalog", "instructions", "shape", "verify"],
     },
   ],
-  // infra/*/stage.ts share a small boilerplate header across cloud targets
+  // infra/**/stage.ts share a small boilerplate header across cloud targets
   // (aws, cf); the overlap is stage-setup wiring, not logic worth extracting.
   // Anything narrower than a directory is waived where it lives, with a
   // `fallow-ignore-next-line code-duplication` comment above the block.
@@ -84,21 +91,8 @@
       },
     ],
   },
-  // @cloudflare/workers-types has no direct import — app.d.ts hand-rolls its Platform env
-  // types — but it's kept for the workerd/adapter-cloudflare build to resolve Worker runtime
-  // globals, so removing it risks breaking the Cloudflare target. Suppress the false positive.
-  // @sveltejs/package is only invoked as the `svelte-package` CLI in ui's prepack script,
-  // which import tracing can't see.
-  // @tanstack/svelte-query backs the sdk's generated query plugin, which sits in ignored *.gen.ts.
   "ignoreDependencies": [
     "@hono/standard-validator",
-    "@template/ui",
-    "@cloudflare/workers-types",
-    "@sveltejs/package",
-    "@tanstack/svelte-query",
-    // Peers of `alchemy` (infra/alchemy): installed for it, never imported by us.
-    "@effect/platform-bun",
-    "@effect/platform-node",
     // Only for bundlers: standard-json 0.4 imports it behind importIfInstalled (zod v3 path).
     "zod-to-json-schema",
   ],

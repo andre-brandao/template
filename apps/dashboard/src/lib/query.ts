@@ -46,6 +46,9 @@ export const warm = (cache: QueryClient, ...opts: EnsureQueryDataOptions<any, an
     opts.map((one) => cache.ensureQueryData({ ...one, revalidateIfStale: true }).catch(() => {})),
   );
 
+/** A load's `fetch` for an SDK factory: SSR reads carry the cookie and replay on hydration. */
+export type Ctx = { fetch?: typeof fetch };
+
 // For remote-function writes: refresh the TanStack queries they touched.
 export const invalidate = (key: QueryKey) => shared?.invalidateQueries({ queryKey: key });
 

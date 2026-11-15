@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { z } from 'zod';
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import { Button, Fill, Input, Issue, LazySelect, Pagination, Scroll, Skeleton, Toggle } from '@template/ui';
 	import * as Header from '$lib/components/header';
@@ -8,33 +7,15 @@
 	import { query } from '$lib/utils/params';
 	import { events as entries, facets } from '../api/admin.query';
 	import LogsTable from '../components/LogsTable.svelte';
+	import { events } from '../filters';
 	import { keys } from '../sort';
 
 	// In the URL so a narrowed log can be linked, reloaded and stepped back through.
-	const params = query(
-		z.object({
-			q: z.string().default(''),
-			type: z.string().default(''),
-			source: z.string().default(''),
-			user: z.string().default(''),
-			page: z.coerce.number().int().min(1).default(1),
-			sort: keys.events.schema
-		})
-	);
+	const params = query(events.schema);
 
 	const f = fmt();
 	const client = useQueryClient();
-	const log = createQuery(() =>
-		entries({
-			search: params.q || undefined,
-			type: params.type || undefined,
-			source: params.source || undefined,
-			userID: params.user || undefined,
-			page: params.page,
-			pageSize: 50,
-			sort: params.sort
-		})
-	);
+	const log = createQuery(() => entries(events.args(params)));
 	const filtered = $derived(!!(params.q || params.type || params.source || params.user));
 
 	// Read only by the two selects, when opened; both share the one cached query.

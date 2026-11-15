@@ -5,10 +5,10 @@ import {
   getKeyQueryKey,
   postKeyMutation,
 } from "@template/sdk/query";
-import type { Opts } from "$lib/query";
+import type { Ctx, Opts } from "$lib/query";
 
 // The caller's own keys are public API. A minted secret lives only in mutation data; `gcTime: 0` drops it on unmount.
-export const list = () => getKeyOptions();
+export const list = (ctx?: Ctx) => getKeyOptions(ctx);
 
 export const create = (opts?: Opts<typeof postKeyMutation>) =>
   createMutation(() => ({

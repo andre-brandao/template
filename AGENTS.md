@@ -133,21 +133,26 @@ function foo() {
 
 ### Schema Definitions (Drizzle)
 
-Use snake_case for field names so column names don't need to be redefined as strings.
+Declare tables with `snakeCase.table` (drizzle 1.0 moved `casing` from `drizzle()` onto the
+table). Keys stay camelCase and the SQL column is derived from the key, so never write the
+column name as a string. A closed value set is a `text` column narrowed with `$type` (or
+`text({ enum })`), never a `pgEnum`.
 
 ```ts
 // Good
-const table = sqliteTable("session", {
+const SessionTable = snakeCase.table("session", {
   id: text().primaryKey(),
-  project_id: text().notNull(),
-  created_at: integer().notNull(),
+  projectID: text().notNull(), // project_id
+  timeCreated: timestamp().notNull(), // time_created
+  kind: text().$type<"web" | "cli">().notNull(),
 });
 
 // Bad
-const table = sqliteTable("session", {
+const SessionTable = pgTable("session", {
   id: text("id").primaryKey(),
   projectID: text("project_id").notNull(),
-  createdAt: integer("created_at").notNull(),
+  timeCreated: timestamp("time_created").notNull(),
+  kind: kindEnum().notNull(),
 });
 ```
 

@@ -1,25 +1,25 @@
-import { boolean, index, integer, pgTable as table, text } from "drizzle-orm/pg-core";
+import { boolean, index, integer, snakeCase, text } from "drizzle-orm/pg-core";
 import { id, timestamp, timestamps, ulid } from "../../drizzle/types";
 
 /**
  * An outbound subscription. `secret` is stored plaintext so deliveries can be signed;
  * `failures` counts consecutive failed POSTs and trips `enabled` off at the limit.
  */
-export const WebhookTable = table(
+export const WebhookTable = snakeCase.table(
   "webhook",
   {
     id: id(),
     ...timestamps,
     /** Who it belongs to: an App's account, or the admin who made it. */
-    userID: ulid("user_id").notNull(),
+    userID: ulid().notNull(),
     url: text().notNull(),
     secret: text().notNull(),
     // Empty means every public type. Matched with `types @> ARRAY[type]`.
     types: text().array().notNull().default([]),
     enabled: boolean().notNull().default(true),
     failures: integer().notNull().default(0),
-    lastStatus: integer("last_status"),
-    timeDelivered: timestamp("time_delivered"),
+    lastStatus: integer(),
+    timeDelivered: timestamp(),
   },
   (table) => [index("webhook_enabled").on(table.enabled), index("webhook_user").on(table.userID)],
 );

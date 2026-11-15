@@ -1,14 +1,14 @@
-import { index, jsonb, pgTable as table, text } from "drizzle-orm/pg-core";
+import { index, jsonb, snakeCase, text } from "drizzle-orm/pg-core";
 import type { Metadata } from "../util/meta";
 import { id, timestamps, ulid } from "../drizzle/types";
 
-export const ProjectTable = table(
+export const ProjectTable = snakeCase.table(
   "project",
   {
     id: id(),
     ...timestamps,
-    createdBy: ulid("created_by").notNull(),
-    name: text("name").notNull(),
+    createdBy: ulid().notNull(),
+    name: text().notNull(),
     description: text(),
     image: text(),
     // Backstage-style: `{ annotations, links }`, see util/meta.

@@ -1,17 +1,17 @@
-import { boolean, jsonb, pgTable as table, uniqueIndex, text } from "drizzle-orm/pg-core";
+import { boolean, jsonb, snakeCase, uniqueIndex, text } from "drizzle-orm/pg-core";
 import { id, timestamps, ulid } from "../drizzle/types";
 import { Permission } from "../permission";
 import { DEFAULTS, type Prefs } from "./prefs";
 
-export const UserTable = table(
+export const UserTable = snakeCase.table(
   "user",
   {
     id: id(),
     ...timestamps,
-    name: text("name").notNull(),
-    email: text("email").notNull(),
-    emailVerified: boolean("email_verified").notNull().default(false),
-    image: text("image"),
+    name: text().notNull(),
+    email: text().notNull(),
+    emailVerified: boolean().notNull().default(false),
+    image: text(),
     // `$type` narrows `$inferSelect` to the role union, so the actor boundary needs no cast.
     role: text().$type<Permission.Role>().notNull().default("member"),
     // A `system` account is one nobody logs in as — an App: CI, an integration — acting through keys.
@@ -19,7 +19,7 @@ export const UserTable = table(
       .notNull()
       .default("human"),
     // Set for Apps: the person answerable for it. An App never outlives or outranks them.
-    ownerID: ulid("owner_id"),
+    ownerID: ulid(),
     // Defaulting to the whole object, not `{}`, backfills existing rows in the same
     // ALTER statement — so reads never have to cope with a half-empty blob.
     prefs: jsonb().$type<Prefs>().notNull().default(DEFAULTS),

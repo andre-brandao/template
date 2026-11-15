@@ -51,15 +51,15 @@ if (ids.includes(`"${prefix}"`)) {
 
 await Bun.write(
   targets.sql,
-  `import { index, pgTable as table, text } from "drizzle-orm/pg-core";
+  `import { index, snakeCase, text } from "drizzle-orm/pg-core";
 import { id, timestamps, ulid } from "../drizzle/types";
 
-export const ${pascal}Table = table(
+export const ${pascal}Table = snakeCase.table(
   "${name}",
   {
     id: id(),
     ...timestamps,
-    createdBy: ulid("created_by").notNull(),
+    createdBy: ulid().notNull(),
     title: text().notNull(),
   },
   (table) => [index("${name}_created_by").on(table.createdBy)],

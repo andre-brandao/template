@@ -96,8 +96,8 @@ if (isPermanentStage) {
     environment: {
       DATABASE_URL: $interpolate`postgresql://${migrator_role.username}:${migrator_role.password}@${migrator_role.accessHostUrl}/${DB_NAME}?sslmode=require`,
     },
-    create: "bun run db:migrate",
-    update: "bun run db:migrate",
+    create: "bun src/drizzle/migrate.ts",
+    update: "bun src/drizzle/migrate.ts",
     triggers: [sql],
   }, {
     dependsOn: [migrator_role],

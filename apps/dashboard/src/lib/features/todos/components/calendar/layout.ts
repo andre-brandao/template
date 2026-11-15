@@ -1,5 +1,5 @@
 import type { Todo } from "@template/core/todo";
-import { at, fromDay, shift, split, type Day } from "@template/ui";
+import { at, fromDay, shift, split, type Day } from "@template/ui/day";
 
 /** A todo placed on days: `from`/`until` are the start and due clocks, empty when date-only. */
 export type Item = { todo: Todo.Info; start: Day; end: Day; from: string; until: string };

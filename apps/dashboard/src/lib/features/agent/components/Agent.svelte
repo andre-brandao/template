@@ -22,6 +22,7 @@
 	import Header from './Header.svelte';
 	import HistoryList from './History.svelte';
 	import Thread from './Thread.svelte';
+	import ToolList from './Tools.svelte';
 
 	const ctx = agent();
 	const admin = user().can({ admin: ['read'] });
@@ -70,6 +71,8 @@
 	<!-- The composer stays mounted across tabs, so a draft survives a look at the history. -->
 	{#if ctx.tab === 'history'}
 		<Scroll fill><HistoryList /></Scroll>
+	{:else if ctx.tab === 'tools'}
+		<Scroll fill><ToolList /></Scroll>
 	{:else if ctx.chat.messages.length}
 		<Thread />
 	{:else}

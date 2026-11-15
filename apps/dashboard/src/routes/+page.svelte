@@ -12,9 +12,10 @@
 <main><Hero /></main>
 
 <style>
+	/* Left-aligned: the rule's left edge is the page's spine. */
 	main {
 		width: 100%;
-		max-width: 40em;
+		max-width: 46em;
 		margin: 12vh auto 0;
 		padding: 0 1.25em 4em;
 	}

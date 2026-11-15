@@ -1,23 +1,18 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { invalidate } from '$lib/query';
-	import { Button, Field, Input, Issue, Section, Skeleton } from '@template/ui';
+	import { Button, Field, Inline, Issue, Section, Skeleton } from '@template/ui';
 	import * as Header from '$lib/components/header';
 	import AvatarUpload from '$lib/components/AvatarUpload.svelte';
 	import Can from '$lib/components/Can.svelte';
 	import { get, update } from '../api/projects.query';
-	import DeleteDialog from '../components/DeleteDialog.svelte';
+	import Delete from '../components/Delete.svelte';
 
 	let { id }: { id: string } = $props();
 
 	const project = createQuery(() => get(id));
-
-	let saved = $state(false);
-	const save = update({ onSuccess: () => (saved = true) });
-
-	// Seeded from the loaded project and edited locally; a new project reseeds them.
-	let name = $derived(project.data?.name ?? '');
-	let description = $derived(project.data?.description ?? '');
+	const save = update();
 </script>
 
 {#snippet back()}<a href="/projects/{id}">{project.data?.name ?? 'Project'}</a>{/snippet}
@@ -37,34 +32,27 @@
 			onchange={() => invalidate([{ tags: ['Project'] }])}
 		/>
 
-		{#if save.error}
-			<Issue>{save.error.message}</Issue>
-		{/if}
+		<!-- Inline keeps the typed value with a dot while it saves, and reverts on failure. -->
+		<Field as="div" label="Name">
+			<Inline
+				label="Name"
+				value={project.data.name}
+				onsave={(name) => {
+					if (!name) throw new Error('A project needs a name');
+					return save.mutateAsync({ path: { id }, body: { name } });
+				}}
+			/>
+		</Field>
 
-		<form
-			oninput={() => (saved = false)}
-			onsubmit={(e) => {
-				e.preventDefault();
-				save.mutate({ path: { id }, body: { name, description: description || null } });
-			}}
-		>
-			<Field label="Name">
-				<Input required value={name} oninput={(e) => (name = e.currentTarget.value)} />
-			</Field>
-
-			<Field label="Description">
-				<Input
-					placeholder="What is this for?"
-					value={description}
-					oninput={(e) => (description = e.currentTarget.value)}
-				/>
-			</Field>
-
-			<div class="foot">
-				{#if saved}<span class="saved">Saved</span>{/if}
-				<Button type="submit" pending={save.isPending}>Save changes</Button>
-			</div>
-		</form>
+		<Field as="div" label="Description">
+			<Inline
+				label="Description"
+				placeholder="What is this for?"
+				multiline
+				value={project.data.description ?? ''}
+				onsave={(text) => save.mutateAsync({ path: { id }, body: { description: text || null } })}
+			/>
+		</Field>
 	</Section>
 
 	<Can grants={{ project: ['delete'] }} owner={project.data.createdBy}>
@@ -74,29 +62,12 @@
 			title="Delete project"
 			description="Takes its stages and insights with it. Its todos are kept."
 		>
-			<!-- A block wrapper so the button keeps its own width in the stretched column. -->
-			<div><DeleteDialog {id} name={project.data.name} /></div>
+			<Delete {id} name={project.data.name} ondone={() => goto('/projects')}>
+				{#snippet children(ask, pending)}
+					<!-- A block wrapper so the button keeps its own width in the stretched column. -->
+					<div><Button variant="danger" {pending} onclick={ask}>Delete project</Button></div>
+				{/snippet}
+			</Delete>
 		</Section>
 	</Can>
 {/if}
-
-<style>
-	form {
-		display: flex;
-		flex-direction: column;
-		gap: 1em;
-	}
-
-	.foot {
-		display: flex;
-		align-items: center;
-		justify-content: flex-end;
-		gap: 0.9em;
-	}
-
-	.saved {
-		font-size: 0.93em;
-		font-weight: 500;
-		color: var(--done);
-	}
-</style>

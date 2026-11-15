@@ -1,8 +1,10 @@
 <script lang="ts">
-	import { Button, Input, Issue } from '@template/ui';
+	import { Status, modal } from '@template/ui';
 	import type { Link } from '@template/core/util/meta';
 	import { label } from '$lib/utils/link';
+	import LinkForm from './LinkForm.svelte';
 	import X from '@lucide/svelte/icons/x';
+	import Plus from '@lucide/svelte/icons/plus';
 
 	// The writes differ per slice (todo vs project), so they come in; the fields don't.
 	let {
@@ -15,45 +17,38 @@
 		drop: (url: string) => Promise<unknown>;
 	} = $props();
 
-	let pending = $state(false);
-	let error = $state<string>();
+	// Per url: a removal in flight, or the reason it failed. A success drops the row itself.
+	let marks = $state<Record<string, { state: 'pending' | 'failed'; message?: string }>>({});
 
 	// A remote command rejects with `{ body: { message } }`, the query SDK with the body itself.
-	function run(job: Promise<unknown>) {
-		pending = true;
-		error = undefined;
-		return job
-			.then(
-				() => true,
-				(err: { message?: string; body?: { message?: string } }) => {
-					error = err.body?.message ?? err.message ?? 'Could not save the link';
-					return false;
-				}
-			)
-			.finally(() => (pending = false));
-	}
-
-	async function submit(e: SubmitEvent & { currentTarget: HTMLFormElement }) {
-		e.preventDefault();
-		const form = e.currentTarget;
-		const data = new FormData(form);
-		const title = String(data.get('title') ?? '').trim();
-		if (await run(add({ url: String(data.get('url')), title: title || undefined }))) form.reset();
+	function remove(url: string) {
+		marks[url] = { state: 'pending' };
+		drop(url).then(
+			() => delete marks[url],
+			(err: { message?: string; body?: { message?: string } }) => {
+				marks[url] = {
+					state: 'failed',
+					message: err.body?.message ?? err.message ?? 'Could not remove the link'
+				};
+			}
+		);
 	}
 </script>
 
 {#if links.length}
 	<ul>
 		{#each links as link (link.url)}
-			<li>
+			{@const mark = marks[link.url]}
+			<li class={{ pending: mark?.state === 'pending' }}>
 				<a href={link.url} target="_blank" rel="noopener noreferrer" title={link.url}>
 					{label(link)}
 				</a>
+				{#if mark}<Status state={mark.state} message={mark.message} />{/if}
 				<button
 					type="button"
 					aria-label="Remove {label(link)}"
-					disabled={pending}
-					onclick={() => run(drop(link.url))}
+					disabled={mark?.state === 'pending'}
+					onclick={() => remove(link.url)}
 				>
 					<X size={14} strokeWidth={1.75} />
 				</button>
@@ -62,19 +57,15 @@
 	</ul>
 {/if}
 
-{#if error}<Issue>{error}</Issue>{/if}
-
-<form class="add" onsubmit={submit}>
-	<Input type="url" name="url" placeholder="https://…" required />
-	<Input name="title" placeholder="Title (optional)" maxlength={200} />
-	<Button type="submit" variant="secondary" {pending}>Add link</Button>
-</form>
+<button type="button" class="add" onclick={() => modal(LinkForm, { add })}>
+	<Plus size={14} strokeWidth={1.75} />
+	Add link
+</button>
 
 <style>
-	/* Rows split by hairlines, like the rest of a minimal list. */
 	ul {
 		list-style: none;
-		margin: 0 0 0.75em;
+		margin: 0 0 0.35em;
 		padding: 0;
 	}
 
@@ -84,6 +75,11 @@
 		gap: 0.5em;
 		min-height: 2.25em;
 		border-bottom: 1px solid var(--border);
+		transition: opacity 140ms ease;
+	}
+
+	li.pending {
+		opacity: 0.55;
 	}
 
 	li a {
@@ -101,26 +97,65 @@
 		text-decoration: underline;
 	}
 
-
-	li button {
+	button {
 		display: inline-flex;
-		padding: 0.3em;
+		align-items: center;
 		border: 0;
 		border-radius: var(--radius-sm);
 		background: none;
 		color: var(--dim);
+		font: inherit;
 		cursor: pointer;
+		transition:
+			opacity 140ms ease,
+			color 140ms ease,
+			background 140ms ease;
+	}
+
+	button:hover {
+		background: var(--hover);
+	}
+
+	button:focus-visible {
+		outline: 2px solid var(--accent);
+		outline-offset: -1px;
+	}
+
+	/* Hidden until the row is hovered or focused; opacity keeps the row from reflowing. */
+	li button {
+		padding: 0.3em;
+		opacity: 0;
+	}
+
+	li:hover button,
+	li:focus-within button {
+		opacity: 1;
 	}
 
 	li button:hover {
-		background: var(--hover);
 		color: var(--danger);
 	}
 
 	.add {
-		display: flex;
-		flex-direction: column;
-		align-items: stretch;
-		gap: 0.5em;
+		gap: 0.35em;
+		padding: 0.3em 0.45em;
+		margin-left: -0.45em;
+		font-size: 0.86em;
+	}
+
+	.add:hover {
+		color: var(--ink);
+	}
+
+	@media (hover: none) {
+		li button {
+			opacity: 1;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		button {
+			transition: none;
+		}
 	}
 </style>

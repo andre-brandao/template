@@ -14,7 +14,7 @@ src/
     common.ts           — validator/authRequired/PaginatedQuery/ErrorResponses helpers
     doc.ts              — describe(tag) → doc(), the OpenAPI shaping for a handler
     middleware.ts       — actor resolution (bearer token) + error → HTTP response
-    handler/            — one file per domain (file, key, project, todo, user)
+    handler/            — one file per domain (app, file, hook, key, project, todo, user, webhook)
     target/             — bun.ts | lambda.ts | worker.ts, the entry points
   auth/ mcp/ queue/     — same shape: the service, plus its target/
 ```

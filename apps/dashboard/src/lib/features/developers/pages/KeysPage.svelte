@@ -1,34 +1,32 @@
 <script lang="ts">
-	import { Button, Drawer } from '@template/ui';
+	import { createQuery } from '@tanstack/svelte-query';
+	import { createHotkey } from '@tanstack/svelte-hotkeys';
+	import { Button, Issue, Kbd, modal } from '@template/ui';
 	import * as Header from '$lib/components/header';
-	import { getKeys } from '../api/keys.remote';
-	import KeyForm from '../components/form/KeyForm.svelte';
-	import KeyList from '../components/list/KeyList.svelte';
+	import { keys } from '../api/developers.query';
+	import KeyForm from '../components/key/KeyForm.svelte';
+	import KeyList from '../components/key/KeyList.svelte';
+	import Loading from '../components/Loading.svelte';
 
-	const keys = $derived(await getKeys());
+	const list = createQuery(() => keys());
+	const create = () => modal(KeyForm);
 
-	let creating = $state(false);
+	createHotkey('C', create);
 </script>
 
 <Header.Root title="Personal access tokens">
-	<Header.Item label="Tokens">{keys.length}</Header.Item>
-	<Header.Item label="Used">{keys.filter((one) => one.timeUsed).length}</Header.Item>
-	{#snippet lead()}Tokens that act as you. Send as <code>Authorization: Bearer &lt;key&gt;</code> to the API, CLI or MCP.{/snippet}
+	<Header.Item label="Tokens">{list.data?.length ?? '–'}</Header.Item>
+	<Header.Item label="Used">{list.data?.filter((one) => one.timeUsed).length ?? '–'}</Header.Item>
+	{#snippet lead()}Tokens that act as you. Send as <code>Authorization: Bearer &lt;key&gt;</code>.{/snippet}
 	{#snippet actions()}
-		<Button onclick={() => (creating = true)}>New token</Button>
+		<Button onclick={create}>New token <Kbd keys="C" /></Button>
 	{/snippet}
 </Header.Root>
 
-<Drawer bind:open={creating}>
-	<h2>New token</h2>
-	<KeyForm onsuccess={() => (creating = false)} />
-</Drawer>
-
-<KeyList {keys} />
-
-<style>
-	h2 {
-		margin: 0 0 1em;
-		font-size: 1.15em;
-	}
-</style>
+{#if list.isPending}
+	<Loading />
+{:else if list.isError}
+	<Issue>{list.error.message}</Issue>
+{:else}
+	<KeyList keys={list.data} {create} />
+{/if}

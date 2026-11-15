@@ -2,12 +2,13 @@
 	import type { Snippet } from 'svelte';
 	import { z } from 'zod';
 	import { createQuery } from '@tanstack/svelte-query';
+	import { createHotkey } from '@tanstack/svelte-hotkeys';
 	import { query } from '$lib/utils/params';
 	import { debounce } from '$lib/utils/debounce';
-	import { Button, Drawer, Empty, Input, Issue, Skeleton } from '@template/ui';
+	import { Button, Empty, Input, Issue, Kbd, Skeleton, modal } from '@template/ui';
 	import * as Header from '$lib/components/header';
-	import Folder from '../components/Folder.svelte';
 	import ProjectForm from '../components/ProjectForm.svelte';
+	import Row from '../components/Row.svelte';
 	import { list } from '../api/projects.query';
 
 	// `extra` is a secondary action another slice brings, like the GitHub import.
@@ -17,14 +18,19 @@
 	const projects = createQuery(() => list(params.q));
 	const commit = debounce((q: string) => params.update({ q: q || undefined }), 300);
 
-	let adding = $state(false);
+	let search: HTMLInputElement | undefined;
+
+	const add = () => modal(ProjectForm);
+
+	createHotkey('C', add);
+	createHotkey('/', () => search?.focus());
 </script>
 
 <Header.Root title="Projects" lead="Each project files its own todos, stages and insights.">
-	<Header.Item label="Projects">{projects.data?.data.length ?? '–'}</Header.Item>
+	<Header.Item label="Projects">{projects.data?.total ?? '–'}</Header.Item>
 	{#snippet actions()}
 		{@render extra?.()}
-		<Button onclick={() => (adding = true)}>New project</Button>
+		<Button onclick={add}>New project <Kbd keys="C" /></Button>
 	{/snippet}
 	{#snippet strip()}
 		<Header.Group>
@@ -33,9 +39,13 @@
 				name="search"
 				autocomplete="off"
 				aria-label="Search projects"
+				aria-keyshortcuts="/"
 				placeholder="Search projects…"
 				value={params.q}
 				oninput={(e) => commit(e.currentTarget.value)}
+				{@attach (el: HTMLInputElement) => {
+					search = el;
+				}}
 			/>
 		</Header.Group>
 		{#if params.q}
@@ -46,46 +56,48 @@
 	{/snippet}
 </Header.Root>
 
-<Drawer bind:open={adding}>
-	<h2>New project</h2>
-	<ProjectForm onsuccess={() => (adding = false)} />
-</Drawer>
-
 {#if projects.isPending}
-	<div class="drawer">
-		{#each [0, 1, 2] as i (i)}
-			<Skeleton h="8em" />
+	<div class="skeleton">
+		{#each [0, 1, 2, 3] as i (i)}
+			<Skeleton h="3.25em" />
 		{/each}
 	</div>
 {:else if projects.isError}
 	<Issue>{projects.error.message}</Issue>
 {:else if projects.data.data.length === 0}
-	<Empty>
-		{#if params.q}
+	{#if params.q}
+		<Empty>
 			No projects match “{params.q}”.
-		{:else}
+			{#snippet action()}
+				<Button variant="ghost" onclick={() => params.update({ q: undefined })}>Clear search</Button>
+			{/snippet}
+		</Empty>
+	{:else}
+		<Empty>
 			No projects yet. Create one to start filing todos.
-		{/if}
-	</Empty>
+			{#snippet action()}
+				<Button onclick={add}>New project <Kbd keys="C" /></Button>
+			{/snippet}
+		</Empty>
+	{/if}
 {:else}
-	<div class="drawer">
-		{#each projects.data.data as project, i (project.id)}
-			<Folder {project} pos={i % 3} />
+	<ul>
+		{#each projects.data.data as project (project.id)}
+			<Row {project} />
 		{/each}
-	</div>
+	</ul>
 {/if}
 
 <style>
-	h2 {
-		margin: 0 0 1em;
-		font-size: 1.15em;
+	ul {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		border-top: 1px solid var(--border);
 	}
 
-	.drawer {
+	.skeleton {
 		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(16em, 1fr));
-		gap: 1.25em;
-		/* Folder tabs stand proud of their card; leave them room under the header. */
-		padding-top: 0.75em;
+		gap: 0.35em;
 	}
 </style>

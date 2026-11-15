@@ -87,51 +87,82 @@ export namespace Webhook {
           .then((rows) => serialize(rows[0]!)),
       );
     },
+    {
+      title: "Create webhook",
+      description:
+        "Subscribe a URL to published events. Pass `userID` to file it under an app; empty `types` means every event. Admin-only.",
+    },
   );
 
   /** Every subscription, or one owner's — an App's page asks for its own. */
-  export const list = fn(z.string().optional(), (owner) => {
-    Identity.check({ webhook: ["read"] });
-    return Database.use((tx) =>
-      tx
-        .select()
-        .from(WebhookTable)
-        .where(
-          and(isNull(WebhookTable.timeDeleted), owner ? eq(WebhookTable.userID, owner) : undefined),
-        )
-        .orderBy(desc(WebhookTable.timeCreated))
-        .then((rows) => rows.map((row) => serialize(row))),
-    );
-  });
+  export const list = fn(
+    z.string().optional(),
+    (owner) => {
+      Identity.check({ webhook: ["read"] });
+      return Database.use((tx) =>
+        tx
+          .select()
+          .from(WebhookTable)
+          .where(
+            and(
+              isNull(WebhookTable.timeDeleted),
+              owner ? eq(WebhookTable.userID, owner) : undefined,
+            ),
+          )
+          .orderBy(desc(WebhookTable.timeCreated))
+          .then((rows) => rows.map((row) => serialize(row))),
+      );
+    },
+    {
+      title: "List webhooks",
+      description: "List every webhook subscription, or one owner's with `owner`. Admin-only.",
+    },
+  );
 
   /** Re-enabling clears the failure count, so a fixed endpoint doesn't trip the limit again. */
-  export const update = fn(Patch.extend({ id: Info.shape.id }), async ({ id, ...patch }) => {
-    Identity.check({ webhook: ["update"] });
-    await assert.exists(
-      Database.use((tx) =>
-        tx
-          .update(WebhookTable)
-          .set({ ...patch, timeUpdated: new Date(), ...(patch.enabled ? { failures: 0 } : {}) })
-          .where(and(eq(WebhookTable.id, id), isNull(WebhookTable.timeDeleted)))
-          .returning({ id: WebhookTable.id })
-          .then((rows) => rows.at(0)),
-      ),
-    );
-  });
+  export const update = fn(
+    Patch.extend({ id: Info.shape.id }),
+    async ({ id, ...patch }) => {
+      Identity.check({ webhook: ["update"] });
+      const row = await assert.exists(
+        Database.use((tx) =>
+          tx
+            .update(WebhookTable)
+            .set({ ...patch, timeUpdated: new Date(), ...(patch.enabled ? { failures: 0 } : {}) })
+            .where(and(eq(WebhookTable.id, id), isNull(WebhookTable.timeDeleted)))
+            .returning()
+            .then((rows) => rows.at(0)),
+        ),
+      );
+      return serialize(row);
+    },
+    {
+      title: "Update webhook",
+      description:
+        "Change a webhook's URL, event types or enabled state. Re-enabling clears its failure count. Admin-only.",
+    },
+  );
 
-  export const remove = fn(Info.shape.id, async (id) => {
-    Identity.check({ webhook: ["delete"] });
-    await assert.exists(
-      Database.use((tx) =>
-        tx
-          .update(WebhookTable)
-          .set({ timeDeleted: new Date() })
-          .where(and(eq(WebhookTable.id, id), isNull(WebhookTable.timeDeleted)))
-          .returning({ id: WebhookTable.id })
-          .then((rows) => rows.at(0)),
-      ),
-    );
-  });
+  export const remove = fn(
+    Info.shape.id,
+    async (id) => {
+      Identity.check({ webhook: ["delete"] });
+      await assert.exists(
+        Database.use((tx) =>
+          tx
+            .update(WebhookTable)
+            .set({ timeDeleted: new Date() })
+            .where(and(eq(WebhookTable.id, id), isNull(WebhookTable.timeDeleted)))
+            .returning({ id: WebhookTable.id })
+            .then((rows) => rows.at(0)),
+        ),
+      );
+    },
+    {
+      title: "Delete webhook",
+      description: "Delete a webhook subscription. Deliveries to it stop at once. Admin-only.",
+    },
+  );
 
   /** What a subscriber receives: the event's CloudEvents envelope, as JSON. */
   export const Payload = CloudEvent.schema;

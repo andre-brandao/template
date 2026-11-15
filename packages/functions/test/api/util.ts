@@ -12,12 +12,12 @@ export const createUser = (input: Parameters<typeof User.create>[0]) =>
 /**
  * Setup API test environment with an authenticated user and utility functions.
  */
-export function setupApiTest() {
+export function setupApiTest(role: Permission.Role = "member") {
   let userID: string;
   let token: string;
 
   const withContext = async <T>(fn: () => T | Promise<T>): Promise<T> => {
-    return Identity.provide("user", { userID, role: "member" }, fn);
+    return Identity.provide("user", { userID, role }, fn);
   };
 
   beforeAll(async () => {
@@ -28,6 +28,9 @@ export function setupApiTest() {
 
     const email = `test-${crypto.randomUUID()}@example.com`;
     userID = (await createUser({ name: "Test User", email })).id;
+    // The bearer's role comes from the row, so an admin suite promotes it there.
+    if (role !== "member")
+      await Identity.internal("test", Permission.all, () => User.assign({ id: userID, role }));
     token = (await Key.create({ userID, name: "test" })).key;
   });
 

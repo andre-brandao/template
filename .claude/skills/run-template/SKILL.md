@@ -87,7 +87,7 @@ bun dev   # default ports 3000/3001/3002/5173, Ctrl-C to stop
 ```
 
 `DB=pglite bun dev` runs in-process postgres instead of docker (in-memory,
-single-connection). `RESET=1` wipes the docker pgdata schema first.
+one shared query queue). `RESET=1` wipes the docker pgdata schema first.
 
 ## Test
 

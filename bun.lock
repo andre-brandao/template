@@ -177,7 +177,7 @@
       "name": "scripts",
       "dependencies": {
         "@electric-sql/pglite": "^0.5.16",
-        "@electric-sql/pglite-socket": "^0.2.19",
+        "@electric-sql/pglite-socket": "0.2.19",
         "@template/core": "workspace:*",
         "drizzle-orm": "catalog:",
       },

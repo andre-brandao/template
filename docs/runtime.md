@@ -40,8 +40,7 @@ Docker runs neither: its services go through `template-cli serve <api|mcp|auth|d
 (`apps/cli/src/serve.ts`), which wires the same providers as the `bun` targets.
 
 The worker's per-request pool isn't an oversight — Workers forbid reusing a socket across
-requests, so `worker()` closes it once the response body is sent. Likewise `bun` cycles its pool when `PG_RELEASE=true`, because dev pglite allows
-exactly one live connection and the dashboard needs it back.
+requests, so `worker()` closes it once the response body is sent.
 
 ## Deploy
 

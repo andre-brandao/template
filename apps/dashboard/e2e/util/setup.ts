@@ -2,7 +2,7 @@ import { readdirSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { Database, sql } from "@template/core/drizzle";
 
-// e2e needs real Postgres (pglite is single-connection). A dedicated database is
+// e2e runs on real Postgres in a dedicated database, which is
 // reset each run so dev data in `postgres` is never touched.
 const base = process.env.E2E_PG ?? "postgresql://postgres:password@127.0.0.1:5432";
 const db = process.env.E2E_DB ?? "template_e2e";

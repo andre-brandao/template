@@ -39,7 +39,7 @@ Every component is re-exported from `src/lib/index.ts`, and every story is regis
 | Group    | Parts                                                                                             |
 | -------- | ------------------------------------------------------------------------------------------------- |
 | Controls | `Button`, `IconButton`, `Input`, `Textarea`, `Select`, `LazySelect`, `Toggle`                     |
-| Choosers | `Combobox`, `Menu.*` (Root, Item, Label, Separator), `Tabs.*`, `Command`                          |
+| Choosers | `Combobox` (single or `multiple`), `Menu.*` (Root, Item, Label, Separator), `Tabs.*`, `Command`   |
 | Dates    | `Calendar`, `MonthGrid`, `DatePicker`, `RangePicker`                                              |
 | Layers   | `Popover`, `Tooltip`, `Drawer`, `Modals` + `modal()` + `Dialog`, `Toaster` + `toast`              |
 | Content  | `List.*` (Root, Row, Loading), `Card`, `Stat`, `Meter`, `Section`, `Field`, `Inline`, `DataTable` |
@@ -64,7 +64,9 @@ Every component is re-exported from `src/lib/index.ts`, and every story is regis
   can revert and mark the field failed.
 - **Dialogs** share `modal/dialog.ts`: an unlabelled one is named after its first heading.
 - **Pickers.** `Combobox` and `Command` share `command/model.ts` (`step`, `bucket`, `mark`):
-  focus stays in the search box and the arrows move `aria-activedescendant`.
+  focus stays in the search box and the arrows move `aria-activedescendant`. A `Combobox` is
+  for open-ended lists (people, projects, records) or anything needing search; a small fixed
+  set takes `Select` or `Tabs`. `multiple` binds `values: string[]` and keeps the panel open.
 - **Placement** of anything in the top layer goes through `popover/place.ts`.
 - Callbacks: a DOM event keeps its DOM name (`onclick`); a picked value is `onchange`, a run
   action `onselect`.

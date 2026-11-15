@@ -57,9 +57,12 @@
 		filters,
 		mode: initial = 'month',
 		at,
+		keep = () => true,
 		onchange
 	}: {
 		filters: Parameters<typeof undated>[0];
+		/** Narrows what came back, for the multi-valued filters the API can't take. */
+		keep?: (todo: Todo.Info) => boolean;
 		mode?: Mode;
 		at?: Day;
 		onchange: (next: Change) => void;
@@ -89,7 +92,10 @@
 	const loose = createQuery(() => undated(filters));
 
 	const items = $derived(
-		(dated.data?.data ?? []).map((todo) => item(todo, f.zone)).filter((one) => one !== undefined)
+		(dated.data?.data ?? [])
+			.filter(keep)
+			.map((todo) => item(todo, f.zone))
+			.filter((one) => one !== undefined)
 	);
 
 	const save = update();
@@ -245,7 +251,7 @@
 			/>
 		{/if}
 		<Tray
-			todos={loose.data?.data ?? []}
+			todos={(loose.data?.data ?? []).filter(keep)}
 			total={loose.data?.total}
 			loading={loose.isPending}
 			{chips}

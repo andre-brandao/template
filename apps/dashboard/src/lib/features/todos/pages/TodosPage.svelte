@@ -11,6 +11,7 @@
 	import { list } from '../api/todos.query';
 	import Source from '$lib/features/events/components/Source.svelte';
 	import { STATUSES } from '../status';
+	import { keep, server } from '../filter';
 	import TodoForm from '../components/form/TodoForm.svelte';
 	import TodoFilters from '../components/TodoFilters.svelte';
 	import ViewSelector from '../components/ViewSelector.svelte';
@@ -23,9 +24,10 @@
 	const params = query(
 		z.object({
 			q: z.string().default(''),
-			status: z.enum(['all', ...STATUSES]).default('all'),
-			assignee: z.string().default(''),
-			stage: z.string().default(''),
+			// Repeated params: `?status=active&status=blocked`.
+			status: z.array(z.enum(STATUSES)).default([]),
+			assignee: z.array(z.string()).default([]),
+			stage: z.array(z.string()).default([]),
 			view: z.enum(['list', 'board', 'table', 'timeline', 'calendar']).default('table'),
 			group: z.enum(['status', 'stage', 'assignee']).default('status'),
 			mode: z.enum(['month', 'week']).default('month'),
@@ -36,23 +38,24 @@
 
 	const scope = $derived({ source, sourceID });
 
+	const picks = $derived({ status: params.status, assignee: params.assignee, stage: params.stage });
 	const filters = $derived({
 		...scope,
-		status: params.status === 'all' ? undefined : params.status,
-		assignee: params.assignee || undefined,
-		stage: params.stage || undefined,
+		...server(picks),
 		search: params.q || undefined,
 		sort: params.sort
 	});
+	const match = $derived(keep(picks));
 
 	// The calendar asks for its own window, so this page-wide list sits out.
 	const todos = createQuery(() => ({ ...list(filters), enabled: params.view !== 'calendar' }));
+	const shown = $derived(todos.data?.data.filter(match));
 
 	const add = () => modal(TodoForm, { scope });
 	createHotkey(hotkeys.create, add);
 
 	const filtered = $derived(
-		!!(params.q || params.assignee || params.stage) || params.status !== 'all'
+		!!(params.q || params.assignee.length || params.stage.length || params.status.length)
 	);
 	const clear = () =>
 		params.update({ q: undefined, status: undefined, assignee: undefined, stage: undefined });
@@ -72,6 +75,7 @@
 	{#snippet strip()}
 		<TodoFilters
 			{scope}
+			todos={shown}
 			filters={{
 				status: params.status,
 				assignee: params.assignee,
@@ -108,6 +112,7 @@
 		view="calendar"
 		calendar={{
 			filters,
+			keep: match,
 			mode: params.mode,
 			at: params.at,
 			onchange: (next) => params.update(next)
@@ -121,7 +126,7 @@
 	</div>
 {:else if todos.isError}
 	<Issue>{todos.error.message}</Issue>
-{:else if todos.data.data.length === 0}
+{:else if !shown?.length}
 	{#if filtered}
 		<Empty>
 			No todos match these filters.
@@ -138,7 +143,7 @@
 		</Empty>
 	{/if}
 {:else}
-	<TodosView todos={todos.data.data} view={params.view} by={params.group} />
+	<TodosView todos={shown} view={params.view} by={params.group} />
 {/if}
 
 <style>

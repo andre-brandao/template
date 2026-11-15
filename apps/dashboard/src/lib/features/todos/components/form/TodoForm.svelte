@@ -1,6 +1,6 @@
 <!-- Raised through `modal(TodoForm, { scope, due })`, which passes `close`. -->
 <script lang="ts">
-	import { Button, DatePicker, Field, Input, Issue, MarkdownEditor, fromDay, toDay } from '@template/ui';
+	import { Button, DatePicker, Field, Input, Issue, MarkdownEditor, Select, fromDay, toDay } from '@template/ui';
 	import { upload } from '$lib/upload';
 	import { fmt } from '$lib/utils/fmt';
 	import { create } from '../../api/todos.query';
@@ -59,11 +59,12 @@
 	</Field>
 
 	<div class="pair">
-		<Field label="Stage">
+		<!-- `div`, not the default label: a label wrapping the trigger would toggle it twice. -->
+		<Field label="Stage" as="div">
 			<StagePicker {scope} name="stage" />
 		</Field>
 
-		<Field label="Assignee">
+		<Field label="Assignee" as="div">
 			<AssigneePicker name="assignee" />
 		</Field>
 	</div>
@@ -87,11 +88,7 @@
 	</div>
 
 	<Field label="Status">
-		<select name="status">
-			{#each STATUSES as status (status)}
-				<option value={status}>{label(status)}</option>
-			{/each}
-		</select>
+		<Select name="status" options={STATUSES.map((one) => ({ value: one, label: label(one) }))} />
 	</Field>
 
 	<Field label="Tags" as="div">
@@ -135,14 +132,5 @@
 		display: flex;
 		justify-content: flex-end;
 		gap: 0.5em;
-	}
-
-	select {
-		font: inherit;
-		padding: 0.5em 0.7em;
-		border: 1px solid var(--border);
-		border-radius: var(--radius);
-		background: var(--surface);
-		color: var(--ink);
 	}
 </style>

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Combobox, Field, Select } from '@template/ui';
+	import { Combobox, Field, Select, Tabs } from '@template/ui';
 	import { Dates, Times, type Patch, type Prefs } from '@template/core/user/prefs';
 	import { SAMPLE, date, local, stamp, time } from '$lib/utils/fmt';
 
@@ -22,16 +22,10 @@
 	const times = $derived(
 		Times.map((t) => {
 			const label = time(SAMPLE, { ...prefs, time: t });
-			if (t === 'system') return { value: t, label: 'System settings', hint: label };
+			if (t === 'system') return { value: t, label: 'System', hint: label };
 			return { value: t, label };
 		})
 	);
-
-	const pick = (e: Event) => {
-		const el = e.currentTarget as HTMLSelectElement;
-		if (el.name === 'date') return onpick({ date: el.value as Prefs['date'] });
-		onpick({ time: el.value as Prefs['time'] });
-	};
 </script>
 
 <div class="grid">
@@ -54,11 +48,23 @@
 	</Field>
 
 	<Field label="Date format">
-		<Select name="date" options={dates} value={prefs.date} onchange={pick} />
+		<Select
+			name="date"
+			options={dates}
+			value={prefs.date}
+			onchange={(e) => onpick({ date: Dates.find((one) => one === e.currentTarget.value) })}
+		/>
 	</Field>
 
-	<Field label="Time format">
-		<Select name="time" options={times} value={prefs.time} onchange={pick} />
+	<!-- Three short choices read best side by side. -->
+	<Field label="Time format" as="div">
+		<Tabs.Root aria-label="Time format">
+			{#each times as one (one.value)}
+				<Tabs.Item active={prefs.time === one.value} title={one.hint} onclick={() => onpick({ time: one.value })}>
+					{one.label}
+				</Tabs.Item>
+			{/each}
+		</Tabs.Root>
 	</Field>
 </div>
 

@@ -36,16 +36,16 @@ Every component is re-exported from `src/lib/index.ts`, and every story is regis
 
 ## Components
 
-| Group    | Parts                                                                         |
-| -------- | ----------------------------------------------------------------------------- |
-| Controls | `Button`, `IconButton`, `Input`, `Textarea`, `Select`, `LazySelect`, `Toggle` |
-| Choosers | `Combobox.*`, `Menu.*` (Root, Item, Label, Separator), `Tabs.*`, `Command`    |
-| Dates    | `Calendar`, `MonthGrid`, `DatePicker`, `RangePicker`                          |
-| Layers   | `Popover`, `Tooltip`, `Drawer`, `Modals` + `modal()`, `Toaster` + `toast`     |
-| Content  | `List.*` (Root, Row), `Card`, `Section`, `Field`, `Inline`, `DataTable`       |
-| States   | `Status`, `Spinner`, `Skeleton`, `Empty`, `Issue`, `FormBoundary`             |
-| Text     | `Markdown`, `MarkdownEditor`, `Mermaid`, `Code`, `Kbd`, `Avatar`, `Badge`     |
-| Panes    | `Scroll`, `Fill`, `Full`                                                      |
+| Group    | Parts                                                                                |
+| -------- | ------------------------------------------------------------------------------------ |
+| Controls | `Button`, `IconButton`, `Input`, `Textarea`, `Select`, `LazySelect`, `Toggle`        |
+| Choosers | `Combobox.*`, `Menu.*` (Root, Item, Label, Separator), `Tabs.*`, `Command`           |
+| Dates    | `Calendar`, `MonthGrid`, `DatePicker`, `RangePicker`                                 |
+| Layers   | `Popover`, `Tooltip`, `Drawer`, `Modals` + `modal()` + `Dialog`, `Toaster` + `toast` |
+| Content  | `List.*` (Root, Row, Loading), `Card`, `Section`, `Field`, `Inline`, `DataTable`     |
+| States   | `Status`, `Spinner`, `Skeleton`, `Empty`, `Issue`, `FormBoundary`                    |
+| Text     | `Markdown`, `MarkdownEditor`, `Mermaid`, `Code`, `Kbd`, `Avatar`, `Badge`            |
+| Panes    | `Scroll`, `Fill`, `Full`                                                             |
 
 ## Conventions
 

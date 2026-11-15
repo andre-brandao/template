@@ -7,6 +7,7 @@
 	let {
 		title,
 		href,
+		external = false,
 		label,
 		state = 'idle',
 		message,
@@ -21,6 +22,8 @@
 		title: string | Snippet;
 		/** Stretched over the row, so anywhere outside its controls opens it. */
 		href?: string;
+		/** Opens `href` in a new tab, for a file or another site. */
+		external?: boolean;
 		/** Names the ⋯ menu; defaults to "{title} actions". */
 		label?: string;
 		/** A save or delete in flight, shown as a dot after the title. */
@@ -53,9 +56,16 @@
 	<div class="main">
 		<span class="title">
 			{#if href}
-				<a class="link" {href} data-target>{@render text()}</a>
+				<a
+					class="link"
+					{href}
+					target={external ? '_blank' : undefined}
+					rel={external ? 'noopener' : undefined}
+					data-target>{@render text()}</a
+				>
 			{:else}
-				<span class="text">{@render text()}</span>
+				<!-- A control title is not clipped, so its border and focus ring show. -->
+				<span class={typeof title === 'string' ? 'text' : 'control'}>{@render text()}</span>
 			{/if}
 			{#if state !== 'idle'}<Status {state} {message} />{/if}
 		</span>
@@ -138,6 +148,12 @@
 		text-decoration: none;
 		text-overflow: ellipsis;
 		white-space: nowrap;
+	}
+
+	.control {
+		flex: 1;
+		min-width: 0;
+		font-weight: 500;
 	}
 
 	.link {

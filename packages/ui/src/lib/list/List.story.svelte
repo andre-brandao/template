@@ -5,7 +5,7 @@
 	export const story: Story = {
 		title: 'List',
 		blurb:
-			'Dense resource rows. `List.Root` is the `ul` (flat on a page, `boxed` inside a Section); ↑/↓, Home and End move between rows. `List.Row` takes a `lead` (avatar, icon), a `title` with an optional stretched `href`, a second line as children, right-aligned `meta`, always-visible `actions`, and `menu` items behind a ⋯ that shows on hover or focus but always keeps its slot. `state` puts a Status dot after the title; `muted` dims a row being deleted.',
+			'Dense resource rows. `List.Root` is the `ul` (flat on a page, `boxed` inside a Section); ↑/↓, Home and End move between rows. `List.Row` takes a `lead` (avatar, icon), a `title` with an optional stretched `href`, a second line as children, right-aligned `meta`, always-visible `actions`, and `menu` items behind a ⋯ that shows on hover or focus but always keeps its slot. `state` puts a Status dot after the title; `muted` dims a row being deleted. `List.Loading` draws row-height placeholders in the same frame while a list loads.',
 		of: Root
 	};
 </script>
@@ -59,6 +59,8 @@
 			{#snippet menu()}<Menu.Item danger>Revoke</Menu.Item>{/snippet}
 		</List.Row>
 	</List.Root>
+
+	<List.Loading rows={2} boxed />
 </div>
 
 {#snippet rename()}

@@ -95,7 +95,7 @@
 	const places = $derived.by(() => {
 		const nav: Nav | undefined = page.data.nav;
 		const top = [
-			go('Go to', 'Home', '/'),
+			go('Go to', 'Home', '/home'),
 			...home.flatMap((section) => section.items).map((item) => go('Go to', item.label, item.href)),
 			...account(me.current?.id ?? '')
 				.filter((link) => me.can(link.grants ?? {}))

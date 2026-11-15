@@ -62,7 +62,7 @@
 		<!-- Sticky within the card: Send keeps its place however tall the request grows. -->
 		<div class="bar">
 			<Url method={op.method} {base} path={op.path} {search} bind:values />
-			<Button onclick={run} pending={busy} disabled={upload}>Send</Button>
+			<Button variant="primary" onclick={run} pending={busy} disabled={upload}>Send</Button>
 		</div>
 
 		{#if upload}

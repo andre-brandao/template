@@ -51,13 +51,15 @@
 	}
 </script>
 
-<div class="row" role="radiogroup" aria-label="Theme">
+<!-- Inside the account menu, so its options are menu radios the arrow keys reach. -->
+<div class="row" role="group" aria-label="Theme">
 	{#each Themes as theme (theme)}
 		{@const Icon = icons[theme]}
 		<button
 			class="pick"
 			type="button"
-			role="radio"
+			role="menuitemradio"
+			tabindex="-1"
 			aria-checked={value === theme}
 			onclick={(e) => pick(theme, e.currentTarget)}
 		>

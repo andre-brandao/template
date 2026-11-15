@@ -169,14 +169,10 @@
 	}
 
 	.strip {
-		/* The one control height on the row. */
+		/* Every ui control reads it, so the row lines up without reaching into them. */
 		--control: 2rem;
 		gap: 0.5em 0;
 		color: inherit;
-	}
-
-	.strip :global(:is(select, input:not([type='checkbox'], [type='radio']), button)) {
-		min-height: var(--control);
 	}
 
 	/* Sized for a form column elsewhere; here a select only needs its option words. */

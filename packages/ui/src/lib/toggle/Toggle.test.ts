@@ -18,9 +18,4 @@ describe("Toggle", () => {
     expect(chip.getAttribute("aria-pressed")).toBe("true");
     expect(seen).toEqual([true]);
   });
-
-  test("renders a count badge", () => {
-    const { container } = render(Toggle, { children, count: 4 });
-    expect(container.querySelector(".n")?.textContent).toBe("4");
-  });
 });

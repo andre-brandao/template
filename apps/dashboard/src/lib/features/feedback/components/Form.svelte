@@ -85,7 +85,7 @@
 			/>
 
 			<div class="foot">
-				<Button type="submit" pending={!!form.pending}>Send</Button>
+				<Button variant="primary" type="submit" pending={!!form.pending}>Send</Button>
 			</div>
 		</form>
 	{/if}

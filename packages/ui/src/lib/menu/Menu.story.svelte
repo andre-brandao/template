@@ -2,11 +2,12 @@
 	import type { Story } from '../story';
 	import * as Menu from './index';
 	import Root from './Menu.svelte';
+	import IconButton from '../input/IconButton.svelte';
 
 	export const story: Story = {
 		title: 'Menu',
 		blurb:
-			'An action menu on top of Popover, holding its exclusive hotkey scope while open. Arrow keys, Home/End and type-ahead move between items, Enter runs one, and Escape or Tab closes it. An item\'s `shortcut` shows as Kbd and fires while the menu is open; bind it page-wide with `createHotkey` (as Edit is here) for when it is closed. Prefer Mod combos so a shortcut never fights type-ahead. Leave out `trigger` and call `at(e)` from `oncontextmenu` for a right-click menu.',
+			'An action menu on top of Popover, holding its exclusive hotkey scope while open. Arrow keys, Home/End and type-ahead move between items, Enter runs one, and Escape or Tab closes it. An item\'s `shortcut` shows as Kbd and fires while the menu is open; bind it page-wide with `createHotkey` (as Edit is here) for when it is closed. Prefer Mod combos so a shortcut never fights type-ahead. `Menu.Item href` renders a real link, and `Menu.Label` a heading the arrows skip. Leave out `trigger` and call `at(e)` from `oncontextmenu` for a right-click menu.',
 		of: Root
 	};
 </script>
@@ -25,11 +26,14 @@
 <div class="row">
 	<Menu.Root label="Issue actions">
 		{#snippet trigger(attrs)}
-			<button class="dots" aria-label="Issue actions" {...attrs}>⋯</button>
+			<IconButton label="Issue actions" {...attrs}>⋯</IconButton>
 		{/snippet}
+		<Menu.Label hint="ENG-142">Fix the login redirect</Menu.Label>
+		<Menu.Separator />
 		<Menu.Item shortcut="Mod+E" onselect={() => (last = 'edit')}>Edit</Menu.Item>
 		<Menu.Item shortcut="Mod+D" onselect={() => (last = 'duplicate')}>Duplicate</Menu.Item>
 		<Menu.Item onselect={() => (last = 'copy link')}>Copy link</Menu.Item>
+		<Menu.Item href="#menu">Permalink</Menu.Item>
 		<Menu.Item disabled>Move to project</Menu.Item>
 		<Menu.Separator />
 		<Menu.Item danger shortcut="Mod+Backspace" onselect={() => (last = 'delete')}>Delete</Menu.Item>
@@ -54,23 +58,6 @@
 		align-items: center;
 		gap: 0.8em;
 		margin: 1em;
-	}
-
-	.dots {
-		width: 2em;
-		height: 2em;
-		border: none;
-		border-radius: var(--radius-sm);
-		background: none;
-		color: var(--muted);
-		font: inherit;
-		cursor: pointer;
-	}
-
-	.dots:hover,
-	.dots[aria-expanded='true'] {
-		background: var(--hover);
-		color: var(--ink);
 	}
 
 	.target {

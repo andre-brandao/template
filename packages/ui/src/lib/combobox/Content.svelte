@@ -29,7 +29,7 @@
 {/snippet}
 
 {#if ctx.narrow}
-	<Drawer open={ctx.open} side="bottom" onclose={() => ctx.set(false)}>
+	<Drawer open={ctx.open} side="bottom" label={title ?? 'Options'} onclose={() => ctx.set(false)}>
 		{@render panel()}
 	</Drawer>
 {:else if ctx.open}
@@ -48,10 +48,10 @@
 		min-width: 100%;
 		width: max-content;
 		max-width: min(22em, calc(100vw - 2em));
-		border: 1px solid var(--border, #333);
+		border: 1px solid var(--border, #e6e5e1);
 		border-radius: var(--radius, 8px);
 		background: var(--surface, #fff);
-		box-shadow: var(--shadow-2, 0 12px 28px -14px rgb(0 0 0 / 0.6));
+		box-shadow: var(--shadow-2, 0 16px 32px -12px rgb(0 0 0 / 0.16));
 	}
 
 	.panel {
@@ -69,6 +69,6 @@
 	.title {
 		margin: 0.2em 0.45em 0.45em;
 		font-size: 0.8em;
-		color: var(--dim, #888);
+		color: var(--dim, #75736d);
 	}
 </style>

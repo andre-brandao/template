@@ -30,7 +30,7 @@
 	<Header.Item label="Projects">{projects.data?.total ?? '–'}</Header.Item>
 	{#snippet actions()}
 		{@render extra?.()}
-		<Button onclick={add}>New project <Kbd keys="C" /></Button>
+		<Button variant="primary" onclick={add}>New project <Kbd keys="C" /></Button>
 	{/snippet}
 	{#snippet strip()}
 		<Header.Group>

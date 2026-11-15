@@ -57,7 +57,7 @@
 	.divider {
 		margin-top: 2.5em;
 		padding-top: 2.5em;
-		border-top: 1px solid var(--border, #ddd);
+		border-top: 1px solid var(--border, #e6e5e1);
 	}
 
 	h2 {
@@ -67,7 +67,7 @@
 
 	p {
 		margin: 0;
-		color: var(--muted, #666);
+		color: var(--muted, #64625d);
 		font-size: 0.88em;
 		line-height: 1.55;
 	}
@@ -79,7 +79,7 @@
 	}
 
 	.danger h2 {
-		color: var(--danger, #b42318);
+		color: var(--danger, #b8452c);
 	}
 
 	@media (max-width: 900px) {

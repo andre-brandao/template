@@ -79,9 +79,9 @@
 		overflow: auto;
 		scrollbar-width: thin;
 		max-height: 65vh;
-		border: 1px solid var(--border);
-		border-radius: var(--radius);
-		background: var(--surface);
+		border: 1px solid var(--border, #e6e5e1);
+		border-radius: var(--radius, 8px);
+		background: var(--surface, #fff);
 	}
 
 	table {
@@ -97,11 +97,11 @@
 		text-align: left;
 		font-size: 0.93em;
 		font-weight: 500;
-		color: var(--muted);
-		background: var(--surface);
+		color: var(--muted, #64625d);
+		background: var(--surface, #fff);
 		padding: 0.55em 0.9em;
 		white-space: nowrap;
-		border-bottom: 1px solid var(--border);
+		border-bottom: 1px solid var(--border, #e6e5e1);
 	}
 
 	thead button {
@@ -110,7 +110,7 @@
 	}
 
 	thead button:hover {
-		color: var(--ink);
+		color: var(--ink, #1c1b19);
 	}
 
 	.arrow {
@@ -121,23 +121,23 @@
 
 	sub {
 		font-size: 0.75em;
-		color: var(--accent);
+		color: var(--accent, #2f7f68);
 		vertical-align: super;
 	}
 
 	th[aria-sort] button {
-		color: var(--ink);
+		color: var(--ink, #1c1b19);
 	}
 
 	.empty {
 		text-align: center;
-		color: var(--dim);
+		color: var(--dim, #75736d);
 		padding: 1.5em;
 	}
 
 	tbody td {
 		padding: 0.6em 0.9em;
-		border-bottom: 1px solid var(--border);
+		border-bottom: 1px solid var(--border, #e6e5e1);
 		vertical-align: middle;
 	}
 
@@ -146,7 +146,7 @@
 	}
 
 	tbody tr:hover {
-		background: var(--hover, color-mix(in srgb, var(--ink) 4%, transparent));
+		background: var(--hover, rgb(0 0 0 / 0.06));
 	}
 
 	/* The drawer belongs to the row above it, so it neither hovers nor pads on its own. */

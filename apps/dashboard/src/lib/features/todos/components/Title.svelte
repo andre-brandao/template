@@ -39,7 +39,7 @@
 		<Inline
 			label="Todo title"
 			value={todo.title}
-			onsave={(next) => save.mutate({ path: { id: todo.id }, body: { title: next } })}
+			onsave={(next) => save.mutateAsync({ path: { id: todo.id }, body: { title: next } })}
 		/>
 	</div>
 {:else}

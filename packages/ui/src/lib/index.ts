@@ -1,11 +1,13 @@
-// input, date and markdown group a family; everything else is one folder per component,
+// input, date, markdown and pane group a family; everything else is one folder per component,
 // holding its story, tests and css.
 
 // input
 export { default as Button } from "./input/Button.svelte";
+export { default as IconButton } from "./input/IconButton.svelte";
 export { default as Input } from "./input/Input.svelte";
 export { default as LazySelect } from "./input/LazySelect.svelte";
 export { default as Select, type Option } from "./input/Select.svelte";
+export { default as Textarea } from "./input/Textarea.svelte";
 
 // date
 export { default as Calendar, type Mode } from "./date/Calendar.svelte";
@@ -55,12 +57,15 @@ export { default as Full } from "./full/Full.svelte";
 export { default as Inline } from "./inline/Inline.svelte";
 export { default as Issue } from "./issue/Issue.svelte";
 export { default as Kbd } from "./kbd/Kbd.svelte";
-// Root, Item and Separator: `<Menu.Root>`.
+// Root and Row: `<List.Root>` holds dense `<List.Row>`s.
+export * as List from "./list";
+// Root, Item, Label and Separator: `<Menu.Root>`.
 export * as Menu from "./menu";
 export { default as Modals } from "./modal/Modals.svelte";
 export { modal, type Ask } from "./modal/modal.svelte";
 export { default as Pagination } from "./pagination/Pagination.svelte";
-export { default as Popover, type Align, type Trigger } from "./popover/Popover.svelte";
+export { default as Popover, type Trigger } from "./popover/Popover.svelte";
+export type { Align, Place } from "./popover/place";
 export { default as Scroll } from "./pane/Scroll.svelte";
 export { default as Section } from "./section/Section.svelte";
 export { default as Skeleton } from "./skeleton/Skeleton.svelte";
@@ -71,4 +76,4 @@ export * as Tabs from "./tabs";
 export { default as Toaster } from "./toast/Toaster.svelte";
 export { default as Toggle } from "./toggle/Toggle.svelte";
 export { toast, type Kind, type Opts } from "./toast/toast.svelte";
-export { default as Tooltip, type Place } from "./tooltip/Tooltip.svelte";
+export { default as Tooltip } from "./tooltip/Tooltip.svelte";

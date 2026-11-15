@@ -33,7 +33,7 @@
 					placeholder="000000"
 				/>
 			</Field>
-			<Button type="submit" pending={!!verify.pending}>Log in</Button>
+			<Button variant="primary" type="submit" pending={!!verify.pending}>Log in</Button>
 			<p class="hint">Sent to {sent}. A wrong code retires it — ask for another.</p>
 		</form>
 	{:else}
@@ -57,7 +57,7 @@
 				<p class="hint">Signing up? Use the code — passwords are added later, in Settings.</p>
 			{/if}
 
-			<Button type="submit" pending={!!start.pending}>
+			<Button variant="primary" type="submit" pending={!!start.pending}>
 				{pw ? 'Log in' : 'Email me a code'}
 			</Button>
 		</form>

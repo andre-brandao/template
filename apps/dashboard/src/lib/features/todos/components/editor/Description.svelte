@@ -35,7 +35,7 @@
 	<form class="edit" onsubmit={submit}>
 		<MarkdownEditor bind:value={body} {upload} />
 		<div class="row">
-			<Button type="submit" {pending}>Save</Button>
+			<Button variant="primary" type="submit" {pending}>Save</Button>
 			<Button variant="ghost" type="button" onclick={() => (editing = false)}>Cancel</Button>
 		</div>
 	</form>

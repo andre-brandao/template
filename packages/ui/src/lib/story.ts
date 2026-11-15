@@ -1,6 +1,7 @@
 import type { Component } from "svelte";
 
 import * as button from "./input/Button.story.svelte";
+import * as iconbutton from "./input/IconButton.story.svelte";
 import * as input from "./input/Input.story.svelte";
 import * as lazyselect from "./input/LazySelect.story.svelte";
 import * as calendar from "./date/Calendar.story.svelte";
@@ -8,6 +9,7 @@ import * as datepicker from "./date/DatePicker.story.svelte";
 import * as monthgrid from "./date/MonthGrid.story.svelte";
 import * as rangepicker from "./date/RangePicker.story.svelte";
 import * as select from "./input/Select.story.svelte";
+import * as textarea from "./input/Textarea.story.svelte";
 import * as markdown from "./markdown/Markdown.story.svelte";
 import * as mermaid from "./markdown/Mermaid.story.svelte";
 import * as ascii from "./markdown/MermaidAscii.story.svelte";
@@ -25,6 +27,7 @@ import * as boundary from "./boundary/FormBoundary.story.svelte";
 import * as inline from "./inline/Inline.story.svelte";
 import * as issue from "./issue/Issue.story.svelte";
 import * as kbd from "./kbd/Kbd.story.svelte";
+import * as list from "./list/List.story.svelte";
 import * as menu from "./menu/Menu.story.svelte";
 import * as modal from "./modal/Modals.story.svelte";
 import * as pagination from "./pagination/Pagination.story.svelte";
@@ -81,6 +84,7 @@ const src = Object.fromEntries(
  */
 export const stories = [
   { slug: "button", story: button.story, demo: button.default },
+  { slug: "iconbutton", story: iconbutton.story, demo: iconbutton.default },
   { slug: "input", story: input.story, demo: input.default },
   { slug: "lazyselect", story: lazyselect.story, demo: lazyselect.default },
   { slug: "calendar", story: calendar.story, demo: calendar.default },
@@ -88,6 +92,7 @@ export const stories = [
   { slug: "monthgrid", story: monthgrid.story, demo: monthgrid.default },
   { slug: "rangepicker", story: rangepicker.story, demo: rangepicker.default },
   { slug: "select", story: select.story, demo: select.default },
+  { slug: "textarea", story: textarea.story, demo: textarea.default },
   { slug: "markdown", story: markdown.story, demo: markdown.default },
   { slug: "markdowneditor", story: editor.story, demo: editor.default },
   { slug: "mermaid", story: mermaid.story, demo: mermaid.default },
@@ -105,6 +110,7 @@ export const stories = [
   { slug: "inline", story: inline.story, demo: inline.default },
   { slug: "issue", story: issue.story, demo: issue.default },
   { slug: "kbd", story: kbd.story, demo: kbd.default },
+  { slug: "list", story: list.story, demo: list.default },
   { slug: "menu", story: menu.story, demo: menu.default },
   { slug: "modals", story: modal.story, demo: modal.default },
   { slug: "pagination", story: pagination.story, demo: pagination.default },

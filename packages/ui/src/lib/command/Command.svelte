@@ -8,6 +8,7 @@
 -->
 <script lang="ts">
 	import { HotkeysProvider } from '@tanstack/svelte-hotkeys';
+	import { dialog } from '../modal/dialog';
 
 	let {
 		open = $bindable(false),
@@ -67,13 +68,12 @@
 
 <dialog
 	aria-label="Command palette"
-	{@attach (dialog) => (open ? dialog.showModal() : dialog.close())}
+	{@attach dialog(open)}
 	onclose={() => {
 		open = false;
 		query = '';
 		active = 0;
 	}}
-	onclick={(e) => e.target === e.currentTarget && e.currentTarget.close()}
 >
 	{#if open}
 		<!-- Owns the keyboard while open, so page hotkeys never fire behind the palette. -->
@@ -97,7 +97,7 @@
 			{#each groups as group, g (group.name)}
 				<div class="group" role="group" aria-labelledby="{id}-g{g}">
 					<p class="name" id="{id}-g{g}">{group.name}</p>
-					{#each group.items as item (item.label)}
+					{#each group.items as item, i (i)}
 						{@const at = order.indexOf(item)}
 						<!-- Pointer only: the keyboard drives the same rows through the input. -->
 						<!-- svelte-ignore a11y_click_events_have_key_events -->
@@ -136,7 +136,7 @@
 		border-radius: calc(var(--radius, 8px) + 2px);
 		background: var(--surface, #fff);
 		color: var(--ink, #1c1b19);
-		box-shadow: var(--shadow-2, 0 12px 28px -14px rgb(0 0 0 / 0.6));
+		box-shadow: var(--shadow-2, 0 16px 32px -12px rgb(0 0 0 / 0.16));
 		overflow: hidden;
 		opacity: 0;
 		scale: 0.98;
@@ -176,7 +176,7 @@
 	}
 
 	.search::placeholder {
-		color: var(--dim, #8e8c86);
+		color: var(--dim, #75736d);
 	}
 
 	.list {
@@ -188,7 +188,7 @@
 
 	.name {
 		margin: 0.55em 0.6em 0.25em;
-		color: var(--dim, #8e8c86);
+		color: var(--dim, #75736d);
 		font-size: 0.75em;
 		font-weight: 500;
 	}
@@ -217,14 +217,14 @@
 	}
 
 	.hint {
-		color: var(--dim, #8e8c86);
+		color: var(--dim, #75736d);
 		font-size: 0.85em;
 	}
 
 	.empty {
 		margin: 0;
 		padding: 1.5em 1em;
-		color: var(--dim, #8e8c86);
+		color: var(--dim, #75736d);
 		font-size: 0.9em;
 		text-align: center;
 	}

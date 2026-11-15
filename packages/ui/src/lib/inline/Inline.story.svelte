@@ -5,7 +5,7 @@
 	export const story: Story = {
 		title: 'Inline',
 		blurb:
-			'Click-to-edit text. Click, Tab in, or press Enter to edit. Enter or blur saves through `onsave`, and Escape cancels. The new value shows right away; if `onsave` returns a promise a spinner shows until it settles, and a rejection puts the old text back. With `multiline`, Enter adds a line and ⌘/Ctrl+Enter saves.',
+			'Click-to-edit text. Click, Tab in, or press Enter to edit; Enter or blur saves through `onsave`, Escape cancels. Pass `mutateAsync` so the promise drives it: the typed text stays up with a pending dot, and a rejection puts the old text back, marks it failed and keeps the draft for the next edit. `required` rejects an empty value, `flush` aligns the text with its neighbours, and with `multiline` Enter adds a line and ⌘/Ctrl+Enter saves.',
 		of: Inline
 	};
 
@@ -46,7 +46,18 @@
 	</div>
 	<div class="row">
 		<span class="key">Notes</span>
-		<Inline label="Notes" multiline value={notes} onsave={(next) => (notes = next)} />
+		<Inline
+			label="Notes"
+			multiline
+			value={notes}
+			onsave={(next) => {
+				notes = next;
+			}}
+		/>
+	</div>
+	<div class="row">
+		<span class="key">Required</span>
+		<Inline label="Name" required flush value="Clear me" onsave={() => wait(300)} />
 	</div>
 	<div class="row">
 		<span class="key">Empty</span>

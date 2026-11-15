@@ -24,7 +24,7 @@
 				<Field label="Display name">
 					<Input {...onboard.fields.name.as('text', '')} autocomplete="name" />
 				</Field>
-				<Button type="submit" pending={!!onboard.pending}>Continue</Button>
+				<Button variant="primary" type="submit" pending={!!onboard.pending}>Continue</Button>
 			</form>
 		</FormBoundary>
 	</Card>

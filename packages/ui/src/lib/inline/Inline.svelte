@@ -1,6 +1,6 @@
 <!--
-	Click-to-edit text. The new value shows at once while `onsave` runs, and snaps back
-	if it rejects. Display and editor share one box model, so switching never shifts the row.
+	Click-to-edit text. The typed value stays up with a pending dot while `onsave` runs; a
+	rejection puts the old text back, marks the field failed and keeps the draft for a retry.
 -->
 <script lang="ts">
 	import { tick } from 'svelte';
@@ -13,24 +13,36 @@
 		label,
 		placeholder = 'Empty',
 		multiline = false,
+		required = false,
+		flush = false,
 		disabled = false
 	}: {
 		value: string;
-		onsave: (value: string) => unknown;
+		/**
+		 * Return the save's promise (a TanStack `mutateAsync`, not `mutate`): a bare `void`
+		 * reads as an instant success, so a failure would never show or revert.
+		 */
+		onsave: (value: string) => Promise<unknown> | void;
 		/** Names the field for assistive tech, since there is no visible label. */
 		label: string;
 		placeholder?: string;
 		/** Enter adds a line; ⌘/Ctrl+Enter saves. */
 		multiline?: boolean;
+		/** An empty value fails with "Required" before `onsave` is called. */
+		required?: boolean;
+		/** Pulls the box's padding back, so the text lines up with its neighbours. */
+		flush?: boolean;
 		disabled?: boolean;
 	} = $props();
 
-	// Writable derived: optimistic on save, and a new `value` from the caller still wins.
+	// Writable derived: shows the draft while saving, and a new `value` from the caller wins.
 	let shown = $derived(value);
 	let draft = $state('');
 	let editing = $state(false);
 	let pending = $state(false);
 	let failed = $state<string>();
+	// The text a failed save rejected, offered again on the next edit.
+	let lost: string | undefined;
 	let face: HTMLButtonElement | undefined;
 	// Focus handed back after a save must not reopen the editor.
 	let quiet = false;
@@ -40,7 +52,8 @@
 			quiet = false;
 			return;
 		}
-		draft = shown;
+		draft = lost ?? shown;
+		lost = undefined;
 		failed = undefined;
 		editing = true;
 	}
@@ -58,6 +71,11 @@
 		const next = multiline ? draft : draft.trim();
 		leave(refocus);
 		if (next === shown) return;
+		if (required && !next) {
+			lost = next;
+			failed = 'Required';
+			return;
+		}
 		const prev = shown;
 		shown = next;
 		pending = true;
@@ -67,6 +85,7 @@
 				() => {},
 				(err: { message?: string } | undefined) => {
 					shown = prev;
+					lost = next;
 					failed = err?.message || 'Not saved';
 				}
 			)
@@ -93,7 +112,7 @@
 	};
 </script>
 
-<span class={['inline', { pending, failed }]}>
+<span class={['inline', { pending, failed, flush }]}>
 	{#if editing && multiline}
 		<textarea
 			class="box"
@@ -140,6 +159,11 @@
 		min-width: 0;
 	}
 
+	/* The box's own padding, taken back so the text sits where plain text would. */
+	.flush {
+		margin: -0.2em -0.4em;
+	}
+
 	/* One box model for both states: same font, padding and border width. */
 	.box {
 		display: block;
@@ -184,7 +208,7 @@
 	}
 
 	.face:hover:not(:disabled) {
-		background: var(--hover, rgb(0 0 0 / 0.05));
+		background: var(--hover, rgb(0 0 0 / 0.06));
 	}
 
 	.face:focus-visible {
@@ -197,7 +221,7 @@
 	}
 
 	.empty {
-		color: var(--dim, #8e8c86);
+		color: var(--dim, #75736d);
 	}
 
 	.pending .face {
@@ -214,7 +238,7 @@
 		inset-inline-end: 0.4em;
 		display: grid;
 		place-items: center;
-		color: var(--dim, #8e8c86);
+		color: var(--dim, #75736d);
 		pointer-events: none;
 	}
 

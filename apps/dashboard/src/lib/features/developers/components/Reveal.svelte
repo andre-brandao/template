@@ -24,7 +24,7 @@
 </div>
 
 <div class="actions">
-	<Button onclick={close}>Done</Button>
+	<Button variant="primary" onclick={close}>Done</Button>
 </div>
 
 <style>

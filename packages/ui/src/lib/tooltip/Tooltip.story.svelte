@@ -1,12 +1,13 @@
 <script module lang="ts">
 	import type { Story } from '../story';
-	import Tooltip, { type Place } from './Tooltip.svelte';
+	import Tooltip from './Tooltip.svelte';
+	import type { Place } from '../popover/place';
 	import Button from '../input/Button.svelte';
 
 	export const story: Story = {
 		title: 'Tooltip',
 		blurb:
-			'A hover/focus label with no state: the bubble stays mounted and only fades, so `aria-describedby` — stamped onto the first element you render inside — always resolves. It is positioned against the trigger, not the top layer, so pick a `side` that points away from a clipping ancestor. Pointer-only by design; never put anything here that the control cannot do without.',
+			'A hover/focus label with no state: the bubble stays mounted and only fades, so `aria-describedby` — stamped onto the first element you render inside — always resolves. It sits in the top layer, flips when `side` has no room, waits a beat on hover and hides on Escape. Never put anything here that the control cannot do without.',
 		of: Tooltip
 	};
 

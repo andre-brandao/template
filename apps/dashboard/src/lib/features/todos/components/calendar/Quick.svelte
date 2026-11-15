@@ -49,10 +49,7 @@
 		<form class="quick" onsubmit={submit}>
 			<p>
 				New todo · {format(on, me.prefs.locale, { weekday: 'short', month: 'short', day: 'numeric' })}
-				<Status
-					state={save.isPending ? 'pending' : save.isError ? 'failed' : 'idle'}
-					message={save.error?.message}
-				/>
+				<Status of={save} />
 			</p>
 			<Input name="title" aria-label="Title" placeholder="What needs doing?" autofocus bind:value={title} />
 			<div class="foot">

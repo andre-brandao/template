@@ -61,7 +61,7 @@
 				<Save size={14} strokeWidth={1.75} />
 				{saved ? 'Save again' : 'Save panel'}
 			</Button>
-			{#if store.isError}<Status state="failed" message={store.error.message} />{/if}
+			{#if store.isError}<Status of={store} />{/if}
 		</div>
 	{/if}
 </div>

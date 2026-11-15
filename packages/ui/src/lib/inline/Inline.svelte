@@ -146,7 +146,14 @@
 			onfocus={edit}
 			onclick={edit}
 		>
-			{shown || placeholder}
+			<span class="text">{shown || placeholder}</span>
+			<!-- The resting cue: invisible until hover or focus, and always in the flow so nothing shifts. -->
+			<svg class="pen" viewBox="0 0 24 24" aria-hidden="true">
+				<path
+					d="M21.17 6.81a1 1 0 0 0-3.98-3.99L3.84 16.17a2 2 0 0 0-.5.83l-1.32 4.35a.5.5 0 0 0 .62.63l4.35-1.32a2 2 0 0 0 .83-.5z"
+				/>
+				<path d="m15 5 4 4" />
+			</svg>
 		</button>
 	{/if}
 	{#if pending || failed}<span class="spin"><Status state={pending ? 'pending' : 'failed'} message={failed} /></span>{/if}
@@ -197,18 +204,58 @@
 	}
 
 	.face {
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
+		display: flex;
+		align-items: baseline;
+		gap: 0.4em;
 		cursor: text;
 	}
 
-	.face.multiline {
+	.text {
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		text-decoration: underline dotted transparent;
+		text-underline-offset: 0.25em;
+		transition: text-decoration-color 0.12s ease;
+	}
+
+	.multiline .text {
 		white-space: pre-wrap;
 	}
 
-	.face:hover:not(:disabled) {
+	.pen {
+		flex: none;
+		align-self: center;
+		width: 0.75em;
+		height: 0.75em;
+		fill: none;
+		stroke: var(--dim);
+		stroke-width: 2;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+		opacity: 0;
+		transition: opacity 0.12s ease;
+	}
+
+	/* Flush faces sit in headers, where the underline and pencil are cue enough. */
+	.inline:not(.flush) .face:hover:not(:disabled) {
 		background: var(--hover);
+	}
+
+	.face:hover:not(:disabled) .text {
+		text-decoration-color: var(--dim);
+	}
+
+	.face:hover:not(:disabled) .pen,
+	.face:focus-visible .pen {
+		opacity: 1;
+	}
+
+	/* Hidden while a save is out or failed, so a long name can't put it under the dot. */
+	.pending .face .pen,
+	.failed .face .pen {
+		opacity: 0;
 	}
 
 	.face:focus-visible {
@@ -243,7 +290,9 @@
 	}
 
 	@media (prefers-reduced-motion: reduce) {
-		.box {
+		.box,
+		.text,
+		.pen {
 			transition: none;
 		}
 	}

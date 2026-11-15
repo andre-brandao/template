@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Button from '../input/Button.svelte';
+	import Announcer from './Announcer.svelte';
 	import Spinner from '../spinner/Spinner.svelte';
 	import { queue } from './toast.svelte';
 
@@ -82,6 +83,8 @@
 		</li>
 	{/each}
 </ol>
+
+<Announcer />
 
 <style>
 	ol {

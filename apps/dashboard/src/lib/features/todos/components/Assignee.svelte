@@ -19,9 +19,6 @@
 	const shown = $derived(
 		next === undefined ? todo.assignee : people.data?.find((one) => one.id === next) ?? null
 	);
-	const mark = $derived(
-		save.isPending ? 'pending' : save.isError ? 'failed' : save.isSuccess ? 'saved' : 'idle'
-	);
 
 	function pick(id: string | null, close: () => void) {
 		close();
@@ -73,7 +70,7 @@
 			</div>
 		{/snippet}
 	</Popover>
-	<Status state={mark} message={save.error?.message} />
+	<Status of={save} />
 </span>
 
 <style>

@@ -11,9 +11,6 @@
 	const save = update();
 	// The picked status stays up until the refetch lands; a failure falls back to the stored one.
 	const shown = $derived((save.isPending && save.variables?.body?.status) || todo.status);
-	const mark = $derived(
-		save.isPending ? 'pending' : save.isError ? 'failed' : save.isSuccess ? 'saved' : 'idle'
-	);
 
 	// One letter each while the menu is open; blocked takes X, since B is backlog.
 	const letters = {
@@ -85,7 +82,7 @@
 			/>
 		</label>
 	</Pick>
-	<Status state={mark} message={save.error?.message} />
+	<Status of={save} />
 </span>
 
 <style>

@@ -16,9 +16,6 @@
 	const prefs = $derived(
 		Prefs.parse({ ...me.prefs, ...(write.isPending ? write.variables : undefined) })
 	);
-	const state = $derived(
-		write.isPending ? 'pending' : write.isError ? 'failed' : write.isSuccess ? 'saved' : 'idle'
-	);
 
 	const names = new Intl.DisplayNames(['en'], { type: 'language' });
 	const locales = Locales.map((locale) => ({
@@ -34,7 +31,7 @@
 </script>
 
 <Header.Root title="Experience" lead="Theme, language and how dates read. Saved as you pick.">
-	{#snippet actions()}<Status {state} message={write.error?.message} />{/snippet}
+	{#snippet actions()}<Status of={write} />{/snippet}
 </Header.Root>
 
 <Section title="Appearance" description="A colour scheme, or whatever your device is set to.">

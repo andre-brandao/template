@@ -22,9 +22,6 @@
 			? save.variables.body?.[field]
 			: todo[field]
 	);
-	const mark = $derived(
-		save.isPending ? 'pending' : save.isError ? 'failed' : save.isSuccess ? 'saved' : 'idle'
-	);
 
 	const set = (next: string | undefined) =>
 		save.mutate({ path: { id: todo.id }, body: { [field]: next ?? null } });
@@ -50,7 +47,7 @@
 			</button>
 		{/snippet}
 	</DatePicker>
-	<Status state={mark} message={save.error?.message} />
+	<Status of={save} />
 </span>
 
 <style>

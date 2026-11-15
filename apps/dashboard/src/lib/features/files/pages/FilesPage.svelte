@@ -1,30 +1,33 @@
 <script lang="ts">
 	import { createQuery } from '@tanstack/svelte-query';
-	import { Drawer, Empty, Issue, Skeleton } from '@template/ui';
-	import type { File as Entry } from '@template/sdk/query';
+	import { Button, Empty, Issue, Skeleton } from '@template/ui';
 	import * as Header from '$lib/components/header';
 	import { size } from '$lib/utils/size';
 	import { list, upload } from '../api/files.query';
-	import FileCard from '../components/FileCard.svelte';
-	import FileForm from '../components/FileForm.svelte';
+	import Pending from '../components/Pending.svelte';
+	import Row from '../components/Row.svelte';
 	import Upload from '../components/Upload.svelte';
 
 	const files = createQuery(() => list());
 	const put = upload();
 
-	let editing = $state<Entry | null>(null);
-	let open = $state(false);
-	let uploading = $state(false);
-	let failed = $state<string[]>([]);
+	let up: Upload | undefined = $state();
+	let sending = $state<{ id: string; file: File; error?: string }[]>([]);
 	let drag = $state(0);
 
-	async function send(picked: FileList) {
-		const all = [...picked];
-		uploading = true;
-		failed = [];
-		const results = await Promise.allSettled(all.map((file) => put.mutateAsync({ body: { file } })));
-		failed = all.filter((_, i) => results[i].status === 'rejected').map((file) => file.name);
-		uploading = false;
+	// The list refetches before mutateAsync settles, so a sent row hands over without a gap.
+	function send(picked: FileList) {
+		[...picked].forEach((file) => {
+			const id = crypto.randomUUID();
+			sending.push({ id, file });
+			put.mutateAsync({ body: { file } }).then(
+				() => (sending = sending.filter((one) => one.id !== id)),
+				(err: Error) => {
+					const one = sending.find((x) => x.id === id);
+					if (one) one.error = err?.message ?? 'Upload failed';
+				}
+			);
+		});
 	}
 
 	function enter(e: DragEvent) {
@@ -41,7 +44,7 @@
 </script>
 
 <div
-	class={['page', { drop: drag > 0 }]}
+	class="page"
 	role="region"
 	aria-label="Files"
 	ondragenter={enter}
@@ -55,36 +58,43 @@
 			{files.data ? size(files.data.reduce((sum, file) => sum + file.size, 0)) : '–'}
 		</Header.Item>
 		{#snippet actions()}
-			<Upload upload={send} pending={uploading} />
+			<Upload bind:this={up} upload={send} />
 		{/snippet}
 	</Header.Root>
 
-	{#each failed as name (name)}
-		<Issue>Upload failed: {name}</Issue>
-	{/each}
+	{#if sending.length}
+		<ul class="list" aria-label="Uploads">
+			{#each sending as one (one.id)}
+				<Pending
+					file={one.file}
+					error={one.error}
+					ondismiss={() => (sending = sending.filter((x) => x.id !== one.id))}
+				/>
+			{/each}
+		</ul>
+	{/if}
 
 	{#if files.isPending}
-		<div class="list">
-			{#each [0, 1, 2] as i (i)}
-				<Skeleton h="4em" />
+		<div class="skeleton" aria-busy="true">
+			{#each [0, 1, 2, 3, 4] as i (i)}
+				<Skeleton h="2.6em" />
 			{/each}
 		</div>
 	{:else if files.isError}
 		<Issue>{files.error.message}</Issue>
-	{:else if files.data.length === 0}
-		<Empty>No files yet. Drop one here or use Upload.</Empty>
+	{:else if files.data.length === 0 && !sending.length}
+		<Empty>
+			No files yet. Drop one anywhere on the page, or pick some to upload.
+			{#snippet action()}
+				<Button onclick={() => up?.open()}>Upload files</Button>
+			{/snippet}
+		</Empty>
 	{:else}
-		<div class="list">
+		<ul class="list">
 			{#each files.data as file (file.key)}
-				<FileCard
-					{file}
-					onedit={() => {
-						editing = file;
-						open = true;
-					}}
-				/>
+				<Row {file} />
 			{/each}
-		</div>
+		</ul>
 	{/if}
 
 	{#if drag > 0}
@@ -92,28 +102,22 @@
 	{/if}
 </div>
 
-<Drawer bind:open>
-	{#if editing}
-		<h2>Rename file</h2>
-		<FileForm file={editing} onsuccess={() => (open = false)} />
-	{/if}
-</Drawer>
-
 <style>
 	.page {
 		position: relative;
 		min-height: 60vh;
 	}
 
-	h2 {
-		margin: 0 0 1em;
-		font-size: 1.15em;
+	.list {
+		margin: 0;
+		padding: 0;
+		list-style: none;
 	}
 
-	.list {
+	.skeleton {
 		display: flex;
 		flex-direction: column;
-		gap: 0.6em;
+		gap: 2px;
 	}
 
 	.overlay {
@@ -123,10 +127,22 @@
 		align-items: center;
 		justify-content: center;
 		border: 2px dashed var(--accent);
-		border-radius: var(--radius, 8px);
+		border-radius: var(--radius);
 		background: color-mix(in srgb, var(--surface) 80%, transparent);
 		color: var(--ink);
-		font-family: var(--font-mono);
 		pointer-events: none;
+		animation: enter 140ms ease-out;
+	}
+
+	@keyframes enter {
+		from {
+			opacity: 0;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.overlay {
+			animation: none;
+		}
 	}
 </style>

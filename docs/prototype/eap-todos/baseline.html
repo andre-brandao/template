@@ -1,0 +1,962 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>EAP todos — baseline vs current plan</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: light-dark(#f7f7f5, #111110);
+        --surface: light-dark(#ffffff, #181817);
+        --surface-2: light-dark(#f2f1ee, #222220);
+        --border: light-dark(#e6e5e1, #2a2927);
+        --border-bright: light-dark(#d3d1cc, #3b3a37);
+        --ink: light-dark(#1c1b19, #ecebe7);
+        --muted: light-dark(#64625d, #a3a19b);
+        --dim: light-dark(#75736d, #8a8882);
+        --accent: light-dark(#2f7f68, #4fa98f);
+        --primary-ink: light-dark(#ffffff, #111110);
+        --hover: color-mix(in oklab, var(--ink) 6%, transparent);
+        --selected: color-mix(in oklab, var(--accent) 14%, transparent);
+        --pending: light-dark(#6b6a64, #8b8a84);
+        --progress: light-dark(#a3672a, #c98a3f);
+        --done: light-dark(#2f7f68, #4fa98f);
+        --danger: light-dark(#b8452c, #d3684f);
+        --radius: 8px;
+        --radius-sm: 6px;
+        --control: 2.25rem;
+        --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+        --font-mono: ui-monospace, "JetBrains Mono", "SF Mono", "Cascadia Code", monospace;
+        --shadow-2:
+          0 16px 32px -12px light-dark(rgb(0 0 0 / 0.16), rgb(0 0 0 / 0.6)),
+          0 0 0 1px light-dark(rgb(0 0 0 / 0.04), rgb(255 255 255 / 0.04));
+        --label: 300px;
+        --var: 64px;
+        --row: 34px;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--surface);
+        color: var(--ink);
+        font: 13px/1.4 var(--font-sans);
+      }
+      main {
+        padding: 20px 24px 28px;
+      }
+      header.page {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding-bottom: 14px;
+        border-bottom: 1px solid var(--border);
+      }
+      h1 {
+        font-size: 19px;
+        margin: 0;
+        font-weight: 650;
+      }
+      .crumb {
+        color: var(--dim);
+        font-size: 12px;
+        margin-bottom: 4px;
+      }
+      .seg {
+        display: inline-flex;
+        background: var(--surface-2);
+        border-radius: var(--radius);
+        padding: 3px;
+        gap: 2px;
+      }
+      .seg button {
+        border: 0;
+        background: none;
+        color: var(--muted);
+        font: inherit;
+        padding: 5px 10px;
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+      }
+      .seg button[aria-pressed="true"] {
+        background: var(--surface);
+        color: var(--ink);
+        box-shadow: 0 0 0 1px var(--border);
+      }
+      .new {
+        background: var(--ink);
+        color: var(--primary-ink);
+        border: 0;
+        border-radius: var(--radius-sm);
+        height: var(--control);
+        padding: 0 12px;
+        font: inherit;
+        font-weight: 550;
+      }
+      .toolbar {
+        display: flex;
+        align-items: end;
+        gap: 14px;
+        padding: 12px 0;
+        border-bottom: 1px solid var(--border);
+        flex-wrap: wrap;
+      }
+      .field {
+        display: grid;
+        gap: 4px;
+      }
+      .field > span {
+        font-size: 12px;
+        color: var(--muted);
+      }
+      select,
+      input[type="text"] {
+        height: var(--control);
+        border: 1px solid var(--border-bright);
+        border-radius: var(--radius-sm);
+        background: var(--surface);
+        color: var(--ink);
+        font: inherit;
+        padding: 0 10px;
+      }
+      select {
+        min-width: 280px;
+      }
+      .btn {
+        height: var(--control);
+        border: 1px solid var(--border-bright);
+        background: var(--surface);
+        color: var(--ink);
+        border-radius: var(--radius-sm);
+        padding: 0 12px;
+        font: inherit;
+        cursor: pointer;
+      }
+      .btn:hover {
+        background: var(--hover);
+      }
+      .btn.primary {
+        background: var(--ink);
+        color: var(--primary-ink);
+        border-color: var(--ink);
+      }
+      .check {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        height: var(--control);
+        color: var(--muted);
+        user-select: none;
+      }
+      .sep {
+        width: 1px;
+        align-self: stretch;
+        background: var(--border);
+      }
+      .summary {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin: 12px 0 10px;
+        font-size: 12.5px;
+        color: var(--muted);
+      }
+      .summary b {
+        color: var(--ink);
+        font-weight: 600;
+      }
+      .summary .chip {
+        font-family: var(--font-mono);
+        font-size: 11.5px;
+        padding: 2px 8px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        background: var(--surface-2);
+        color: var(--ink);
+      }
+      .summary .chip.bad {
+        color: var(--danger);
+        border-color: color-mix(in oklab, var(--danger) 35%, var(--border));
+        background: color-mix(in oklab, var(--danger) 8%, var(--surface));
+      }
+      .summary .chip.good {
+        color: var(--done);
+      }
+      .summary[hidden] {
+        display: none;
+      }
+
+      .chart {
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        overflow: hidden;
+        background: var(--surface);
+      }
+      .head,
+      .row {
+        display: grid;
+        grid-template-columns: var(--label) var(--var) 1fr;
+      }
+      .chart.nobase .head,
+      .chart.nobase .row {
+        grid-template-columns: var(--label) 0 1fr;
+      }
+      .chart.nobase .var {
+        visibility: hidden;
+        border: 0;
+        padding: 0;
+      }
+      .head {
+        background: var(--surface-2);
+        border-bottom: 1px solid var(--border);
+        height: 34px;
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--dim);
+      }
+      .head > div {
+        display: flex;
+        align-items: center;
+        padding: 0 12px;
+        border-right: 1px solid var(--border);
+      }
+      .head .weeks {
+        position: relative;
+        padding: 0;
+        border-right: 0;
+      }
+      .weeks span {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        display: flex;
+        align-items: center;
+        padding-left: 5px;
+        border-left: 1px solid var(--border);
+      }
+      .body {
+        position: relative;
+      }
+      .row {
+        height: var(--row);
+        border-bottom: 1px solid var(--border);
+      }
+      .row:last-child {
+        border-bottom: 0;
+      }
+      .row:hover {
+        background: var(--hover);
+      }
+      .label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 0 12px;
+        border-right: 1px solid var(--border);
+        min-width: 0;
+      }
+      .code {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--dim);
+        min-width: 34px;
+      }
+      .title {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .row.parent .title {
+        font-weight: 600;
+      }
+      .derived {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        color: var(--dim);
+        margin-left: auto;
+        white-space: nowrap;
+      }
+      .dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        flex: none;
+        background: var(--pending);
+      }
+      .dot.active {
+        background: var(--progress);
+      }
+      .dot.done {
+        background: var(--done);
+      }
+      .dot.blocked {
+        background: var(--danger);
+      }
+      .var {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        padding: 0 10px;
+        border-right: 1px solid var(--border);
+        font-family: var(--font-mono);
+        font-size: 11.5px;
+        color: var(--dim);
+      }
+      .var.bad {
+        color: var(--danger);
+      }
+      .var.good {
+        color: var(--done);
+      }
+      .badge {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        padding: 1px 6px;
+        border-radius: 999px;
+        border: 1px solid var(--border-bright);
+        color: var(--muted);
+      }
+      .badge.fresh {
+        color: var(--accent);
+        border-color: color-mix(in oklab, var(--accent) 40%, var(--border));
+        background: var(--selected);
+      }
+      .lane {
+        position: relative;
+        overflow: hidden;
+      }
+      .grid {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 1px;
+        background: var(--border);
+      }
+      .bar {
+        position: absolute;
+        top: 8px;
+        height: 11px;
+        border-radius: 3px;
+        background: color-mix(in oklab, var(--accent) 22%, var(--surface));
+        border: 1px solid color-mix(in oklab, var(--accent) 55%, var(--surface));
+        overflow: hidden;
+      }
+      .row.parent .bar {
+        height: 7px;
+        top: 10px;
+        background: color-mix(in oklab, var(--ink) 55%, var(--surface));
+        border-color: transparent;
+        border-radius: 2px;
+      }
+      .bar .over {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        right: 0;
+        background: color-mix(in oklab, var(--danger) 70%, var(--surface));
+      }
+      .bar .ahead {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        background: color-mix(in oklab, var(--done) 70%, var(--surface));
+      }
+      .ghost {
+        position: absolute;
+        top: 22px;
+        height: 4px;
+        border-radius: 2px;
+        background: var(--border-bright);
+      }
+      .chart.nobase .ghost,
+      .chart.nobase .gdiamond {
+        display: none;
+      }
+      .diamond,
+      .gdiamond {
+        position: absolute;
+        width: 11px;
+        height: 11px;
+        transform: translateX(-50%) rotate(45deg);
+      }
+      .diamond {
+        top: 9px;
+        background: var(--accent);
+        border-radius: 2px;
+      }
+      .diamond.late {
+        background: var(--danger);
+      }
+      .gdiamond {
+        top: 12px;
+        border: 1.5px solid var(--border-bright);
+        border-radius: 2px;
+        background: transparent;
+      }
+      .row.removed .title {
+        text-decoration: line-through;
+        color: var(--dim);
+      }
+      .row.removed .ghost {
+        top: 15px;
+      }
+      .row.context {
+        opacity: 0.45;
+      }
+      .today {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 0;
+        border-left: 1px dashed var(--accent);
+        pointer-events: none;
+      }
+      .today::before {
+        content: "";
+        position: absolute;
+        top: -3px;
+        left: -4px;
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--accent);
+      }
+      .foot {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 8px;
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--dim);
+      }
+      .legend {
+        display: flex;
+        gap: 14px;
+        align-items: center;
+      }
+      .legend i {
+        display: inline-block;
+        vertical-align: middle;
+        margin-right: 5px;
+      }
+      .k-plan {
+        width: 18px;
+        height: 8px;
+        border-radius: 2px;
+        background: color-mix(in oklab, var(--accent) 22%, var(--surface));
+        border: 1px solid color-mix(in oklab, var(--accent) 55%, var(--surface));
+      }
+      .k-base {
+        width: 18px;
+        height: 4px;
+        border-radius: 2px;
+        background: var(--border-bright);
+      }
+      .k-slip {
+        width: 12px;
+        height: 8px;
+        border-radius: 2px;
+        background: color-mix(in oklab, var(--danger) 70%, var(--surface));
+      }
+      .k-ahead {
+        width: 12px;
+        height: 8px;
+        border-radius: 2px;
+        background: color-mix(in oklab, var(--done) 70%, var(--surface));
+      }
+      .k-today {
+        width: 0;
+        height: 12px;
+        border-left: 1px dashed var(--accent);
+      }
+      .empty {
+        padding: 28px;
+        text-align: center;
+        color: var(--dim);
+      }
+      dialog {
+        border: 0;
+        border-radius: var(--radius);
+        padding: 0;
+        background: var(--surface);
+        color: var(--ink);
+        box-shadow: var(--shadow-2);
+        width: 380px;
+      }
+      dialog::backdrop {
+        background: rgb(0 0 0 / 0.25);
+      }
+      dialog form {
+        display: grid;
+        gap: 12px;
+        padding: 16px;
+      }
+      dialog h2 {
+        font-size: 15px;
+        margin: 0;
+      }
+      dialog p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 12.5px;
+      }
+      dialog .actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header class="page">
+        <div>
+          <div class="crumb">Projects / Customer portal v2</div>
+          <h1>Customer portal v2</h1>
+        </div>
+        <div style="display: flex; gap: 10px; align-items: center">
+          <div class="seg" role="group" aria-label="View">
+            <button>Table</button><button>Board</button><button aria-pressed="true">Timeline</button
+            ><button>Outline</button><button>Calendar</button><button>List</button>
+          </div>
+          <button class="new">New todo</button>
+        </div>
+      </header>
+
+      <div class="toolbar">
+        <label class="field"
+          ><span>Baseline</span>
+          <select id="pick"></select>
+        </label>
+        <button class="btn" id="save">Save baseline</button>
+        <div class="sep"></div>
+        <label class="check"><input type="checkbox" id="only" /> Only changes</label>
+      </div>
+
+      <div class="summary" id="summary"></div>
+
+      <div class="chart" id="chart">
+        <div class="head">
+          <div>16 todos · tree order</div>
+          <div class="var" style="justify-content: flex-end">var</div>
+          <div class="weeks" id="weeks"></div>
+        </div>
+        <div class="body" id="body"></div>
+      </div>
+
+      <div class="foot">
+        <div class="legend">
+          <span><i class="k-plan"></i>current plan</span>
+          <span class="lb"><i class="k-base"></i>baseline</span>
+          <span class="lb"><i class="k-slip"></i>slipped</span>
+          <span class="lb"><i class="k-ahead"></i>ahead</span>
+          <span><i class="k-today"></i>today</span>
+        </div>
+        <span>Oct 26 – Dec 13, 2026</span>
+      </div>
+    </main>
+
+    <dialog id="dialog">
+      <form method="dialog" id="form">
+        <h2>Save baseline</h2>
+        <label class="field"
+          ><span>Name</span><input type="text" id="name" value="Baseline 3 · Nov 15"
+        /></label>
+        <p>
+          Snapshots planned start, due and weight of all 16 todos in this project. Nothing else
+          changes.
+        </p>
+        <div class="actions">
+          <button class="btn" value="cancel" formnovalidate>Cancel</button>
+          <button class="btn primary" value="save" id="confirm">Save</button>
+        </div>
+      </form>
+    </dialog>
+
+    <script>
+      const year = 2026;
+      const day = (s) => Date.UTC(year, Number(s.slice(0, 2)) - 1, Number(s.slice(3))) / 864e5;
+      const label = (n) =>
+        new Date(n * 864e5).toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+          timeZone: "UTC",
+        });
+      const start = day("10-26");
+      const end = day("12-14");
+      const today = day("11-15");
+      const pct = (n) => ((n - start) / (end - start)) * 100;
+
+      // Current plan, tree order. Parents without own dates derive their span from children.
+      const todos = [
+        { id: "d", code: "1", title: "Discovery", parent: null },
+        {
+          id: "d1",
+          code: "1.1",
+          title: "Stakeholder interviews",
+          parent: "d",
+          s: "10-26",
+          e: "10-30",
+          status: "done",
+        },
+        {
+          id: "d2",
+          code: "1.2",
+          title: "Audit current portal",
+          parent: "d",
+          s: "10-28",
+          e: "11-03",
+          status: "done",
+        },
+        {
+          id: "d3",
+          code: "1.3",
+          title: "Requirements sign-off",
+          parent: "d",
+          e: "11-06",
+          status: "done",
+          milestone: true,
+        },
+        { id: "g", code: "2", title: "Design", parent: null, s: "11-02", e: "11-20" },
+        {
+          id: "g1",
+          code: "2.1",
+          title: "Information architecture",
+          parent: "g",
+          s: "11-02",
+          e: "11-09",
+          status: "done",
+        },
+        {
+          id: "g2",
+          code: "2.2",
+          title: "Wireframes",
+          parent: "g",
+          s: "11-09",
+          e: "11-18",
+          status: "active",
+        },
+        {
+          id: "g3",
+          code: "2.3",
+          title: "Visual design",
+          parent: "g",
+          s: "11-16",
+          e: "11-24",
+          status: "planned",
+        },
+        { id: "b", code: "3", title: "Build", parent: null },
+        { id: "a", code: "3.1", title: "Auth & accounts", parent: "b" },
+        {
+          id: "a1",
+          code: "3.1.1",
+          title: "SSO login",
+          parent: "a",
+          s: "11-10",
+          e: "11-19",
+          status: "active",
+        },
+        {
+          id: "a2",
+          code: "3.1.2",
+          title: "Account settings",
+          parent: "a",
+          s: "11-19",
+          e: "11-26",
+          status: "planned",
+        },
+        {
+          id: "b2",
+          code: "3.2",
+          title: "Billing pages",
+          parent: "b",
+          s: "11-17",
+          e: "12-04",
+          status: "planned",
+        },
+        {
+          id: "b3",
+          code: "3.3",
+          title: "API integration",
+          parent: "b",
+          s: "11-20",
+          e: "12-02",
+          status: "blocked",
+        },
+        { id: "l", code: "4", title: "Launch", parent: null },
+        {
+          id: "l1",
+          code: "4.1",
+          title: "QA pass",
+          parent: "l",
+          s: "12-03",
+          e: "12-09",
+          status: "planned",
+        },
+        {
+          id: "l2",
+          code: "4.2",
+          title: "Go-live",
+          parent: "l",
+          e: "12-10",
+          status: "planned",
+          milestone: true,
+        },
+      ];
+
+      // A baseline stores each todo's own dates; parent spans re-derive from the snapshot.
+      const own = (list) =>
+        Object.fromEntries(list.filter((t) => t.e).map((t) => [t.id, { s: t.s, e: t.e }]));
+      const patch = (base, changes, drop = []) => {
+        const out = { ...base, ...changes };
+        drop.forEach((id) => delete out[id]);
+        return out;
+      };
+      const current = own(todos);
+      const baselines = [
+        {
+          id: "kickoff",
+          name: "Kickoff plan · Oct 24 · Dev User",
+          short: "Kickoff plan",
+          dates: patch(
+            current,
+            {
+              d2: { s: "10-28", e: "11-01" },
+              g2: { s: "11-06", e: "11-13" },
+              g3: { s: "11-13", e: "11-20" },
+              a1: { s: "11-09", e: "11-16" },
+              b2: { s: "11-14", e: "11-28" },
+              b3: { s: "11-18", e: "11-28" },
+              l1: { s: "11-30", e: "12-04" },
+              l2: { e: "12-05" },
+              x: { s: "11-20", e: "11-25" },
+            },
+            ["a2"],
+          ),
+          removed: [
+            { id: "x", code: "3.–", title: "Legacy data export", parent: "b", after: "b3" },
+          ],
+        },
+        {
+          id: "discovery",
+          name: "After discovery · Nov 7 · Ana Ribeiro",
+          short: "After discovery",
+          dates: patch(current, {
+            g2: { s: "11-09", e: "11-16" },
+            g3: { s: "11-16", e: "11-22" },
+            b2: { s: "11-17", e: "12-01" },
+            l1: { s: "12-02", e: "12-08" },
+            l2: { e: "12-09" },
+          }),
+          removed: [],
+        },
+      ];
+
+      const kids = (id, list) => list.filter((t) => t.parent === id);
+      // Span of a todo under a set of own dates: its own if set, else min/max of its children.
+      function span(t, dates, list) {
+        const d = dates[t.id];
+        if (d) return { s: day(d.s ?? d.e), e: day(d.e), derived: false };
+        const spans = kids(t.id, list)
+          .map((c) => span(c, dates, list))
+          .filter(Boolean);
+        if (!spans.length) return null;
+        return {
+          s: Math.min(...spans.map((x) => x.s)),
+          e: Math.max(...spans.map((x) => x.e)),
+          derived: true,
+        };
+      }
+
+      const pick = document.getElementById("pick");
+      const only = document.getElementById("only");
+      const chart = document.getElementById("chart");
+      const body = document.getElementById("body");
+      const summary = document.getElementById("summary");
+
+      function options(selected) {
+        pick.innerHTML =
+          '<option value="">None</option>' +
+          baselines.map((b) => `<option value="${b.id}">${b.name}</option>`).join("");
+        pick.value = selected;
+      }
+
+      // Weekly grid lines and headers, Mondays.
+      const weeks = [];
+      for (let n = start; n < end; n += 7) weeks.push(n);
+      document.getElementById("weeks").innerHTML = weeks
+        .map((n) => `<span style="left:${pct(n)}%">${label(n)}</span>`)
+        .join("");
+
+      function rows(base) {
+        // Removed todos live only in the baseline; slot them back after their recorded sibling.
+        const list = [...todos];
+        (base?.removed ?? []).forEach((r) =>
+          list.splice(list.findIndex((t) => t.id === r.after) + 1, 0, { ...r, gone: true }),
+        );
+        const everything = base ? [...todos, ...base.removed] : todos;
+        return list.map((t) => {
+          const branch = kids(t.id, everything).length > 0;
+          const now = t.gone ? null : span(t, current, todos);
+          const was = base ? span(t, base.dates, everything) : null;
+          const delta = now && was ? now.e - was.e : null;
+          const kind = !base
+            ? "none"
+            : t.gone
+              ? "removed"
+              : !was
+                ? "new"
+                : delta > 0
+                  ? "slipped"
+                  : delta < 0
+                    ? "ahead"
+                    : "same";
+          return { ...t, branch, now, was, delta, kind, depth: t.code.split(".").length - 1 };
+        });
+      }
+
+      function render() {
+        const base = baselines.find((b) => b.id === pick.value);
+        chart.classList.toggle("nobase", !base);
+        document
+          .querySelectorAll(".legend .lb")
+          .forEach((el) => (el.style.display = base ? "" : "none"));
+        only.disabled = !base;
+        const all = rows(base);
+
+        // Summary over leaves and milestones only, so a parent doesn't count twice.
+        if (base) {
+          const leaves = all.filter((r) => !r.branch);
+          const count = (k) => leaves.filter((r) => r.kind === k).length;
+          const live = all.find((r) => r.id === "l2");
+          const slipped = count("slipped");
+          summary.hidden = false;
+          summary.innerHTML =
+            `<span>vs <b>${base.short}</b>:</span>` +
+            `<span class="chip ${slipped ? "bad" : ""}">${slipped} slipped</span>` +
+            `<span class="chip">${count("same")} on plan</span>` +
+            (count("ahead") ? `<span class="chip good">${count("ahead")} ahead</span>` : "") +
+            `<span class="chip">${count("new")} new</span>` +
+            `<span class="chip">${count("removed")} removed</span>` +
+            `<span>·</span><span>Go-live <b style="color:${live.delta > 0 ? "var(--danger)" : "var(--done)"}">${fmt(live.delta)}</b></span>`;
+        } else {
+          summary.hidden = true;
+        }
+
+        // "Only changes" keeps changed rows plus their ancestors, dimmed, for context.
+        const changed = (r) => ["slipped", "ahead", "new", "removed"].includes(r.kind);
+        const keep = new Set();
+        if (base && only.checked)
+          all.filter(changed).forEach((r) => {
+            keep.add(r.id);
+            for (let up = r.parent; up; up = todos.find((x) => x.id === up)?.parent) keep.add(up);
+          });
+        const shown = base && only.checked ? all.filter((r) => keep.has(r.id)) : all;
+
+        body.innerHTML = shown.length
+          ? shown.map((r) => row(r, base && only.checked && !changed(r))).join("") +
+            `<div class="today" style="left:calc(var(--label) + ${base ? "var(--var)" : "0px"} + (100% - var(--label) - ${base ? "var(--var)" : "0px"}) * ${pct(today) / 100})"></div>`
+          : `<div class="empty">Nothing changed since this baseline.</div>`;
+      }
+
+      const fmt = (d) => (d > 0 ? `+${d}d` : d < 0 ? `−${-d}d` : "0d");
+
+      function row(r, context) {
+        const cls = [
+          "row",
+          r.branch ? "parent" : "",
+          r.gone ? "removed" : "",
+          context ? "context" : "",
+        ].join(" ");
+        const pad = 12 + r.depth * 16;
+        const variance =
+          r.kind === "new"
+            ? '<span class="badge fresh">new</span>'
+            : r.kind === "removed"
+              ? '<span class="badge">removed</span>'
+              : r.kind === "slipped"
+                ? fmt(r.delta)
+                : r.kind === "ahead"
+                  ? fmt(r.delta)
+                  : "—";
+        const vcls = r.kind === "slipped" ? "bad" : r.kind === "ahead" ? "good" : "";
+        const tip = (s) => (s ? `${label(s.s)} – ${label(s.e)}` : "");
+        const title = r.title;
+        return `<div class="${cls}" title="${title}${r.gone ? " · removed since baseline" : ""}\nnow: ${tip(r.now) || "—"}\nbaseline: ${tip(r.was) || "—"}">
+      <div class="label" style="padding-left:${pad}px">
+        ${r.branch || r.gone ? "" : `<span class="dot ${r.status}"></span>`}
+        <span class="code">${r.code}</span>
+        <span class="title">${title}</span>
+        ${r.now?.derived ? '<span class="derived">from sub-issues</span>' : ""}
+      </div>
+      <div class="var ${vcls}">${variance}</div>
+      <div class="lane">${weeks.map((n) => `<div class="grid" style="left:${pct(n)}%"></div>`).join("")}${marks(r)}</div>
+    </div>`;
+      }
+
+      function marks(r) {
+        const out = [];
+        if (r.milestone) {
+          if (r.was) out.push(`<div class="gdiamond" style="left:${pct(r.was.e + 1)}%"></div>`);
+          if (r.now)
+            out.push(
+              `<div class="diamond ${r.kind === "slipped" ? "late" : ""}" style="left:${pct(r.now.e + 1)}%"></div>`,
+            );
+          return out.join("");
+        }
+        if (r.was)
+          out.push(
+            `<div class="ghost" style="left:${pct(r.was.s)}%;width:${pct(r.was.e + 1) - pct(r.was.s)}%"></div>`,
+          );
+        if (r.now) {
+          const w = r.now.e + 1 - r.now.s;
+          // Tint the stretch past the baseline due (slipped) or the slack before it (ahead).
+          const over =
+            r.was && r.kind === "slipped"
+              ? `<div class="over" style="width:${(Math.min(r.delta, w) / w) * 100}%"></div>`
+              : "";
+          const ahead =
+            r.was && r.kind === "ahead"
+              ? `<div class="ahead" style="right:0;width:${(Math.min(-r.delta, w) / w) * 100}%;opacity:.5"></div>`
+              : "";
+          out.push(
+            `<div class="bar" style="left:${pct(r.now.s)}%;width:${pct(r.now.e + 1) - pct(r.now.s)}%">${over}${ahead}</div>`,
+          );
+        }
+        return out.join("");
+      }
+
+      pick.addEventListener("change", render);
+      only.addEventListener("change", render);
+
+      const dialog = document.getElementById("dialog");
+      document.getElementById("save").addEventListener("click", () => {
+        document.getElementById("name").value = `Baseline ${baselines.length + 1} · Nov 15`;
+        dialog.showModal();
+      });
+      dialog.addEventListener("close", () => {
+        if (dialog.returnValue !== "save") return;
+        const name =
+          document.getElementById("name").value.trim() || `Baseline ${baselines.length + 1}`;
+        const id = `b${Date.now()}`;
+        baselines.push({
+          id,
+          name: `${name} · Dev User`,
+          short: name,
+          dates: { ...current },
+          removed: [],
+        });
+        options(id);
+        render();
+      });
+
+      options("kickoff");
+      render();
+    </script>
+  </body>
+</html>

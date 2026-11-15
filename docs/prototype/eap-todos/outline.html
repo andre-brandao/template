@@ -1,0 +1,904 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Outline · Customer portal v2</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: light-dark(#f7f7f5, #111110);
+        --surface: light-dark(#ffffff, #181817);
+        --surface-2: light-dark(#f2f1ee, #222220);
+        --border: light-dark(#e6e5e1, #2a2927);
+        --border-bright: light-dark(#d3d1cc, #3b3a37);
+        --ink: light-dark(#1c1b19, #ecebe7);
+        --muted: light-dark(#64625d, #a3a19b);
+        --dim: light-dark(#75736d, #8a8882);
+        --accent: light-dark(#2f7f68, #4fa98f);
+        --primary: var(--ink);
+        --primary-ink: light-dark(#ffffff, #111110);
+        --hover: color-mix(in oklab, var(--ink) 6%, transparent);
+        --selected: color-mix(in oklab, var(--accent) 14%, transparent);
+        --pending: light-dark(#6b6a64, #8b8a84);
+        --progress: light-dark(#a3672a, #c98a3f);
+        --done: light-dark(#2f7f68, #4fa98f);
+        --danger: light-dark(#b8452c, #d3684f);
+        --radius: 8px;
+        --radius-sm: 6px;
+        --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+        --font-mono: ui-monospace, "JetBrains Mono", "SF Mono", "Cascadia Code", monospace;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font: 13px/1.4 var(--font-sans);
+      }
+      main {
+        padding: 24px 24px 16px;
+        max-width: 1240px;
+        margin: 0 auto;
+      }
+      header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding-bottom: 14px;
+        border-bottom: 1px solid var(--border);
+      }
+      h1 {
+        font-size: 19px;
+        margin: 0;
+        flex: 1;
+        font-weight: 650;
+      }
+      .crumb {
+        font-size: 12px;
+        color: var(--dim);
+        margin-bottom: 6px;
+      }
+      .seg {
+        display: flex;
+        background: var(--surface-2);
+        border-radius: var(--radius);
+        padding: 3px;
+      }
+      .seg button {
+        border: 0;
+        background: none;
+        color: var(--muted);
+        font: inherit;
+        padding: 5px 10px;
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+      }
+      .seg button.on {
+        background: var(--surface);
+        color: var(--ink);
+        box-shadow: 0 0 0 1px var(--border);
+      }
+      .new {
+        background: var(--primary);
+        color: var(--primary-ink);
+        border: 0;
+        border-radius: var(--radius-sm);
+        padding: 7px 10px;
+        font: inherit;
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+      kbd {
+        font: 10px var(--font-mono);
+        border: 1px solid var(--border-bright);
+        border-radius: 4px;
+        padding: 0 4px;
+        color: var(--muted);
+        background: var(--surface);
+      }
+      .new kbd {
+        background: transparent;
+        color: inherit;
+        border-color: color-mix(in oklab, var(--primary-ink) 50%, transparent);
+      }
+      .bar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 0;
+      }
+      .bar .sum {
+        flex: 1;
+        color: var(--muted);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .bar .sum b {
+        color: var(--ink);
+        font-weight: 600;
+      }
+      .ghost {
+        border: 1px solid var(--border);
+        background: var(--surface);
+        color: var(--ink);
+        font: inherit;
+        padding: 5px 10px;
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+      }
+      .ghost:hover {
+        background: var(--hover);
+      }
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        overflow: hidden;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: fixed;
+      }
+      th {
+        text-align: left;
+        font-weight: 500;
+        color: var(--muted);
+        font-size: 12px;
+        padding: 8px 10px;
+        border-bottom: 1px solid var(--border);
+        background: var(--surface);
+      }
+      td {
+        padding: 0 10px;
+        height: 36px;
+        border-bottom: 1px solid var(--border);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      tr.row {
+        cursor: default;
+      }
+      tr.row:hover td {
+        background: var(--hover);
+      }
+      tr.row.focus td {
+        background: var(--selected);
+      }
+      tr.row.focus td:first-child {
+        box-shadow: inset 2px 0 0 var(--accent);
+      }
+      tr:last-child td {
+        border-bottom: 0;
+      }
+      .code {
+        font: 11px var(--font-mono);
+        color: var(--dim);
+      }
+      .title {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+      .title .name {
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .title.parent .name {
+        font-weight: 600;
+      }
+      .chev {
+        width: 16px;
+        height: 16px;
+        display: inline-grid;
+        place-items: center;
+        color: var(--dim);
+        cursor: pointer;
+        flex: none;
+        border-radius: 4px;
+      }
+      .chev:hover {
+        background: var(--hover);
+      }
+      .chev svg {
+        transition: transform 0.12s;
+      }
+      .chev.closed svg {
+        transform: rotate(-90deg);
+      }
+      .spacer {
+        width: 16px;
+        flex: none;
+      }
+      .dia {
+        color: var(--accent);
+        font-size: 11px;
+        margin-right: 2px;
+      }
+      .warn {
+        color: var(--danger);
+        font-size: 11px;
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        margin-left: 6px;
+        flex: none;
+      }
+      .saving {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--pending);
+        flex: none;
+        margin-left: 6px;
+        animation: pulse 0.8s infinite alternate;
+      }
+      @keyframes pulse {
+        from {
+          opacity: 0.3;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+      .prog {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .track {
+        flex: 1;
+        height: 4px;
+        border-radius: 2px;
+        background: var(--surface-2);
+        overflow: hidden;
+        max-width: 90px;
+      }
+      .fill {
+        height: 100%;
+        background: var(--done);
+      }
+      .pct {
+        font: 11px var(--font-mono);
+        color: var(--muted);
+        width: 32px;
+        text-align: right;
+      }
+      .cnt {
+        font: 10px var(--font-mono);
+        color: var(--dim);
+      }
+      .num {
+        font: 12px var(--font-mono);
+        color: var(--muted);
+        cursor: text;
+        padding: 2px 6px;
+        border-radius: 4px;
+      }
+      .num:hover {
+        background: var(--hover);
+      }
+      .num.parent {
+        color: var(--dim);
+      }
+      .date {
+        font: 12px var(--font-mono);
+        color: var(--muted);
+      }
+      .date.derived {
+        font-style: italic;
+        color: var(--dim);
+      }
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 11px;
+        padding: 1px 8px;
+        border-radius: 6px;
+        border: 1px solid;
+      }
+      .pill::before {
+        content: "";
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: currentColor;
+      }
+      .s-planned,
+      .s-backlog {
+        color: var(--pending);
+        border-color: color-mix(in oklab, var(--pending) 40%, transparent);
+        background: color-mix(in oklab, var(--pending) 8%, transparent);
+      }
+      .s-active {
+        color: var(--progress);
+        border-color: color-mix(in oklab, var(--progress) 40%, transparent);
+        background: color-mix(in oklab, var(--progress) 8%, transparent);
+      }
+      .s-blocked {
+        color: var(--danger);
+        border-color: color-mix(in oklab, var(--danger) 40%, transparent);
+        background: color-mix(in oklab, var(--danger) 8%, transparent);
+      }
+      .s-done {
+        color: var(--done);
+        border-color: color-mix(in oklab, var(--done) 40%, transparent);
+        background: color-mix(in oklab, var(--done) 8%, transparent);
+      }
+      .who {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--muted);
+      }
+      .av {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        display: grid;
+        place-items: center;
+        font-size: 9px;
+        color: var(--ink);
+        flex: none;
+      }
+      input.edit {
+        font: inherit;
+        color: var(--ink);
+        background: var(--surface);
+        border: 1px solid var(--accent);
+        border-radius: 4px;
+        padding: 3px 6px;
+        width: 100%;
+        outline: none;
+        box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent) 16%, transparent);
+      }
+      input.w {
+        width: 52px;
+        font-family: var(--font-mono);
+        font-size: 12px;
+      }
+      footer.keys {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+        padding: 12px 2px;
+        color: var(--dim);
+        font-size: 12px;
+      }
+      footer.keys span {
+        display: inline-flex;
+        gap: 4px;
+        align-items: center;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="crumb">Projects / Customer portal v2 / Todos</div>
+      <header>
+        <h1>Customer portal v2</h1>
+        <div class="seg">
+          <button>Table</button><button>Board</button><button>Timeline</button
+          ><button class="on">Outline</button><button>Calendar</button><button>List</button>
+        </div>
+        <button class="new">New todo <kbd>C</kbd></button>
+      </header>
+
+      <div class="bar">
+        <div class="sum">
+          <span>Overall</span><b id="overall">0%</b><span>· weighted</span
+          ><span class="cnt" id="count"></span>
+        </div>
+        <button class="ghost" id="expand">Expand all</button>
+        <button class="ghost" id="collapse">Collapse all</button>
+      </div>
+
+      <div class="card">
+        <table>
+          <colgroup>
+            <col style="width: 64px" />
+            <col />
+            <col style="width: 170px" />
+            <col style="width: 72px" />
+            <col style="width: 84px" />
+            <col style="width: 84px" />
+            <col style="width: 104px" />
+            <col style="width: 150px" />
+          </colgroup>
+          <thead>
+            <tr>
+              <th>WBS</th>
+              <th>Title</th>
+              <th>Progress</th>
+              <th>Weight</th>
+              <th>Start</th>
+              <th>Due</th>
+              <th>Status</th>
+              <th>Assignee</th>
+            </tr>
+          </thead>
+          <tbody id="body"></tbody>
+        </table>
+      </div>
+
+      <footer class="keys">
+        <span><kbd>↑</kbd><kbd>↓</kbd> move</span>
+        <span><kbd>←</kbd><kbd>→</kbd> collapse / expand</span>
+        <span><kbd>Enter</kbd> new sibling</span>
+        <span><kbd>Tab</kbd> indent</span>
+        <span><kbd>Shift</kbd><kbd>Tab</kbd> outdent</span>
+        <span><kbd>Alt</kbd><kbd>↑</kbd><kbd>↓</kbd> reorder</span>
+        <span><kbd>F2</kbd> rename</span>
+        <span><kbd>Space</kbd> toggle done</span>
+        <span><kbd>Del</kbd> delete (sub-issues move up)</span>
+      </footer>
+    </main>
+
+    <script>
+      const today = "2026-11-15";
+      let seq = 100;
+      const n = (id, title, opts = {}, kids = []) => ({
+        id,
+        title,
+        weight: 1,
+        status: "planned",
+        start: null,
+        due: null,
+        who: null,
+        milestone: false,
+        ...opts,
+        kids,
+      });
+      const roots = [
+        n("disc", "Discovery", { weight: 1 }, [
+          n("intv", "Stakeholder interviews", {
+            weight: 2,
+            status: "done",
+            start: "2026-10-26",
+            due: "2026-10-30",
+            who: "Ana Ribeiro",
+          }),
+          n("audit", "Audit current portal", {
+            weight: 1,
+            status: "done",
+            start: "2026-10-28",
+            due: "2026-11-03",
+            who: "Bruno Costa",
+          }),
+          n("sign", "Requirements sign-off", {
+            weight: 0,
+            status: "done",
+            due: "2026-11-06",
+            who: "Dev User",
+            milestone: true,
+          }),
+        ]),
+        n(
+          "design",
+          "Design",
+          {
+            weight: 2,
+            start: "2026-11-02",
+            due: "2026-11-20",
+            status: "active",
+            who: "Cami Duarte",
+          },
+          [
+            n("ia", "Information architecture", {
+              weight: 2,
+              status: "done",
+              start: "2026-11-02",
+              due: "2026-11-09",
+              who: "Cami Duarte",
+            }),
+            n("wire", "Wireframes", {
+              weight: 3,
+              status: "active",
+              start: "2026-11-09",
+              due: "2026-11-18",
+              who: "Cami Duarte",
+            }),
+            n("visual", "Visual design", {
+              weight: 3,
+              start: "2026-11-16",
+              due: "2026-11-24",
+              who: "Ana Ribeiro",
+            }),
+          ],
+        ),
+        n("build", "Build", { weight: 4 }, [
+          n("auth", "Auth & accounts", { weight: 5 }, [
+            n("sso", "SSO login", {
+              weight: 3,
+              status: "active",
+              start: "2026-11-10",
+              due: "2026-11-19",
+              who: "Bruno Costa",
+            }),
+            n("acct", "Account settings", {
+              weight: 2,
+              start: "2026-11-19",
+              due: "2026-11-26",
+              who: "Dev User",
+            }),
+          ]),
+          n("bill", "Billing pages", {
+            weight: 5,
+            start: "2026-11-17",
+            due: "2026-12-04",
+            who: "Bruno Costa",
+          }),
+          n("api", "API integration", {
+            weight: 3,
+            status: "blocked",
+            start: "2026-11-20",
+            due: "2026-12-02",
+            who: "Cami Duarte",
+          }),
+        ]),
+        n("launch", "Launch", { weight: 1 }, [
+          n("qa", "QA pass", {
+            weight: 2,
+            start: "2026-12-03",
+            due: "2026-12-09",
+            who: "Ana Ribeiro",
+          }),
+          n("live", "Go-live", { weight: 0, due: "2026-12-10", milestone: true }),
+        ]),
+      ];
+      // Finish-to-start: `from` must be due before `to` starts.
+      const deps = [{ from: "wire", to: "bill" }];
+
+      const closed = new Set();
+      const pending = new Set();
+      let focus = "disc";
+      let editing = null; // { id, field }
+
+      // Pre-order walk with derived codes and bottom-up roll-ups, like Todo.tree would return.
+      function walk(list = roots, prefix = "", depth = 0, parent = null, out = []) {
+        list.forEach((node, at) => {
+          const code = prefix ? `${prefix}.${at + 1}` : `${at + 1}`;
+          const row = { node, code, depth, parent };
+          out.push(row);
+          walk(node.kids, code, depth + 1, row, out);
+        });
+        return out;
+      }
+
+      function roll(node) {
+        if (!node.kids.length) {
+          const done = node.status === "done" ? 1 : 0;
+          return {
+            progress: done,
+            total: 1,
+            done,
+            start: node.start ?? node.due,
+            due: node.due ?? node.start,
+          };
+        }
+        const kids = node.kids.map((kid) => ({ kid, r: roll(kid) }));
+        const sum = kids.reduce((s, k) => s + k.kid.weight, 0);
+        const progress = sum
+          ? kids.reduce((s, k) => s + k.kid.weight * k.r.progress, 0) / sum
+          : kids.reduce((s, k) => s + k.r.progress, 0) / kids.length;
+        const starts = kids
+          .map((k) => k.r.start)
+          .filter(Boolean)
+          .sort();
+        const dues = kids
+          .map((k) => k.r.due)
+          .filter(Boolean)
+          .sort();
+        return {
+          progress,
+          total: kids.reduce((s, k) => s + k.r.total, 0),
+          done: kids.reduce((s, k) => s + k.r.done, 0),
+          start: node.start ?? starts[0] ?? null,
+          due: node.due ?? dues.at(-1) ?? null,
+          derived: { start: !node.start, due: !node.due },
+        };
+      }
+
+      function locate(id, list = roots, parent = null) {
+        for (const [at, node] of list.entries()) {
+          if (node.id === id) return { node, list, at, parent };
+          const hit = locate(id, node.kids, node);
+          if (hit) return hit;
+        }
+      }
+
+      const fmt = (d) =>
+        d
+          ? new Date(d + "T12:00:00Z").toLocaleDateString("en-US", {
+              month: "short",
+              day: "numeric",
+              timeZone: "UTC",
+            })
+          : "—";
+      const esc = (s) =>
+        s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+      const initials = (name) =>
+        name
+          .split(" ")
+          .map((p) => p[0])
+          .join("")
+          .slice(0, 2);
+      const label = {
+        backlog: "Backlog",
+        planned: "Planned",
+        active: "Active",
+        blocked: "Blocked",
+        done: "Done",
+      };
+
+      function visible(rows) {
+        const hidden = new Set();
+        return rows.filter((row) => {
+          if (row.parent && (closed.has(row.parent.node.id) || hidden.has(row.parent.node.id))) {
+            hidden.add(row.node.id);
+            return false;
+          }
+          return true;
+        });
+      }
+
+      function warnings(row, codes) {
+        const out = [];
+        const parent = row.parent?.node;
+        const own = roll(row.node);
+        if (parent?.due && own.due && own.due > parent.due)
+          out.push(`Ends after ${parent.title} (${fmt(parent.due)})`);
+        deps
+          .filter((d) => d.to === row.node.id)
+          .forEach((d) => {
+            const from = locate(d.from)?.node;
+            if (from && own.start && from.due && own.start <= from.due)
+              out.push(`Starts before ${from.title} (${codes.get(from.id)}) is due`);
+          });
+        return out;
+      }
+
+      function render() {
+        const rows = walk();
+        const codes = new Map(rows.map((r) => [r.node.id, r.code]));
+        if (!rows.some((r) => r.node.id === focus)) focus = rows[0]?.node.id;
+        const total = roll({ kids: roots, start: null, due: null });
+        document.getElementById("overall").textContent = Math.round(total.progress * 100) + "%";
+        document.getElementById("count").textContent = `${total.done}/${total.total} done`;
+
+        document.getElementById("body").innerHTML = visible(rows)
+          .map((row) => {
+            const node = row.node;
+            const r = roll(node);
+            const parent = node.kids.length > 0;
+            const warn = warnings(row, codes);
+            const pct = Math.round(r.progress * 100);
+            const edit = editing?.id === node.id ? editing.field : null;
+            const title =
+              edit === "title"
+                ? `<input class="edit" data-edit="title" value="${esc(node.title)}" />`
+                : `<span class="name">${node.milestone ? '<span class="dia">◆</span>' : ""}${esc(node.title) || '<span style="color:var(--dim)">Untitled</span>'}</span>`;
+            const chev = parent
+              ? `<span class="chev ${closed.has(node.id) ? "closed" : ""}" data-toggle="${node.id}"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M2 3.5 5 6.5 8 3.5" fill="none" stroke="currentColor" stroke-width="1.4"/></svg></span>`
+              : '<span class="spacer"></span>';
+            const date = (value, derived) =>
+              value
+                ? `<span class="date ${derived ? "derived" : ""}" ${derived ? 'title="from sub-issues"' : ""}>${fmt(value)}</span>`
+                : '<span class="date">—</span>';
+            const weight =
+              edit === "weight"
+                ? `<input class="edit w" data-edit="weight" type="number" min="0" max="1000" value="${node.weight}" />`
+                : `<span class="num ${parent ? "parent" : ""}" data-weight="${node.id}" title="${parent ? "Counts toward its own parent; its progress comes from sub-issues" : "Click to edit"}">${node.weight}</span>`;
+            return `<tr class="row ${node.id === focus ? "focus" : ""}" data-id="${node.id}">
+        <td class="code">${row.code}</td>
+        <td><div class="title ${parent ? "parent" : ""}" style="padding-left:${row.depth * 18}px">${chev}${title}
+          ${warn.map((w) => `<span class="warn" title="${esc(w)}">▲ ${esc(w)}</span>`).join("")}
+          ${pending.has(node.id) ? '<span class="saving" title="Saving…"></span>' : ""}</div></td>
+        <td><div class="prog"><div class="track"><div class="fill" style="width:${pct}%"></div></div><span class="pct">${pct}%</span>${parent ? `<span class="cnt">${r.done}/${r.total}</span>` : ""}</div></td>
+        <td>${weight}</td>
+        <td>${date(r.start, parent && r.derived?.start)}</td>
+        <td>${date(r.due, parent && r.derived?.due)}</td>
+        <td><span class="pill s-${node.status}">${label[node.status]}</span></td>
+        <td>${node.who ? `<span class="who"><span class="av">${initials(node.who)}</span>${node.who}</span>` : '<span class="who" style="color:var(--dim)">Unassigned</span>'}</td>
+      </tr>`;
+          })
+          .join("");
+
+        const input = document.querySelector("input.edit");
+        if (input) {
+          input.focus();
+          input.select();
+        }
+      }
+
+      // Mimics the Inline control: the new value shows at once, a dot marks the server call.
+      function save(id) {
+        pending.add(id);
+        render();
+        setTimeout(() => {
+          pending.delete(id);
+          render();
+        }, 400);
+      }
+
+      function step(delta) {
+        const ids = visible(walk()).map((r) => r.node.id);
+        const at = ids.indexOf(focus);
+        focus = ids[Math.max(0, Math.min(ids.length - 1, at + delta))];
+        render();
+      }
+
+      function indent() {
+        const hit = locate(focus);
+        if (!hit || hit.at === 0) return;
+        const above = hit.list[hit.at - 1];
+        hit.list.splice(hit.at, 1);
+        above.kids.push(hit.node);
+        closed.delete(above.id);
+        save(focus);
+      }
+
+      function outdent() {
+        const hit = locate(focus);
+        if (!hit?.parent) return;
+        const up = locate(hit.parent.id);
+        hit.list.splice(hit.at, 1);
+        up.list.splice(up.at + 1, 0, hit.node);
+        save(focus);
+      }
+
+      function reorder(delta) {
+        const hit = locate(focus);
+        const to = hit.at + delta;
+        if (to < 0 || to >= hit.list.length) return;
+        [hit.list[hit.at], hit.list[to]] = [hit.list[to], hit.list[hit.at]];
+        save(focus);
+      }
+
+      function sibling() {
+        const hit = locate(focus);
+        const node = n("n" + seq++, "", { weight: 1 });
+        hit.list.splice(hit.at + 1, 0, node);
+        focus = node.id;
+        editing = { id: node.id, field: "title" };
+        render();
+      }
+
+      function remove() {
+        const hit = locate(focus);
+        if (!hit) return;
+        const ids = visible(walk()).map((r) => r.node.id);
+        const next = ids[ids.indexOf(focus) + 1] ?? ids[ids.indexOf(focus) - 1];
+        hit.list.splice(hit.at, 1, ...hit.node.kids);
+        focus = hit.node.kids[0]?.id ?? next;
+        render();
+      }
+
+      function toggle() {
+        const node = locate(focus)?.node;
+        if (!node || node.kids.length) return;
+        node.status = node.status === "done" ? "planned" : "done";
+        save(node.id);
+      }
+
+      function commit(input) {
+        const node = locate(editing.id).node;
+        if (editing.field === "title") node.title = input.value.trim();
+        if (editing.field === "weight")
+          node.weight = Math.max(0, Math.min(1000, parseInt(input.value || "0", 10)));
+        const id = editing.id;
+        editing = null;
+        save(id);
+      }
+
+      document.addEventListener("keydown", (e) => {
+        const input = e.target.closest?.("input.edit");
+        if (input) {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            commit(input);
+          }
+          if (e.key === "Escape") {
+            const node = locate(editing.id)?.node;
+            if (node && !node.title && editing.field === "title") {
+              focus = node.id;
+              editing = null;
+              remove();
+              return;
+            }
+            editing = null;
+            render();
+          }
+          return;
+        }
+        const hit = locate(focus);
+        const keys = {
+          ArrowDown: () => (e.altKey ? reorder(1) : step(1)),
+          ArrowUp: () => (e.altKey ? reorder(-1) : step(-1)),
+          ArrowLeft: () => {
+            if (hit.node.kids.length && !closed.has(focus)) {
+              closed.add(focus);
+              render();
+              return;
+            }
+            if (hit.parent) {
+              focus = hit.parent.id;
+              render();
+            }
+          },
+          ArrowRight: () => {
+            if (closed.has(focus)) {
+              closed.delete(focus);
+              render();
+              return;
+            }
+            if (hit.node.kids.length) step(1);
+          },
+          Tab: () => (e.shiftKey ? outdent() : indent()),
+          Enter: sibling,
+          F2: () => {
+            editing = { id: focus, field: "title" };
+            render();
+          },
+          " ": toggle,
+          Delete: remove,
+          Backspace: remove,
+        };
+        if (!keys[e.key]) return;
+        e.preventDefault();
+        keys[e.key]();
+      });
+
+      document.getElementById("body").addEventListener("click", (e) => {
+        if (e.target.closest("input")) return;
+        const toggle = e.target.closest("[data-toggle]");
+        if (toggle) {
+          const id = toggle.dataset.toggle;
+          closed.has(id) ? closed.delete(id) : closed.add(id);
+          render();
+          return;
+        }
+        const weight = e.target.closest("[data-weight]");
+        const row = e.target.closest("tr.row");
+        if (!row) return;
+        focus = row.dataset.id;
+        editing = weight ? { id: focus, field: "weight" } : null;
+        render();
+      });
+
+      document.getElementById("body").addEventListener("dblclick", (e) => {
+        const row = e.target.closest("tr.row");
+        if (!row || e.target.closest("[data-weight], input")) return;
+        focus = row.dataset.id;
+        editing = { id: focus, field: "title" };
+        render();
+      });
+
+      document.getElementById("body").addEventListener("focusout", (e) => {
+        if (e.target.matches("input.edit") && editing) commit(e.target);
+      });
+
+      document.getElementById("expand").onclick = () => {
+        closed.clear();
+        render();
+      };
+      document.getElementById("collapse").onclick = () => {
+        walk()
+          .filter((r) => r.node.kids.length)
+          .forEach((r) => closed.add(r.node.id));
+        render();
+      };
+
+      render();
+    </script>
+  </body>
+</html>

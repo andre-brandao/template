@@ -1,8 +1,4 @@
 <script module lang="ts">
-	import type { Place } from '../tooltip/Tooltip.svelte';
-
-	export type Align = 'start' | 'center' | 'end';
-
 	/** Spread onto the trigger button: wires the invoker, ARIA, and the anchor. */
 	export type Trigger = {
 		popovertarget: string;
@@ -10,14 +6,13 @@
 		'aria-expanded': boolean;
 		'aria-controls': string;
 	};
-
-	export type { Place };
 </script>
 
 <script lang="ts">
 	import { createAttachmentKey } from 'svelte/attachments';
 	import type { Snippet } from 'svelte';
 	import { HotkeysProvider } from '@tanstack/svelte-hotkeys';
+	import { place, type Align, type Place } from './place';
 
 	let {
 		open = $bindable(false),
@@ -42,8 +37,6 @@
 	} = $props();
 
 	const id = $props.id();
-	const gap = 6;
-	const flip = { top: 'bottom', bottom: 'top', left: 'right', right: 'left' } as const;
 	const key = createAttachmentKey();
 
 	let anchor: HTMLElement | undefined = $state();
@@ -69,37 +62,16 @@
 	export function show(at?: { x: number; y: number }) {
 		point = at;
 		if (!panel?.matches(':popover-open')) panel?.showPopover();
-		place();
+		move();
 	}
 
-	// Same measuring Tooltip does, plus alignment; the top layer means no ancestor clips it.
-	function place() {
+	// Measured, because the top layer means no ancestor clips it and nothing positions it.
+	function move() {
 		if (!panel) return;
 		const at = point
 			? new DOMRect(point.x, point.y, 0, 0)
 			: (anchor?.getBoundingClientRect() ?? new DOMRect());
-		const own = panel.getBoundingClientRect();
-		const vertical = side === 'top' || side === 'bottom';
-		const along = vertical
-			? { start: at.left, center: at.left + at.width / 2 - own.width / 2, end: at.right - own.width }[align]
-			: { start: at.top, center: at.top + at.height / 2 - own.height / 2, end: at.bottom - own.height }[align];
-		const edge = {
-			top: at.top - gap - own.height,
-			bottom: at.bottom + gap,
-			left: at.left - gap - own.width,
-			right: at.right + gap
-		};
-		const fits = {
-			top: edge.top >= 0,
-			bottom: edge.bottom + own.height <= innerHeight,
-			left: edge.left >= 0,
-			right: edge.right + own.width <= innerWidth
-		};
-		// Flips to the opposite side when there is no room, rather than covering the trigger.
-		const to = fits[side] || !fits[flip[side]] ? side : flip[side];
-		const pos = vertical ? { left: along, top: edge[to] } : { left: edge[to], top: along };
-		panel.style.left = `${Math.max(gap, Math.min(pos.left, innerWidth - own.width - gap))}px`;
-		panel.style.top = `${Math.max(gap, Math.min(pos.top, innerHeight - own.height - gap))}px`;
+		place(panel, at, side, align);
 	}
 
 	function toggle(e: ToggleEvent) {
@@ -136,7 +108,7 @@
 	aria-label={label}
 	tabindex="-1"
 	data-side={side}
-	onbeforetoggle={(e) => e.newState === 'open' && requestAnimationFrame(place)}
+	onbeforetoggle={(e) => e.newState === 'open' && requestAnimationFrame(move)}
 	ontoggle={toggle}
 >
 	<!-- Its own exclusive scope while open: page hotkeys pause, ones registered inside fire. -->
@@ -159,7 +131,7 @@
 		border-radius: var(--radius, 8px);
 		background: var(--surface, #fff);
 		color: var(--ink, #1c1b19);
-		box-shadow: var(--shadow-2, 0 12px 28px -14px rgb(0 0 0 / 0.6));
+		box-shadow: var(--shadow-2, 0 16px 32px -12px rgb(0 0 0 / 0.16));
 		outline: none;
 		opacity: 0;
 		translate: 0 -2px;

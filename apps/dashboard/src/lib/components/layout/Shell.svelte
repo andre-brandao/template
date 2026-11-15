@@ -105,7 +105,7 @@
 </div>
 
 <!-- Same menu, off canvas — the sidebar is too narrow to keep on a phone. -->
-<Drawer bind:open side="left">
+<Drawer bind:open side="left" label="Navigation">
 	<div class="sheet">
 		<Nav {back} sections={nav.sections} />
 		{@render foot(false)}

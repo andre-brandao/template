@@ -21,8 +21,9 @@ the DDL (`conversation`, `conversation_message`) lives in core, at
   the `panel` subagent plus its `delegate` prompt.
 - `api/panel/` — the `panel` subagent (admins only, `undefined` for anyone else), plus its
   server tools: `sql.ts` (`Sql`, read-only SQL over a table→resource allowlist, a 20-row
-  sample for the model) and `panel.ts` (`Panel`, saved json-render specs in Storage under
-  `panels/`). Its `draft` tool checks a spec server-side; the last ok one is its result.
+  sample for the model). Saved specs go through core's `Panel` (`@template/core/panel`, one
+  JSON per panel in Storage under `panels/<userID>/`). Its `draft` tool checks a spec
+  server-side; the last ok one is its result.
 - `api/serve.ts` — the SSE endpoint behind `routes/(app)/agent/+server.ts`. Reads
   `forwardedProps` (`page`, `thread`, `model`) and mints a short-lived `orchestrator`
   delegation (`agt-`) per request as the MCP bearer, so every MCP call runs as

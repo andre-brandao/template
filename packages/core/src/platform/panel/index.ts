@@ -1,17 +1,15 @@
 import { z } from "zod";
-import { and, desc, eq, isNull } from "drizzle-orm";
-import { Database } from "../../drizzle";
 import { ErrorCodes, VisibleError } from "../../error";
-import { Identifier } from "../../identifier";
 import { Identity } from "../../identity";
-import { UserTable } from "../../user/user.sql";
+import { Storage } from "../../lib/storage";
+import { User } from "../../user";
 import { Assert } from "../../util/assert";
 import { fn } from "../../util/fn";
-import { PanelTable } from "./panel.sql";
 
 /**
- * The panels the dashboard's agent builds, saved to open again. Only the spec is kept, never
- * rows; every view reruns its SQL as whoever opens it. Only its author changes one.
+ * The panels the dashboard's agent builds, saved to open again: one JSON per panel in storage
+ * under its author's prefix, so there is no table. Only the spec is kept, never rows; every
+ * view reruns its SQL as whoever opens it.
  */
 export namespace Panel {
   const assert = Assert.create("Panel");
@@ -33,11 +31,11 @@ export namespace Panel {
     .meta({ description: "A json-render spec, opaque here: the browser's catalog validates it." });
 
   export const Info = z.object({
-    id: z.string().meta({ description: "Panel id." }),
+    id: z.uuid().meta({ description: "Panel id." }),
     title: z.string().meta({ description: "What it shows." }),
     spec: Spec,
     createdBy: z.string().meta({ description: "Id of the user who saved it." }),
-    author: z.string().meta({ description: "Their name, empty when they are gone." }),
+    author: z.string().meta({ description: "Their name when they saved it." }),
     timeCreated: z.iso.datetime().meta({ description: "When it was first saved." }),
     timeUpdated: z.iso.datetime().meta({ description: "When it was last saved." }),
   });
@@ -48,104 +46,98 @@ export namespace Panel {
     spec: Spec,
   });
 
-  // A spec is a few KB; this only stops a runaway one from filling the table.
+  // A spec is a few KB; this only stops a runaway one from filling the disk.
   const SIZE = 200_000;
 
   export const create = fn(Input, async (input) => {
     Identity.check({ panel: ["create"] });
     fits(input.spec);
-    const id = Identifier.create("panel");
-    await Database.use((tx) =>
-      tx.insert(PanelTable).values({
-        id,
-        createdBy: Identity.userID(),
-        title: input.title,
-        spec: input.spec,
-      }),
-    );
-    return load(id);
+    const user = await User.fromID(Identity.userID());
+    const now = new Date().toISOString();
+    return write({
+      id: crypto.randomUUID(),
+      title: input.title,
+      spec: input.spec,
+      createdBy: Identity.userID(),
+      author: user?.name ?? "",
+      timeCreated: now,
+      timeUpdated: now,
+    });
   });
 
-  /** Every saved panel without its spec, newest first. Shared by everyone who may read them. */
-  export const list = fn(z.void(), () => {
+  /** The caller's panels without their spec, newest first. */
+  export const list = fn(z.void(), async () => {
     Identity.check({ panel: ["read"] });
-    return Database.use((tx) =>
-      tx
-        .select({
-          id: PanelTable.id,
-          title: PanelTable.title,
-          createdBy: PanelTable.createdBy,
-          author: UserTable.name,
-          timeUpdated: PanelTable.timeUpdated,
-        })
-        .from(PanelTable)
-        .leftJoin(UserTable, eq(UserTable.id, PanelTable.createdBy))
-        .where(isNull(PanelTable.timeDeleted))
-        .orderBy(desc(PanelTable.timeUpdated), desc(PanelTable.id))
-        .then((rows) =>
-          rows.map((row) => ({
-            ...row,
-            author: row.author ?? "",
-            timeUpdated: row.timeUpdated.toISOString(),
-          })),
-        ),
-    );
+    const keys = await Storage.disk().files(prefix());
+    const rows = await Promise.all(keys.map((one) => read(one)));
+    return rows
+      .filter((row) => row !== null)
+      .map((row) => ({
+        id: row.id,
+        title: row.title,
+        createdBy: row.createdBy,
+        author: row.author,
+        timeUpdated: row.timeUpdated,
+      }))
+      .sort((a, b) => b.timeUpdated.localeCompare(a.timeUpdated) || b.id.localeCompare(a.id));
   });
 
-  export const fromID = fn(z.string().min(1), (id) => {
+  export const fromID = fn(Info.shape.id, (id) => {
     Identity.check({ panel: ["read"] });
     return load(id);
   });
 
   /** Overwrites the content; who made it and when stay. */
   export const update = fn(Input.extend({ id: Info.shape.id }), async (input) => {
-    const before = await load(input.id);
-    Identity.check({ panel: ["update"] }, before.createdBy);
+    Identity.check({ panel: ["update"] }, Identity.userID());
     fits(input.spec);
-    await Database.use((tx) =>
-      tx
-        .update(PanelTable)
-        .set({ title: input.title, spec: input.spec, timeUpdated: new Date() })
-        .where(eq(PanelTable.id, input.id)),
-    );
-    return load(input.id);
+    const before = await load(input.id);
+    return write({
+      ...before,
+      title: input.title,
+      spec: input.spec,
+      timeUpdated: new Date().toISOString(),
+    });
   });
 
   export const remove = fn(Info.shape.id, async (id) => {
-    const before = await load(id);
-    Identity.check({ panel: ["delete"] }, before.createdBy);
-    await Database.use((tx) =>
-      tx.update(PanelTable).set({ timeDeleted: new Date() }).where(eq(PanelTable.id, id)),
-    );
+    Identity.check({ panel: ["delete"] }, Identity.userID());
+    await load(id);
+    await Storage.disk().delete(key(id));
   });
-
-  function serialize(row: typeof PanelTable.$inferSelect, author: string | null): Info {
-    return {
-      id: row.id,
-      title: row.title,
-      spec: row.spec,
-      createdBy: row.createdBy,
-      author: author ?? "",
-      timeCreated: row.timeCreated.toISOString(),
-      timeUpdated: row.timeUpdated.toISOString(),
-    };
-  }
 
   // === UTILS ===
 
-  // Unchecked: a write checks its own grant against the row's author.
-  async function load(id: string) {
-    const row = await assert.exists(
-      Database.use((tx) =>
-        tx
-          .select({ panel: PanelTable, author: UserTable.name })
-          .from(PanelTable)
-          .leftJoin(UserTable, eq(UserTable.id, PanelTable.createdBy))
-          .where(and(eq(PanelTable.id, id), isNull(PanelTable.timeDeleted)))
-          .then((rows) => rows.at(0)),
-      ),
+  // The prefix is the owner: a caller only ever reaches their own panels.
+  function prefix() {
+    return `panels/${Identity.userID()}/`;
+  }
+
+  // `id` is a uuid by its schema, so it can't walk out of the prefix.
+  function key(id: string) {
+    return `${prefix()}${id}.json`;
+  }
+
+  // Unchecked: every op checks its own grant first.
+  function load(id: string) {
+    return assert.exists(read(key(id)));
+  }
+
+  // A file that no longer parses reads as missing rather than failing the whole list.
+  async function read(at: string) {
+    const file = await Storage.disk().get(at);
+    if (!file) return null;
+    const parsed = Info.safeParse(JSON.parse(new TextDecoder().decode(file.bytes)));
+    return parsed.success ? parsed.data : null;
+  }
+
+  async function write(info: Info) {
+    await Storage.disk().put(
+      key(info.id),
+      new TextEncoder().encode(JSON.stringify(info)),
+      "application/json",
     );
-    return serialize(row.panel, row.author);
+    return info;
   }
 
   function fits(spec: z.infer<typeof Spec>) {

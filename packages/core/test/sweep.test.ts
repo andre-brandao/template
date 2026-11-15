@@ -21,7 +21,7 @@ type Act<R extends Res> = (typeof Permission.Statement)[R][number];
 type Op = ((input: any) => unknown) & { schema: unknown };
 
 /** Rows owned by someone else, so a member's `:own` grants never unlock them. */
-const fx = { me: "", other: "", project: "", todo: "", webhook: "", app: "", panel: "" };
+const fx = { me: "", other: "", project: "", todo: "", webhook: "", app: "" };
 
 /**
  * One real call per op, under the grant it must be denied without. `own` marks an op that only
@@ -41,6 +41,8 @@ const png = () => new globalThis.File([new Uint8Array([1])], "x.png", { type: "i
 const range = { start: "2026-01-01", end: "2026-01-31" };
 const test1 = { key: "sweep", title: "Sweep" };
 const spec = { root: "r", elements: { r: { type: "Text", props: {}, children: [] } } };
+// Panels live under the caller's own prefix, so no fixture: the check runs before the read.
+const panel = crypto.randomUUID();
 
 const ops = [
   entry("admin", "read", Admin.users, () => ({})),
@@ -131,10 +133,10 @@ const ops = [
   entry("feedback", "create", Feedback.Experiment.expose, () => ({ key: "sweep", variant: "a" })),
 
   entry("panel", "read", Panel.list, () => undefined),
-  entry("panel", "read", Panel.fromID, () => fx.panel),
+  entry("panel", "read", Panel.fromID, () => panel),
   entry("panel", "create", Panel.create, () => ({ title: "Sweep", spec })),
-  entry("panel", "update", Panel.update, () => ({ id: fx.panel, title: "Renamed", spec })),
-  entry("panel", "delete", Panel.remove, () => fx.panel),
+  entry("panel", "update", Panel.update, () => ({ id: panel, title: "Renamed", spec }), true),
+  entry("panel", "delete", Panel.remove, () => panel, true),
 ];
 
 /** Ops that check nothing on purpose: a signature or the caller's own lookup is the gate. */
@@ -214,7 +216,6 @@ beforeAll(async () => {
     fx.todo = (await Todo.create({ title: "Theirs" })).id;
     fx.webhook = (await Webhook.create({ url: "https://x.dev/theirs" })).id;
     fx.app = (await App.create({ name: "Theirs" })).id;
-    fx.panel = (await Panel.create({ title: "Theirs", spec })).id;
   });
 });
 

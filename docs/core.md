@@ -56,6 +56,9 @@ Slices declare and publish typed events through `platform/bus`. See [events.md](
 - `platform/admin` reads `project` and `todo` tables for its counts — the one arrow that
   points up. A fork rewrites the tallies in `counts`; the rest of the back office is generic.
 - `platform/app` reaches `auth` to identify an App's account when it posts an event in.
+- `platform/panel` has no table: each panel is one JSON file in `lib/storage` at
+  `panels/<userID>/<id>.json`, metadata included. As with `platform/file`, the prefix is the
+  owner, so a caller only lists and opens their own.
 
 File-level conventions (module shape, ordering inside a file) live in
 [`packages/core/AGENTS.md`](../packages/core/AGENTS.md).

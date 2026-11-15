@@ -35,7 +35,9 @@
 				{#if editing === stage.name}
 					<div
 						class="edit"
-						onfocusout={() => (editing = undefined)}
+						onfocusout={(e) => {
+							if (!e.currentTarget.contains(e.relatedTarget as Node | null)) editing = undefined;
+						}}
 						{@attach (el) => el.querySelector('button')?.focus()}
 					>
 						<Inline

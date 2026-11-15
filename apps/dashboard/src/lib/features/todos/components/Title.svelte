@@ -24,9 +24,15 @@
 	const shown = $derived((save.isPending && save.variables?.body?.title) || todo.title);
 
 	let anchor: HTMLAnchorElement | undefined;
+	// Enter or Escape ended it, so focus goes back to the link. Inline handles the key itself:
+	// closing here first would unmount the field and its blur would save the draft.
+	let back = false;
 
-	async function done() {
+	async function leave(e: FocusEvent & { currentTarget: HTMLElement }) {
+		if (e.currentTarget.contains(e.relatedTarget as Node | null)) return;
 		renaming = false;
+		if (!back) return;
+		back = false;
 		await tick();
 		anchor?.focus();
 	}
@@ -36,8 +42,8 @@
 	<!-- Leaving the field by any route ends the rename; Inline owns the draft. -->
 	<div
 		class="edit"
-		onfocusout={() => (renaming = false)}
-		onkeydowncapture={(e) => (e.key === 'Escape' || e.key === 'Enter') && done()}
+		onfocusout={leave}
+		onkeydowncapture={(e) => (back = e.key === 'Escape' || e.key === 'Enter')}
 		{@attach (el) => el.querySelector('button')?.focus()}
 	>
 		<Inline

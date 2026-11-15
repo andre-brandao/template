@@ -6,4 +6,6 @@ import * as store from "$lib/server/theme";
 export const theme: Handle = ({ event, resolve }) =>
   resolve(event, {
     transformPageChunk: ({ html }) => html.replace("%theme%", store.read(event)),
+    // The query SDK reads these off a load's `/api` fetch; SvelteKit throws unless allowed.
+    filterSerializedResponseHeaders: (name) => name === "content-type" || name === "content-length",
   });

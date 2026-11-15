@@ -1,5 +1,6 @@
 import { browser } from "$app/environment";
 import { local } from "$lib/utils/fmt";
+import { queryClient } from "$lib/query";
 import type { LayoutLoad } from "./$types";
 
 /**
@@ -8,8 +9,12 @@ import type { LayoutLoad } from "./$types";
  * Runs again during hydration, so a first visit reports without waiting for a navigation.
  */
 export const load: LayoutLoad = ({ data }) => {
-  if (!browser) return data;
+  if (!browser) return { ...data, queryClient: queryClient() };
   document.cookie = `zone=${local()};path=/;max-age=31536000;samesite=lax`;
   // Only fills the gap before the seed lands — a stored choice is never overridden.
-  return { ...data, prefs: { ...data.prefs, zone: data.prefs.zone ?? local() } };
+  return {
+    ...data,
+    prefs: { ...data.prefs, zone: data.prefs.zone ?? local() },
+    queryClient: queryClient(),
+  };
 };

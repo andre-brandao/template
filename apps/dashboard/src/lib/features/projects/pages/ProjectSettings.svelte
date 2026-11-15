@@ -1,79 +1,84 @@
 <script lang="ts">
-	import { Button, Field, FormBoundary, Input, Issue, Section } from '@template/ui';
+	import { createQuery } from '@tanstack/svelte-query';
+	import { invalidate } from '$lib/query';
+	import { Button, Field, Input, Issue, Section, Skeleton } from '@template/ui';
 	import * as Header from '$lib/components/header';
 	import AvatarUpload from '$lib/components/AvatarUpload.svelte';
 	import Can from '$lib/components/Can.svelte';
-	import { getProject, updateProject } from '../api/projects.remote';
+	import { get, update } from '../api/projects.query';
 	import DeleteDialog from '../components/DeleteDialog.svelte';
 
 	let { id }: { id: string } = $props();
 
-	const project = $derived(await getProject(id));
-	const update = $derived(updateProject.for(id));
+	const project = createQuery(() => get(id));
 
 	let saved = $state(false);
+	const save = update({ onSuccess: () => (saved = true) });
+
+	// Seeded from the loaded project and edited locally; a new project reseeds them.
+	let name = $derived(project.data?.name ?? '');
+	let description = $derived(project.data?.description ?? '');
 </script>
 
-{#snippet back()}<a href="/projects/{id}">{project.name}</a>{/snippet}
+{#snippet back()}<a href="/projects/{id}">{project.data?.name ?? 'Project'}</a>{/snippet}
 
 <Header.Root title="Settings" eyebrow={back} />
 
-<Section
-	title="Details"
-	description="Shown on the projects page and in the project switcher."
->
-	<AvatarUpload
-		name={project.name}
-		image={project.image}
-		url="/avatars/project/{id}"
-		onchange={() => getProject(id).refresh()}
-	/>
+{#if project.isPending}
+	<Skeleton h="12em" />
+{:else if project.isError}
+	<Issue>{project.error.message}</Issue>
+{:else}
+	<Section title="Details" description="Shown on the projects page and in the project switcher.">
+		<AvatarUpload
+			name={project.data.name}
+			image={project.data.image}
+			url="/avatars/project/{id}"
+			onchange={() => invalidate([{ tags: ['Project'] }])}
+		/>
 
-	<FormBoundary>
-		{#each update.fields.allIssues() ?? [] as issue, i (i)}
-			<Issue>{issue.message}</Issue>
-		{/each}
+		{#if save.error}
+			<Issue>{save.error.message}</Issue>
+		{/if}
 
 		<form
 			oninput={() => (saved = false)}
-			{...update.enhance(async (f) => {
-				await f.submit();
-				await getProject(id).refresh();
-				saved = true;
-			})}
+			onsubmit={(e) => {
+				e.preventDefault();
+				save.mutate({ path: { id }, body: { name, description: description || null } });
+			}}
 		>
-			<input {...update.fields.id.as('hidden', id)} />
-
 			<Field label="Name">
-				<Input {...update.fields.name.as('text', project.name)} />
+				<Input required value={name} oninput={(e) => (name = e.currentTarget.value)} />
 			</Field>
 
 			<Field label="Description">
 				<Input
-					{...update.fields.description.as('text', project.description ?? '')}
 					placeholder="What is this for?"
+					value={description}
+					oninput={(e) => (description = e.currentTarget.value)}
 				/>
 			</Field>
 
 			<div class="foot">
 				{#if saved}<span class="saved">Saved</span>{/if}
-				<Button type="submit" pending={!!update.pending}>Save changes</Button>
+				<Button type="submit" pending={save.isPending}>Save changes</Button>
 			</div>
 		</form>
-	</FormBoundary>
-</Section>
-
-<Can grants={{ project: ['delete'] }} owner={project.createdBy}>
-	<Section
-		danger
-		divider
-		title="Delete project"
-		description="Takes its stages and insights with it. Its todos are kept."
-	>
-		<!-- A block wrapper so the button keeps its own width in the stretched column. -->
-		<div><DeleteDialog {id} name={project.name} /></div>
 	</Section>
-</Can>
+
+	<Can grants={{ project: ['delete'] }} owner={project.data.createdBy}>
+		<Section
+			danger
+			divider
+			title="Delete project"
+			description="Takes its stages and insights with it. Its todos are kept."
+		>
+			<!-- A block wrapper so the button keeps its own width in the stretched column. -->
+			<div><DeleteDialog {id} name={project.data.name} /></div>
+		</Section>
+	</Can>
+{/if}
 
 <style>
 	form {

@@ -1,26 +1,27 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import { z } from 'zod';
+	import { createQuery } from '@tanstack/svelte-query';
 	import { query } from '$lib/utils/params';
 	import { debounce } from '$lib/utils/debounce';
-	import { Button, Drawer, Empty, Input } from '@template/ui';
+	import { Button, Drawer, Empty, Input, Issue, Skeleton } from '@template/ui';
 	import * as Header from '$lib/components/header';
-	import { getProjects } from '../api/projects.remote';
 	import Folder from '../components/Folder.svelte';
 	import ProjectForm from '../components/ProjectForm.svelte';
+	import { list } from '../api/projects.query';
 
 	// `extra` is a secondary action another slice brings, like the GitHub import.
 	let { extra }: { extra?: Snippet } = $props();
 
 	const params = query(z.object({ q: z.string().default('') }));
-	const projects = $derived(await getProjects({ q: params.q || undefined }));
+	const projects = createQuery(() => list(params.q));
 	const commit = debounce((q: string) => params.update({ q: q || undefined }), 300);
 
 	let adding = $state(false);
 </script>
 
 <Header.Root title="Projects" lead="Each project files its own todos, stages and insights.">
-	<Header.Item label="Projects">{projects.length}</Header.Item>
+	<Header.Item label="Projects">{projects.data?.data.length ?? '–'}</Header.Item>
 	{#snippet actions()}
 		{@render extra?.()}
 		<Button onclick={() => (adding = true)}>New project</Button>
@@ -50,7 +51,15 @@
 	<ProjectForm onsuccess={() => (adding = false)} />
 </Drawer>
 
-{#if projects.length === 0}
+{#if projects.isPending}
+	<div class="drawer">
+		{#each [0, 1, 2] as i (i)}
+			<Skeleton h="8em" />
+		{/each}
+	</div>
+{:else if projects.isError}
+	<Issue>{projects.error.message}</Issue>
+{:else if projects.data.data.length === 0}
 	<Empty>
 		{#if params.q}
 			No projects match “{params.q}”.
@@ -60,7 +69,7 @@
 	</Empty>
 {:else}
 	<div class="drawer">
-		{#each projects as project, i (project.id)}
+		{#each projects.data.data as project, i (project.id)}
 			<Folder {project} pos={i % 3} />
 		{/each}
 	</div>

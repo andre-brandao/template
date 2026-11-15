@@ -1,17 +1,21 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { Avatar, Combobox, Tooltip } from '@template/ui';
-	import { getProjects } from '../api/projects.remote';
+	import { createQuery } from '@tanstack/svelte-query';
+	import { list } from '../api/projects.query';
 
 	let { id, tight = false }: { id: string; tight?: boolean } = $props();
 
-	const projects = $derived(await getProjects({}));
-	const current = $derived(projects.find((p) => p.id === id));
+	const projects = createQuery(() => list());
+	const current = $derived(projects.data?.data.find((p) => p.id === id));
 	const label = $derived(current?.name ?? 'Project');
 	// Keep the reader on the same subpage when they switch projects.
 	const sub = $derived(page.url.pathname.slice(`/projects/${id}`.length));
 </script>
 
+{#if projects.isPending}
+	<span class="ph" class:tight></span>
+{:else}
 <div class="switcher" class:tight>
 	<Combobox.Root value={id}>
 		<Combobox.Trigger caret={!tight}>
@@ -30,7 +34,7 @@
 		<Combobox.Content title="Projects">
 			<Combobox.Search placeholder="Find a project" />
 			<Combobox.List label="Projects">
-				{#each projects as p (p.id)}
+				{#each projects.data?.data ?? [] as p (p.id)}
 					<Combobox.Item value={p.id} label={p.name} href="/projects/{p.id}{sub}">
 						{#if p.image}
 							<Avatar name={p.name} image={p.image} size={16} />
@@ -43,6 +47,7 @@
 		</Combobox.Content>
 	</Combobox.Root>
 </div>
+{/if}
 
 <style>
 	.switcher {
@@ -54,6 +59,21 @@
 	   list that drops out of it. */
 	.tight {
 		flex: 0 0 auto;
+	}
+
+	.ph {
+		display: block;
+		flex: 1;
+		min-width: 0;
+		height: 2em;
+		border-radius: var(--radius);
+		background: var(--surface-2);
+	}
+
+	/* Matches the collapsed switcher's footprint so the corner doesn't jump. */
+	.ph.tight {
+		flex: 0 0 2em;
+		border-radius: 50%;
 	}
 
 	.name {

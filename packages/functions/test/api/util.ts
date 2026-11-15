@@ -111,7 +111,8 @@ export function setupApiTest() {
     path = path.replace(/:[^/]+/g, (x) => params![x.slice(1)]!);
 
     const query = Object.entries(params ?? {}).filter(([k]) => !pathNames.has(k));
-    if (query.length > 0) path = `${path}?${new URLSearchParams(query)}`;
+    const search = query.length > 0 ? `?${new URLSearchParams(query)}` : "";
+    path = path + search;
 
     const statusCodes = await SchemaValidator.getRouteResponseStatusCodes(originalPath, method);
     const requiresAuth = statusCodes.includes(401);
@@ -142,7 +143,8 @@ export function setupApiTest() {
     }
 
     if (statusCodes.includes(404)) {
-      const notFoundPath = originalPath.replace(/:[^/]+/g, "fake-param");
+      // Keeps the query, so a required query param doesn't turn the probe into a 400.
+      const notFoundPath = originalPath.replace(/:[^/]+/g, "fake-param") + search;
       const notFoundRes = await request(method, notFoundPath, body);
       expect(notFoundRes.status).toBe(404);
       await SchemaValidator.validateResponse(notFoundRes, notFoundPath, method);

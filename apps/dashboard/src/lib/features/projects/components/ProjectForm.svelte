@@ -1,35 +1,53 @@
 <script lang="ts">
-	import { Button, Field, FormBoundary, Input, Issue } from '@template/ui';
-	import { createProject } from '../api/projects.remote';
+	import { Button, Field, Input, Issue } from '@template/ui';
+	import { create } from '../api/projects.query';
 
 	let { onsuccess }: { onsuccess?: () => void } = $props();
+
+	let name = $state('');
+	let description = $state('');
+
+	const save = create({
+		onSuccess: () => {
+			name = '';
+			description = '';
+			onsuccess?.();
+		}
+	});
 </script>
 
-<FormBoundary>
-	{#each createProject.fields.allIssues() ?? [] as issue, i (i)}
-		<Issue>{issue.message}</Issue>
-	{/each}
+{#if save.error}
+	<Issue>{save.error.message}</Issue>
+{/if}
 
-	<form
-		class="add"
-		{...createProject.enhance(async (f) => {
-			await f.submit();
-			onsuccess?.();
-		})}
-	>
-		<Field label="Name">
-			<Input placeholder="Quarterly close" {...createProject.fields.name.as('text')} />
-		</Field>
+<form
+	class="add"
+	onsubmit={(e) => {
+		e.preventDefault();
+		save.mutate({ body: { name, description: description || undefined } });
+	}}
+>
+	<Field label="Name">
+		<Input
+			placeholder="Quarterly close"
+			required
+			value={name}
+			oninput={(e) => (name = e.currentTarget.value)}
+		/>
+	</Field>
 
-		<Field label="Description">
-			<Input placeholder="What is this for?" {...createProject.fields.description.as('text')} />
-		</Field>
+	<Field label="Description">
+		<Input
+			placeholder="What is this for?"
+			value={description}
+			oninput={(e) => (description = e.currentTarget.value)}
+		/>
+	</Field>
 
-		<div class="footer">
-			<Button type="submit" pending={!!createProject.pending}>Add project</Button>
-		</div>
-	</form>
-</FormBoundary>
+	<div class="footer">
+		<Button type="submit" pending={save.isPending}>Add project</Button>
+	</div>
+</form>
 
 <style>
 	.add {

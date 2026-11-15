@@ -3,6 +3,7 @@ import { Hono } from "hono";
 import { validator, PaginatedQuery, authRequired } from "../common";
 import { describe } from "../doc";
 import { Project } from "@template/core/project";
+import { Link } from "@template/core/util/meta";
 
 export namespace ProjectApi {
   const doc = describe("Project");
@@ -67,5 +68,29 @@ export namespace ProjectApi {
         await Project.remove(c.req.valid("param").id);
         return c.json("ok" as const, 200);
       },
+    )
+    .post(
+      "/:id/link",
+      doc(Project.link.meta, {
+        200: doc.json(Project.Info),
+        ...doc.errors(400, 401, 403, 404, 500),
+      }),
+      authRequired,
+      validator("param", id),
+      validator("json", Link),
+      async (c) =>
+        c.json(await Project.link({ id: c.req.valid("param").id, ...c.req.valid("json") }), 200),
+    )
+    .delete(
+      "/:id/link",
+      doc(Project.unlink.meta, {
+        200: doc.json(Project.Info),
+        ...doc.errors(400, 401, 403, 404, 500),
+      }),
+      authRequired,
+      validator("param", id),
+      validator("query", Project.unlink.schema.omit({ id: true })),
+      async (c) =>
+        c.json(await Project.unlink({ id: c.req.valid("param").id, ...c.req.valid("query") }), 200),
     );
 }

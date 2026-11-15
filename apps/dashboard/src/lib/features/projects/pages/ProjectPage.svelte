@@ -1,10 +1,11 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	import { createQuery } from '@tanstack/svelte-query';
 	import type { Event } from '@template/core/event';
-	import { Section } from '@template/ui';
+	import { Issue, Section, Skeleton } from '@template/ui';
 	import * as Header from '$lib/components/header';
 	import Timeline from '$lib/features/events/components/Timeline.svelte';
-	import { getProject, linkProject, unlinkProject } from '../api/projects.remote';
+	import { get, link, unlink } from '../api/projects.query';
 	import Links from '$lib/components/Links.svelte';
 	import Annotations from '$lib/components/Annotations.svelte';
 	import { fmt } from '$lib/utils/fmt';
@@ -20,6 +21,10 @@
 
 	const f = fmt();
 
+	const project = createQuery(() => get(id));
+	const attach = link();
+	const detach = unlink();
+
 	const eventLabels: Record<string, string> = {
 		'project.created': 'Created',
 		'project.updated': 'Updated',
@@ -29,12 +34,18 @@
 
 {#snippet back()}<a href="/projects">Projects</a>{/snippet}
 
+<!-- The boundary is for `facts`, which awaits the todos slice's remote queries. -->
 <svelte:boundary>
 	{#snippet pending()}<Header.Root title="Project" eyebrow={back} />{/snippet}
-	{@const project = await getProject(id)}
-	<Header.Root title={project.name} eyebrow={back} lead={project.description ?? undefined}>
+	<Header.Root
+		title={project.data?.name ?? 'Project'}
+		eyebrow={back}
+		lead={project.data?.description ?? undefined}
+	>
 		{@render facts?.()}
-		<Header.Item label="Created">{f.date(project.timeCreated)}</Header.Item>
+		{#if project.data}
+			<Header.Item label="Created">{f.date(project.data.timeCreated)}</Header.Item>
+		{/if}
 	</Header.Root>
 </svelte:boundary>
 
@@ -50,24 +61,25 @@
 	</div>
 
 	<div class="col">
-		<svelte:boundary>
-			{@const project = await getProject(id)}
+		{#if project.isPending}
+			<Skeleton h="6em" />
+		{:else if project.isError}
+			<Issue>{project.error.message}</Issue>
+		{:else}
 			<Section wide title="Links">
 				<Links
-					id={project.id}
-					links={project.metadata.links}
-					add={linkProject.for(project.id)}
-					drop={(url) => unlinkProject.for(`${project.id}:${url}`)}
-					onsaved={() => getProject(project.id).refresh()}
+					links={project.data.metadata.links}
+					add={(body) => attach.mutateAsync({ path: { id }, body })}
+					drop={(url) => detach.mutateAsync({ path: { id }, query: { url } })}
 				/>
 			</Section>
 
-			{#if Object.keys(project.metadata.annotations).length}
+			{#if Object.keys(project.data.metadata.annotations).length}
 				<Section wide title="Annotations">
-					<Annotations annotations={project.metadata.annotations} />
+					<Annotations annotations={project.data.metadata.annotations} />
 				</Section>
 			{/if}
-		</svelte:boundary>
+		{/if}
 
 		<Section wide title="Recent todos">
 			{@render todos()}

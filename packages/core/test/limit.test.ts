@@ -6,7 +6,7 @@ describe("rate limit", () => {
   const rules = Limit.catalog({
     auth: {
       login: {
-        algorithm: Limit.fixedWindow,
+        algorithm: Limit.Algo.FixedWindow,
         options: { limit: 2, window: 60 },
       },
     },
@@ -39,7 +39,7 @@ describe("rate limit", () => {
   });
 
   it("accepts a custom algorithm in the same catalog", async () => {
-    const custom: Limit.Algorithm<{ limit: number }> = {
+    const custom: Limit.Algo.Type<{ limit: number }> = {
       async consume(_store, _key, opts) {
         return { allowed: true, limit: opts.limit, remaining: opts.limit, resetAfter: 0 };
       },

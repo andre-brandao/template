@@ -16,15 +16,8 @@ export namespace Limit {
 
   export type Store = Pick<Kv.Api, "delete" | "get" | "incr" | "set">;
 
-  /** Implement this contract to add an algorithm without changing the catalog builder. */
-  export interface Algorithm<Options> {
-    consume(store: Store, key: string, opts: Options, cost: number): Promise<Result>;
-    inspect(store: Store, key: string, opts: Options): Promise<Result>;
-    reset(store: Store, key: string, opts: Options): Promise<void>;
-  }
-
   export type Policy<Options> = {
-    algorithm: Algorithm<Options>;
+    algorithm: Algo.Type<Options>;
     options: Options;
   };
 
@@ -79,7 +72,7 @@ export namespace Limit {
           return [name, build(next, [...path, name])];
 
         const policy = next as {
-          algorithm: Algorithm<unknown>;
+          algorithm: Algo.Type<unknown>;
           options: unknown;
         };
         const id = [...path, name].join(".");
@@ -115,53 +108,62 @@ export namespace Limit {
     };
   }
 
-  export type FixedOptions = { limit: number; window: number };
+  export namespace Algo {
+    /** Implement this contract to add an algorithm without changing the catalog builder. */
+    export interface Type<Options> {
+      consume(store: Store, key: string, opts: Options, cost: number): Promise<Result>;
+      inspect(store: Store, key: string, opts: Options): Promise<Result>;
+      reset(store: Store, key: string, opts: Options): Promise<void>;
+    }
 
-  function fixed(opts: FixedOptions, key: string) {
-    if (!Number.isSafeInteger(opts.limit) || opts.limit < 1)
-      throw new Error("A fixed-window limit must be a positive integer");
-    if (!Number.isSafeInteger(opts.window) || opts.window < 1)
-      throw new Error("A fixed-window duration must be positive seconds");
+    export type FixedOptions = { limit: number; window: number };
 
-    const span = opts.window * 1000;
-    const now = Date.now();
-    const reset = Math.ceil((span - (now % span)) / 1000);
-    return { key: `${key}:${Math.floor(now / span)}`, reset };
-  }
+    function fixed(opts: FixedOptions, key: string) {
+      if (!Number.isSafeInteger(opts.limit) || opts.limit < 1)
+        throw new Error("A fixed-window limit must be a positive integer");
+      if (!Number.isSafeInteger(opts.window) || opts.window < 1)
+        throw new Error("A fixed-window duration must be positive seconds");
 
-  function result(opts: FixedOptions, count: number, resetAfter: number): Result {
-    const allowed = count <= opts.limit;
-    return {
-      allowed,
-      limit: opts.limit,
-      remaining: Math.max(0, opts.limit - count),
-      resetAfter,
-      ...(allowed ? {} : { retryAfter: resetAfter }),
+      const span = opts.window * 1000;
+      const now = Date.now();
+      const reset = Math.ceil((span - (now % span)) / 1000);
+      return { key: `${key}:${Math.floor(now / span)}`, reset };
+    }
+
+    function result(opts: FixedOptions, count: number, resetAfter: number): Result {
+      const allowed = count <= opts.limit;
+      return {
+        allowed,
+        limit: opts.limit,
+        remaining: Math.max(0, opts.limit - count),
+        resetAfter,
+        ...(allowed ? {} : { retryAfter: resetAfter }),
+      };
+    }
+
+    /** Atomic fixed-window counter. KV decides whether state is local or distributed. */
+    export const FixedWindow: Type<FixedOptions> = {
+      async consume(store, key, opts, cost) {
+        const state = fixed(opts, key);
+        const count = await store.incr(state.key, cost, { ttl: state.reset + 1 });
+        return result(opts, count, state.reset);
+      },
+      async inspect(store, key, opts) {
+        const state = fixed(opts, key);
+        return result(opts, Number((await store.get(state.key)) ?? 0), state.reset);
+      },
+      async reset(store, key, opts) {
+        await store.delete(fixed(opts, key).key);
+      },
     };
   }
-
-  /** Atomic fixed-window counter. The KV driver decides whether state is local or distributed. */
-  export const fixedWindow: Algorithm<FixedOptions> = {
-    async consume(store, key, opts, cost) {
-      const state = fixed(opts, key);
-      const count = await store.incr(state.key, cost, { ttl: state.reset + 1 });
-      return result(opts, count, state.reset);
-    },
-    async inspect(store, key, opts) {
-      const state = fixed(opts, key);
-      return result(opts, Number((await store.get(state.key)) ?? 0), state.reset);
-    },
-    async reset(store, key, opts) {
-      await store.delete(fixed(opts, key).key);
-    },
-  };
 }
 
 /** The only application policy catalog. Add rules here so limits stay discoverable and typed. */
 export const Limits = Limit.catalog({
   auth: {
     password: {
-      algorithm: Limit.fixedWindow,
+      algorithm: Limit.Algo.FixedWindow,
       options: { limit: 10, window: 15 * 60 },
     },
   },

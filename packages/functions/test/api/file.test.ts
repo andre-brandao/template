@@ -2,6 +2,7 @@ import { describe, expect } from "bun:test";
 import { createUser, setupApiTest } from "./util";
 import { app } from "../../src/api/routes";
 import { Key } from "@template/core/key";
+import { Delegation } from "@template/core/auth/delegation";
 import { Signing } from "@template/core/key/signing";
 import { Storage } from "@template/core/storage";
 import { serve } from "@template/core/storage/adapter/serve";
@@ -111,12 +112,22 @@ describe("file", () => {
 
     const otherEmail = `test-${crypto.randomUUID()}@example.com`;
     const { id: otherUserID } = await createUser({ name: "Other User", email: otherEmail });
-    const otherToken = (await Key.create({ userID: otherUserID, name: "other" })).key;
+    const otherToken = (await Key.mint({ userID: otherUserID, name: "other" })).key;
     const headers = { authorization: `Bearer ${otherToken}` };
 
     await expectError(await app.request("/file/private.png/content", { headers }), 404);
 
     const rows = (await (await app.request("/file", { headers })).json()) as Entry[];
     expect(rows).toBeEmpty();
+  });
+
+  test("a scoped agent without the file grant gets 403", async () => {
+    await upload(pngFile("kept.png"));
+    const token = await Delegation.create({ name: "copilot", scope: { todo: ["read"] } });
+    const headers = { authorization: `Bearer ${token}` };
+
+    await expectError(await app.request("/file", { headers }), 403);
+    await expectError(await app.request("/file/kept.png", { method: "delete", headers }), 403);
+    expect(await Storage.disk().head(`${userID()}/kept.png`)).not.toBeNull();
   });
 });

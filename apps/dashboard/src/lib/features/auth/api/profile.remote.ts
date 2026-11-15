@@ -1,9 +1,11 @@
+import { getRequestEvent } from "$app/server";
 import { error, redirect } from "@sveltejs/kit";
 import { z } from "zod";
 import { User } from "@template/core/user";
 import { Auth } from "@template/core/auth";
 import { Identity } from "@template/core/identity";
 import { remote } from "$lib/server/remote";
+import * as next from "$lib/server/next";
 
 export const getMe = remote.query(z.void(), async () => {
   const user = await User.fromID(Identity.userID());
@@ -29,12 +31,9 @@ export const password = remote.form(z.object({ _password: z.string().min(8) }), 
   await getProviders().refresh();
 });
 
-/**
- * Finishes onboarding. `provision` names a fresh account after its address, and the root
- * layout holds everything behind `/welcome` until that is replaced — so this is the only
- * way out, and it lands the user where they were going.
- */
+// Finishes onboarding: the gate holds every route until the account has a real name, then
+// this lands the user on the page the gate stopped them at.
 export const onboard = remote.form(z.object({ name: User.Info.shape.name }), async (input) => {
   await User.update({ name: input.name });
-  redirect(303, "/");
+  redirect(303, next.take(getRequestEvent()));
 });

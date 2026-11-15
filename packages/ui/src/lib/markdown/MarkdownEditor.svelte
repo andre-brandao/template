@@ -138,14 +138,14 @@
 		flex-direction: column;
 		height: 100%;
 		min-height: 16em;
-		border: 1px solid var(--border);
-		border-radius: var(--radius);
-		background: var(--surface);
+		border: 1px solid var(--border, #e6e5e1);
+		border-radius: var(--radius, 8px);
+		background: var(--surface, #fff);
 		overflow: hidden;
 	}
 
 	.editor.over {
-		border-color: var(--accent);
+		border-color: var(--accent, #2f7f68);
 	}
 
 	.bar {
@@ -153,8 +153,8 @@
 		align-items: center;
 		gap: 0.15em;
 		padding: 0.3em 0.4em;
-		border-bottom: 1px solid var(--border);
-		background: var(--surface);
+		border-bottom: 1px solid var(--border, #e6e5e1);
+		background: var(--surface, #fff);
 	}
 
 	.bar button,
@@ -168,17 +168,17 @@
 		border: 1px solid transparent;
 		border-radius: 5px;
 		background: transparent;
-		color: var(--muted);
+		color: var(--muted, #64625d);
 		font: inherit;
-		font-family: var(--font-mono);
+		font-family: var(--font-mono, ui-monospace, monospace);
 		font-size: 0.85em;
 		cursor: pointer;
 	}
 
 	.bar button:hover,
 	.pick:hover {
-		background: var(--surface-2);
-		color: var(--ink);
+		background: var(--surface-2, #f2f1ee);
+		color: var(--ink, #1c1b19);
 	}
 
 	.tabs {
@@ -188,8 +188,8 @@
 	}
 
 	.tabs button.on {
-		background: var(--surface-2);
-		color: var(--ink);
+		background: var(--surface-2, #f2f1ee);
+		color: var(--ink, #1c1b19);
 	}
 
 	textarea {
@@ -200,8 +200,8 @@
 		border: 0;
 		padding: 0.8em 1em;
 		background: transparent;
-		color: var(--ink);
-		font-family: var(--font-mono);
+		color: var(--ink, #1c1b19);
+		font-family: var(--font-mono, ui-monospace, monospace);
 		font-size: 0.85em;
 		line-height: 1.6;
 		scrollbar-width: thin;

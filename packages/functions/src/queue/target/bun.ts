@@ -5,13 +5,8 @@ import { run } from "@template/core/jobs";
 import { Queue } from "@template/core/queue";
 import { Storage } from "@template/core/storage";
 
-/**
- * Worker process for the `db` driver — the piece `QUEUE_DRIVER=sync` doesn't need.
- * `run` comes from the jobs barrel, so importing it registers every handler this
- * loop dispatches to.
- */
-// A hung db round-trip leaves the loop unable to recheck the signal, so a second
-// signal hard-exits rather than leaving an immortal worker behind.
+// Worker for the `db` driver; importing `run` from the jobs barrel registers every handler.
+// A hung db round-trip can't recheck the signal, so a second signal hard-exits.
 const abort = new AbortController();
 function bye() {
   if (abort.signal.aborted) process.exit(1);

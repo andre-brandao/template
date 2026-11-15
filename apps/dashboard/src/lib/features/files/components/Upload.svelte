@@ -29,4 +29,4 @@
 		picker = el;
 	}}
 />
-<Button onclick={open}>Upload <Kbd keys="C" /></Button>
+<Button variant="primary" onclick={open}>Upload <Kbd keys="C" /></Button>

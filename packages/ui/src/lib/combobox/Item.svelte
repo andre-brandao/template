@@ -55,21 +55,26 @@
 		border: none;
 		border-radius: var(--radius-sm, 6px);
 		background: none;
-		color: var(--muted, #666);
+		color: var(--muted, #64625d);
 		text-decoration: none;
 		cursor: pointer;
 	}
 
 	:where(a, button):hover,
 	:where(a, button):focus-visible {
-		color: var(--ink, #111);
-		background: var(--surface-2, #eee);
-		outline: none;
+		color: var(--ink, #1c1b19);
+		background: var(--surface-2, #f2f1ee);
+	}
+
+	/* Inset, so the list's overflow doesn't clip the ring. */
+	:where(a, button):focus-visible {
+		outline: 2px solid var(--accent, #2f7f68);
+		outline-offset: -2px;
 	}
 
 	/* The accent rail Card uses for the same job — inset so nothing shifts. */
 	:where(a, button)[aria-selected='true'] {
-		color: var(--ink, #111);
-		box-shadow: inset 2px 0 0 var(--accent, #4fa98f);
+		color: var(--ink, #1c1b19);
+		box-shadow: inset 2px 0 0 var(--accent, #2f7f68);
 	}
 </style>

@@ -1,4 +1,4 @@
-<!-- The module grid. Which tiles, in what order, comes from `page` in modules.ts. -->
+<!-- The module grid; which tiles, in what order, comes from modules.ts. -->
 <script lang="ts">
 	import type { Module } from '../modules';
 	import Tile from './Tile.svelte';
@@ -7,7 +7,7 @@
 </script>
 
 <nav aria-label="Modules">
-	{#each modules as module (module.key)}
+	{#each modules as module (module.href)}
 		<Tile {module} />
 	{/each}
 </nav>

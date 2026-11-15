@@ -1,5 +1,4 @@
 import { defineConfig } from "drizzle-kit";
-// import { Resource } from "sst";
 
 export default defineConfig({
   verbose: true,

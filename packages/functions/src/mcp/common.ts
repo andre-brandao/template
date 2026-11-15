@@ -10,10 +10,8 @@ export function text(data: unknown) {
 type Op<S extends z.ZodType> = ((input: z.infer<S>) => unknown) & { meta: Meta; schema: S };
 
 /**
- * Registers tools against one server. Title, description and input schema all come off the
- * core op, so a tool can never document itself differently from the route over the same op.
- * `run` is only needed when the tool reports something other than the op's own return.
- * `annotations` go on every tool it registers, e.g. `{ readOnlyHint: true }` for the reads.
+ * Registers tools whose title, description and schema come off the core op. `run` overrides
+ * what a tool reports; `annotations` (like `{ readOnlyHint: true }`) go on every tool.
  */
 export function tools(server: McpServer, annotations?: ToolAnnotations) {
   const tool = <S extends z.ZodObject<z.ZodRawShape>>(

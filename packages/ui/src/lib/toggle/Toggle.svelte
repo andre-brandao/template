@@ -1,17 +1,15 @@
-<!-- An on/off filter chip for a toolbar, in place of a checkbox ("Only overdue"). `count` adds a
-     tabular badge; `onclick` runs after `pressed` flips, so it can write a URL param. -->
+<!-- An on/off filter chip for a toolbar, in place of a checkbox ("Only overdue"). `onclick`
+     runs after `pressed` flips, so it can write a URL param. -->
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 
 	let {
 		pressed = $bindable(false),
-		count,
 		disabled = false,
 		onclick,
 		children
 	}: {
 		pressed?: boolean;
-		count?: number;
 		disabled?: boolean;
 		onclick?: (pressed: boolean) => void;
 		children: Snippet;
@@ -25,7 +23,6 @@
 
 <button type="button" class="chip" aria-pressed={pressed} {disabled} onclick={toggle}>
 	{@render children()}
-	{#if count !== undefined}<span class="n">{count}</span>{/if}
 </button>
 
 <style>
@@ -34,12 +31,13 @@
 		flex: none;
 		align-items: center;
 		gap: 0.4em;
-		height: var(--control, 2rem);
+		box-sizing: border-box;
+		height: var(--control, 2.25em);
 		padding: 0 0.75em;
-		border: 1px solid var(--border, #ddd);
+		border: 1px solid var(--border, #e6e5e1);
 		border-radius: var(--radius-sm, 6px);
 		background: var(--surface, #fff);
-		color: var(--muted, #666);
+		color: var(--muted, #64625d);
 		font: inherit;
 		font-size: 0.9em;
 		white-space: nowrap;
@@ -47,8 +45,14 @@
 	}
 
 	.chip:hover:not(:disabled) {
-		border-color: var(--border-bright, #ccc);
-		color: var(--ink, #111);
+		border-color: var(--border-bright, #d3d1cc);
+		color: var(--ink, #1c1b19);
+	}
+
+	.chip:focus-visible {
+		outline: none;
+		border-color: var(--accent, #2f7f68);
+		box-shadow: var(--ring, 0 0 0 3px color-mix(in oklab, var(--accent, #2f7f68) 16%, transparent));
 	}
 
 	.chip:disabled {
@@ -57,16 +61,8 @@
 	}
 
 	.chip[aria-pressed='true'] {
-		border-color: color-mix(in oklab, var(--accent, #2f7f68) 45%, var(--border, #ddd));
+		border-color: color-mix(in oklab, var(--accent, #2f7f68) 45%, var(--border, #e6e5e1));
 		background: color-mix(in oklab, var(--accent, #2f7f68) 12%, var(--surface, #fff));
-		color: var(--ink, #111);
-	}
-
-	.n {
-		padding: 0 0.4em;
-		border-radius: 999px;
-		background: var(--surface-2, #f2f2f2);
-		font-size: 0.95em;
-		font-variant-numeric: tabular-nums;
+		color: var(--ink, #1c1b19);
 	}
 </style>

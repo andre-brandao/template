@@ -1,19 +1,24 @@
 <script lang="ts">
-	import { invalidateAll } from '$app/navigation';
-	import { Field, Section, Select } from '@template/ui';
+	import { Field, Section, Select, Status } from '@template/ui';
 	import { Locales, Prefs, type Patch } from '@template/core/user/prefs';
 	import { user } from '$lib/utils/context';
 	import * as Header from '$lib/components/header';
-	import { save } from '../api/prefs.remote';
+	import { update } from '../api/prefs.query';
+	import { swap } from '../theme';
 	import ThemePicker from '../components/ThemePicker.svelte';
 	import Formats from '../components/Formats.svelte';
 
 	const me = user();
+	const write = update();
 
-	// Local state, not `me.prefs` directly: binding a control to server data makes it
-	// round-trip on every change, which shows up as a visible flicker. The parse also
-	// narrows the context's structural type back to core's enums.
-	let prefs = $state(Prefs.parse(me.prefs));
+	// The pick leads while it saves, then the stored prefs take over, so a failed save reverts.
+	// The parse narrows the context's structural type back to core's enums.
+	const prefs = $derived(
+		Prefs.parse({ ...me.prefs, ...(write.isPending ? write.variables : undefined) })
+	);
+	const state = $derived(
+		write.isPending ? 'pending' : write.isError ? 'failed' : write.isSuccess ? 'saved' : 'idle'
+	);
 
 	const names = new Intl.DisplayNames(['en'], { type: 'language' });
 	const locales = Locales.map((locale) => ({
@@ -21,18 +26,16 @@
 		label: names.of(locale) ?? locale
 	}));
 
-	async function pick(patch: Patch) {
-		Object.assign(prefs, patch);
-		// Repaint before the round trip — waiting on the network to change theme feels broken.
-		if (patch.theme) document.documentElement.dataset.theme = patch.theme;
-		await save(patch);
-		// `command` doesn't invalidate loads, so the rest of the app would keep formatting
-		// dates with the old preferences until the next navigation.
-		await invalidateAll();
+	function pick(patch: Patch) {
+		const before = me.prefs.theme;
+		if (patch.theme) swap(patch.theme);
+		write.mutate(patch, { onError: () => swap(before) });
 	}
 </script>
 
-<Header.Root title="Experience" lead="Theme, language and how dates read. Saved as you pick." />
+<Header.Root title="Experience" lead="Theme, language and how dates read. Saved as you pick.">
+	{#snippet actions()}<Status {state} message={write.error?.message} />{/snippet}
+</Header.Root>
 
 <Section title="Appearance" description="A colour scheme, or whatever your device is set to.">
 	<ThemePicker value={prefs.theme} onpick={(theme) => pick({ theme })} />

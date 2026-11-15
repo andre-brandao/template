@@ -29,6 +29,11 @@
       "file": "**/*.story.svelte",
       "exports": ["story"],
     },
+    // ui families land as namespaces (`Menu.Root`, `List.Root`), so their part names repeat.
+    {
+      "file": "packages/ui/src/lib/*/index.ts",
+      "exports": ["Root", "Item", "Row"],
+    },
     // The agent's two json-render catalogs (`ask`, `panel`) are parallel modules with the
     // same surface, imported as namespaces (`* as ask`, `* as panel`) where both meet.
     {

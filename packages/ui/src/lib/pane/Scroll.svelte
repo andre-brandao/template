@@ -224,7 +224,7 @@
 	.thumb {
 		position: absolute;
 		border-radius: 999px;
-		background: color-mix(in srgb, var(--ink, #17181a) 25%, transparent);
+		background: color-mix(in srgb, var(--ink, #1c1b19) 25%, transparent);
 	}
 
 	.bar.y .thumb {
@@ -239,7 +239,7 @@
 
 	.thumb:hover,
 	.bar.held .thumb {
-		background: color-mix(in srgb, var(--ink, #17181a) 45%, transparent);
+		background: color-mix(in srgb, var(--ink, #1c1b19) 45%, transparent);
 	}
 
 	@media (prefers-reduced-motion: reduce) {

@@ -20,7 +20,6 @@ export namespace Context {
       provide<R>(port: P, fn: () => R): R {
         return ctx.provide(port, fn);
       },
-      /** Curried form of `provide` for composition via `withProviders`. */
       provider(port: P) {
         return <R>(fn: () => R) => ctx.provide(port, fn);
       },

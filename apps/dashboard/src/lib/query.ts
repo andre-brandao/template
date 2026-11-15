@@ -3,6 +3,7 @@ import {
   MutationCache,
   QueryClient,
   matchQuery,
+  type EnsureQueryDataOptions,
   type MutationOptions,
   type QueryKey,
 } from "@tanstack/svelte-query";
@@ -33,7 +34,17 @@ const create = () =>
 // One per tab in the browser; one per request on the server, so users never share a cache.
 const shared = browser ? create() : undefined;
 
-export const queryClient = () => shared ?? create();
+/** On the server this also points the SDK at `origin`, so SSR reads the keys a load warmed. */
+export const queryClient = (origin: string) => {
+  if (!browser) client.setConfig({ baseUrl: `${origin}/api` });
+  return shared ?? create();
+};
+
+/** For a load: cached data returns at once and refreshes behind; cold data waits. Errors stay the page's. */
+export const warm = (cache: QueryClient, ...opts: EnsureQueryDataOptions<any, any, any, any>[]) =>
+  Promise.all(
+    opts.map((one) => cache.ensureQueryData({ ...one, revalidateIfStale: true }).catch(() => {})),
+  );
 
 // For remote-function writes: refresh the TanStack queries they touched.
 export const invalidate = (key: QueryKey) => shared?.invalidateQueries({ queryKey: key });

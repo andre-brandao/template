@@ -4,7 +4,8 @@
 -->
 <script lang="ts">
 	import type { Snippet } from 'svelte';
-	import Popover, { type Align, type Place, type Trigger } from '../popover/Popover.svelte';
+	import Popover, { type Trigger } from '../popover/Popover.svelte';
+	import type { Align, Place } from '../popover/place';
 	import { createMenu } from './ctx';
 
 	let {
@@ -39,7 +40,7 @@
 	function keys(e: KeyboardEvent & { currentTarget: HTMLElement }) {
 		if (e.key === 'Tab') return pop?.close();
 		const items = [
-			...e.currentTarget.querySelectorAll<HTMLElement>('[role="menuitem"]:not(:disabled)')
+			...e.currentTarget.querySelectorAll<HTMLElement>('[role^="menuitem"]:not(:disabled)')
 		];
 		if (!items.length) return;
 		const now = items.indexOf(document.activeElement as HTMLElement);

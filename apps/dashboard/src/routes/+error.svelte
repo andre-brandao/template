@@ -1,16 +1,17 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import { dev } from '$app/environment';
 	import { resolve } from '$app/paths';
+	import { onMount } from 'svelte';
 	import { Button } from '@template/ui';
-	import type { LucideIcon } from '@lucide/svelte';
+	import { brand } from '$lib/brand';
 	import LogIn from '@lucide/svelte/icons/log-in';
 	import SearchX from '@lucide/svelte/icons/search-x';
 	import ShieldOff from '@lucide/svelte/icons/shield-off';
 	import TriangleAlert from '@lucide/svelte/icons/triangle-alert';
 
-	// One entry per status the app actually produces: the remote helper 401s an anonymous caller,
-	// core's `Identity.check` surfaces as 403, and anything unhandled lands on 500.
-	const copy: Record<number, { title: string; hint: string; icon: LucideIcon }> = {
+	// One entry per status the app produces; anything else reads as a server fault.
+	const copy = {
 		401: { title: 'Not signed in', hint: 'Sign in and try that again.', icon: LogIn },
 		403: {
 			title: 'Not allowed',
@@ -21,7 +22,7 @@
 	};
 
 	const shown = $derived(
-		copy[page.status] ?? {
+		copy[page.status as keyof typeof copy] ?? {
 			title: 'Something broke',
 			hint: "That one's on us. Try again in a moment.",
 			icon: TriangleAlert
@@ -33,16 +34,21 @@
 	const bad = $derived(page.status >= 500);
 	const Icon = $derived(shown.icon);
 
-	// `handleError` sends "Not found" for a 404, which would just repeat the heading — fall
-	// back to the hint whenever the server message adds nothing.
+	// The hint whenever the message adds nothing: a 404 repeats the title, a prod 500 is generic.
 	const detail = $derived(
-		page.error?.message && page.error.message.toLowerCase() !== shown.title.toLowerCase()
+		page.error?.message &&
+			!(bad && !dev) &&
+			page.error.message.toLowerCase() !== shown.title.toLowerCase()
 			? page.error.message
 			: shown.hint
 	);
+
+	// A direct load has nothing to go back to.
+	let back = $state(false);
+	onMount(() => (back = history.length > 1));
 </script>
 
-<svelte:head><title>{page.status} · {shown.title}</title></svelte:head>
+<svelte:head><title>{shown.title} · {brand.name}</title></svelte:head>
 
 <main>
 	<div class="card">
@@ -58,10 +64,14 @@
 		{/if}
 
 		<div class="acts">
-			<a class="act primary" href={resolve('/')}>Go home</a>
+			<Button href={resolve('/')}>Go home</Button>
 			{#if page.status === 401}
-				<a class="act" href="{resolve('/login')}?next={encodeURIComponent(page.url.pathname + page.url.search)}">Log in</a>
-			{:else}
+				<Button
+					variant="secondary"
+					href="{resolve('/login')}?next={encodeURIComponent(page.url.pathname + page.url.search)}"
+					>Log in</Button
+				>
+			{:else if back}
 				<Button variant="secondary" onclick={() => history.back()}>Go back</Button>
 			{/if}
 		</div>
@@ -142,42 +152,5 @@
 		justify-content: center;
 		gap: 0.5em;
 		margin-top: 1.75em;
-	}
-
-	/* Button's metrics and primary look, on a link: ui's Button only renders a <button>. */
-	.act {
-		display: inline-flex;
-		align-items: center;
-		min-height: 2.25em;
-		border: 1px solid var(--border);
-		border-radius: var(--radius-sm, 6px);
-		padding: 0.35em 0.85em;
-		font: inherit;
-		font-size: 0.93em;
-		font-weight: 500;
-		text-decoration: none;
-		color: var(--ink);
-		background: var(--surface);
-		box-shadow: var(--shadow-1);
-		cursor: pointer;
-	}
-
-	.act:hover {
-		background: var(--surface-2);
-	}
-
-	.act.primary {
-		border-color: var(--primary);
-		background: var(--primary);
-		color: var(--primary-ink);
-	}
-
-	.act.primary:hover {
-		background: color-mix(in oklab, var(--primary) 86%, var(--surface));
-	}
-
-	.act:focus-visible {
-		outline: 2px solid var(--accent);
-		outline-offset: 2px;
 	}
 </style>

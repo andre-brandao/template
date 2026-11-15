@@ -15,6 +15,11 @@ describe("Button", () => {
     expect(btn.getAttribute("type")).toBe("button");
   });
 
+  test("defaults to the secondary variant", () => {
+    render(Button, { children: label("Back") });
+    expect(screen.getByRole("button", { name: "Back" }).classList.contains("secondary")).toBe(true);
+  });
+
   test("applies the variant as a class", () => {
     render(Button, { variant: "danger", children: label("Delete") });
     expect(screen.getByRole("button", { name: "Delete" }).classList.contains("danger")).toBe(true);

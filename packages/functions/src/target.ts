@@ -10,16 +10,28 @@ import { providers } from "./providers";
 type App = Pick<Hono, "fetch">;
 type Res = Response | Promise<Response>;
 
-/** Cloudflare worker entry — db from the Hyperdrive binding. */
-export function worker(app: App, ...extra: Context.Provider<Res>[]) {
+/** Cloudflare worker entry — db from the Hyperdrive binding, the rest from `extra(env)`. */
+export function worker<E extends Env>(
+  app: App,
+  extra: (env: E) => Context.Provider<Res>[] = () => [],
+) {
   return {
-    fetch(request: Request, env: Env, ctx: ExecutionContext) {
-      return Context.withProviders(
+    async fetch(request: Request, env: E, ctx: ExecutionContext) {
+      // Fresh pool per request: Workers forbid reusing a socket across them.
+      const db = Database.connect(env.Hyperdrive.connectionString, { max: 5 });
+      const res = await Context.withProviders(
         () => app.fetch(request, env, ctx),
-        // Fresh pool per request: Workers forbid reusing a socket across them.
-        Database.provider(Database.connect(env.Hyperdrive.connectionString)),
-        ...extra,
+        Database.provider(db),
+        ...extra(env),
       );
+      // Closed once the body is sent: a streamed MCP reply still queries while it flows.
+      if (!res.body) {
+        ctx.waitUntil(Database.release(db));
+        return res;
+      }
+      const pipe = new TransformStream();
+      ctx.waitUntil(res.body.pipeTo(pipe.writable).finally(() => Database.release(db)));
+      return new Response(pipe.readable, res);
     },
   };
 }

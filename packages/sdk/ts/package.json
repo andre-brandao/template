@@ -7,7 +7,6 @@
     ".": "./src/index.ts",
     "./client": "./src/client/index.ts",
     "./core": "./src/core/index.ts",
-    "./fetch": "./fetch.ts",
     "./query": "./src/query/index.ts",
     "./*": "./src/*.ts"
   },

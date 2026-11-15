@@ -20,22 +20,26 @@ run them and does not patch the generated output to match.
 
 ## Structure
 
-| Path           | What                                                     |
-| -------------- | -------------------------------------------------------- |
-| `src/index.ts` | Public surface. Re-exports the generated files.          |
-| `src/*.gen.ts` | Generated: SDK class, types, client.                     |
-| `build.ts`     | Generation script (`@hey-api/openapi-ts`).               |
-| `fetch.ts`     | Hand-written fetch wrapper: timeout + one retry, opt-in. |
+| Path         | What                                                                            |
+| ------------ | ------------------------------------------------------------------------------- |
+| `src/`       | Generated flat-params `TemplateSdk` class, for the CLI and servers.             |
+| `src/query/` | Generated grouped-params SDK plus `@tanstack/svelte-query` options (dashboard). |
+| `build.ts`   | Generation script (`@hey-api/openapi-ts`).                                      |
 
-Hand-written additions go in a non-`.gen.ts` file and are re-exported from `src/index.ts`.
-That is the only way to extend this package.
+Everything under `src/` is rewritten on every `gen`, `index.ts` files included. Hand-written
+code goes in a sibling file outside `src/` with its own `exports` entry.
 
 ## Usage
 
 ```ts
-import { createClient } from "@template/sdk";
-const client = createClient({ baseUrl: "http://localhost:3000" });
+import { createClient } from "@template/sdk/client";
+import { TemplateSdk } from "@template/sdk";
+
+const sdk = new TemplateSdk({ client: createClient({ baseUrl: "http://localhost:3000" }) });
 ```
+
+The dashboard imports `@template/sdk/query` (`getXOptions`, `postXMutation`) from its
+`api/<slice>.query.ts` files.
 
 `apps/cli` reflects `TemplateSdk.prototype`, so a new endpoint appears there automatically
 once this package regenerates. Nothing needs listing by hand.

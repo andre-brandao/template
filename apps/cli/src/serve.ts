@@ -1,6 +1,8 @@
 import { MemoryStorage } from "@openauthjs/openauth/storage/memory";
+import { Context } from "@template/core/context";
 import { Database } from "@template/core/drizzle";
-import { Email } from "@template/core/email";
+import { Queue } from "@template/core/queue";
+import { Storage } from "@template/core/storage";
 import { app as apiApp } from "@template/functions/api";
 import { app as mcpApp } from "@template/functions/mcp";
 import { createAuth } from "@template/functions/auth";
@@ -8,13 +10,18 @@ import { createAuth } from "@template/functions/auth";
 const dash = `${import.meta.dir}/../../dashboard`;
 const db = Database.connect();
 
-/**
- * One pool for the process, mirroring the dashboard's `hooks/server/providers.ts`. Dev backends
- * like pglite accept only a single active connection, so a client per request can't
- * run against them.
- */
-function serveApp(app: { fetch: (req: Request) => Response | Promise<Response> }, port: number) {
-  Bun.serve({ port, fetch: (req) => Database.provide(db, () => app.fetch(req)) });
+type Res = Response | Promise<Response>;
+
+/** One pool for the process, plus the providers the matching `functions` bun target wires. */
+function serveApp(
+  app: { fetch: (req: Request) => Res },
+  port: number,
+  ...extra: Context.Provider<Res>[]
+) {
+  Bun.serve({
+    port,
+    fetch: (req) => Context.withProviders(() => app.fetch(req), Database.provider(db), ...extra),
+  });
 }
 
 function forward(child: Bun.Subprocess) {
@@ -53,22 +60,24 @@ function usage() {
 const targets: Record<string, () => void | Promise<void>> = {
   api: () => {
     const port = Number(process.env.API_PORT) || 3000;
-    serveApp(apiApp, port);
+    serveApp(
+      apiApp,
+      port,
+      Storage.provider(Storage.fromEnv(process.env)),
+      Queue.provider(Queue.fromEnv(process.env, Database.use)),
+    );
     console.log(`API running at http://localhost:${port}`);
   },
   mcp: () => {
     const port = Number(process.env.MCP_PORT) || 3001;
-    serveApp(mcpApp, port);
+    serveApp(mcpApp, port, Queue.provider(Queue.fromEnv(process.env, Database.use)));
     console.log(`MCP running at http://localhost:${port}/mcp`);
   },
   auth: () => {
     const port = Number(process.env.PORT) || 3002;
+    // The issuer holds no app state, so like `auth/target/bun.ts` it serves bare.
     const app = createAuth(MemoryStorage({ persist: process.env.AUTH_PERSIST }));
-    const sender = Email.fromEnv(process.env);
-    Bun.serve({
-      port,
-      fetch: (req) => Database.provide(db, () => Email.provide(sender, () => app.fetch(req))),
-    });
+    Bun.serve({ port, fetch: (req) => app.fetch(req) });
     console.log(`Auth running at http://localhost:${port}`);
   },
   dashboard,

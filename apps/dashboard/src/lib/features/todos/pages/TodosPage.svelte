@@ -66,7 +66,7 @@
 	{#snippet actions()}
 		{#if todos.isFetching && !todos.isPending}<Status state="pending" />{/if}
 		<ViewSelector view={params.view} onchange={(view) => params.update({ view })} />
-		<Button onclick={add}>New todo <Kbd keys="C" /></Button>
+		<Button variant="primary" onclick={add}>New todo <Kbd keys="C" /></Button>
 	{/snippet}
 	{#snippet strip()}
 		<TodoFilters

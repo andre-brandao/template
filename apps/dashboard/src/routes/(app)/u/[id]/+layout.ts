@@ -3,6 +3,7 @@ import UserRound from "@lucide/svelte/icons/user-round";
 import Webhook from "@lucide/svelte/icons/webhook";
 import { Permission } from "@template/core/permission";
 import { getUserByIdOptions } from "@template/sdk/query";
+import { section } from "$lib/components/layout/nav";
 import type { LayoutLoad } from "./$types";
 
 // An App sits under Developers → Apps; a person has no section, so back goes where they came from.
@@ -48,16 +49,5 @@ export const load: LayoutLoad = async (event) => {
         },
       },
     };
-  return {
-    nav: {
-      root: base,
-      fallback: "/todos",
-      back: { label: "Back" },
-      crumbs: [
-        { href: "/", label: "Home" },
-        { href: base, label },
-      ],
-      sections: { top: [{ items: [{ href: base, label, icon: UserRound }] }] },
-    },
-  };
+  return { nav: section(base, label, [{ items: [{ href: base, label, icon: UserRound }] }]) };
 };

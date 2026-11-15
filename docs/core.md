@@ -8,7 +8,7 @@ graph TD
   domain["<b>the product</b><br/>project · todo · user"]
   platform["<b>platform/</b><br/>admin · key · webhook · event · bus"]
   lib["<b>lib/</b><br/>queue · storage · email"]
-  kernel["<b>kernel</b><br/>actor · context · error · permission · drizzle · util"]
+  kernel["<b>kernel</b><br/>identity · context · error · permission · drizzle · util"]
 
   domain --> platform
   domain --> lib
@@ -20,19 +20,19 @@ graph TD
 
 Arrows are the only legal import direction. A cycle, or an arrow pointing up, is a bug.
 
-| Tier        | What it is                                                                             |
-| ----------- | -------------------------------------------------------------------------------------- |
-| kernel      | Cross-cutting primitives, no tables of their own. Everyone may reach them.             |
-| `lib/`      | A capability behind a `port.ts` + `adapter/`, picked at boot from env.                 |
-| `platform/` | Full features (tables, `Actor.check`, API surface) generic to any app on the template. |
-| product     | What a fork rewrites.                                                                  |
+| Tier        | What it is                                                                                |
+| ----------- | ----------------------------------------------------------------------------------------- |
+| kernel      | Cross-cutting primitives, no tables of their own. Everyone may reach them.                |
+| `lib/`      | A capability behind a `port.ts` + `adapter/`, picked at boot from env.                    |
+| `platform/` | Full features (tables, `Identity.check`, API surface) generic to any app on the template. |
+| product     | What a fork rewrites.                                                                     |
 
 ## Where does a new module go?
 
 **When you fork this template into a real product, does the module get rewritten?**
 
 - Yes → top level, next to `todo/`.
-- No, but it has a table and an actor check → `platform/`.
+- No, but it has a table and an identity check → `platform/`.
 - Never touched, only reconfigured → `lib/`, behind a port.
 
 ## Import paths stay flat
@@ -55,6 +55,8 @@ Slices declare and publish typed events through `platform/bus`. See [events.md](
   `user`, the identity anchor; nothing else in the product.
 - `platform/admin` reads `project` and `todo` tables for its counts — the one arrow that
   points up. A fork rewrites the tallies in `counts`; the rest of the back office is generic.
+- `platform/app` reaches `auth` to identify an App's account when it posts an event in.
+- `platform/conversation` is DDL only: the dashboard's copilot queries it with raw drizzle.
 
 File-level conventions (module shape, ordering inside a file) live in
 [`packages/core/AGENTS.md`](../packages/core/AGENTS.md).

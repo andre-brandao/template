@@ -23,7 +23,7 @@ const NAME = "webhook.deliver";
 
 /**
  * Outbound HTTP subscriptions, fed by `Bus` for every public event type. Delivery runs in
- * the queue worker, never on the request path, and retries re-push only the failed endpoints.
+ * the queue worker (inline under `sync`), and retries re-push only the failed endpoints.
  */
 export namespace Webhook {
   const log = Log.create({ namespace: "core.webhook" });

@@ -28,7 +28,7 @@ export function setupApiTest() {
 
     const email = `test-${crypto.randomUUID()}@example.com`;
     userID = (await createUser({ name: "Test User", email })).id;
-    token = (await Key.create({ userID, name: "test" })).key;
+    token = (await Key.mint({ userID, name: "test" })).key;
   });
 
   const get = async (path: string, headers?: Record<string, string>) => {

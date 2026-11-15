@@ -17,11 +17,11 @@
 			// colorMode none keeps it plain text, so it renders escaped rather than through {@html}.
 			if (ascii) return { svg: '', text: renderMermaidASCII(value, { colorMode: 'none' }), err: '' };
 			const svg = renderMermaidSVG(value, {
-				bg: 'var(--surface)',
-				fg: 'var(--ink)',
-				accent: 'var(--accent)',
-				muted: 'var(--muted)',
-				border: 'var(--border-bright)',
+				bg: 'var(--surface, #fff)',
+				fg: 'var(--ink, #1c1b19)',
+				accent: 'var(--accent, #2f7f68)',
+				muted: 'var(--muted, #64625d)',
+				border: 'var(--border-bright, #d3d1cc)',
 				transparent: true
 			});
 			return { svg, text: '', err: '' };
@@ -76,9 +76,9 @@
 <style>
 	.mermaid {
 		margin: 0.8em 0;
-		border: 1px solid var(--border);
-		border-radius: var(--radius);
-		background: var(--surface);
+		border: 1px solid var(--border, #e6e5e1);
+		border-radius: var(--radius, 8px);
+		background: var(--surface, #fff);
 		overflow: hidden;
 	}
 
@@ -88,7 +88,7 @@
 		justify-content: space-between;
 		gap: 0.4em;
 		padding: 0.3em 0.4em;
-		border-bottom: 1px solid var(--border);
+		border-bottom: 1px solid var(--border, #e6e5e1);
 	}
 
 	.tabs,
@@ -96,7 +96,7 @@
 		display: flex;
 		align-items: center;
 		gap: 0.15em;
-		font-family: var(--font-mono);
+		font-family: var(--font-mono, ui-monospace, monospace);
 		font-size: 0.72em;
 	}
 
@@ -105,23 +105,23 @@
 		border-radius: 5px;
 		padding: 0.25em 0.6em;
 		background: transparent;
-		color: var(--muted);
+		color: var(--muted, #64625d);
 		font: inherit;
 		cursor: pointer;
 	}
 
 	button:hover,
 	button.on {
-		background: var(--surface-2);
-		color: var(--ink);
+		background: var(--surface-2, #f2f1ee);
+		color: var(--ink, #1c1b19);
 	}
 
 	.ascii {
 		margin: 0;
 		padding: 1em;
 		overflow: auto;
-		color: var(--ink);
-		font-family: var(--font-mono);
+		color: var(--ink, #1c1b19);
+		font-family: var(--font-mono, ui-monospace, monospace);
 		font-size: 0.75em;
 		line-height: 1.25;
 	}
@@ -148,9 +148,9 @@
 	.err {
 		margin: 0;
 		padding: 0.6em 1em;
-		border-top: 1px solid var(--border);
-		color: var(--danger);
-		font-family: var(--font-mono);
+		border-top: 1px solid var(--border, #e6e5e1);
+		color: var(--danger, #b8452c);
+		font-family: var(--font-mono, ui-monospace, monospace);
 		font-size: 0.75em;
 	}
 
@@ -160,7 +160,7 @@
 		margin: 0;
 		border: 0;
 		border-radius: 0;
-		background: var(--bg);
+		background: var(--bg, #f7f7f5);
 	}
 
 	.mermaid:fullscreen .canvas {

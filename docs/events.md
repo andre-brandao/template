@@ -60,7 +60,7 @@ A rollback emits nothing. A crash between commit and push keeps the row and drop
 
 ```mermaid
 graph TD
-  job["job"] --> run["jobs.run<br/><i>replays the publisher as Actor</i>"]
+  job["job"] --> run["jobs.run<br/><i>replays the publisher as its Identity</i>"]
   run --> qrun["Queue.run<br/><i>lookup by job name</i>"]
   qrun -->|bus.dispatch| bus["Bus.job<br/><i>lookup by event type</i>"]
   qrun -->|webhook.deliver| wh["Webhook.job"]
@@ -139,11 +139,11 @@ graph LR
   tags["publish tags"] --> row
 ```
 
-|                  | `data` | tags | actor                       | `source`        |
-| ---------------- | ------ | ---- | --------------------------- | --------------- |
-| Event row        | ✓      | ✓    | `user_id` + `actor:*` tag   | `todo`          |
-| Subscriber       | ✓      | ✗    | `authtype`/`authid` + Actor | `template/todo` |
-| Webhook receiver | ✓      | ✗    | `authtype`/`authid`         | `template/todo` |
+|                  | `data` | tags | actor                          | `source`        |
+| ---------------- | ------ | ---- | ------------------------------ | --------------- |
+| Event row        | ✓      | ✓    | `user_id` + `actor:*` tag      | `todo`          |
+| Subscriber       | ✓      | ✗    | `authtype`/`authid` + Identity | `template/todo` |
+| Webhook receiver | ✓      | ✗    | `authtype`/`authid`            | `template/todo` |
 
 Tags are for filtering the log only. A subscriber that needs a todo's tags reads them from
 `data`.

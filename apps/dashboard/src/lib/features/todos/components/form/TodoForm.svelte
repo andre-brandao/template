@@ -104,7 +104,7 @@
 
 	<div class="footer">
 		<Button variant="ghost" type="button" onclick={close}>Cancel</Button>
-		<Button type="submit" pending={save.isPending}>Add todo</Button>
+		<Button variant="primary" type="submit" pending={save.isPending}>Add todo</Button>
 	</div>
 </form>
 

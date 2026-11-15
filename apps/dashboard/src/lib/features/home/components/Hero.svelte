@@ -1,5 +1,7 @@
 <!-- The signed-out home: the pitch, the arc every todo travels, and the way in. -->
 <script lang="ts">
+	import { Button } from '@template/ui';
+	import { brand } from '$lib/brand';
 	import Rule from '$lib/components/Rule.svelte';
 
 	// A diagram, not a measurement, in the board's stage colours. Equal thirds because
@@ -12,9 +14,9 @@
 </script>
 
 <section>
-	<h1>Track work from capture to shipped.</h1>
+	<h1>{brand.pitch}</h1>
 	<Rule parts={stages} />
-	<a class="cta" href="/login">Log in</a>
+	<div class="cta"><Button href="/login">Log in</Button></div>
 </section>
 
 <style>
@@ -30,20 +32,6 @@
 	}
 
 	.cta {
-		display: inline-block;
 		margin-top: 2.8em;
-		padding: 0.6em 1.4em;
-		font-family: var(--font-mono);
-		font-size: 0.85em;
-		letter-spacing: 0.04em;
-		text-transform: uppercase;
-		text-decoration: none;
-		color: var(--accent-ink);
-		background: var(--accent);
-		border-radius: var(--radius);
-	}
-
-	.cta:hover {
-		background: color-mix(in oklab, var(--accent) 88%, var(--ink));
 	}
 </style>

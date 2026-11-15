@@ -1,7 +1,8 @@
 <script lang="ts">
-	import { Button, Field, Input, Issue, modal } from '@template/ui';
+	import { Field, Input, Issue, modal } from '@template/ui';
 	import { issue } from '../../api/apps.query';
 	import { mint } from '../../api/keys.query';
+	import Actions from '../Actions.svelte';
 	import Reveal from '../Reveal.svelte';
 
 	// Modal content. `app` mints the key for that App instead of for the signed-in user.
@@ -47,10 +48,7 @@
 			<option value="365">1 year</option>
 		</select>
 	</Field>
-	<div class="actions">
-		<Button variant="ghost" onclick={close}>Cancel</Button>
-		<Button type="submit" pending={save.isPending}>Create</Button>
-	</div>
+	<Actions {close} pending={save.isPending} />
 </form>
 
 <style>
@@ -80,9 +78,4 @@
 		outline: none;
 	}
 
-	.actions {
-		display: flex;
-		justify-content: flex-end;
-		gap: 0.4em;
-	}
 </style>

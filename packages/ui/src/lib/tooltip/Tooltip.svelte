@@ -1,9 +1,6 @@
-<script module lang="ts">
-	export type Place = 'top' | 'bottom' | 'left' | 'right';
-</script>
-
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	import { place, type Place } from '../popover/place';
 
 	let {
 		tip,
@@ -16,46 +13,38 @@
 	} = $props();
 
 	const id = $props.id();
-	const gap = 6;
 
 	let wrap: HTMLSpanElement | undefined = $state();
 	let bubble: HTMLSpanElement | undefined = $state();
+	let timer: ReturnType<typeof setTimeout> | undefined;
 
 	// The top layer, so no ancestor's `overflow` or z-index can bury it — which is the
 	// whole point of a tooltip, and the reason the position has to be measured.
 	function show() {
+		clearTimeout(timer);
 		if (!wrap || !bubble) return;
 		bubble.showPopover();
-		const at = wrap.getBoundingClientRect();
-		const own = bubble.getBoundingClientRect();
-		const x = {
-			top: at.left + at.width / 2 - own.width / 2,
-			bottom: at.left + at.width / 2 - own.width / 2,
-			left: at.left - own.width - gap,
-			right: at.right + gap
-		}[side];
-		const y = {
-			top: at.top - own.height - gap,
-			bottom: at.bottom + gap,
-			left: at.top + at.height / 2 - own.height / 2,
-			right: at.top + at.height / 2 - own.height / 2
-		}[side];
-		// Nudged back inside rather than letting a long tip run off the edge.
-		bubble.style.left = `${Math.max(gap, Math.min(x, innerWidth - own.width - gap))}px`;
-		bubble.style.top = `${Math.max(gap, Math.min(y, innerHeight - own.height - gap))}px`;
+		place(bubble, wrap.getBoundingClientRect(), side, 'center');
+	}
+
+	function hide() {
+		clearTimeout(timer);
+		bubble?.hidePopover();
 	}
 </script>
 
 <!-- The description belongs on the control itself, which the caller owns, so it is
-     stamped onto the first element they render inside. -->
+     stamped onto the first element they render inside. A pointer waits a beat so a sweep
+     across dense rows doesn't flicker; Escape hides it without moving focus. -->
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <span
 	class="wrap"
 	bind:this={wrap}
-	onpointerenter={show}
-	onpointerleave={() => bubble?.hidePopover()}
+	onpointerenter={() => (timer = setTimeout(show, 350))}
+	onpointerleave={hide}
 	onfocusin={show}
-	onfocusout={() => bubble?.hidePopover()}
+	onfocusout={hide}
+	onkeydown={(e) => e.key === 'Escape' && bubble?.matches(':popover-open') && hide()}
 	{@attach (el) => el.firstElementChild?.setAttribute('aria-describedby', id)}
 >
 	{@render children()}
@@ -77,8 +66,8 @@
 		margin: 0;
 		padding: 0.35em 0.55em;
 		border: none;
-		border-radius: var(--radius, 6px);
-		background: var(--ink, #111);
+		border-radius: var(--radius, 8px);
+		background: var(--ink, #1c1b19);
 		color: var(--surface, #fff);
 		font-size: 0.81em;
 		line-height: 1.35;

@@ -39,10 +39,7 @@ function list<T extends z.ZodType>(item: T) {
 
 const ok = body(z.literal("ok").meta({ description: "Deleted." }));
 
-/** The shared body for one error status. A route lists only the ones it can return. */
-const error = (status: keyof typeof ErrorResponses) => ErrorResponses[status];
-
-/** The same, for the several a route usually returns at once. Spread into its responses. */
+/** The shared error bodies a route can return, spread into its responses. Only those it can. */
 const errors = <T extends keyof typeof ErrorResponses>(...codes: T[]) =>
   Object.fromEntries(codes.map((c) => [c, ErrorResponses[c]])) as {
     [K in T]: (typeof ErrorResponses)[K];
@@ -63,7 +60,6 @@ export function describe(tag: string) {
   doc.page = page;
   doc.list = list;
   doc.ok = ok;
-  doc.error = error;
   doc.errors = errors;
   return doc;
 }

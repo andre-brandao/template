@@ -4,7 +4,7 @@
 	let { params } = $props();
 </script>
 
-<!-- Guarded for the same reason as /projects/[id] — see that route. -->
+<!-- `params` is empty mid-navigation. -->
 {#if params.id}
 	<ProjectSettings id={params.id} />
 {/if}

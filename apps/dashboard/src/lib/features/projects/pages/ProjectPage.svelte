@@ -2,7 +2,7 @@
 	import type { Snippet } from 'svelte';
 	import { createQuery } from '@tanstack/svelte-query';
 	import type { Event } from '@template/core/event';
-	import { Inline, Issue, Section, Skeleton } from '@template/ui';
+	import { Inline, Section } from '@template/ui';
 	import * as Header from '$lib/components/header';
 	import Timeline from '$lib/features/events/components/Timeline.svelte';
 	import { get, link, unlink, update } from '../api/projects.query';
@@ -37,31 +37,25 @@
 
 {#snippet title()}
 	{#if project.data}
-		<span class="edit">
-			<Inline
-				label="Project name"
-				value={project.data.name}
-				onsave={(name) => {
-					if (!name) throw new Error('A project needs a name');
-					return save.mutateAsync({ path: { id }, body: { name } });
-				}}
-			/>
-		</span>
-	{:else}
-		Project
+		<Inline
+			label="Project name"
+			required
+			flush
+			value={project.data.name}
+			onsave={(name) => save.mutateAsync({ path: { id }, body: { name } })}
+		/>
 	{/if}
 {/snippet}
 
 {#snippet lead()}
 	{#if project.data}
-		<span class="edit">
-			<Inline
-				label="Description"
-				placeholder="Add a description"
-				value={project.data.description ?? ''}
-				onsave={(text) => save.mutateAsync({ path: { id }, body: { description: text || null } })}
-			/>
-		</span>
+		<Inline
+			label="Description"
+			placeholder="Add a description"
+			flush
+			value={project.data.description ?? ''}
+			onsave={(text) => save.mutateAsync({ path: { id }, body: { description: text || null } })}
+		/>
 	{/if}
 {/snippet}
 
@@ -84,11 +78,8 @@
 	</div>
 
 	<div class="col">
-		{#if project.isPending}
-			<Skeleton h="6em" />
-		{:else if project.isError}
-			<Issue>{project.error.message}</Issue>
-		{:else}
+		<!-- The layout loads the row before this mounts, or 404s. -->
+		{#if project.data}
 			<Section wide title="Links">
 				<Links
 					links={project.data.metadata.links}
@@ -120,12 +111,6 @@
 </div>
 
 <style>
-	/* Inline pads its box; pull it back so the text lines up with the eyebrow. */
-	.edit {
-		display: block;
-		margin: -0.2em -0.4em;
-	}
-
 	/* Golden section: the long column is φ (1.618) times the short one. */
 	.split {
 		display: grid;

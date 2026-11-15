@@ -52,7 +52,6 @@
 		<Header.Item label="Opened">
 			<span title={f.stamp(row.time)}>{f.ago(row.time)}</span>
 		</Header.Item>
-		<Header.Item label="Comments">{row.comments}</Header.Item>
 	</Header.Root>
 
 	<div class="column">

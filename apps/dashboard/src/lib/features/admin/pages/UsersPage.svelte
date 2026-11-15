@@ -3,7 +3,6 @@
 	import { Button, Fill, Input, Issue, Pagination, Scroll, Skeleton, Toggle } from '@template/ui';
 	import * as Header from '$lib/components/header';
 	import { debounce } from '$lib/utils/debounce';
-	import { fmt } from '$lib/utils/fmt';
 	import { query } from '$lib/utils/params';
 	import { users as list } from '../api/admin.query';
 	import UsersTable from '../components/UsersTable.svelte';
@@ -13,7 +12,6 @@
 	// In the URL, like the log: a narrowed list can be linked, reloaded and stepped back through.
 	const params = query(filters.users.schema);
 
-	const f = fmt();
 	const page = createQuery(() => list(filters.users.args(params)));
 
 	// `undefined` drops the key, so every narrowing lands back on page one.
@@ -24,9 +22,6 @@
 <!-- Same shape as the log: header and filters hold still, only the list scrolls. -->
 <Fill>
 	<Header.Root title="Users">
-		<Header.Item label={params.deleted ? 'Users' : 'Active'}>
-			{page.data ? f.number(page.data.total) : '–'}
-		</Header.Item>
 		{#snippet strip()}
 			<Header.Group>
 				<Input

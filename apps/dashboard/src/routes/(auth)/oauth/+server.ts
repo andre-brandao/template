@@ -3,7 +3,7 @@ import { client, oauth } from "$lib/server/auth";
 import type { RequestHandler } from "./$types";
 
 export const GET: RequestHandler = async ({ locals, url }) => {
-  if (locals.session) redirect(303, "/");
+  if (locals.session) redirect(303, "/home");
 
   // Named rather than implicit: the issuer serves only OAuth now, so there is no default
   // provider for it to fall back to.

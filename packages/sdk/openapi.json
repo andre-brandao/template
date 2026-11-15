@@ -216,7 +216,399 @@
           }
         },
         "required": ["type", "code", "message"],
-        "description": "Permission error"
+        "description": "Not found error"
+      },
+      "Profile": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique object identifier.\nThe format and length of IDs may change over time.",
+            "example": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Display name."
+          },
+          "image": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Avatar URL, or null for none."
+          },
+          "kind": {
+            "type": "string",
+            "enum": ["human", "system"],
+            "description": "A `system` account is an App: nobody logs in as it — an external system or CI acting through API keys."
+          },
+          "role": {
+            "type": "string",
+            "enum": ["admin", "member"],
+            "description": "Decides everything the account may do. Only `user:assign` can change it."
+          },
+          "timeCreated": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+            "description": "When the account was created."
+          },
+          "email": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "email",
+                "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                "description": "Login address. Unique across accounts."
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "owner": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  }
+                },
+                "required": ["id", "name"]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": ["id", "name", "image", "kind", "role", "timeCreated", "email", "owner"],
+        "description": "An account as other signed-in users see it."
+      },
+      "Identity": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "public"
+              },
+              "properties": {
+                "type": "object",
+                "properties": {}
+              }
+            },
+            "required": ["type", "properties"]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "user"
+              },
+              "properties": {
+                "type": "object",
+                "properties": {
+                  "userID": {
+                    "type": "string",
+                    "description": "Who answers for the act."
+                  },
+                  "role": {
+                    "type": "string",
+                    "enum": ["admin", "member"],
+                    "description": "The role held at the time."
+                  },
+                  "timezone": {
+                    "description": "IANA zone, when known.",
+                    "type": "string"
+                  },
+                  "credential": {
+                    "description": "The key or delegation that acted, so an audit can name it.",
+                    "type": "string"
+                  }
+                },
+                "required": ["userID", "role"]
+              }
+            },
+            "required": ["type", "properties"]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "agent"
+              },
+              "properties": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Which agent: `copilot`, or an MCP client like `claude`."
+                  },
+                  "userID": {
+                    "type": "string",
+                    "description": "Who answers for the act."
+                  },
+                  "role": {
+                    "type": "string",
+                    "enum": ["admin", "member"],
+                    "description": "The role held at the time."
+                  },
+                  "scope": {
+                    "description": "Exactly what it may do."
+                  },
+                  "timezone": {
+                    "description": "IANA zone, when known.",
+                    "type": "string"
+                  },
+                  "credential": {
+                    "description": "The key or delegation that acted, so an audit can name it.",
+                    "type": "string"
+                  }
+                },
+                "required": ["name", "userID", "role"]
+              }
+            },
+            "required": ["type", "properties"]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "system"
+              },
+              "properties": {
+                "type": "object",
+                "properties": {
+                  "userID": {
+                    "type": "string",
+                    "description": "Who answers for the act."
+                  },
+                  "role": {
+                    "type": "string",
+                    "enum": ["admin", "member"],
+                    "description": "The role held at the time."
+                  },
+                  "owner": {
+                    "type": "object",
+                    "properties": {
+                      "userID": {
+                        "type": "string",
+                        "description": "Who answers for the act."
+                      },
+                      "role": {
+                        "type": "string",
+                        "enum": ["admin", "member"],
+                        "description": "The role held at the time."
+                      }
+                    },
+                    "required": ["userID", "role"],
+                    "description": "The person answerable for the App."
+                  },
+                  "credential": {
+                    "description": "The key or delegation that acted, so an audit can name it.",
+                    "type": "string"
+                  }
+                },
+                "required": ["userID", "role", "owner"]
+              }
+            },
+            "required": ["type", "properties"]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "internal"
+              },
+              "properties": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Which part of the app, like `auth` or `seed`."
+                  },
+                  "scope": {
+                    "description": "Exactly what it may do."
+                  }
+                },
+                "required": ["name", "scope"]
+              }
+            },
+            "required": ["type", "properties"]
+          }
+        ],
+        "description": "Who acted: a person, an agent for one, an App, or the app itself."
+      },
+      "Event": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique object identifier.\nThe format and length of IDs may change over time.",
+            "example": "evt_XXXXXXXXXXXXXXXXXXXXXXXXX"
+          },
+          "userID": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Who caused it. Null for system and public actors."
+          },
+          "user": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "image": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": ["id", "name", "image"]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "That user, joined in so a log row can name them."
+          },
+          "identity": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Identity"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Who acted, in full: agent name, scope, credential. Null unless you are an admin."
+          },
+          "type": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "What happened, like `todo.created`.",
+            "example": "todo.created"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Kind of entity it happened to, like `todo`."
+          },
+          "sourceID": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Id of that entity."
+          },
+          "tags": {
+            "maxItems": 20,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "description": "Filter labels. Always carries the actor kind, like `actor:user`."
+          },
+          "data": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {},
+            "description": "The payload declared for its type. Webhooks get the same."
+          },
+          "timeCreated": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+            "description": "When it was recorded."
+          }
+        },
+        "required": [
+          "id",
+          "userID",
+          "user",
+          "identity",
+          "type",
+          "source",
+          "sourceID",
+          "tags",
+          "data",
+          "timeCreated"
+        ],
+        "description": "An immutable audit-log entry.",
+        "example": {
+          "id": "evt_XXXXXXXXXXXXXXXXXXXXXXXXX",
+          "userID": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX",
+          "user": {
+            "id": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX",
+            "name": "John Doe",
+            "image": null
+          },
+          "identity": {
+            "type": "agent",
+            "properties": {
+              "name": "copilot",
+              "userID": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX",
+              "role": "member",
+              "timezone": "UTC"
+            }
+          },
+          "type": "todo.created",
+          "source": "todo",
+          "sourceID": "tod_XXXXXXXXXXXXXXXXXXXXXXXXX",
+          "tags": ["actor:user"],
+          "data": {
+            "title": "Write the quarterly report"
+          },
+          "timeCreated": "2026-06-07T00:00:00.000Z"
+        }
       },
       "Key": {
         "type": "object",
@@ -764,163 +1156,6 @@
           "size": 102400,
           "lastModified": "2026-06-07T00:00:00.000Z"
         }
-      },
-      "App": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "description": "Unique object identifier.\nThe format and length of IDs may change over time.",
-            "example": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX"
-          },
-          "name": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 255,
-            "description": "What the external system is called."
-          },
-          "owner": {
-            "anyOf": [
-              {
-                "type": "object",
-                "properties": {
-                  "id": {
-                    "type": "string"
-                  },
-                  "name": {
-                    "type": "string"
-                  }
-                },
-                "required": ["id", "name"]
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "The admin answerable for it. Null once they are gone."
-          },
-          "inbound": {
-            "type": "boolean",
-            "description": "Whether it holds a secret to post events in with."
-          },
-          "timeCreated": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
-            "description": "When it was registered."
-          }
-        },
-        "required": ["id", "name", "owner", "inbound", "timeCreated"],
-        "description": "An external system acting through its own system account."
-      },
-      "Webhook": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "description": "Unique object identifier.\nThe format and length of IDs may change over time.",
-            "example": "whk_XXXXXXXXXXXXXXXXXXXXXXXXX"
-          },
-          "url": {
-            "type": "string",
-            "maxLength": 2000,
-            "format": "uri",
-            "description": "Where deliveries are POSTed."
-          },
-          "userID": {
-            "type": "string",
-            "description": "Who it belongs to: an App's account, or the admin who made it.",
-            "example": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX"
-          },
-          "secret": {
-            "type": "string",
-            "description": "Signing secret. Handed back in full to admins."
-          },
-          "display": {
-            "type": "string",
-            "description": "Masked secret, safe to show in a list."
-          },
-          "types": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "enum": [
-                "todo.created",
-                "todo.updated",
-                "todo.removed",
-                "project.created",
-                "project.updated",
-                "project.removed"
-              ]
-            },
-            "description": "Event types to receive. Empty means every public type."
-          },
-          "enabled": {
-            "type": "boolean",
-            "description": "Turns itself off after too many failures. Re-enabling clears the count."
-          },
-          "failures": {
-            "type": "number",
-            "description": "Consecutive failed deliveries."
-          },
-          "lastStatus": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "HTTP status of the last attempt. Null if it never answered."
-          },
-          "timeDelivered": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "date-time",
-                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "When a delivery last succeeded."
-          },
-          "timeCreated": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
-            "description": "When the subscription was created."
-          }
-        },
-        "required": [
-          "id",
-          "url",
-          "userID",
-          "secret",
-          "display",
-          "types",
-          "enabled",
-          "failures",
-          "lastStatus",
-          "timeDelivered",
-          "timeCreated"
-        ],
-        "description": "An endpoint that receives published events over HTTP.",
-        "example": {
-          "id": "whk_XXXXXXXXXXXXXXXXXXXXXXXXX",
-          "url": "https://example.com/hooks/template",
-          "userID": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX",
-          "secret": "whsec_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-          "display": "whsec_XXXX...XXXX",
-          "types": ["todo.created"],
-          "enabled": true,
-          "failures": 0,
-          "lastStatus": 200,
-          "timeDelivered": "2026-06-07T00:00:00.000Z",
-          "timeCreated": "2026-06-07T00:00:00.000Z"
-        }
       }
     }
   },
@@ -1003,6 +1238,283 @@
             "description": "Internal Server Error"
           }
         }
+      }
+    },
+    "/user/{id}": {
+      "get": {
+        "operationId": "getUserById",
+        "tags": ["User"],
+        "summary": "Get profile",
+        "description": "Fetch an account as a teammate sees it: no prefs, and no email for an App.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Profile"
+                }
+              }
+            },
+            "description": "An account as other signed-in users see it."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "validation",
+                  "code": "invalid_parameter",
+                  "message": "Invalid input: expected string, received undefined",
+                  "param": "email",
+                  "details": {
+                    "issues": [
+                      {
+                        "path": "email",
+                        "message": "Invalid input: expected string, received undefined"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "authentication",
+                  "code": "unauthorized",
+                  "message": "Authentication required"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "forbidden",
+                  "code": "permission_denied",
+                  "message": "You do not have permission"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "not_found",
+                  "code": "resource_not_found",
+                  "message": "The requested resource could not be found"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "internal",
+                  "code": "internal_error",
+                  "message": "Internal server error"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string",
+              "example": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX"
+            },
+            "required": true,
+            "description": "Unique object identifier.\nThe format and length of IDs may change over time."
+          }
+        ]
+      }
+    },
+    "/user/{id}/history": {
+      "get": {
+        "operationId": "getUserByIdHistory",
+        "tags": ["User"],
+        "summary": "Get user history",
+        "description": "What one account did, newest first. Anyone but an admin sees only the public event types.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Event"
+                  },
+                  "description": "An immutable audit-log entry.",
+                  "example": [
+                    {
+                      "id": "evt_XXXXXXXXXXXXXXXXXXXXXXXXX",
+                      "userID": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX",
+                      "user": {
+                        "id": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX",
+                        "name": "John Doe",
+                        "image": null
+                      },
+                      "identity": {
+                        "type": "agent",
+                        "properties": {
+                          "name": "copilot",
+                          "userID": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX",
+                          "role": "member",
+                          "timezone": "UTC"
+                        }
+                      },
+                      "type": "todo.created",
+                      "source": "todo",
+                      "sourceID": "tod_XXXXXXXXXXXXXXXXXXXXXXXXX",
+                      "tags": ["actor:user"],
+                      "data": {
+                        "title": "Write the quarterly report"
+                      },
+                      "timeCreated": "2026-06-07T00:00:00.000Z"
+                    }
+                  ]
+                },
+                "example": [
+                  {
+                    "id": "evt_XXXXXXXXXXXXXXXXXXXXXXXXX",
+                    "userID": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX",
+                    "user": {
+                      "id": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX",
+                      "name": "John Doe",
+                      "image": null
+                    },
+                    "identity": {
+                      "type": "agent",
+                      "properties": {
+                        "name": "copilot",
+                        "userID": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX",
+                        "role": "member",
+                        "timezone": "UTC"
+                      }
+                    },
+                    "type": "todo.created",
+                    "source": "todo",
+                    "sourceID": "tod_XXXXXXXXXXXXXXXXXXXXXXXXX",
+                    "tags": ["actor:user"],
+                    "data": {
+                      "title": "Write the quarterly report"
+                    },
+                    "timeCreated": "2026-06-07T00:00:00.000Z"
+                  }
+                ]
+              }
+            },
+            "description": "An immutable audit-log entry."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "validation",
+                  "code": "invalid_parameter",
+                  "message": "Invalid input: expected string, received undefined",
+                  "param": "email",
+                  "details": {
+                    "issues": [
+                      {
+                        "path": "email",
+                        "message": "Invalid input: expected string, received undefined"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "authentication",
+                  "code": "unauthorized",
+                  "message": "Authentication required"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "forbidden",
+                  "code": "permission_denied",
+                  "message": "You do not have permission"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "internal",
+                  "code": "internal_error",
+                  "message": "Internal server error"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string",
+              "example": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX"
+            },
+            "required": true,
+            "description": "Unique object identifier.\nThe format and length of IDs may change over time."
+          }
+        ]
       }
     },
     "/key": {
@@ -4330,1650 +4842,6 @@
             "in": "path",
             "name": "app",
             "required": true
-          }
-        ]
-      }
-    },
-    "/app": {
-      "get": {
-        "operationId": "getApp",
-        "tags": ["App"],
-        "summary": "List apps",
-        "description": "List every registered app, by name. Admin-only.",
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/App"
-                  },
-                  "description": "An external system acting through its own system account."
-                }
-              }
-            },
-            "description": "An external system acting through its own system account."
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "authentication",
-                  "code": "unauthorized",
-                  "message": "Authentication required"
-                }
-              }
-            },
-            "description": "Unauthorized"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "forbidden",
-                  "code": "permission_denied",
-                  "message": "You do not have permission"
-                }
-              }
-            },
-            "description": "Forbidden"
-          },
-          "500": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "internal",
-                  "code": "internal_error",
-                  "message": "Internal server error"
-                }
-              }
-            },
-            "description": "Internal Server Error"
-          }
-        }
-      },
-      "post": {
-        "operationId": "postApp",
-        "tags": ["App"],
-        "summary": "Create app",
-        "description": "Register an external system as a system account owned by the current admin. Admin-only.",
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/App"
-                }
-              }
-            },
-            "description": "An external system acting through its own system account."
-          },
-          "400": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "validation",
-                  "code": "invalid_parameter",
-                  "message": "Invalid input: expected string, received undefined",
-                  "param": "email",
-                  "details": {
-                    "issues": [
-                      {
-                        "path": "email",
-                        "message": "Invalid input: expected string, received undefined"
-                      }
-                    ]
-                  }
-                }
-              }
-            },
-            "description": "Bad Request"
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "authentication",
-                  "code": "unauthorized",
-                  "message": "Authentication required"
-                }
-              }
-            },
-            "description": "Unauthorized"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "forbidden",
-                  "code": "permission_denied",
-                  "message": "You do not have permission"
-                }
-              }
-            },
-            "description": "Forbidden"
-          },
-          "500": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "internal",
-                  "code": "internal_error",
-                  "message": "Internal server error"
-                }
-              }
-            },
-            "description": "Internal Server Error"
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "name": {
-                    "type": "string",
-                    "minLength": 1,
-                    "maxLength": 255,
-                    "description": "What the external system is called."
-                  }
-                },
-                "required": ["name"]
-              }
-            }
-          }
-        }
-      }
-    },
-    "/app/{id}": {
-      "get": {
-        "operationId": "getAppById",
-        "tags": ["App"],
-        "summary": "Get app",
-        "description": "Get one registered app by id. Admin-only.",
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/App"
-                }
-              }
-            },
-            "description": "An external system acting through its own system account."
-          },
-          "400": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "validation",
-                  "code": "invalid_parameter",
-                  "message": "Invalid input: expected string, received undefined",
-                  "param": "email",
-                  "details": {
-                    "issues": [
-                      {
-                        "path": "email",
-                        "message": "Invalid input: expected string, received undefined"
-                      }
-                    ]
-                  }
-                }
-              }
-            },
-            "description": "Bad Request"
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "authentication",
-                  "code": "unauthorized",
-                  "message": "Authentication required"
-                }
-              }
-            },
-            "description": "Unauthorized"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "forbidden",
-                  "code": "permission_denied",
-                  "message": "You do not have permission"
-                }
-              }
-            },
-            "description": "Forbidden"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "not_found",
-                  "code": "resource_not_found",
-                  "message": "The requested resource could not be found"
-                }
-              }
-            },
-            "description": "Not Found"
-          },
-          "500": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "internal",
-                  "code": "internal_error",
-                  "message": "Internal server error"
-                }
-              }
-            },
-            "description": "Internal Server Error"
-          }
-        },
-        "parameters": [
-          {
-            "in": "path",
-            "name": "id",
-            "schema": {
-              "type": "string",
-              "example": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX"
-            },
-            "required": true,
-            "description": "Unique object identifier.\nThe format and length of IDs may change over time."
-          }
-        ]
-      },
-      "patch": {
-        "operationId": "patchAppById",
-        "tags": ["App"],
-        "summary": "Update app",
-        "description": "Rename an app or change its avatar. Admin-only.",
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/App"
-                }
-              }
-            },
-            "description": "An external system acting through its own system account."
-          },
-          "400": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "validation",
-                  "code": "invalid_parameter",
-                  "message": "Invalid input: expected string, received undefined",
-                  "param": "email",
-                  "details": {
-                    "issues": [
-                      {
-                        "path": "email",
-                        "message": "Invalid input: expected string, received undefined"
-                      }
-                    ]
-                  }
-                }
-              }
-            },
-            "description": "Bad Request"
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "authentication",
-                  "code": "unauthorized",
-                  "message": "Authentication required"
-                }
-              }
-            },
-            "description": "Unauthorized"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "forbidden",
-                  "code": "permission_denied",
-                  "message": "You do not have permission"
-                }
-              }
-            },
-            "description": "Forbidden"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "not_found",
-                  "code": "resource_not_found",
-                  "message": "The requested resource could not be found"
-                }
-              }
-            },
-            "description": "Not Found"
-          },
-          "500": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "internal",
-                  "code": "internal_error",
-                  "message": "Internal server error"
-                }
-              }
-            },
-            "description": "Internal Server Error"
-          }
-        },
-        "parameters": [
-          {
-            "in": "path",
-            "name": "id",
-            "schema": {
-              "type": "string",
-              "example": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX"
-            },
-            "required": true,
-            "description": "Unique object identifier.\nThe format and length of IDs may change over time."
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "name": {
-                    "type": "string",
-                    "minLength": 1,
-                    "maxLength": 255,
-                    "description": "What the external system is called."
-                  },
-                  "image": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "null"
-                      }
-                    ]
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "delete": {
-        "operationId": "deleteAppById",
-        "tags": ["App"],
-        "summary": "Remove app",
-        "description": "Disable an app's account. Its keys stop authenticating and its webhooks are removed. Admin-only.",
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "string",
-                  "const": "ok",
-                  "description": "Deleted."
-                }
-              }
-            },
-            "description": "Deleted."
-          },
-          "400": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "validation",
-                  "code": "invalid_parameter",
-                  "message": "Invalid input: expected string, received undefined",
-                  "param": "email",
-                  "details": {
-                    "issues": [
-                      {
-                        "path": "email",
-                        "message": "Invalid input: expected string, received undefined"
-                      }
-                    ]
-                  }
-                }
-              }
-            },
-            "description": "Bad Request"
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "authentication",
-                  "code": "unauthorized",
-                  "message": "Authentication required"
-                }
-              }
-            },
-            "description": "Unauthorized"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "forbidden",
-                  "code": "permission_denied",
-                  "message": "You do not have permission"
-                }
-              }
-            },
-            "description": "Forbidden"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "not_found",
-                  "code": "resource_not_found",
-                  "message": "The requested resource could not be found"
-                }
-              }
-            },
-            "description": "Not Found"
-          },
-          "500": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "internal",
-                  "code": "internal_error",
-                  "message": "Internal server error"
-                }
-              }
-            },
-            "description": "Internal Server Error"
-          }
-        },
-        "parameters": [
-          {
-            "in": "path",
-            "name": "id",
-            "schema": {
-              "type": "string",
-              "example": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX"
-            },
-            "required": true,
-            "description": "Unique object identifier.\nThe format and length of IDs may change over time."
-          }
-        ]
-      }
-    },
-    "/app/{id}/key": {
-      "get": {
-        "operationId": "getAppByIdKey",
-        "tags": ["App"],
-        "summary": "List app keys",
-        "description": "List an app's live API keys. Secrets are stored hashed, so `key` is null here. Admin-only.",
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Key"
-                  },
-                  "description": "A personal access token (or an App's API key). It acts as the user that owns it.",
-                  "example": [
-                    {
-                      "id": "key_XXXXXXXXXXXXXXXXXXXXXXXXX",
-                      "name": "laptop",
-                      "key": "sk-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-                      "display": "sk-XXXX...XXXX",
-                      "timeUsed": null,
-                      "expiresAt": null,
-                      "current": false
-                    }
-                  ]
-                },
-                "example": [
-                  {
-                    "id": "key_XXXXXXXXXXXXXXXXXXXXXXXXX",
-                    "name": "laptop",
-                    "key": "sk-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-                    "display": "sk-XXXX...XXXX",
-                    "timeUsed": null,
-                    "expiresAt": null,
-                    "current": false
-                  }
-                ]
-              }
-            },
-            "description": "A personal access token (or an App's API key). It acts as the user that owns it."
-          },
-          "400": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "validation",
-                  "code": "invalid_parameter",
-                  "message": "Invalid input: expected string, received undefined",
-                  "param": "email",
-                  "details": {
-                    "issues": [
-                      {
-                        "path": "email",
-                        "message": "Invalid input: expected string, received undefined"
-                      }
-                    ]
-                  }
-                }
-              }
-            },
-            "description": "Bad Request"
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "authentication",
-                  "code": "unauthorized",
-                  "message": "Authentication required"
-                }
-              }
-            },
-            "description": "Unauthorized"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "forbidden",
-                  "code": "permission_denied",
-                  "message": "You do not have permission"
-                }
-              }
-            },
-            "description": "Forbidden"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "not_found",
-                  "code": "resource_not_found",
-                  "message": "The requested resource could not be found"
-                }
-              }
-            },
-            "description": "Not Found"
-          },
-          "500": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "internal",
-                  "code": "internal_error",
-                  "message": "Internal server error"
-                }
-              }
-            },
-            "description": "Internal Server Error"
-          }
-        },
-        "parameters": [
-          {
-            "in": "path",
-            "name": "id",
-            "schema": {
-              "type": "string",
-              "example": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX"
-            },
-            "required": true,
-            "description": "Unique object identifier.\nThe format and length of IDs may change over time."
-          }
-        ]
-      },
-      "post": {
-        "operationId": "postAppByIdKey",
-        "tags": ["App"],
-        "summary": "Create app key",
-        "description": "Mint a named API key that acts as the app. The secret is returned once, in `key`. Pass `expiresInDays` to set an expiry. Admin-only.",
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Key"
-                },
-                "example": {
-                  "id": "key_XXXXXXXXXXXXXXXXXXXXXXXXX",
-                  "name": "laptop",
-                  "key": "sk-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-                  "display": "sk-XXXX...XXXX",
-                  "timeUsed": null,
-                  "expiresAt": null,
-                  "current": false
-                }
-              }
-            },
-            "description": "A personal access token (or an App's API key). It acts as the user that owns it."
-          },
-          "400": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "validation",
-                  "code": "invalid_parameter",
-                  "message": "Invalid input: expected string, received undefined",
-                  "param": "email",
-                  "details": {
-                    "issues": [
-                      {
-                        "path": "email",
-                        "message": "Invalid input: expected string, received undefined"
-                      }
-                    ]
-                  }
-                }
-              }
-            },
-            "description": "Bad Request"
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "authentication",
-                  "code": "unauthorized",
-                  "message": "Authentication required"
-                }
-              }
-            },
-            "description": "Unauthorized"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "forbidden",
-                  "code": "permission_denied",
-                  "message": "You do not have permission"
-                }
-              }
-            },
-            "description": "Forbidden"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "not_found",
-                  "code": "resource_not_found",
-                  "message": "The requested resource could not be found"
-                }
-              }
-            },
-            "description": "Not Found"
-          },
-          "500": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "internal",
-                  "code": "internal_error",
-                  "message": "Internal server error"
-                }
-              }
-            },
-            "description": "Internal Server Error"
-          }
-        },
-        "parameters": [
-          {
-            "in": "path",
-            "name": "id",
-            "schema": {
-              "type": "string",
-              "example": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX"
-            },
-            "required": true,
-            "description": "Unique object identifier.\nThe format and length of IDs may change over time."
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "name": {
-                    "type": "string",
-                    "minLength": 1,
-                    "maxLength": 255,
-                    "description": "Label shown in the key list."
-                  },
-                  "expiresInDays": {
-                    "type": "integer",
-                    "exclusiveMinimum": 0,
-                    "maximum": 9007199254740991
-                  }
-                },
-                "required": ["name"]
-              }
-            }
-          }
-        }
-      }
-    },
-    "/app/{id}/key/{key}": {
-      "delete": {
-        "operationId": "deleteAppByIdKeyByKey",
-        "tags": ["App"],
-        "summary": "Revoke app key",
-        "description": "Revoke one of an app's API keys. It stops authenticating at once. Admin-only.",
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "string",
-                  "const": "ok",
-                  "description": "Deleted."
-                }
-              }
-            },
-            "description": "Deleted."
-          },
-          "400": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "validation",
-                  "code": "invalid_parameter",
-                  "message": "Invalid input: expected string, received undefined",
-                  "param": "email",
-                  "details": {
-                    "issues": [
-                      {
-                        "path": "email",
-                        "message": "Invalid input: expected string, received undefined"
-                      }
-                    ]
-                  }
-                }
-              }
-            },
-            "description": "Bad Request"
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "authentication",
-                  "code": "unauthorized",
-                  "message": "Authentication required"
-                }
-              }
-            },
-            "description": "Unauthorized"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "forbidden",
-                  "code": "permission_denied",
-                  "message": "You do not have permission"
-                }
-              }
-            },
-            "description": "Forbidden"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "not_found",
-                  "code": "resource_not_found",
-                  "message": "The requested resource could not be found"
-                }
-              }
-            },
-            "description": "Not Found"
-          },
-          "500": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "internal",
-                  "code": "internal_error",
-                  "message": "Internal server error"
-                }
-              }
-            },
-            "description": "Internal Server Error"
-          }
-        },
-        "parameters": [
-          {
-            "in": "path",
-            "name": "id",
-            "schema": {
-              "type": "string",
-              "example": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX"
-            },
-            "required": true,
-            "description": "Unique object identifier.\nThe format and length of IDs may change over time."
-          },
-          {
-            "in": "path",
-            "name": "key",
-            "schema": {
-              "type": "string",
-              "example": "key_XXXXXXXXXXXXXXXXXXXXXXXXX"
-            },
-            "required": true,
-            "description": "Unique object identifier.\nThe format and length of IDs may change over time."
-          }
-        ]
-      }
-    },
-    "/app/{id}/secret": {
-      "post": {
-        "operationId": "postAppByIdSecret",
-        "tags": ["App"],
-        "summary": "Rotate app secret",
-        "description": "Mint the app's inbound signing secret, retiring the last one. Returned once, so copy it then. Admin-only.",
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "secret": {
-                      "type": "string",
-                      "description": "The new inbound signing secret."
-                    }
-                  },
-                  "required": ["secret"],
-                  "description": "The secret, shown this once."
-                }
-              }
-            },
-            "description": "The secret, shown this once."
-          },
-          "400": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "validation",
-                  "code": "invalid_parameter",
-                  "message": "Invalid input: expected string, received undefined",
-                  "param": "email",
-                  "details": {
-                    "issues": [
-                      {
-                        "path": "email",
-                        "message": "Invalid input: expected string, received undefined"
-                      }
-                    ]
-                  }
-                }
-              }
-            },
-            "description": "Bad Request"
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "authentication",
-                  "code": "unauthorized",
-                  "message": "Authentication required"
-                }
-              }
-            },
-            "description": "Unauthorized"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "forbidden",
-                  "code": "permission_denied",
-                  "message": "You do not have permission"
-                }
-              }
-            },
-            "description": "Forbidden"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "not_found",
-                  "code": "resource_not_found",
-                  "message": "The requested resource could not be found"
-                }
-              }
-            },
-            "description": "Not Found"
-          },
-          "500": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "internal",
-                  "code": "internal_error",
-                  "message": "Internal server error"
-                }
-              }
-            },
-            "description": "Internal Server Error"
-          }
-        },
-        "parameters": [
-          {
-            "in": "path",
-            "name": "id",
-            "schema": {
-              "type": "string",
-              "example": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX"
-            },
-            "required": true,
-            "description": "Unique object identifier.\nThe format and length of IDs may change over time."
-          }
-        ]
-      }
-    },
-    "/webhook": {
-      "get": {
-        "operationId": "getWebhook",
-        "tags": ["Webhook"],
-        "summary": "List webhooks",
-        "description": "List every webhook subscription, or one owner's with `owner`. Admin-only.",
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Webhook"
-                  },
-                  "description": "An endpoint that receives published events over HTTP.",
-                  "example": [
-                    {
-                      "id": "whk_XXXXXXXXXXXXXXXXXXXXXXXXX",
-                      "url": "https://example.com/hooks/template",
-                      "userID": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX",
-                      "secret": "whsec_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-                      "display": "whsec_XXXX...XXXX",
-                      "types": ["todo.created"],
-                      "enabled": true,
-                      "failures": 0,
-                      "lastStatus": 200,
-                      "timeDelivered": "2026-06-07T00:00:00.000Z",
-                      "timeCreated": "2026-06-07T00:00:00.000Z"
-                    }
-                  ]
-                },
-                "example": [
-                  {
-                    "id": "whk_XXXXXXXXXXXXXXXXXXXXXXXXX",
-                    "url": "https://example.com/hooks/template",
-                    "userID": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX",
-                    "secret": "whsec_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-                    "display": "whsec_XXXX...XXXX",
-                    "types": ["todo.created"],
-                    "enabled": true,
-                    "failures": 0,
-                    "lastStatus": 200,
-                    "timeDelivered": "2026-06-07T00:00:00.000Z",
-                    "timeCreated": "2026-06-07T00:00:00.000Z"
-                  }
-                ]
-              }
-            },
-            "description": "An endpoint that receives published events over HTTP."
-          },
-          "400": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "validation",
-                  "code": "invalid_parameter",
-                  "message": "Invalid input: expected string, received undefined",
-                  "param": "email",
-                  "details": {
-                    "issues": [
-                      {
-                        "path": "email",
-                        "message": "Invalid input: expected string, received undefined"
-                      }
-                    ]
-                  }
-                }
-              }
-            },
-            "description": "Bad Request"
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "authentication",
-                  "code": "unauthorized",
-                  "message": "Authentication required"
-                }
-              }
-            },
-            "description": "Unauthorized"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "forbidden",
-                  "code": "permission_denied",
-                  "message": "You do not have permission"
-                }
-              }
-            },
-            "description": "Forbidden"
-          },
-          "500": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "internal",
-                  "code": "internal_error",
-                  "message": "Internal server error"
-                }
-              }
-            },
-            "description": "Internal Server Error"
-          }
-        },
-        "parameters": [
-          {
-            "in": "query",
-            "name": "owner",
-            "schema": {
-              "type": "string"
-            },
-            "description": "Only this owner's subscriptions, like an app's account id."
-          }
-        ]
-      },
-      "post": {
-        "operationId": "postWebhook",
-        "tags": ["Webhook"],
-        "summary": "Create webhook",
-        "description": "Subscribe a URL to published events. Pass `userID` to file it under an app; empty `types` means every event. Admin-only.",
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Webhook"
-                },
-                "example": {
-                  "id": "whk_XXXXXXXXXXXXXXXXXXXXXXXXX",
-                  "url": "https://example.com/hooks/template",
-                  "userID": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX",
-                  "secret": "whsec_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-                  "display": "whsec_XXXX...XXXX",
-                  "types": ["todo.created"],
-                  "enabled": true,
-                  "failures": 0,
-                  "lastStatus": 200,
-                  "timeDelivered": "2026-06-07T00:00:00.000Z",
-                  "timeCreated": "2026-06-07T00:00:00.000Z"
-                }
-              }
-            },
-            "description": "An endpoint that receives published events over HTTP."
-          },
-          "400": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "validation",
-                  "code": "invalid_parameter",
-                  "message": "Invalid input: expected string, received undefined",
-                  "param": "email",
-                  "details": {
-                    "issues": [
-                      {
-                        "path": "email",
-                        "message": "Invalid input: expected string, received undefined"
-                      }
-                    ]
-                  }
-                }
-              }
-            },
-            "description": "Bad Request"
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "authentication",
-                  "code": "unauthorized",
-                  "message": "Authentication required"
-                }
-              }
-            },
-            "description": "Unauthorized"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "forbidden",
-                  "code": "permission_denied",
-                  "message": "You do not have permission"
-                }
-              }
-            },
-            "description": "Forbidden"
-          },
-          "500": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "internal",
-                  "code": "internal_error",
-                  "message": "Internal server error"
-                }
-              }
-            },
-            "description": "Internal Server Error"
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "url": {
-                    "type": "string",
-                    "maxLength": 2000,
-                    "format": "uri",
-                    "description": "Where deliveries are POSTed."
-                  },
-                  "types": {
-                    "type": "array",
-                    "items": {
-                      "type": "string",
-                      "enum": [
-                        "todo.created",
-                        "todo.updated",
-                        "todo.removed",
-                        "project.created",
-                        "project.updated",
-                        "project.removed"
-                      ]
-                    },
-                    "description": "Event types to receive. Empty means every public type."
-                  },
-                  "userID": {
-                    "type": "string",
-                    "description": "Who it belongs to: an App's account, or the admin who made it.",
-                    "example": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX"
-                  }
-                },
-                "required": ["url"]
-              }
-            }
-          }
-        }
-      }
-    },
-    "/webhook/{id}": {
-      "patch": {
-        "operationId": "patchWebhookById",
-        "tags": ["Webhook"],
-        "summary": "Update webhook",
-        "description": "Change a webhook's URL, event types or enabled state. Re-enabling clears its failure count. Admin-only.",
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Webhook"
-                },
-                "example": {
-                  "id": "whk_XXXXXXXXXXXXXXXXXXXXXXXXX",
-                  "url": "https://example.com/hooks/template",
-                  "userID": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX",
-                  "secret": "whsec_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-                  "display": "whsec_XXXX...XXXX",
-                  "types": ["todo.created"],
-                  "enabled": true,
-                  "failures": 0,
-                  "lastStatus": 200,
-                  "timeDelivered": "2026-06-07T00:00:00.000Z",
-                  "timeCreated": "2026-06-07T00:00:00.000Z"
-                }
-              }
-            },
-            "description": "An endpoint that receives published events over HTTP."
-          },
-          "400": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "validation",
-                  "code": "invalid_parameter",
-                  "message": "Invalid input: expected string, received undefined",
-                  "param": "email",
-                  "details": {
-                    "issues": [
-                      {
-                        "path": "email",
-                        "message": "Invalid input: expected string, received undefined"
-                      }
-                    ]
-                  }
-                }
-              }
-            },
-            "description": "Bad Request"
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "authentication",
-                  "code": "unauthorized",
-                  "message": "Authentication required"
-                }
-              }
-            },
-            "description": "Unauthorized"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "forbidden",
-                  "code": "permission_denied",
-                  "message": "You do not have permission"
-                }
-              }
-            },
-            "description": "Forbidden"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "not_found",
-                  "code": "resource_not_found",
-                  "message": "The requested resource could not be found"
-                }
-              }
-            },
-            "description": "Not Found"
-          },
-          "500": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "internal",
-                  "code": "internal_error",
-                  "message": "Internal server error"
-                }
-              }
-            },
-            "description": "Internal Server Error"
-          }
-        },
-        "parameters": [
-          {
-            "in": "path",
-            "name": "id",
-            "schema": {
-              "type": "string",
-              "example": "whk_XXXXXXXXXXXXXXXXXXXXXXXXX"
-            },
-            "required": true,
-            "description": "Unique object identifier.\nThe format and length of IDs may change over time."
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "url": {
-                    "type": "string",
-                    "maxLength": 2000,
-                    "format": "uri",
-                    "description": "Where deliveries are POSTed."
-                  },
-                  "types": {
-                    "type": "array",
-                    "items": {
-                      "type": "string",
-                      "enum": [
-                        "todo.created",
-                        "todo.updated",
-                        "todo.removed",
-                        "project.created",
-                        "project.updated",
-                        "project.removed"
-                      ]
-                    },
-                    "description": "Event types to receive. Empty means every public type."
-                  },
-                  "enabled": {
-                    "type": "boolean",
-                    "description": "Turns itself off after too many failures. Re-enabling clears the count."
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "delete": {
-        "operationId": "deleteWebhookById",
-        "tags": ["Webhook"],
-        "summary": "Delete webhook",
-        "description": "Delete a webhook subscription. Deliveries to it stop at once. Admin-only.",
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "string",
-                  "const": "ok",
-                  "description": "Deleted."
-                }
-              }
-            },
-            "description": "Deleted."
-          },
-          "400": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "validation",
-                  "code": "invalid_parameter",
-                  "message": "Invalid input: expected string, received undefined",
-                  "param": "email",
-                  "details": {
-                    "issues": [
-                      {
-                        "path": "email",
-                        "message": "Invalid input: expected string, received undefined"
-                      }
-                    ]
-                  }
-                }
-              }
-            },
-            "description": "Bad Request"
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "authentication",
-                  "code": "unauthorized",
-                  "message": "Authentication required"
-                }
-              }
-            },
-            "description": "Unauthorized"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "forbidden",
-                  "code": "permission_denied",
-                  "message": "You do not have permission"
-                }
-              }
-            },
-            "description": "Forbidden"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "not_found",
-                  "code": "resource_not_found",
-                  "message": "The requested resource could not be found"
-                }
-              }
-            },
-            "description": "Not Found"
-          },
-          "500": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "type": "internal",
-                  "code": "internal_error",
-                  "message": "Internal server error"
-                }
-              }
-            },
-            "description": "Internal Server Error"
-          }
-        },
-        "parameters": [
-          {
-            "in": "path",
-            "name": "id",
-            "schema": {
-              "type": "string",
-              "example": "whk_XXXXXXXXXXXXXXXXXXXXXXXXX"
-            },
-            "required": true,
-            "description": "Unique object identifier.\nThe format and length of IDs may change over time."
           }
         ]
       }

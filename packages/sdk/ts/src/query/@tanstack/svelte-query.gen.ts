@@ -9,17 +9,11 @@ import {
 
 import { client } from "../client.gen";
 import {
-  deleteAppById,
-  deleteAppByIdKeyByKey,
   deleteFileByName,
   deleteKeyById,
   deleteProjectById,
   deleteProjectByIdLink,
   deleteTodoById,
-  deleteWebhookById,
-  getApp,
-  getAppById,
-  getAppByIdKey,
   getFile,
   getFileByNameContent,
   getFileSigned,
@@ -30,16 +24,12 @@ import {
   getTodo,
   getTodoById,
   getTodoStage,
-  getWebhook,
+  getUserById,
+  getUserByIdHistory,
   type Options,
-  patchAppById,
   patchFileByName,
   patchProjectById,
   patchTodoById,
-  patchWebhookById,
-  postApp,
-  postAppByIdKey,
-  postAppByIdSecret,
   postFile,
   postHookByApp,
   postKey,
@@ -47,15 +37,8 @@ import {
   postProjectByIdLink,
   postTodo,
   postTodoByIdMove,
-  postWebhook,
 } from "../sdk.gen";
 import type {
-  DeleteAppByIdData,
-  DeleteAppByIdError,
-  DeleteAppByIdKeyByKeyData,
-  DeleteAppByIdKeyByKeyError,
-  DeleteAppByIdKeyByKeyResponse,
-  DeleteAppByIdResponse,
   DeleteFileByNameData,
   DeleteFileByNameError,
   DeleteFileByNameResponse,
@@ -71,18 +54,6 @@ import type {
   DeleteTodoByIdData,
   DeleteTodoByIdError,
   DeleteTodoByIdResponse,
-  DeleteWebhookByIdData,
-  DeleteWebhookByIdError,
-  DeleteWebhookByIdResponse,
-  GetAppByIdData,
-  GetAppByIdError,
-  GetAppByIdKeyData,
-  GetAppByIdKeyError,
-  GetAppByIdKeyResponse,
-  GetAppByIdResponse,
-  GetAppData,
-  GetAppError,
-  GetAppResponse,
   GetFileByNameContentData,
   GetFileByNameContentError,
   GetFileData,
@@ -111,12 +82,12 @@ import type {
   GetTodoStageData,
   GetTodoStageError,
   GetTodoStageResponse,
-  GetWebhookData,
-  GetWebhookError,
-  GetWebhookResponse,
-  PatchAppByIdData,
-  PatchAppByIdError,
-  PatchAppByIdResponse,
+  GetUserByIdData,
+  GetUserByIdError,
+  GetUserByIdHistoryData,
+  GetUserByIdHistoryError,
+  GetUserByIdHistoryResponse,
+  GetUserByIdResponse,
   PatchFileByNameData,
   PatchFileByNameError,
   PatchFileByNameResponse,
@@ -126,18 +97,6 @@ import type {
   PatchTodoByIdData,
   PatchTodoByIdError,
   PatchTodoByIdResponse,
-  PatchWebhookByIdData,
-  PatchWebhookByIdError,
-  PatchWebhookByIdResponse,
-  PostAppByIdKeyData,
-  PostAppByIdKeyError,
-  PostAppByIdKeyResponse,
-  PostAppByIdSecretData,
-  PostAppByIdSecretError,
-  PostAppByIdSecretResponse,
-  PostAppData,
-  PostAppError,
-  PostAppResponse,
   PostFileData,
   PostFileError,
   PostFileResponse,
@@ -159,9 +118,6 @@ import type {
   PostTodoData,
   PostTodoError,
   PostTodoResponse,
-  PostWebhookData,
-  PostWebhookError,
-  PostWebhookResponse,
 } from "../types.gen";
 
 export type QueryKey<TOptions extends Options> = [
@@ -223,6 +179,60 @@ export const getMeOptions = (options?: Options<GetMeData>) =>
       return data;
     },
     queryKey: getMeQueryKey(options),
+  });
+
+export const getUserByIdQueryKey = (options: Options<GetUserByIdData>) =>
+  createQueryKey("getUserById", options, false, ["User"]);
+
+/**
+ * Get profile
+ *
+ * Fetch an account as a teammate sees it: no prefs, and no email for an App.
+ */
+export const getUserByIdOptions = (options: Options<GetUserByIdData>) =>
+  queryOptions<
+    GetUserByIdResponse,
+    GetUserByIdError,
+    GetUserByIdResponse,
+    ReturnType<typeof getUserByIdQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await getUserById({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: getUserByIdQueryKey(options),
+  });
+
+export const getUserByIdHistoryQueryKey = (options: Options<GetUserByIdHistoryData>) =>
+  createQueryKey("getUserByIdHistory", options, false, ["User"]);
+
+/**
+ * Get user history
+ *
+ * What one account did, newest first. Anyone but an admin sees only the public event types.
+ */
+export const getUserByIdHistoryOptions = (options: Options<GetUserByIdHistoryData>) =>
+  queryOptions<
+    GetUserByIdHistoryResponse,
+    GetUserByIdHistoryError,
+    GetUserByIdHistoryResponse,
+    ReturnType<typeof getUserByIdHistoryQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await getUserByIdHistory({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: getUserByIdHistoryQueryKey(options),
   });
 
 export const getKeyQueryKey = (options?: Options<GetKeyData>) =>
@@ -948,346 +958,6 @@ export const postHookByAppMutation = (
   > = {
     mutationFn: async (fnOptions) => {
       const { data } = await postHookByApp({
-        ...options,
-        ...fnOptions,
-        throwOnError: true,
-      });
-      return data;
-    },
-  };
-  return mutationOptions;
-};
-
-export const getAppQueryKey = (options?: Options<GetAppData>) =>
-  createQueryKey("getApp", options, false, ["App"]);
-
-/**
- * List apps
- *
- * List every registered app, by name. Admin-only.
- */
-export const getAppOptions = (options?: Options<GetAppData>) =>
-  queryOptions<GetAppResponse, GetAppError, GetAppResponse, ReturnType<typeof getAppQueryKey>>({
-    queryFn: async ({ queryKey, signal }) => {
-      const { data } = await getApp({
-        ...options,
-        ...queryKey[0],
-        signal,
-        throwOnError: true,
-      });
-      return data;
-    },
-    queryKey: getAppQueryKey(options),
-  });
-
-/**
- * Create app
- *
- * Register an external system as a system account owned by the current admin. Admin-only.
- */
-export const postAppMutation = (
-  options?: Partial<Options<PostAppData>>,
-): MutationOptions<PostAppResponse, PostAppError, Options<PostAppData>> => {
-  const mutationOptions: MutationOptions<PostAppResponse, PostAppError, Options<PostAppData>> = {
-    mutationFn: async (fnOptions) => {
-      const { data } = await postApp({
-        ...options,
-        ...fnOptions,
-        throwOnError: true,
-      });
-      return data;
-    },
-  };
-  return mutationOptions;
-};
-
-/**
- * Remove app
- *
- * Disable an app's account. Its keys stop authenticating and its webhooks are removed. Admin-only.
- */
-export const deleteAppByIdMutation = (
-  options?: Partial<Options<DeleteAppByIdData>>,
-): MutationOptions<DeleteAppByIdResponse, DeleteAppByIdError, Options<DeleteAppByIdData>> => {
-  const mutationOptions: MutationOptions<
-    DeleteAppByIdResponse,
-    DeleteAppByIdError,
-    Options<DeleteAppByIdData>
-  > = {
-    mutationFn: async (fnOptions) => {
-      const { data } = await deleteAppById({
-        ...options,
-        ...fnOptions,
-        throwOnError: true,
-      });
-      return data;
-    },
-  };
-  return mutationOptions;
-};
-
-export const getAppByIdQueryKey = (options: Options<GetAppByIdData>) =>
-  createQueryKey("getAppById", options, false, ["App"]);
-
-/**
- * Get app
- *
- * Get one registered app by id. Admin-only.
- */
-export const getAppByIdOptions = (options: Options<GetAppByIdData>) =>
-  queryOptions<
-    GetAppByIdResponse,
-    GetAppByIdError,
-    GetAppByIdResponse,
-    ReturnType<typeof getAppByIdQueryKey>
-  >({
-    queryFn: async ({ queryKey, signal }) => {
-      const { data } = await getAppById({
-        ...options,
-        ...queryKey[0],
-        signal,
-        throwOnError: true,
-      });
-      return data;
-    },
-    queryKey: getAppByIdQueryKey(options),
-  });
-
-/**
- * Update app
- *
- * Rename an app or change its avatar. Admin-only.
- */
-export const patchAppByIdMutation = (
-  options?: Partial<Options<PatchAppByIdData>>,
-): MutationOptions<PatchAppByIdResponse, PatchAppByIdError, Options<PatchAppByIdData>> => {
-  const mutationOptions: MutationOptions<
-    PatchAppByIdResponse,
-    PatchAppByIdError,
-    Options<PatchAppByIdData>
-  > = {
-    mutationFn: async (fnOptions) => {
-      const { data } = await patchAppById({
-        ...options,
-        ...fnOptions,
-        throwOnError: true,
-      });
-      return data;
-    },
-  };
-  return mutationOptions;
-};
-
-export const getAppByIdKeyQueryKey = (options: Options<GetAppByIdKeyData>) =>
-  createQueryKey("getAppByIdKey", options, false, ["App"]);
-
-/**
- * List app keys
- *
- * List an app's live API keys. Secrets are stored hashed, so `key` is null here. Admin-only.
- */
-export const getAppByIdKeyOptions = (options: Options<GetAppByIdKeyData>) =>
-  queryOptions<
-    GetAppByIdKeyResponse,
-    GetAppByIdKeyError,
-    GetAppByIdKeyResponse,
-    ReturnType<typeof getAppByIdKeyQueryKey>
-  >({
-    queryFn: async ({ queryKey, signal }) => {
-      const { data } = await getAppByIdKey({
-        ...options,
-        ...queryKey[0],
-        signal,
-        throwOnError: true,
-      });
-      return data;
-    },
-    queryKey: getAppByIdKeyQueryKey(options),
-  });
-
-/**
- * Create app key
- *
- * Mint a named API key that acts as the app. The secret is returned once, in `key`. Pass `expiresInDays` to set an expiry. Admin-only.
- */
-export const postAppByIdKeyMutation = (
-  options?: Partial<Options<PostAppByIdKeyData>>,
-): MutationOptions<PostAppByIdKeyResponse, PostAppByIdKeyError, Options<PostAppByIdKeyData>> => {
-  const mutationOptions: MutationOptions<
-    PostAppByIdKeyResponse,
-    PostAppByIdKeyError,
-    Options<PostAppByIdKeyData>
-  > = {
-    mutationFn: async (fnOptions) => {
-      const { data } = await postAppByIdKey({
-        ...options,
-        ...fnOptions,
-        throwOnError: true,
-      });
-      return data;
-    },
-  };
-  return mutationOptions;
-};
-
-/**
- * Revoke app key
- *
- * Revoke one of an app's API keys. It stops authenticating at once. Admin-only.
- */
-export const deleteAppByIdKeyByKeyMutation = (
-  options?: Partial<Options<DeleteAppByIdKeyByKeyData>>,
-): MutationOptions<
-  DeleteAppByIdKeyByKeyResponse,
-  DeleteAppByIdKeyByKeyError,
-  Options<DeleteAppByIdKeyByKeyData>
-> => {
-  const mutationOptions: MutationOptions<
-    DeleteAppByIdKeyByKeyResponse,
-    DeleteAppByIdKeyByKeyError,
-    Options<DeleteAppByIdKeyByKeyData>
-  > = {
-    mutationFn: async (fnOptions) => {
-      const { data } = await deleteAppByIdKeyByKey({
-        ...options,
-        ...fnOptions,
-        throwOnError: true,
-      });
-      return data;
-    },
-  };
-  return mutationOptions;
-};
-
-/**
- * Rotate app secret
- *
- * Mint the app's inbound signing secret, retiring the last one. Returned once, so copy it then. Admin-only.
- */
-export const postAppByIdSecretMutation = (
-  options?: Partial<Options<PostAppByIdSecretData>>,
-): MutationOptions<
-  PostAppByIdSecretResponse,
-  PostAppByIdSecretError,
-  Options<PostAppByIdSecretData>
-> => {
-  const mutationOptions: MutationOptions<
-    PostAppByIdSecretResponse,
-    PostAppByIdSecretError,
-    Options<PostAppByIdSecretData>
-  > = {
-    mutationFn: async (fnOptions) => {
-      const { data } = await postAppByIdSecret({
-        ...options,
-        ...fnOptions,
-        throwOnError: true,
-      });
-      return data;
-    },
-  };
-  return mutationOptions;
-};
-
-export const getWebhookQueryKey = (options?: Options<GetWebhookData>) =>
-  createQueryKey("getWebhook", options, false, ["Webhook"]);
-
-/**
- * List webhooks
- *
- * List every webhook subscription, or one owner's with `owner`. Admin-only.
- */
-export const getWebhookOptions = (options?: Options<GetWebhookData>) =>
-  queryOptions<
-    GetWebhookResponse,
-    GetWebhookError,
-    GetWebhookResponse,
-    ReturnType<typeof getWebhookQueryKey>
-  >({
-    queryFn: async ({ queryKey, signal }) => {
-      const { data } = await getWebhook({
-        ...options,
-        ...queryKey[0],
-        signal,
-        throwOnError: true,
-      });
-      return data;
-    },
-    queryKey: getWebhookQueryKey(options),
-  });
-
-/**
- * Create webhook
- *
- * Subscribe a URL to published events. Pass `userID` to file it under an app; empty `types` means every event. Admin-only.
- */
-export const postWebhookMutation = (
-  options?: Partial<Options<PostWebhookData>>,
-): MutationOptions<PostWebhookResponse, PostWebhookError, Options<PostWebhookData>> => {
-  const mutationOptions: MutationOptions<
-    PostWebhookResponse,
-    PostWebhookError,
-    Options<PostWebhookData>
-  > = {
-    mutationFn: async (fnOptions) => {
-      const { data } = await postWebhook({
-        ...options,
-        ...fnOptions,
-        throwOnError: true,
-      });
-      return data;
-    },
-  };
-  return mutationOptions;
-};
-
-/**
- * Delete webhook
- *
- * Delete a webhook subscription. Deliveries to it stop at once. Admin-only.
- */
-export const deleteWebhookByIdMutation = (
-  options?: Partial<Options<DeleteWebhookByIdData>>,
-): MutationOptions<
-  DeleteWebhookByIdResponse,
-  DeleteWebhookByIdError,
-  Options<DeleteWebhookByIdData>
-> => {
-  const mutationOptions: MutationOptions<
-    DeleteWebhookByIdResponse,
-    DeleteWebhookByIdError,
-    Options<DeleteWebhookByIdData>
-  > = {
-    mutationFn: async (fnOptions) => {
-      const { data } = await deleteWebhookById({
-        ...options,
-        ...fnOptions,
-        throwOnError: true,
-      });
-      return data;
-    },
-  };
-  return mutationOptions;
-};
-
-/**
- * Update webhook
- *
- * Change a webhook's URL, event types or enabled state. Re-enabling clears its failure count. Admin-only.
- */
-export const patchWebhookByIdMutation = (
-  options?: Partial<Options<PatchWebhookByIdData>>,
-): MutationOptions<
-  PatchWebhookByIdResponse,
-  PatchWebhookByIdError,
-  Options<PatchWebhookByIdData>
-> => {
-  const mutationOptions: MutationOptions<
-    PatchWebhookByIdResponse,
-    PatchWebhookByIdError,
-    Options<PatchWebhookByIdData>
-  > = {
-    mutationFn: async (fnOptions) => {
-      const { data } = await patchWebhookById({
         ...options,
         ...fnOptions,
         throwOnError: true,

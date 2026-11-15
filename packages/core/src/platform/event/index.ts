@@ -115,6 +115,11 @@ export namespace Event {
           .then((rows) => rows.map((row) => serialize(row.event, row.user))),
       );
     },
+    {
+      title: "Get user history",
+      description:
+        "What one account did, newest first. Anyone but an admin sees only the public event types.",
+    },
   );
 
   export const list = fn(

@@ -62,7 +62,7 @@ export type User = {
 };
 
 /**
- * Permission error
+ * Not found error
  */
 export type ErrorResponse = {
   /**
@@ -99,6 +99,199 @@ export type ErrorResponse = {
       message: string;
     }>;
   };
+};
+
+/**
+ * An account as other signed-in users see it.
+ */
+export type Profile = {
+  /**
+   * Unique object identifier.
+   * The format and length of IDs may change over time.
+   */
+  id: string;
+  /**
+   * Display name.
+   */
+  name: string;
+  /**
+   * Avatar URL, or null for none.
+   */
+  image: string | null;
+  /**
+   * A `system` account is an App: nobody logs in as it — an external system or CI acting through API keys.
+   */
+  kind: "human" | "system";
+  /**
+   * Decides everything the account may do. Only `user:assign` can change it.
+   */
+  role: "admin" | "member";
+  /**
+   * When the account was created.
+   */
+  timeCreated: string;
+  email: string | null;
+  owner: {
+    id: string;
+    name: string;
+  } | null;
+};
+
+/**
+ * Who acted: a person, an agent for one, an App, or the app itself.
+ */
+export type Identity =
+  | {
+      type: "public";
+      properties: {
+        [key: string]: unknown;
+      };
+    }
+  | {
+      type: "user";
+      properties: {
+        /**
+         * Who answers for the act.
+         */
+        userID: string;
+        /**
+         * The role held at the time.
+         */
+        role: "admin" | "member";
+        /**
+         * IANA zone, when known.
+         */
+        timezone?: string;
+        /**
+         * The key or delegation that acted, so an audit can name it.
+         */
+        credential?: string;
+      };
+    }
+  | {
+      type: "agent";
+      properties: {
+        /**
+         * Which agent: `copilot`, or an MCP client like `claude`.
+         */
+        name: string;
+        /**
+         * Who answers for the act.
+         */
+        userID: string;
+        /**
+         * The role held at the time.
+         */
+        role: "admin" | "member";
+        /**
+         * Exactly what it may do.
+         */
+        scope?: unknown;
+        /**
+         * IANA zone, when known.
+         */
+        timezone?: string;
+        /**
+         * The key or delegation that acted, so an audit can name it.
+         */
+        credential?: string;
+      };
+    }
+  | {
+      type: "system";
+      properties: {
+        /**
+         * Who answers for the act.
+         */
+        userID: string;
+        /**
+         * The role held at the time.
+         */
+        role: "admin" | "member";
+        /**
+         * The person answerable for the App.
+         */
+        owner: {
+          /**
+           * Who answers for the act.
+           */
+          userID: string;
+          /**
+           * The role held at the time.
+           */
+          role: "admin" | "member";
+        };
+        /**
+         * The key or delegation that acted, so an audit can name it.
+         */
+        credential?: string;
+      };
+    }
+  | {
+      type: "internal";
+      properties: {
+        /**
+         * Which part of the app, like `auth` or `seed`.
+         */
+        name: string;
+        /**
+         * Exactly what it may do.
+         */
+        scope: unknown;
+      };
+    };
+
+/**
+ * An immutable audit-log entry.
+ */
+export type Event = {
+  /**
+   * Unique object identifier.
+   * The format and length of IDs may change over time.
+   */
+  id: string;
+  /**
+   * Who caused it. Null for system and public actors.
+   */
+  userID: string | null;
+  /**
+   * That user, joined in so a log row can name them.
+   */
+  user: {
+    id: string;
+    name: string;
+    image: string | null;
+  } | null;
+  /**
+   * Who acted, in full: agent name, scope, credential. Null unless you are an admin.
+   */
+  identity: Identity | null;
+  /**
+   * What happened, like `todo.created`.
+   */
+  type: string;
+  /**
+   * Kind of entity it happened to, like `todo`.
+   */
+  source: string | null;
+  /**
+   * Id of that entity.
+   */
+  sourceID: string | null;
+  /**
+   * Filter labels. Always carries the actor kind, like `actor:user`.
+   */
+  tags: Array<string>;
+  /**
+   * The payload declared for its type. Webhooks get the same.
+   */
+  data: {
+    [key: string]: unknown;
+  };
+  /**
+   * When it was recorded.
+   */
+  timeCreated: string;
 };
 
 /**
@@ -316,94 +509,6 @@ export type File = {
   lastModified: string | null;
 };
 
-/**
- * An external system acting through its own system account.
- */
-export type App = {
-  /**
-   * Unique object identifier.
-   * The format and length of IDs may change over time.
-   */
-  id: string;
-  /**
-   * What the external system is called.
-   */
-  name: string;
-  /**
-   * The admin answerable for it. Null once they are gone.
-   */
-  owner: {
-    id: string;
-    name: string;
-  } | null;
-  /**
-   * Whether it holds a secret to post events in with.
-   */
-  inbound: boolean;
-  /**
-   * When it was registered.
-   */
-  timeCreated: string;
-};
-
-/**
- * An endpoint that receives published events over HTTP.
- */
-export type Webhook = {
-  /**
-   * Unique object identifier.
-   * The format and length of IDs may change over time.
-   */
-  id: string;
-  /**
-   * Where deliveries are POSTed.
-   */
-  url: string;
-  /**
-   * Who it belongs to: an App's account, or the admin who made it.
-   */
-  userID: string;
-  /**
-   * Signing secret. Handed back in full to admins.
-   */
-  secret: string;
-  /**
-   * Masked secret, safe to show in a list.
-   */
-  display: string;
-  /**
-   * Event types to receive. Empty means every public type.
-   */
-  types: Array<
-    | "todo.created"
-    | "todo.updated"
-    | "todo.removed"
-    | "project.created"
-    | "project.updated"
-    | "project.removed"
-  >;
-  /**
-   * Turns itself off after too many failures. Re-enabling clears the count.
-   */
-  enabled: boolean;
-  /**
-   * Consecutive failed deliveries.
-   */
-  failures: number;
-  /**
-   * HTTP status of the last attempt. Null if it never answered.
-   */
-  lastStatus: number | null;
-  /**
-   * When a delivery last succeeded.
-   */
-  timeDelivered: string | null;
-  /**
-   * When the subscription was created.
-   */
-  timeCreated: string;
-};
-
 export type GetMeData = {
   body?: never;
   path?: never;
@@ -432,6 +537,97 @@ export type GetMeResponses = {
 };
 
 export type GetMeResponse = GetMeResponses[keyof GetMeResponses];
+
+export type GetUserByIdData = {
+  body?: never;
+  path: {
+    /**
+     * Unique object identifier.
+     * The format and length of IDs may change over time.
+     */
+    id: string;
+  };
+  query?: never;
+  url: "/user/{id}";
+};
+
+export type GetUserByIdErrors = {
+  /**
+   * Bad Request
+   */
+  400: ErrorResponse;
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
+   * Not Found
+   */
+  404: ErrorResponse;
+  /**
+   * Internal Server Error
+   */
+  500: ErrorResponse;
+};
+
+export type GetUserByIdError = GetUserByIdErrors[keyof GetUserByIdErrors];
+
+export type GetUserByIdResponses = {
+  /**
+   * An account as other signed-in users see it.
+   */
+  200: Profile;
+};
+
+export type GetUserByIdResponse = GetUserByIdResponses[keyof GetUserByIdResponses];
+
+export type GetUserByIdHistoryData = {
+  body?: never;
+  path: {
+    /**
+     * Unique object identifier.
+     * The format and length of IDs may change over time.
+     */
+    id: string;
+  };
+  query?: never;
+  url: "/user/{id}/history";
+};
+
+export type GetUserByIdHistoryErrors = {
+  /**
+   * Bad Request
+   */
+  400: ErrorResponse;
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
+   * Internal Server Error
+   */
+  500: ErrorResponse;
+};
+
+export type GetUserByIdHistoryError = GetUserByIdHistoryErrors[keyof GetUserByIdHistoryErrors];
+
+export type GetUserByIdHistoryResponses = {
+  /**
+   * An immutable audit-log entry.
+   */
+  200: Array<Event>;
+};
+
+export type GetUserByIdHistoryResponse =
+  GetUserByIdHistoryResponses[keyof GetUserByIdHistoryResponses];
 
 export type GetKeyData = {
   body?: never;
@@ -1623,646 +1819,3 @@ export type PostHookByAppResponses = {
 };
 
 export type PostHookByAppResponse = PostHookByAppResponses[keyof PostHookByAppResponses];
-
-export type GetAppData = {
-  body?: never;
-  path?: never;
-  query?: never;
-  url: "/app";
-};
-
-export type GetAppErrors = {
-  /**
-   * Unauthorized
-   */
-  401: ErrorResponse;
-  /**
-   * Forbidden
-   */
-  403: ErrorResponse;
-  /**
-   * Internal Server Error
-   */
-  500: ErrorResponse;
-};
-
-export type GetAppError = GetAppErrors[keyof GetAppErrors];
-
-export type GetAppResponses = {
-  /**
-   * An external system acting through its own system account.
-   */
-  200: Array<App>;
-};
-
-export type GetAppResponse = GetAppResponses[keyof GetAppResponses];
-
-export type PostAppData = {
-  body: {
-    /**
-     * What the external system is called.
-     */
-    name: string;
-  };
-  path?: never;
-  query?: never;
-  url: "/app";
-};
-
-export type PostAppErrors = {
-  /**
-   * Bad Request
-   */
-  400: ErrorResponse;
-  /**
-   * Unauthorized
-   */
-  401: ErrorResponse;
-  /**
-   * Forbidden
-   */
-  403: ErrorResponse;
-  /**
-   * Internal Server Error
-   */
-  500: ErrorResponse;
-};
-
-export type PostAppError = PostAppErrors[keyof PostAppErrors];
-
-export type PostAppResponses = {
-  /**
-   * An external system acting through its own system account.
-   */
-  200: App;
-};
-
-export type PostAppResponse = PostAppResponses[keyof PostAppResponses];
-
-export type DeleteAppByIdData = {
-  body?: never;
-  path: {
-    /**
-     * Unique object identifier.
-     * The format and length of IDs may change over time.
-     */
-    id: string;
-  };
-  query?: never;
-  url: "/app/{id}";
-};
-
-export type DeleteAppByIdErrors = {
-  /**
-   * Bad Request
-   */
-  400: ErrorResponse;
-  /**
-   * Unauthorized
-   */
-  401: ErrorResponse;
-  /**
-   * Forbidden
-   */
-  403: ErrorResponse;
-  /**
-   * Not Found
-   */
-  404: ErrorResponse;
-  /**
-   * Internal Server Error
-   */
-  500: ErrorResponse;
-};
-
-export type DeleteAppByIdError = DeleteAppByIdErrors[keyof DeleteAppByIdErrors];
-
-export type DeleteAppByIdResponses = {
-  /**
-   * Deleted.
-   */
-  200: "ok";
-};
-
-export type DeleteAppByIdResponse = DeleteAppByIdResponses[keyof DeleteAppByIdResponses];
-
-export type GetAppByIdData = {
-  body?: never;
-  path: {
-    /**
-     * Unique object identifier.
-     * The format and length of IDs may change over time.
-     */
-    id: string;
-  };
-  query?: never;
-  url: "/app/{id}";
-};
-
-export type GetAppByIdErrors = {
-  /**
-   * Bad Request
-   */
-  400: ErrorResponse;
-  /**
-   * Unauthorized
-   */
-  401: ErrorResponse;
-  /**
-   * Forbidden
-   */
-  403: ErrorResponse;
-  /**
-   * Not Found
-   */
-  404: ErrorResponse;
-  /**
-   * Internal Server Error
-   */
-  500: ErrorResponse;
-};
-
-export type GetAppByIdError = GetAppByIdErrors[keyof GetAppByIdErrors];
-
-export type GetAppByIdResponses = {
-  /**
-   * An external system acting through its own system account.
-   */
-  200: App;
-};
-
-export type GetAppByIdResponse = GetAppByIdResponses[keyof GetAppByIdResponses];
-
-export type PatchAppByIdData = {
-  body: {
-    /**
-     * What the external system is called.
-     */
-    name?: string;
-    image?: string | null;
-  };
-  path: {
-    /**
-     * Unique object identifier.
-     * The format and length of IDs may change over time.
-     */
-    id: string;
-  };
-  query?: never;
-  url: "/app/{id}";
-};
-
-export type PatchAppByIdErrors = {
-  /**
-   * Bad Request
-   */
-  400: ErrorResponse;
-  /**
-   * Unauthorized
-   */
-  401: ErrorResponse;
-  /**
-   * Forbidden
-   */
-  403: ErrorResponse;
-  /**
-   * Not Found
-   */
-  404: ErrorResponse;
-  /**
-   * Internal Server Error
-   */
-  500: ErrorResponse;
-};
-
-export type PatchAppByIdError = PatchAppByIdErrors[keyof PatchAppByIdErrors];
-
-export type PatchAppByIdResponses = {
-  /**
-   * An external system acting through its own system account.
-   */
-  200: App;
-};
-
-export type PatchAppByIdResponse = PatchAppByIdResponses[keyof PatchAppByIdResponses];
-
-export type GetAppByIdKeyData = {
-  body?: never;
-  path: {
-    /**
-     * Unique object identifier.
-     * The format and length of IDs may change over time.
-     */
-    id: string;
-  };
-  query?: never;
-  url: "/app/{id}/key";
-};
-
-export type GetAppByIdKeyErrors = {
-  /**
-   * Bad Request
-   */
-  400: ErrorResponse;
-  /**
-   * Unauthorized
-   */
-  401: ErrorResponse;
-  /**
-   * Forbidden
-   */
-  403: ErrorResponse;
-  /**
-   * Not Found
-   */
-  404: ErrorResponse;
-  /**
-   * Internal Server Error
-   */
-  500: ErrorResponse;
-};
-
-export type GetAppByIdKeyError = GetAppByIdKeyErrors[keyof GetAppByIdKeyErrors];
-
-export type GetAppByIdKeyResponses = {
-  /**
-   * A personal access token (or an App's API key). It acts as the user that owns it.
-   */
-  200: Array<Key>;
-};
-
-export type GetAppByIdKeyResponse = GetAppByIdKeyResponses[keyof GetAppByIdKeyResponses];
-
-export type PostAppByIdKeyData = {
-  body: {
-    /**
-     * Label shown in the key list.
-     */
-    name: string;
-    expiresInDays?: number;
-  };
-  path: {
-    /**
-     * Unique object identifier.
-     * The format and length of IDs may change over time.
-     */
-    id: string;
-  };
-  query?: never;
-  url: "/app/{id}/key";
-};
-
-export type PostAppByIdKeyErrors = {
-  /**
-   * Bad Request
-   */
-  400: ErrorResponse;
-  /**
-   * Unauthorized
-   */
-  401: ErrorResponse;
-  /**
-   * Forbidden
-   */
-  403: ErrorResponse;
-  /**
-   * Not Found
-   */
-  404: ErrorResponse;
-  /**
-   * Internal Server Error
-   */
-  500: ErrorResponse;
-};
-
-export type PostAppByIdKeyError = PostAppByIdKeyErrors[keyof PostAppByIdKeyErrors];
-
-export type PostAppByIdKeyResponses = {
-  /**
-   * A personal access token (or an App's API key). It acts as the user that owns it.
-   */
-  200: Key;
-};
-
-export type PostAppByIdKeyResponse = PostAppByIdKeyResponses[keyof PostAppByIdKeyResponses];
-
-export type DeleteAppByIdKeyByKeyData = {
-  body?: never;
-  path: {
-    /**
-     * Unique object identifier.
-     * The format and length of IDs may change over time.
-     */
-    id: string;
-    /**
-     * Unique object identifier.
-     * The format and length of IDs may change over time.
-     */
-    key: string;
-  };
-  query?: never;
-  url: "/app/{id}/key/{key}";
-};
-
-export type DeleteAppByIdKeyByKeyErrors = {
-  /**
-   * Bad Request
-   */
-  400: ErrorResponse;
-  /**
-   * Unauthorized
-   */
-  401: ErrorResponse;
-  /**
-   * Forbidden
-   */
-  403: ErrorResponse;
-  /**
-   * Not Found
-   */
-  404: ErrorResponse;
-  /**
-   * Internal Server Error
-   */
-  500: ErrorResponse;
-};
-
-export type DeleteAppByIdKeyByKeyError =
-  DeleteAppByIdKeyByKeyErrors[keyof DeleteAppByIdKeyByKeyErrors];
-
-export type DeleteAppByIdKeyByKeyResponses = {
-  /**
-   * Deleted.
-   */
-  200: "ok";
-};
-
-export type DeleteAppByIdKeyByKeyResponse =
-  DeleteAppByIdKeyByKeyResponses[keyof DeleteAppByIdKeyByKeyResponses];
-
-export type PostAppByIdSecretData = {
-  body?: never;
-  path: {
-    /**
-     * Unique object identifier.
-     * The format and length of IDs may change over time.
-     */
-    id: string;
-  };
-  query?: never;
-  url: "/app/{id}/secret";
-};
-
-export type PostAppByIdSecretErrors = {
-  /**
-   * Bad Request
-   */
-  400: ErrorResponse;
-  /**
-   * Unauthorized
-   */
-  401: ErrorResponse;
-  /**
-   * Forbidden
-   */
-  403: ErrorResponse;
-  /**
-   * Not Found
-   */
-  404: ErrorResponse;
-  /**
-   * Internal Server Error
-   */
-  500: ErrorResponse;
-};
-
-export type PostAppByIdSecretError = PostAppByIdSecretErrors[keyof PostAppByIdSecretErrors];
-
-export type PostAppByIdSecretResponses = {
-  /**
-   * The secret, shown this once.
-   */
-  200: {
-    /**
-     * The new inbound signing secret.
-     */
-    secret: string;
-  };
-};
-
-export type PostAppByIdSecretResponse =
-  PostAppByIdSecretResponses[keyof PostAppByIdSecretResponses];
-
-export type GetWebhookData = {
-  body?: never;
-  path?: never;
-  query?: {
-    /**
-     * Only this owner's subscriptions, like an app's account id.
-     */
-    owner?: string;
-  };
-  url: "/webhook";
-};
-
-export type GetWebhookErrors = {
-  /**
-   * Bad Request
-   */
-  400: ErrorResponse;
-  /**
-   * Unauthorized
-   */
-  401: ErrorResponse;
-  /**
-   * Forbidden
-   */
-  403: ErrorResponse;
-  /**
-   * Internal Server Error
-   */
-  500: ErrorResponse;
-};
-
-export type GetWebhookError = GetWebhookErrors[keyof GetWebhookErrors];
-
-export type GetWebhookResponses = {
-  /**
-   * An endpoint that receives published events over HTTP.
-   */
-  200: Array<Webhook>;
-};
-
-export type GetWebhookResponse = GetWebhookResponses[keyof GetWebhookResponses];
-
-export type PostWebhookData = {
-  body: {
-    /**
-     * Where deliveries are POSTed.
-     */
-    url: string;
-    /**
-     * Event types to receive. Empty means every public type.
-     */
-    types?: Array<
-      | "todo.created"
-      | "todo.updated"
-      | "todo.removed"
-      | "project.created"
-      | "project.updated"
-      | "project.removed"
-    >;
-    /**
-     * Who it belongs to: an App's account, or the admin who made it.
-     */
-    userID?: string;
-  };
-  path?: never;
-  query?: never;
-  url: "/webhook";
-};
-
-export type PostWebhookErrors = {
-  /**
-   * Bad Request
-   */
-  400: ErrorResponse;
-  /**
-   * Unauthorized
-   */
-  401: ErrorResponse;
-  /**
-   * Forbidden
-   */
-  403: ErrorResponse;
-  /**
-   * Internal Server Error
-   */
-  500: ErrorResponse;
-};
-
-export type PostWebhookError = PostWebhookErrors[keyof PostWebhookErrors];
-
-export type PostWebhookResponses = {
-  /**
-   * An endpoint that receives published events over HTTP.
-   */
-  200: Webhook;
-};
-
-export type PostWebhookResponse = PostWebhookResponses[keyof PostWebhookResponses];
-
-export type DeleteWebhookByIdData = {
-  body?: never;
-  path: {
-    /**
-     * Unique object identifier.
-     * The format and length of IDs may change over time.
-     */
-    id: string;
-  };
-  query?: never;
-  url: "/webhook/{id}";
-};
-
-export type DeleteWebhookByIdErrors = {
-  /**
-   * Bad Request
-   */
-  400: ErrorResponse;
-  /**
-   * Unauthorized
-   */
-  401: ErrorResponse;
-  /**
-   * Forbidden
-   */
-  403: ErrorResponse;
-  /**
-   * Not Found
-   */
-  404: ErrorResponse;
-  /**
-   * Internal Server Error
-   */
-  500: ErrorResponse;
-};
-
-export type DeleteWebhookByIdError = DeleteWebhookByIdErrors[keyof DeleteWebhookByIdErrors];
-
-export type DeleteWebhookByIdResponses = {
-  /**
-   * Deleted.
-   */
-  200: "ok";
-};
-
-export type DeleteWebhookByIdResponse =
-  DeleteWebhookByIdResponses[keyof DeleteWebhookByIdResponses];
-
-export type PatchWebhookByIdData = {
-  body: {
-    /**
-     * Where deliveries are POSTed.
-     */
-    url?: string;
-    /**
-     * Event types to receive. Empty means every public type.
-     */
-    types?: Array<
-      | "todo.created"
-      | "todo.updated"
-      | "todo.removed"
-      | "project.created"
-      | "project.updated"
-      | "project.removed"
-    >;
-    /**
-     * Turns itself off after too many failures. Re-enabling clears the count.
-     */
-    enabled?: boolean;
-  };
-  path: {
-    /**
-     * Unique object identifier.
-     * The format and length of IDs may change over time.
-     */
-    id: string;
-  };
-  query?: never;
-  url: "/webhook/{id}";
-};
-
-export type PatchWebhookByIdErrors = {
-  /**
-   * Bad Request
-   */
-  400: ErrorResponse;
-  /**
-   * Unauthorized
-   */
-  401: ErrorResponse;
-  /**
-   * Forbidden
-   */
-  403: ErrorResponse;
-  /**
-   * Not Found
-   */
-  404: ErrorResponse;
-  /**
-   * Internal Server Error
-   */
-  500: ErrorResponse;
-};
-
-export type PatchWebhookByIdError = PatchWebhookByIdErrors[keyof PatchWebhookByIdErrors];
-
-export type PatchWebhookByIdResponses = {
-  /**
-   * An endpoint that receives published events over HTTP.
-   */
-  200: Webhook;
-};
-
-export type PatchWebhookByIdResponse = PatchWebhookByIdResponses[keyof PatchWebhookByIdResponses];

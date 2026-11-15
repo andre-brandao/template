@@ -10,12 +10,6 @@ import {
 } from "./client";
 import { client } from "./client.gen";
 import type {
-  DeleteAppByIdData,
-  DeleteAppByIdErrors,
-  DeleteAppByIdKeyByKeyData,
-  DeleteAppByIdKeyByKeyErrors,
-  DeleteAppByIdKeyByKeyResponses,
-  DeleteAppByIdResponses,
   DeleteFileByNameData,
   DeleteFileByNameErrors,
   DeleteFileByNameResponses,
@@ -31,18 +25,6 @@ import type {
   DeleteTodoByIdData,
   DeleteTodoByIdErrors,
   DeleteTodoByIdResponses,
-  DeleteWebhookByIdData,
-  DeleteWebhookByIdErrors,
-  DeleteWebhookByIdResponses,
-  GetAppByIdData,
-  GetAppByIdErrors,
-  GetAppByIdKeyData,
-  GetAppByIdKeyErrors,
-  GetAppByIdKeyResponses,
-  GetAppByIdResponses,
-  GetAppData,
-  GetAppErrors,
-  GetAppResponses,
   GetFileByNameContentData,
   GetFileByNameContentErrors,
   GetFileByNameContentResponses,
@@ -73,12 +55,12 @@ import type {
   GetTodoStageData,
   GetTodoStageErrors,
   GetTodoStageResponses,
-  GetWebhookData,
-  GetWebhookErrors,
-  GetWebhookResponses,
-  PatchAppByIdData,
-  PatchAppByIdErrors,
-  PatchAppByIdResponses,
+  GetUserByIdData,
+  GetUserByIdErrors,
+  GetUserByIdHistoryData,
+  GetUserByIdHistoryErrors,
+  GetUserByIdHistoryResponses,
+  GetUserByIdResponses,
   PatchFileByNameData,
   PatchFileByNameErrors,
   PatchFileByNameResponses,
@@ -88,18 +70,6 @@ import type {
   PatchTodoByIdData,
   PatchTodoByIdErrors,
   PatchTodoByIdResponses,
-  PatchWebhookByIdData,
-  PatchWebhookByIdErrors,
-  PatchWebhookByIdResponses,
-  PostAppByIdKeyData,
-  PostAppByIdKeyErrors,
-  PostAppByIdKeyResponses,
-  PostAppByIdSecretData,
-  PostAppByIdSecretErrors,
-  PostAppByIdSecretResponses,
-  PostAppData,
-  PostAppErrors,
-  PostAppResponses,
   PostFileData,
   PostFileErrors,
   PostFileResponses,
@@ -121,9 +91,6 @@ import type {
   PostTodoData,
   PostTodoErrors,
   PostTodoResponses,
-  PostWebhookData,
-  PostWebhookErrors,
-  PostWebhookResponses,
 } from "./types.gen";
 
 export type Options<
@@ -155,6 +122,38 @@ export const getMe = <ThrowOnError extends boolean = false>(
   (options?.client ?? client).get<GetMeResponses, GetMeErrors, ThrowOnError>({
     security: [{ scheme: "bearer", type: "http" }],
     url: "/me",
+    ...options,
+  });
+
+/**
+ * Get profile
+ *
+ * Fetch an account as a teammate sees it: no prefs, and no email for an App.
+ */
+export const getUserById = <ThrowOnError extends boolean = false>(
+  options: Options<GetUserByIdData, ThrowOnError>,
+): RequestResult<GetUserByIdResponses, GetUserByIdErrors, ThrowOnError> =>
+  (options.client ?? client).get<GetUserByIdResponses, GetUserByIdErrors, ThrowOnError>({
+    security: [{ scheme: "bearer", type: "http" }],
+    url: "/user/{id}",
+    ...options,
+  });
+
+/**
+ * Get user history
+ *
+ * What one account did, newest first. Anyone but an admin sees only the public event types.
+ */
+export const getUserByIdHistory = <ThrowOnError extends boolean = false>(
+  options: Options<GetUserByIdHistoryData, ThrowOnError>,
+): RequestResult<GetUserByIdHistoryResponses, GetUserByIdHistoryErrors, ThrowOnError> =>
+  (options.client ?? client).get<
+    GetUserByIdHistoryResponses,
+    GetUserByIdHistoryErrors,
+    ThrowOnError
+  >({
+    security: [{ scheme: "bearer", type: "http" }],
+    url: "/user/{id}/history",
     ...options,
   });
 
@@ -550,219 +549,3 @@ export const postHookByApp = <ThrowOnError extends boolean = false>(
     url: "/hook/{app}",
     ...options,
   });
-
-/**
- * List apps
- *
- * List every registered app, by name. Admin-only.
- */
-export const getApp = <ThrowOnError extends boolean = false>(
-  options?: Options<GetAppData, ThrowOnError>,
-): RequestResult<GetAppResponses, GetAppErrors, ThrowOnError> =>
-  (options?.client ?? client).get<GetAppResponses, GetAppErrors, ThrowOnError>({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/app",
-    ...options,
-  });
-
-/**
- * Create app
- *
- * Register an external system as a system account owned by the current admin. Admin-only.
- */
-export const postApp = <ThrowOnError extends boolean = false>(
-  options: Options<PostAppData, ThrowOnError>,
-): RequestResult<PostAppResponses, PostAppErrors, ThrowOnError> =>
-  (options.client ?? client).post<PostAppResponses, PostAppErrors, ThrowOnError>({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/app",
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
-  });
-
-/**
- * Remove app
- *
- * Disable an app's account. Its keys stop authenticating and its webhooks are removed. Admin-only.
- */
-export const deleteAppById = <ThrowOnError extends boolean = false>(
-  options: Options<DeleteAppByIdData, ThrowOnError>,
-): RequestResult<DeleteAppByIdResponses, DeleteAppByIdErrors, ThrowOnError> =>
-  (options.client ?? client).delete<DeleteAppByIdResponses, DeleteAppByIdErrors, ThrowOnError>({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/app/{id}",
-    ...options,
-  });
-
-/**
- * Get app
- *
- * Get one registered app by id. Admin-only.
- */
-export const getAppById = <ThrowOnError extends boolean = false>(
-  options: Options<GetAppByIdData, ThrowOnError>,
-): RequestResult<GetAppByIdResponses, GetAppByIdErrors, ThrowOnError> =>
-  (options.client ?? client).get<GetAppByIdResponses, GetAppByIdErrors, ThrowOnError>({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/app/{id}",
-    ...options,
-  });
-
-/**
- * Update app
- *
- * Rename an app or change its avatar. Admin-only.
- */
-export const patchAppById = <ThrowOnError extends boolean = false>(
-  options: Options<PatchAppByIdData, ThrowOnError>,
-): RequestResult<PatchAppByIdResponses, PatchAppByIdErrors, ThrowOnError> =>
-  (options.client ?? client).patch<PatchAppByIdResponses, PatchAppByIdErrors, ThrowOnError>({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/app/{id}",
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
-  });
-
-/**
- * List app keys
- *
- * List an app's live API keys. Secrets are stored hashed, so `key` is null here. Admin-only.
- */
-export const getAppByIdKey = <ThrowOnError extends boolean = false>(
-  options: Options<GetAppByIdKeyData, ThrowOnError>,
-): RequestResult<GetAppByIdKeyResponses, GetAppByIdKeyErrors, ThrowOnError> =>
-  (options.client ?? client).get<GetAppByIdKeyResponses, GetAppByIdKeyErrors, ThrowOnError>({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/app/{id}/key",
-    ...options,
-  });
-
-/**
- * Create app key
- *
- * Mint a named API key that acts as the app. The secret is returned once, in `key`. Pass `expiresInDays` to set an expiry. Admin-only.
- */
-export const postAppByIdKey = <ThrowOnError extends boolean = false>(
-  options: Options<PostAppByIdKeyData, ThrowOnError>,
-): RequestResult<PostAppByIdKeyResponses, PostAppByIdKeyErrors, ThrowOnError> =>
-  (options.client ?? client).post<PostAppByIdKeyResponses, PostAppByIdKeyErrors, ThrowOnError>({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/app/{id}/key",
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
-  });
-
-/**
- * Revoke app key
- *
- * Revoke one of an app's API keys. It stops authenticating at once. Admin-only.
- */
-export const deleteAppByIdKeyByKey = <ThrowOnError extends boolean = false>(
-  options: Options<DeleteAppByIdKeyByKeyData, ThrowOnError>,
-): RequestResult<DeleteAppByIdKeyByKeyResponses, DeleteAppByIdKeyByKeyErrors, ThrowOnError> =>
-  (options.client ?? client).delete<
-    DeleteAppByIdKeyByKeyResponses,
-    DeleteAppByIdKeyByKeyErrors,
-    ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/app/{id}/key/{key}",
-    ...options,
-  });
-
-/**
- * Rotate app secret
- *
- * Mint the app's inbound signing secret, retiring the last one. Returned once, so copy it then. Admin-only.
- */
-export const postAppByIdSecret = <ThrowOnError extends boolean = false>(
-  options: Options<PostAppByIdSecretData, ThrowOnError>,
-): RequestResult<PostAppByIdSecretResponses, PostAppByIdSecretErrors, ThrowOnError> =>
-  (options.client ?? client).post<
-    PostAppByIdSecretResponses,
-    PostAppByIdSecretErrors,
-    ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/app/{id}/secret",
-    ...options,
-  });
-
-/**
- * List webhooks
- *
- * List every webhook subscription, or one owner's with `owner`. Admin-only.
- */
-export const getWebhook = <ThrowOnError extends boolean = false>(
-  options?: Options<GetWebhookData, ThrowOnError>,
-): RequestResult<GetWebhookResponses, GetWebhookErrors, ThrowOnError> =>
-  (options?.client ?? client).get<GetWebhookResponses, GetWebhookErrors, ThrowOnError>({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/webhook",
-    ...options,
-  });
-
-/**
- * Create webhook
- *
- * Subscribe a URL to published events. Pass `userID` to file it under an app; empty `types` means every event. Admin-only.
- */
-export const postWebhook = <ThrowOnError extends boolean = false>(
-  options: Options<PostWebhookData, ThrowOnError>,
-): RequestResult<PostWebhookResponses, PostWebhookErrors, ThrowOnError> =>
-  (options.client ?? client).post<PostWebhookResponses, PostWebhookErrors, ThrowOnError>({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/webhook",
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
-  });
-
-/**
- * Delete webhook
- *
- * Delete a webhook subscription. Deliveries to it stop at once. Admin-only.
- */
-export const deleteWebhookById = <ThrowOnError extends boolean = false>(
-  options: Options<DeleteWebhookByIdData, ThrowOnError>,
-): RequestResult<DeleteWebhookByIdResponses, DeleteWebhookByIdErrors, ThrowOnError> =>
-  (options.client ?? client).delete<
-    DeleteWebhookByIdResponses,
-    DeleteWebhookByIdErrors,
-    ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/webhook/{id}",
-    ...options,
-  });
-
-/**
- * Update webhook
- *
- * Change a webhook's URL, event types or enabled state. Re-enabling clears its failure count. Admin-only.
- */
-export const patchWebhookById = <ThrowOnError extends boolean = false>(
-  options: Options<PatchWebhookByIdData, ThrowOnError>,
-): RequestResult<PatchWebhookByIdResponses, PatchWebhookByIdErrors, ThrowOnError> =>
-  (options.client ?? client).patch<PatchWebhookByIdResponses, PatchWebhookByIdErrors, ThrowOnError>(
-    {
-      security: [{ scheme: "bearer", type: "http" }],
-      url: "/webhook/{id}",
-      ...options,
-      headers: {
-        "Content-Type": "application/json",
-        ...options.headers,
-      },
-    },
-  );

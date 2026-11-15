@@ -43,7 +43,8 @@ const formats: Record<string, string> = {
  */
 export class SchemaValidator {
   private static async getSpec(): Promise<OpenAPIDocument> {
-    return spec as OpenAPIDocument;
+    // The JSON import infers a literal type that drifts with every route; it is checked at runtime.
+    return spec as unknown as OpenAPIDocument;
   }
 
   private static findOpenAPIPath(spec: OpenAPIDocument, path: string): string | undefined {

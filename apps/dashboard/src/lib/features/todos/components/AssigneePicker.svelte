@@ -1,7 +1,8 @@
 <script lang="ts">
 	import type { HTMLSelectAttributes } from 'svelte/elements';
+	import { useQueryClient } from '@tanstack/svelte-query';
 	import { LazySelect } from '@template/ui';
-	import { getUsers } from '../api/todos.remote';
+	import { users } from '../api/todos.query';
 
 	let {
 		value,
@@ -14,6 +15,8 @@
 		selected?: { id: string; name: string } | null;
 		empty?: string;
 	} & HTMLSelectAttributes = $props();
+
+	const client = useQueryClient();
 </script>
 
 <!-- Only a picker needs the whole directory, and only once it's touched. -->
@@ -24,7 +27,11 @@
 		...(selected ? [{ value: selected.id, label: selected.name }] : [])
 	]}
 	load={async () =>
-		(await getUsers({})).map((one) => ({ value: one.id, label: one.name, hint: one.email }))}
+		(await client.fetchQuery(users())).map((one) => ({
+			value: one.id,
+			label: one.name,
+			hint: one.email
+		}))}
 	value={value ?? ''}
 	{...rest}
 />

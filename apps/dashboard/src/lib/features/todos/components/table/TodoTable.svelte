@@ -4,7 +4,6 @@
 	import type { ColumnDef, Row } from '@tanstack/svelte-table';
 	import { Button, DataTable, features } from '@template/ui';
 	import { SvelteSet } from 'svelte/reactivity';
-	import { refreshAll } from '$app/navigation';
 	import type { Todo } from '@template/core/todo';
 	import { query } from '$lib/utils/params';
 	import { peek } from '$lib/utils/peek';
@@ -12,7 +11,7 @@
 	import StatusPicker from '../StatusPicker.svelte';
 	import TagList from '../TagList.svelte';
 	import { late } from '../../status';
-	import { moveTodo, removeTodo } from '../../api/todos.remote';
+	import { move, remove } from '../../api/todos.query';
 	import { moves, tree, visible, type Node } from '../../tree';
 	import { sort } from '../../sort';
 
@@ -30,10 +29,11 @@
 		else closed.add(id);
 	}
 
-	async function move(input: Parameters<typeof moveTodo>[0]) {
-		await moveTodo(input);
-		await refreshAll();
-	}
+	const shift = move();
+	const drop = remove();
+
+	const nest = (to: { id: string; parentID: string | null; position?: number }) =>
+		shift.mutate({ path: { id: to.id }, body: { parentID: to.parentID, position: to.position } });
 
 	const params = query(z.object({ sort: sort.schema }));
 
@@ -148,24 +148,26 @@
 {/snippet}
 
 {#snippet actions(row: Cell)}
-	{@const remove = removeTodo.for(row.original.id)}
 	{@const to = moves(nodes, row.original)}
-	<form class="acts" {...remove}>
+	<div class="acts">
 		<Button
 			variant="ghost"
 			type="button"
 			disabled={!to.outdent}
-			onclick={() => to.outdent && move(to.outdent)}>Outdent</Button
+			onclick={() => to.outdent && nest(to.outdent)}>Outdent</Button
 		>
 		<Button
 			variant="ghost"
 			type="button"
 			disabled={!to.indent}
-			onclick={() => to.indent && move(to.indent)}>Indent</Button
+			onclick={() => to.indent && nest(to.indent)}>Indent</Button
 		>
-		<input {...remove.fields.id.as('hidden', row.original.id)} />
-		<Button variant="ghost" type="submit" pending={!!remove.pending}>Delete</Button>
-	</form>
+		<Button
+			variant="ghost"
+			pending={drop.isPending && drop.variables?.path.id === row.original.id}
+			onclick={() => drop.mutate({ path: { id: row.original.id } })}>Delete</Button
+		>
+	</div>
 {/snippet}
 
 <DataTable {table} empty="No tasks yet" />

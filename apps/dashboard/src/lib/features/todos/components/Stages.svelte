@@ -2,38 +2,40 @@
      self-contained beats extracting presentation coincidence. -->
 <!-- fallow-ignore-file code-duplication -->
 <script lang="ts">
-	import { Empty, Skeleton } from '@template/ui';
-	import { getStages } from '../api/todos.remote';
+	import { createQuery } from '@tanstack/svelte-query';
+	import { Empty, Issue, Skeleton } from '@template/ui';
+	import { stages } from '../api/todos.query';
 	import { fmt } from '$lib/utils/fmt';
 
 	let { scope, base }: { scope: { source: string; sourceID: string }; base: string } = $props();
 
 	const f = fmt();
+	const query = createQuery(() => stages(scope));
 
 	const span = (stage: { start: string | null; end: string | null }) =>
 		[stage.start && f.date(stage.start), stage.end && f.date(stage.end)].filter(Boolean).join(' → ');
 </script>
 
-<svelte:boundary>
-	{#snippet pending()}<Skeleton h="128px" />{/snippet}
-	{@const stages = await getStages(scope)}
-	{#if stages.length === 0}
-		<Empty>No stages yet — give a todo a stage label to start one.</Empty>
-	{:else}
-		<ul>
-			{#each stages as stage (stage.name)}
-				<li>
-					<a href="{base}?stage={encodeURIComponent(stage.name)}">{stage.name}</a>
-					<span class="when">{span(stage) || 'undated'}</span>
-					<span class="count">{stage.done}/{stage.total}</span>
-					<span class="track">
-						<span class="fill" style:width="{(stage.done / stage.total) * 100}%"></span>
-					</span>
-				</li>
-			{/each}
-		</ul>
-	{/if}
-</svelte:boundary>
+{#if query.isPending}
+	<Skeleton h="128px" />
+{:else if query.isError}
+	<Issue>{query.error.message}</Issue>
+{:else if query.data.length === 0}
+	<Empty>No stages yet — give a todo a stage label to start one.</Empty>
+{:else}
+	<ul>
+		{#each query.data as stage (stage.name)}
+			<li>
+				<a href="{base}?stage={encodeURIComponent(stage.name)}">{stage.name}</a>
+				<span class="when">{span(stage) || 'undated'}</span>
+				<span class="count">{stage.done}/{stage.total}</span>
+				<span class="track">
+					<span class="fill" style:width="{(stage.done / stage.total) * 100}%"></span>
+				</span>
+			</li>
+		{/each}
+	</ul>
+{/if}
 
 <style>
 	/* Shared list chrome with Recent.svelte — the row layouts differ, and keeping

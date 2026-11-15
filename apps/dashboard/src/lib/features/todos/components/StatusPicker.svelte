@@ -1,13 +1,15 @@
 <script lang="ts">
 	import type { Todo } from '@template/core/todo';
-	import { Scroll, Spinner } from '@template/ui';
+	import { Scroll } from '@template/ui';
 	import Menu from '$lib/components/Menu.svelte';
-	import { setStatus } from '../api/todos.remote';
+	import { update } from '../api/todos.query';
 	import { STATUSES, color, label } from '../status';
 
 	let { todo, compact = false }: { todo: Todo.Info; compact?: boolean } = $props();
 
-	// Every item posts its own form, so each needs its own binding key.
+	// Optimistic: the pill (and a board card's column) moves before the request lands.
+	const save = update();
+
 	const items = $derived([
 		...STATUSES.filter((status) => status !== 'done').map((status) => ({
 			key: status,
@@ -35,30 +37,22 @@
 		{#snippet children(close)}
 			<Scroll style="min-width: 14em; max-height: 280px">
 				{#each items as item (item.key)}
-					{@const form = setStatus.for(`${todo.id}:${item.key}`)}
-					<!-- Closing on click would detach the form before the browser submits it
-					     ("form is not connected"); enhance runs after the data is captured,
-					     so the menu can close while the request proceeds. -->
-					<form
-						{...form.enhance(async (f) => {
+					<button
+						class="item"
+						type="button"
+						role="menuitem"
+						disabled={item.status === todo.status && !item.reason}
+						onclick={() => {
 							close();
-							await f.submit();
-						})}
+							save.mutate({
+								path: { id: todo.id },
+								body: { status: item.status, reason: (note || item.reason).trim() || null }
+							});
+						}}
 					>
-						<input {...form.fields.id.as('hidden', todo.id)} />
-						<input {...form.fields.status.as('hidden', item.status)} />
-						<input {...form.fields.reason.as('hidden', note || item.reason)} />
-						<button
-							class="item"
-							type="submit"
-							role="menuitem"
-							disabled={!!form.pending || (item.status === todo.status && !item.reason)}
-						>
-							<span class="dot" style:--c={color(item.status)}></span>
-							{item.label}
-							{#if form.pending}<Spinner />{/if}
-						</button>
-					</form>
+						<span class="dot" style:--c={color(item.status)}></span>
+						{item.label}
+					</button>
 				{/each}
 				<label class="note">
 					<span>Reason</span>
@@ -78,11 +72,6 @@
 <style>
 	.picker {
 		display: inline-flex;
-	}
-
-	/* The only forms here are the items themselves; each posts its own status. */
-	form {
-		display: contents;
 	}
 
 	.current {

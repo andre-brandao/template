@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Button, Card, Issue } from '@template/ui';
-	import { removeTodo } from '../../api/todos.remote';
+	import { remove } from '../../api/todos.query';
 	import type { Todo } from '@template/core/todo';
 	import StatusPill from '../StatusPill.svelte';
 	import StatusPicker from '../StatusPicker.svelte';
@@ -12,7 +12,7 @@
 	let { todo }: { todo: Todo.Info } = $props();
 
 	const f = fmt();
-	const remove = $derived(removeTodo.for(todo.id));
+	const drop = remove();
 
 	const preview = $derived(
 		todo.body
@@ -32,9 +32,9 @@
 
 <!-- fallow-ignore-next-line code-duplication -->
 <Card accent={color(todo.status)} interactive>
-	{#each remove.fields.allIssues() ?? [] as issue, i (i)}
-		<Issue>{issue.message}</Issue>
-	{/each}
+	{#if drop.error}
+		<Issue>{drop.error.message}</Issue>
+	{/if}
 
 	<div class="head">
 		<a class="title" href="/todos/{todo.id}" onclick={peek({ selected: todo.id })}>{todo.title}</a>
@@ -57,10 +57,11 @@
 		<StatusPicker {todo} compact />
 		<span class="who">{todo.assignee?.name ?? 'Unassigned'}</span>
 		<!-- fallow-ignore-next-line code-duplication -->
-		<form {...remove}>
-			<input {...remove.fields.id.as('hidden', todo.id)} />
-			<Button variant="danger" type="submit" pending={!!remove.pending}>Delete</Button>
-		</form>
+		<Button
+			variant="danger"
+			pending={drop.isPending}
+			onclick={() => drop.mutate({ path: { id: todo.id } })}>Delete</Button
+		>
 	</div>
 </Card>
 

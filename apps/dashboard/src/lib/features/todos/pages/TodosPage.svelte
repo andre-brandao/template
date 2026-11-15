@@ -4,8 +4,9 @@
 	import { query } from '$lib/utils/params';
 	import { sort } from '../sort';
 	import * as Header from '$lib/components/header';
-	import { Button, Drawer } from '@template/ui';
-	import { getTodos } from '../api/todos.remote';
+	import { createQuery } from '@tanstack/svelte-query';
+	import { Button, Drawer, Issue, Skeleton } from '@template/ui';
+	import { list } from '../api/todos.query';
 	import Source from '$lib/features/events/components/Source.svelte';
 	import { STATUSES } from '../status';
 	import TodoForm from '../components/form/TodoForm.svelte';
@@ -31,13 +32,13 @@
 
 	const scope = $derived({ source, sourceID });
 
-	const todos = $derived(
-		await getTodos({
+	const todos = createQuery(() =>
+		list({
 			...scope,
 			status: params.status === 'all' ? undefined : params.status,
 			assignee: params.assignee || undefined,
 			stage: params.stage || undefined,
-			q: params.q || undefined,
+			search: params.q || undefined,
 			sort: params.sort
 		})
 	);
@@ -94,7 +95,13 @@
 	{/if}
 </Drawer>
 
-<TodosView {todos} view={params.view} by={params.group} />
+{#if todos.isPending}
+	<Skeleton h="320px" />
+{:else if todos.isError}
+	<Issue>{todos.error.message}</Issue>
+{:else}
+	<TodosView todos={todos.data.data} view={params.view} by={params.group} />
+{/if}
 
 <style>
 	h2 {

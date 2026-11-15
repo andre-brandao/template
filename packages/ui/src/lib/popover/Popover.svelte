@@ -25,6 +25,7 @@
 		align = 'start',
 		role = 'dialog',
 		label,
+		wide = false,
 		trigger,
 		children
 	}: {
@@ -34,6 +35,8 @@
 		/** `menu` when the content is a list of actions. */
 		role?: 'dialog' | 'menu';
 		label?: string;
+		/** Room for wide content, like a two-month calendar. */
+		wide?: boolean;
 		trigger?: Snippet<[Trigger]>;
 		children: Snippet<[close: () => void]>;
 	} = $props();
@@ -125,7 +128,7 @@
 <!-- `auto` gives light dismiss: Escape and an outside click close it, and focus goes
      back to whatever held it before. -->
 <div
-	class="popover"
+	class={['popover', { wide }]}
 	bind:this={panel}
 	popover="auto"
 	{id}
@@ -148,7 +151,7 @@
 		inset: auto;
 		margin: 0;
 		min-width: 10em;
-		max-width: min(24em, calc(100vw - 1em));
+		max-width: min(var(--popover-max-width, 24em), calc(100vw - 1em));
 		max-height: min(28em, calc(100vh - 1em));
 		overflow: auto;
 		padding: 0.3em;
@@ -165,6 +168,11 @@
 			translate 0.14s ease,
 			display 0.14s allow-discrete,
 			overlay 0.14s allow-discrete;
+	}
+
+	.wide {
+		max-width: min(var(--popover-max-width, 46em), calc(100vw - 1em));
+		max-height: min(34em, calc(100vh - 1em));
 	}
 
 	.popover[data-side='top'] {

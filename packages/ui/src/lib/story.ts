@@ -3,7 +3,10 @@ import type { Component } from "svelte";
 import * as button from "./input/Button.story.svelte";
 import * as input from "./input/Input.story.svelte";
 import * as lazyselect from "./input/LazySelect.story.svelte";
-import * as rangepicker from "./input/RangePicker.story.svelte";
+import * as calendar from "./date/Calendar.story.svelte";
+import * as datepicker from "./date/DatePicker.story.svelte";
+import * as monthgrid from "./date/MonthGrid.story.svelte";
+import * as rangepicker from "./date/RangePicker.story.svelte";
 import * as select from "./input/Select.story.svelte";
 import * as markdown from "./markdown/Markdown.story.svelte";
 import * as mermaid from "./markdown/Mermaid.story.svelte";
@@ -80,6 +83,9 @@ export const stories = [
   { slug: "button", story: button.story, demo: button.default },
   { slug: "input", story: input.story, demo: input.default },
   { slug: "lazyselect", story: lazyselect.story, demo: lazyselect.default },
+  { slug: "calendar", story: calendar.story, demo: calendar.default },
+  { slug: "datepicker", story: datepicker.story, demo: datepicker.default },
+  { slug: "monthgrid", story: monthgrid.story, demo: monthgrid.default },
   { slug: "rangepicker", story: rangepicker.story, demo: rangepicker.default },
   { slug: "select", story: select.story, demo: select.default },
   { slug: "markdown", story: markdown.story, demo: markdown.default },

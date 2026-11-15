@@ -16,12 +16,7 @@ function auth() {
 type Mode = "form" | "throw";
 
 /** Denials the error page owns rather than the form: nothing in the fields can fix them. */
-const fatal = new Set<VisibleError["type"]>([
-  "forbidden",
-  "authentication",
-  "rate_limit",
-  "internal",
-]);
+const fatal = new Set<VisibleError["type"]>(["forbidden", "authentication", "internal"]);
 
 async function guard<T>(fn: () => Promise<T>, mode: Mode): Promise<T> {
   try {

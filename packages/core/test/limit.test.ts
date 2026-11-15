@@ -21,6 +21,7 @@ describe("rate limit", () => {
       await expect(rules.auth.login.consume(subject)).rejects.toMatchObject({
         type: "rate_limit",
         code: "rate_limit_exceeded",
+        details: { issues: [{ message: "Rate limit exceeded" }] },
         limit: 2,
         remaining: 0,
         retryAfter: expect.any(Number),
@@ -54,6 +55,22 @@ describe("rate limit", () => {
 
     await Kv.provide(Kv.fake(), async () => {
       expect((await catalog.custom.consume(Limit.subject("test", "one"))).limit).toBe(3);
+    });
+  });
+
+  it("consumes weighted units such as LLM tokens", async () => {
+    const catalog = Limit.catalog({
+      copilot: {
+        algorithm: Limit.Algo.FixedWindow,
+        options: { limit: 10_000, window: 60 },
+      },
+    });
+
+    await Kv.provide(Kv.fake(), async () => {
+      const result = await catalog.copilot.consume(Limit.subject("user", "usr_123"), {
+        cost: 7_500,
+      });
+      expect(result.remaining).toBe(2_500);
     });
   });
 });

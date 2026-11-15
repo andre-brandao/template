@@ -14,8 +14,7 @@
     "**/build.ts",
     "**/adapter/*.ts",
   ],
-  // The query SDK's generated client barrel is never imported; consumers use client.gen.
-  "ignorePatterns": ["**/*.gen.ts", "packages/sdk/ts/src/query/client/index.ts"],
+  "ignorePatterns": ["**/*.gen.ts"],
   // Every *.story.svelte colocates its metadata in the module script and is
   // consumed only as a namespace (`import * as button` in ui/src/lib/story.ts),
   // so the shared `story` name is never ambiguous at an import site.

@@ -28,12 +28,15 @@ current endpoints. Discover before guessing:
 ```sh
 template-cli api                              # list callable methods
 template-cli api getTodo                      # GET /todo
-template-cli api postTodo --title "Ship it"   # POST /todo
-template-cli api postTodo '{"title":"Ship"}'  # same, as a JSON blob
-template-cli api getTodoById --id tod_123
+template-cli api postTodo --body.title "Ship it"   # POST /todo
+template-cli api postTodo '{"body":{"title":"Ship"}}'  # same, as a JSON blob
+template-cli api getTodoById --path.id tod_123
+template-cli api getTodo --query.search ship --query.pageSize 10
 ```
 
-Flags become call params (`--key value`, `--key=value`, or bare `--flag` for `true`).
+Flags become call params, grouped as the SDK takes them: `--path.<key>` fills the url slot,
+`--query.<key>` the query string, `--body.<key>` the JSON body (`--x.key value`,
+`--x.key=value`, or bare `--x.flag` for `true`). A JSON blob is the whole `{ path, query, body }`.
 Values coerce to number/boolean when they look like one. `--token` and `--url` are
 consumed by the client and never sent as params.
 

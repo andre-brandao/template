@@ -7,11 +7,12 @@
     ".": "./src/index.ts",
     "./client": "./src/client/index.ts",
     "./core": "./src/core/index.ts",
-    "./query": "./src/query/index.ts",
+    "./query": "./src/index.ts",
     "./*": "./src/*.ts"
   },
   "scripts": {
-    "gen": "bun run build.ts"
+    "gen": "bun run build.ts",
+    "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "@hey-api/openapi-ts": "catalog:build",

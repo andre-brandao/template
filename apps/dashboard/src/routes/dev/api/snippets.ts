@@ -2,6 +2,8 @@ type Input = {
   method: string;
   /** Composed path and query string, exactly what the console would send. */
   url: string;
+  /** The route template, `/todo/{id}`: its slots say which values are path params. */
+  path: string;
   base: string;
   /** Operation id, which is also the generated SDK method name. */
   id: string;
@@ -11,10 +13,16 @@ type Input = {
   values: Record<string, string>;
 };
 
-/** The SDK and CLI both take one flat bag: path and query params merged with the body fields. */
-function bag(input: Input) {
+/** The SDK and CLI both take `{ path, query, body }`, minus the empty groups. */
+function groups(input: Input) {
   const filled = Object.entries(input.values).filter(([, value]) => value);
-  return { ...Object.fromEntries(filled), ...parse(input.body) };
+  const slot = (name: string) => input.path.includes(`{${name}}`);
+  const all = {
+    path: Object.fromEntries(filled.filter(([name]) => slot(name))),
+    query: Object.fromEntries(filled.filter(([name]) => !slot(name))),
+    body: parse(input.body),
+  };
+  return Object.entries(all).filter(([, group]) => Object.keys(group).length);
 }
 
 function parse(body: string) {
@@ -55,31 +63,31 @@ const data = await res.json();`;
 const pad = (text: string) => text.replaceAll("\n", "\n  ");
 
 export function sdk(input: Input) {
-  const args = Object.entries(bag(input))
-    .map(([name, value]) => `  ${name}: ${JSON.stringify(value)},`)
-    .join("\n");
+  const args = groups(input)
+    .map(([name, group]) => `\n  ${name}: ${pad(JSON.stringify(group, null, 2))},`)
+    .join("");
   const auth = input.token
     ? JSON.stringify(`Bearer ${input.token}`)
     : "`Bearer ${process.env.TEMPLATE_TOKEN}`";
-  return `import { TemplateSdk } from "@template/sdk";
+  // `sdk.gen`, not the barrel: the barrel also pulls in the optional TanStack peer.
+  return `import { ${input.id} } from "@template/sdk/sdk.gen";
 import { createClient } from "@template/sdk/client";
 
-const sdk = new TemplateSdk({
-  client: createClient({
-    baseUrl: ${JSON.stringify(input.base)},
-    headers: { authorization: ${auth} },
-  }),
+const client = createClient({
+  baseUrl: ${JSON.stringify(input.base)},
+  headers: { authorization: ${auth} },
 });
 
-const { data, error } = await sdk.${input.id}(${args ? `{\n${args}\n}` : ""});`;
+const { data, error } = await ${input.id}({\n  client,${args}\n});`;
 }
 
 export function cli(input: Input) {
   const head = `bun cli api ${input.id} --url ${input.base}${input.token ? ` --token ${input.token}` : ""}`;
   // A body has to go as one JSON blob — the CLI stops reading flags once it sees `{`.
-  if (input.body) return `${head} ${quote(JSON.stringify(bag(input)))}`;
-  return Object.entries(bag(input)).reduce(
-    (line, [name, value]) => `${line} --${name} ${quote(String(value))}`,
-    head,
-  );
+  if (input.body) return `${head} ${quote(JSON.stringify(Object.fromEntries(groups(input))))}`;
+  return groups(input)
+    .flatMap(([name, group]) =>
+      Object.entries(group).map(([key, value]) => ` --${name}.${key} ${quote(String(value))}`),
+    )
+    .reduce((line, flag) => line + flag, head);
 }

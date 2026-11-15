@@ -1,5 +1,5 @@
 <!--
-	The `panel` tool's view: the spec drawn while the model streams it, each data block
+	The `show` tool's view: the spec drawn while the model streams it, each data block
 	fetching its own rows. Once done it can be saved for the admin panels list.
 -->
 <script lang="ts">

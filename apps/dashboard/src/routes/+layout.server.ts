@@ -1,6 +1,6 @@
 import { detectPlatform } from "@tanstack/svelte-hotkeys";
 import { Identity } from "@template/core/identity";
-import { Feedback } from "$lib/features/feedback/api/feedback";
+import { Feedback } from "@template/core/feedback";
 import { User } from "@template/core/user";
 import { DEFAULTS } from "@template/core/user/prefs";
 import { Agent } from "$lib/features/agent/api/core";

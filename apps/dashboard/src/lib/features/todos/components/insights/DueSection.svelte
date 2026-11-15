@@ -22,7 +22,7 @@
 				{#each todos as todo (todo.id)}
 					<li>
 						<a href="/todos/{todo.id}">{todo.title}</a>
-						<span>{todo.dueDate ? f.date(todo.dueDate) : 'No due date'}</span>
+						<span>{todo.dueDate ? f.day(todo.dueDate) : 'No due date'}</span>
 						<StatusPill status={todo.status} />
 					</li>
 				{/each}

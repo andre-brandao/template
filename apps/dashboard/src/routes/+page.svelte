@@ -1,9 +1,13 @@
 <script lang="ts">
+	import type { Snippet } from 'svelte';
 	import { page } from '$app/state';
 	import { user } from '$lib/utils/context';
 	import Topbar from '$lib/components/layout/Topbar.svelte';
 	import Hero from '$lib/features/home/components/Hero.svelte';
 	import HomePage from '$lib/features/home/pages/HomePage.svelte';
+	import { layouts } from '$lib/features/home/layouts';
+	import type { Props } from '$lib/features/home/modules';
+	import Experiment from '$lib/features/experiments/components/Experiment.svelte';
 	import Glance from '$lib/features/todos/components/Glance.svelte';
 	import Recent from '$lib/features/todos/components/Recent.svelte';
 	import Shortcuts from '$lib/components/Shortcuts.svelte';
@@ -44,17 +48,23 @@
 		{#snippet status()}<Glance />{/snippet}
 		{#snippet recent()}<Recent />{/snippet}
 		{#snippet shortcuts()}<Shortcuts grid label="Shortcuts" links={links} />{/snippet}
+		<!-- The layouts under test; drop the frame once one wins. -->
+		{#snippet frame(props: Props, heading: Snippet)}
+			<Experiment key="home" title="Home page" variants={layouts} {props}>{@render heading()}</Experiment>
+		{/snippet}
 		<HomePage
 			name={current.name}
-			widgets={[
-				{
+			role={current.role}
+			{frame}
+			widgets={{
+				status: {
 					title: 'Last 90 days',
 					hint: 'Everything opened, by where it stands now.',
 					body: status
 				},
-				{ title: 'Recent todos', body: recent },
-				{ title: 'Shortcuts', body: shortcuts }
-			]}
+				recent: { title: 'Recent todos', body: recent },
+				shortcuts: { title: 'Shortcuts', body: shortcuts }
+			}}
 		/>
 	{:else}
 		<Hero />
@@ -62,7 +72,8 @@
 </main>
 
 <style>
-	/* Left-aligned: the rule's left edge is the page's spine, as on every other screen. */
+	/* Left-aligned, unlike the centred column this replaced: the rule's left edge is the
+	   page's spine, and every other screen in the app hangs off that same edge. */
 	main {
 		width: 100%;
 		max-width: 46em;

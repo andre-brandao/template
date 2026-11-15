@@ -39,7 +39,7 @@ export function forwarded(raw: unknown, fallback: string, models: string[]) {
 
 /**
  * The SSE endpoint, behind the dashboard session. MCP calls carry a delegation, so they run as
- * the `copilot` agent for the signed-in user; in-process tools run as the user.
+ * the `orchestrator` agent for the signed-in user; in-process tools run as the user.
  */
 export async function serve(event: RequestEvent) {
   if (Identity.use().type !== "user") error(401, "Authentication required");
@@ -47,14 +47,14 @@ export async function serve(event: RequestEvent) {
   const params = await chatParamsFromRequestBody(body);
   const opts = forwarded(params.forwardedProps, params.threadId, (await Agent.models()).ids);
   const abortController = new AbortController();
-  const stream = await agents.copilot({
+  const stream = await agents.orchestrator({
     ...opts,
     threadId: params.threadId,
     runId: params.runId,
     messages: params.messages,
-    // A delegation, not the session: the MCP sees "copilot for this user", and the events it
+    // A delegation, not the session: the MCP sees "orchestrator for this user", and the events it
     // causes say so. Expires on its own, so a leaked one outlives nothing.
-    token: await Delegation.create({ name: "copilot" }),
+    token: await Delegation.create({ name: "orchestrator" }),
     tools: params.tools,
     abortController,
   });

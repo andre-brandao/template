@@ -144,7 +144,7 @@ const element = <T extends Name>(type: T) =>
     children: z.array(z.string()),
   });
 
-/** The tool's input: the spec's elements as a list, like `panel`'s. */
+/** The tool's input: the spec's elements as a list, like `show`'s. */
 export const shape = z.object({
   root: z.string(),
   elements: z.array(

@@ -22,7 +22,7 @@
 
 <svelte:head><link rel="icon" href={favicon} /></svelte:head>
 
-{#snippet feedback(slim: boolean)}<Feedback {slim} />{/snippet}
+{#snippet feedback(slim: boolean)}<Feedback {slim} fill={!slim} />{/snippet}
 
 <ShellProvider {data}>
 	<ViewTransitions />

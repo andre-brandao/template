@@ -1,7 +1,8 @@
 # dashboard
 
 SvelteKit 5 on :5173. Calls `@template/core` **directly** from remote functions — same
-process, no HTTP hop. The SDK is for the CLI, except `@template/sdk/query` (TanStack Query, below).
+process, no HTTP hop. From the one generated SDK it uses only the TanStack Query helpers, via
+`@template/sdk/query` (an alias of the SDK barrel; below).
 
 TypeScript, Tailwind, bun. Svelte components: use the Svelte MCP server
 (`list-sections` → `get-documentation` → `svelte-autofixer`) before writing, and keep

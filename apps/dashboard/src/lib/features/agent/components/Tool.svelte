@@ -6,12 +6,13 @@
 	import { views } from '../agent.svelte';
 	import type { CallPart, ResultPart } from '../views';
 
-	let { calls, done }: { calls: { part: CallPart; result?: ResultPart }[]; done: boolean } =
+	let { part, result, loading }: { part: CallPart; result?: ResultPart; loading: boolean } =
 		$props();
 
-	// Custom views are never grouped, so they always get the first call.
-	const first = $derived(calls[0]!);
-	const View = $derived(views.get(first.part.name));
+	const View = $derived(views.get(part.name));
+	const done = $derived(
+		!loading || !!result || part.state === 'complete' || part.state === 'error'
+	);
 
 	// Server tools send JSON strings; anything that doesn't parse passes through.
 	function parse(value: unknown) {
@@ -23,10 +24,8 @@
 		}
 	}
 
-	const output = (call: (typeof calls)[number]) =>
-		call.result ? parse(call.result.content) : call.part.output;
-
-	const input = (part: CallPart) => (part.input !== undefined ? part.input : parse(part.arguments));
+	const output = $derived(result ? parse(result.content) : part.output);
+	const input = $derived(part.input !== undefined ? part.input : parse(part.arguments));
 
 	const text = (value: unknown) =>
 		typeof value === 'string' ? value : (JSON.stringify(value, null, 2) ?? '');
@@ -44,20 +43,17 @@
 {/snippet}
 
 {#if View}
-	<View part={first.part} result={first.result} {done} output={output(first)} />
+	<View {part} {result} {done} {output} />
 {:else}
 	<details class="tool">
 		<summary class="chip">
 			{#if done}<Wrench size={12} strokeWidth={1.75} />{:else}<Spinner />{/if}
-			{first.part.name}
-			{#if calls.length > 1}<span class="count">×{calls.length}</span>{/if}
+			{part.name}
 			<span class="chevron"><Chevron size={12} strokeWidth={1.75} /></span>
 		</summary>
 		<div class="body">
-			{#each calls as call (call.part.id)}
-				{@render block('Input', input(call.part), '—')}
-				{@render block('Output', output(call), done ? '—' : 'waiting…')}
-			{/each}
+			{@render block('Input', input, '—')}
+			{@render block('Output', output, done ? '—' : 'waiting…')}
 		</div>
 	</details>
 {/if}
@@ -83,10 +79,6 @@
 
 	.chip::-webkit-details-marker {
 		display: none;
-	}
-
-	.count {
-		opacity: 0.7;
 	}
 
 	.chip:hover {

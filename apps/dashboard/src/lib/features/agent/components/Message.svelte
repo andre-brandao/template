@@ -2,9 +2,7 @@
 <script lang="ts">
 	import type { UIMessage } from '@tanstack/ai-svelte';
 	import { Markdown } from '@template/ui';
-	import { views } from '../agent.svelte';
-	import { group } from '../transcript';
-	import type { CallPart, ResultPart } from '../views';
+	import type { ResultPart } from '../views';
 	import Avatar from './Avatar.svelte';
 	import Tool from './Tool.svelte';
 
@@ -14,13 +12,16 @@
 		writing = false
 	}: { message: UIMessage; loading: boolean; writing?: boolean } = $props();
 
-	const custom = (name: string) => views.has(name);
+	const user = $derived(message.role === 'user');
 
-	const finished = (call: { part: CallPart; result?: ResultPart }) =>
-		!loading || !!call.result || call.part.state === 'complete' || call.part.state === 'error';
-
-	const items = $derived(group(message.parts, custom, finished));
-	const last = $derived(items.at(-1)?.key);
+	// Server tools answer with a separate tool-result part instead of completing the call.
+	const results = $derived(
+		new Map(
+			message.parts
+				.filter((part): part is ResultPart => part.type === 'tool-result')
+				.map((part) => [part.toolCallId, part])
+		)
+	);
 
 	// The caret rides in the text, so it lands after the last word; it blinks by swapping for
 	// a same-width space.
@@ -29,26 +30,22 @@
 		const timer = setInterval(() => (lit = !lit), 530);
 		return () => clearInterval(timer);
 	};
+	const say = (i: number, content: string) =>
+		writing && i === message.parts.length - 1 ? `${content}${lit ? ' ▍' : '  '}` : content;
 </script>
 
-<li class={message.role} {@attach writing ? blink : undefined}>
-	{#if message.role !== 'user'}
+<li class={{ user }} {@attach writing ? blink : undefined}>
+	{#if !user}
 		<span class="avatar"><Avatar size={24} state={writing ? 'writing' : 'idle'} /></span>
 	{/if}
 	<div class="body">
-		{#each items as item (item.key)}
-			{#if item.part.type === 'text' && message.role === 'user'}
-				<p class="bubble">{item.part.content}</p>
-			{:else if item.part.type === 'text'}
-				<div class="text">
-					<Markdown
-						value={writing && item.key === last
-							? `${item.part.content}${lit ? ' ▍' : '  '}`
-							: item.part.content}
-					/>
-				</div>
-			{:else if item.part.type === 'tool-call'}
-				<Tool calls={item.calls} done={item.done} />
+		{#each message.parts as part, i (i)}
+			{#if part.type === 'text' && user}
+				<p class="bubble">{part.content}</p>
+			{:else if part.type === 'text'}
+				<div class="text"><Markdown value={say(i, part.content)} /></div>
+			{:else if part.type === 'tool-call'}
+				<Tool {part} result={results.get(part.id)} {loading} />
 			{/if}
 		{/each}
 	</div>

@@ -96,6 +96,7 @@
 			input={{
 				method: op.method,
 				url,
+				path: op.path,
 				base,
 				id: op.id,
 				token: auth.current,

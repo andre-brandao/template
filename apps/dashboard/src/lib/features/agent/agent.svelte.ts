@@ -1,9 +1,9 @@
 import { browser } from "$app/environment";
 import { page } from "$app/state";
-import { createContext, onDestroy, type Component } from "svelte";
-import { SvelteMap, SvelteSet } from "svelte/reactivity";
+import { createContext, type Component } from "svelte";
+import { MediaQuery } from "svelte/reactivity";
 import type { AnyClientTool } from "@tanstack/ai";
-import { createChat, createRegisterWebMCPTools, fetchServerSentEvents } from "@tanstack/ai-svelte";
+import { createChat, fetchServerSentEvents } from "@tanstack/ai-svelte";
 import { getConversation } from "./api/agent.remote";
 import { dismiss, talking, waiting, write } from "./ask/pending";
 import { transcript } from "./transcript";
@@ -16,12 +16,6 @@ import type { CallPart, ViewProps } from "./views";
 const [agent, set] = createContext<ReturnType<typeof create>>();
 
 export { agent };
-
-// Tools the mounted pages declare. Browser only, so SSR never leaks into this set.
-const registry = new SvelteSet<AnyClientTool>();
-
-/** Views the mounted pages bring for their own tools, by tool name. */
-export const views = new SvelteMap<string, Component<ViewProps>>();
 
 // The dock's width in px when nothing is saved.
 const fallback = 400;
@@ -50,21 +44,6 @@ export function createAgent() {
   set(create());
 }
 
-/** Declares client tools, and their optional views, for as long as the caller is mounted. */
-export function pageTools(list: AnyClientTool[], extra: Record<string, Component<ViewProps>> = {}) {
-  if (!browser) return;
-  const entries = Object.entries(extra);
-  list.forEach((tool) => registry.add(tool));
-  entries.forEach(([name, view]) => views.set(name, view));
-  onDestroy(() => {
-    list.forEach((tool) => registry.delete(tool));
-    // Another page may have claimed the name since; only drop our own.
-    entries.forEach(([name, view]) => views.get(name) === view && views.delete(name));
-  });
-  // Also exposed to external WebMCP browser agents.
-  createRegisterWebMCPTools(list);
-}
-
 function create() {
   let open = $state(false);
   let full = $state(false);
@@ -74,22 +53,42 @@ function create() {
   let tab = $state<"chat" | "history">("chat");
   // Keys the recorded conversation. Only the browser sends, so SSR can leave it empty.
   let thread = $state(browser ? crypto.randomUUID() : "");
+  // The page tools and their views, set once by the dock.
+  let tools = $state.raw<AnyClientTool[]>([]);
+  let views = $state.raw<Record<string, Component<ViewProps>>>({});
+  // Where focus was before the dock opened, so closing hands it back.
+  let back: HTMLElement | undefined;
+  // The Shell's breakpoint: below it the dock is the whole screen.
+  const narrow = new MediaQuery("max-width: 700px");
 
   const chat = createChat({
     connection: fetchServerSentEvents("/agent"),
     get tools() {
-      return [...registry];
+      return tools;
     },
   });
+
+  function close() {
+    open = false;
+    full = false;
+    back?.focus();
+    back = undefined;
+  }
 
   return {
     get open() {
       return open;
     },
     toggle() {
-      open = !open;
+      if (open) return close();
+      back = document.activeElement instanceof HTMLElement ? document.activeElement : undefined;
+      open = true;
       // Read on first open: the dock starts closed, so SSR never needs the width.
-      width ??= open ? saved() : undefined;
+      width ??= saved();
+    },
+    close,
+    get narrow() {
+      return narrow.current;
     },
     get width(): number {
       return width ?? fallback;
@@ -99,9 +98,13 @@ function create() {
       width = value && Math.round(value);
       save(width);
     },
-    close() {
-      open = false;
-      full = false;
+    get views() {
+      return views;
+    },
+    /** The client tools every run gets, and the views that draw them by tool name. */
+    equip(list: AnyClientTool[], extra: Record<string, Component<ViewProps>>) {
+      tools = list;
+      views = extra;
     },
     get full() {
       return full;

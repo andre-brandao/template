@@ -1,13 +1,15 @@
 <!-- The message box, the model picker, and send or stop. Typed while a form waits, it answers it. -->
 <script lang="ts">
+	import { createQuery } from '@tanstack/svelte-query';
+	import { IconButton, Kbd, Skeleton, Textarea } from '@template/ui';
 	import Send from '@lucide/svelte/icons/send-horizontal';
 	import Square from '@lucide/svelte/icons/square';
-	import { getModels } from '../api/agent.remote';
+	import { models } from '../api/agent.query';
 	import { agent } from '../agent.svelte';
 	import { talking, waiting } from '../ask/pending';
-	import Icon from './Icon.svelte';
 
 	const ctx = agent();
+	const list = createQuery(() => models());
 	let text = $state('');
 
 	const busy = $derived(ctx.chat.isLoading && !waiting.size);
@@ -33,35 +35,46 @@
 </script>
 
 <form onsubmit={submit}>
-	<textarea bind:value={text} rows={3} placeholder={hint} aria-label="Message" onkeydown={keydown}
-	></textarea>
+	<div class="box">
+		<Textarea
+			bind:value={text}
+			rows={2}
+			placeholder={hint}
+			aria-label="Message"
+			onkeydown={keydown}
+			{@attach (el) => {
+				if (ctx.open) el.focus();
+			}}
+		/>
+	</div>
 	<div class="row">
-		<svelte:boundary>
-			{@const models = await getModels()}
+		<!-- A failed list leaves the picker out: the server falls back to its default model. -->
+		{#if list.isPending}
+			<Skeleton w="8em" h="1.4em" />
+		{:else if list.isSuccess}
 			<select
 				aria-label="Model"
-				bind:value={() => ctx.model ?? models.default, (value) => (ctx.model = value)}
+				bind:value={() => ctx.model ?? list.data.default, (value) => (ctx.model = value)}
 			>
-				{#each models.ids as id (id)}
+				{#each list.data.ids as id (id)}
 					<option value={id}>{id}</option>
 				{/each}
 			</select>
-			{#snippet pending()}
-				<span class="hint">Loading models…</span>
-			{/snippet}
-			{#snippet failed()}
-				<span class="hint">Models unavailable</span>
-			{/snippet}
-		</svelte:boundary>
-		{#if busy}
-			<Icon aria-label="Stop" onclick={() => ctx.chat.stop()}>
-				<Square size={17} strokeWidth={1.75} />
-			</Icon>
 		{:else}
-			<Icon type="submit" aria-label="Send" disabled={!text.trim()}>
-				<Send size={17} strokeWidth={1.75} />
-			</Icon>
+			<span></span>
 		{/if}
+		<span class="send">
+			<span class="key"><Kbd keys="Enter" /></span>
+			{#if busy}
+				<IconButton label="Stop" onclick={() => ctx.chat.stop()}>
+					<Square size={17} strokeWidth={1.75} />
+				</IconButton>
+			{:else}
+				<IconButton type="submit" label="Send" disabled={!text.trim()}>
+					<Send size={17} strokeWidth={1.75} />
+				</IconButton>
+			{/if}
+		</span>
 	</div>
 </form>
 
@@ -74,16 +87,9 @@
 		flex-shrink: 0;
 	}
 
-	textarea {
+	.box {
+		display: grid;
 		margin: 0 var(--gutter, 0.75em) 0.75em;
-		padding: 0.5em 0.7em;
-		border: 1px solid var(--border);
-		border-radius: var(--radius-sm);
-		background: var(--surface);
-		color: var(--ink);
-		font: inherit;
-		resize: none;
-		box-shadow: var(--shadow-1);
 	}
 
 	/* The page footer's height and rule, so its top border runs on through the dock. */
@@ -95,6 +101,18 @@
 		height: var(--footer);
 		padding-inline: var(--gutter, 0.75em);
 		border-top: 1px solid var(--border);
+		--control: 2em;
+	}
+
+	.send {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4em;
+	}
+
+	.key {
+		display: inline-flex;
+		font-size: 0.8em;
 	}
 
 	select {
@@ -106,11 +124,6 @@
 		background: var(--surface);
 		color: var(--muted);
 		font: inherit;
-		font-size: 0.8em;
-	}
-
-	.hint {
-		color: var(--dim);
 		font-size: 0.8em;
 	}
 </style>

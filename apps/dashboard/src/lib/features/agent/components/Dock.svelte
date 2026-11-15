@@ -4,15 +4,17 @@
 	dock mid-run.
 -->
 <script lang="ts">
-	import { MediaQuery } from 'svelte/reactivity';
+	import { createHotkey, createHotkeyAttachment } from '@tanstack/svelte-hotkeys';
 	import { innerWidth } from 'svelte/reactivity/window';
 	import { agent } from '../agent.svelte';
 	import Agent from './Agent.svelte';
 
 	const ctx = agent();
-	// The Shell's breakpoint: below it the column becomes the whole screen.
-	const narrow = new MediaQuery('max-width: 700px');
-	const full = $derived(ctx.open && (ctx.full || narrow.current));
+	const full = $derived(ctx.open && (ctx.full || ctx.narrow));
+
+	createHotkey('Mod+J', ctx.toggle);
+	// Bound to the dock, so an Escape that closes a dialog over the page leaves it alone.
+	const escape = createHotkeyAttachment('Escape', ctx.close);
 
 	const min = 320;
 	const max = $derived(Math.round(Math.max(min, Math.min(900, (innerWidth.current ?? 1500) * 0.6))));
@@ -76,6 +78,7 @@
 	inert={!ctx.open}
 	role="complementary"
 	aria-label="Assistant"
+	{@attach escape}
 >
 	{#if ctx.open && !full}
 		<!-- A focusable separator is an ARIA widget (a splitter); Svelte's list misses it. -->

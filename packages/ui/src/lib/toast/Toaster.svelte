@@ -108,13 +108,13 @@
 		align-items: center;
 		gap: 0.6em;
 		padding: 0.7em 0.85em;
-		border: 1px solid var(--border, #333);
-		border-inline-start: 3px solid var(--border-bright, #555);
+		border: 1px solid var(--border, #e6e5e1);
+		border-inline-start: 3px solid var(--border-bright, #d3d1cc);
 		border-radius: var(--radius, 8px);
 		background: var(--surface, #fff);
-		color: var(--ink, #111);
-		box-shadow: var(--shadow-2, 0 12px 28px -14px rgb(0 0 0 / 0.6));
-		font-family: var(--font-sans, system-ui);
+		color: var(--ink, #1c1b19);
+		box-shadow: var(--shadow-2, 0 16px 32px -12px rgb(0 0 0 / 0.16));
+		font-family: var(--font-sans, ui-sans-serif, system-ui, sans-serif);
 		font-size: 0.9em;
 		pointer-events: auto;
 		transform-origin: bottom center;
@@ -127,15 +127,15 @@
 	}
 
 	li.success {
-		border-inline-start-color: var(--done, #4fa98f);
+		border-inline-start-color: var(--done, #2f7f68);
 	}
 
 	li.error {
-		border-inline-start-color: var(--danger, #d3684f);
+		border-inline-start-color: var(--danger, #b8452c);
 	}
 
 	li.loading {
-		border-inline-start-color: var(--accent, #4fa98f);
+		border-inline-start-color: var(--accent, #2f7f68);
 	}
 
 	@starting-style {
@@ -179,14 +179,14 @@
 		padding: 0 0.2em;
 		font-size: 0.9em;
 		line-height: 1;
-		color: var(--muted, #666);
+		color: var(--muted, #64625d);
 		cursor: pointer;
 		opacity: 0;
 		transition: opacity 0.2s ease;
 	}
 
 	.x:hover {
-		color: var(--ink, #111);
+		color: var(--ink, #1c1b19);
 	}
 
 	ol[data-open] .x,

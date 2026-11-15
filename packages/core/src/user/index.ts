@@ -196,22 +196,29 @@ export namespace User {
     .meta({ ref: "Profile", description: "An account as other signed-in users see it." });
   export type Profile = z.infer<typeof Profile>;
 
-  export const profile = fn(Info.shape.id, async (id): Promise<Profile | null> => {
-    Identity.check({ user: ["read"] });
-    const row = await fromID(id);
-    if (!row) return null;
-    const owner = row.ownerID ? await fromID(row.ownerID) : null;
-    return {
-      id: row.id,
-      name: row.name,
-      image: row.image,
-      kind: row.kind,
-      role: row.role,
-      timeCreated: row.timeCreated,
-      email: row.kind === "system" ? null : row.email,
-      owner: owner ? { id: owner.id, name: owner.name } : null,
-    };
-  });
+  export const profile = fn(
+    Info.shape.id,
+    async (id): Promise<Profile | null> => {
+      Identity.check({ user: ["read"] });
+      const row = await fromID(id);
+      if (!row) return null;
+      const owner = row.ownerID ? await fromID(row.ownerID) : null;
+      return {
+        id: row.id,
+        name: row.name,
+        image: row.image,
+        kind: row.kind,
+        role: row.role,
+        timeCreated: row.timeCreated,
+        email: row.kind === "system" ? null : row.email,
+        owner: owner ? { id: owner.id, name: owner.name } : null,
+      };
+    },
+    {
+      title: "Get profile",
+      description: "Fetch an account as a teammate sees it: no prefs, and no email for an App.",
+    },
+  );
 
   export const fromEmail = fn(Info.shape.email, (email) =>
     Database.use((tx) =>

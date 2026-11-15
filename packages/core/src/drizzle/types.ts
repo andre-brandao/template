@@ -1,4 +1,4 @@
-import { bigint, char, timestamp as rawTs } from "drizzle-orm/pg-core";
+import { char, timestamp as rawTs } from "drizzle-orm/pg-core";
 
 export const ulid = (name: string) => char(name, { length: 26 + 4 });
 
@@ -9,11 +9,6 @@ export const timestamp = (name: string) =>
     precision: 3,
     mode: "date",
     withTimezone: true,
-  });
-
-export const dollar = (name: string) =>
-  bigint(name, {
-    mode: "number",
   });
 
 export const timestamps = {

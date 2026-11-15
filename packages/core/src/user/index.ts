@@ -23,7 +23,7 @@ export namespace User {
     .object({
       id: z.string().meta({ description: Common.IdDescription, example: Examples.User.id }),
       name: z.string().min(1).meta({ description: "Display name." }),
-      email: z.string().email().meta({ description: "Login address. Unique across accounts." }),
+      email: z.email().meta({ description: "Login address. Unique across accounts." }),
       emailVerified: z
         .boolean()
         .optional()

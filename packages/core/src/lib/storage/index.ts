@@ -79,7 +79,6 @@ export namespace Storage {
     return ctx.provide("disks" in cfg ? cfg : { default: "default", disks: { default: cfg } }, fn);
   }
 
-  /** Curried form of `provide` for composition via `Context.withProviders`. */
   export function provider(cfg: Disks | Disk) {
     return <R>(fn: () => R) => provide(cfg, fn);
   }

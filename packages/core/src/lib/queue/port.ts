@@ -30,7 +30,7 @@ export interface Port {
 export type Config = {
   /** Attempts before a job is buried. Default 3. */
   retries?: number;
-  /** Seconds to wait before a released job is runnable again. Default 0. */
+  /** Seconds before a released job is runnable again. Default 30 for `db`, 0 for `memory`. */
   backoff?: number;
   /** Seconds a reserved job may run before another worker may reclaim it. Default 60. */
   timeout?: number;

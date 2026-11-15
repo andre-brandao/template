@@ -50,17 +50,11 @@ export const ErrorResponse = z
 
 export type ErrorResponseType = z.infer<typeof ErrorResponse>;
 
-/**
- * Standardized error codes for the API
- */
+/** Only codes something throws: a new one lands with its first `throw`. */
 export const ErrorCodes = {
   // Validation errors (400)
   Validation: {
     INVALID_PARAMETER: "invalid_parameter",
-    MISSING_REQUIRED_FIELD: "missing_required_field",
-    INVALID_FORMAT: "invalid_format",
-    ALREADY_EXISTS: "already_exists",
-    IN_USE: "resource_in_use",
     INVALID_STATE: "invalid_state",
   },
 
@@ -68,7 +62,6 @@ export const ErrorCodes = {
   Authentication: {
     UNAUTHORIZED: "unauthorized",
     INVALID_TOKEN: "invalid_token",
-    EXPIRED_TOKEN: "expired_token",
     INVALID_CREDENTIALS: "invalid_credentials",
   },
 
@@ -84,17 +77,9 @@ export const ErrorCodes = {
     RESOURCE_NOT_FOUND: "resource_not_found",
   },
 
-  // Rate limit errors (429)
-  RateLimit: {
-    TOO_MANY_REQUESTS: "too_many_requests",
-    QUOTA_EXCEEDED: "quota_exceeded",
-  },
-
   // Server errors (500)
   Server: {
     INTERNAL_ERROR: "internal_error",
-    SERVICE_UNAVAILABLE: "service_unavailable",
-    DEPENDENCY_FAILURE: "dependency_failure",
   },
 };
 

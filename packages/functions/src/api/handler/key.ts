@@ -3,7 +3,7 @@ import { Hono } from "hono";
 import { validator, authRequired } from "../common";
 import { describe } from "../doc";
 import { Key } from "@template/core/key";
-import { Actor } from "@template/core/actor";
+import { Identity } from "@template/core/identity";
 
 export namespace KeyApi {
   const doc = describe("Key");
@@ -26,9 +26,9 @@ export namespace KeyApi {
       // Literal, not `Key.create.meta`: the route takes `expiresInDays` where core takes a date.
       doc(
         {
-          title: "Create key",
+          title: "Create personal access token",
           description:
-            "Mint a named API key for the current user. Pass `expiresInDays` to set an expiry; omit it for a key that never expires.",
+            "Mint a named personal access token that acts as the current user. Pass `expiresInDays` to set an expiry; omit it for a key that never expires.",
         },
         {
           200: doc.json(Key.Info),
@@ -46,7 +46,7 @@ export namespace KeyApi {
       async (c) => {
         const body = c.req.valid("json");
         const key = await Key.create({
-          userID: Actor.userID(),
+          userID: Identity.userID(),
           name: body.name,
           expiresAt: Key.expires(body.expiresInDays),
         });

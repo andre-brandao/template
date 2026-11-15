@@ -1,6 +1,6 @@
 import { describe, expect } from "bun:test";
 import { z } from "zod";
-import { Actor } from "../src/actor";
+import { Identity } from "../src/identity";
 import { Database } from "../src/drizzle";
 import { Identifier } from "../src/identifier";
 import { run } from "../src/jobs";
@@ -9,17 +9,18 @@ import { memory } from "../src/lib/queue/adapter/memory";
 import { Bus } from "../src/platform/bus";
 import { withTestUser } from "./util";
 
-const seen: { n: number; subject?: string; actor: string }[] = [];
+const seen: { n: number; subject?: string; actor: string; meta?: Bus.Metadata }[] = [];
 
 const Ping = Bus.define("test.ping", z.object({ n: z.number() }));
 const Quiet = Bus.define("test.quiet", z.object({}));
 
-Bus.subscribe(Ping, async (event) => {
-  const actor = Actor.use();
+Bus.subscribe(Ping, async (event, meta) => {
+  const actor = Identity.use();
   seen.push({
     n: event.data.n,
     subject: event.subject,
     actor: actor.type === "user" ? actor.properties.userID : actor.type,
+    meta,
   });
 });
 
@@ -40,7 +41,14 @@ describe("bus", () => {
       expect(event.source).toBe(`${Bus.app}/test`);
       await work();
     });
-    expect(seen).toEqual([{ n: 1, subject: at, actor: userID }]);
+    expect(seen).toEqual([
+      {
+        n: 1,
+        subject: at,
+        actor: userID,
+        meta: { identity: { type: "user", properties: { userID, role: "member" } } },
+      },
+    ]);
   });
 
   withTestUser("an event with no subscriber acks cleanly", async () => {

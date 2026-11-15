@@ -1,11 +1,28 @@
 import { beforeAll, describe, expect, it, mock } from "bun:test";
 import { Client, StreamableHTTPClientTransport } from "@modelcontextprotocol/client";
-import { User } from "@template/core/user";
-import { Session } from "@template/core/key/session";
+import { Session } from "@template/core/auth/session";
+import { Delegation } from "@template/core/auth/delegation";
+import { Event } from "@template/core/event";
+import { Identity } from "@template/core/identity";
+import { Permission } from "@template/core/permission";
 import { app } from "../src/mcp";
+import { createUser } from "./api/util";
 
-// The dashboard agent reaches the MCP with the user's session as the bearer.
+// The dashboard agent reaches the MCP with a delegation: it acts as `copilot` for the user.
 let token: string;
+let userID: string;
+
+function ping(bearer?: string) {
+  return app.request("/mcp", {
+    method: "post",
+    headers: {
+      ...(bearer ? { authorization: `Bearer ${bearer}` } : {}),
+      "content-type": "application/json",
+      accept: "application/json, text/event-stream",
+    },
+    body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "ping" }),
+  });
+}
 
 async function connect(bearer = token) {
   const transport = new StreamableHTTPClientTransport(new URL("http://mcp.internal/mcp"), {
@@ -21,42 +38,51 @@ function read(result: unknown) {
   return JSON.parse((result as { content: { text: string }[] }).content[0]!.text);
 }
 
-describe("mcp as a dashboard session", () => {
+describe("mcp as a delegated agent", () => {
   beforeAll(async () => {
     console.log = mock();
-    const user = await User.create({
+    const user = await createUser({
       name: "Session User",
       email: `session-${crypto.randomUUID()}@example.com`,
     });
-    token = await Session.create(user.id);
+    userID = user.id;
+    token = await Identity.provide("user", { userID, role: "member" }, () =>
+      Delegation.create({ name: "copilot" }),
+    );
   });
 
-  it("accepts a session bearer as the user", async () => {
+  it("acts as the agent, and the event it causes says so", async () => {
     const client = await connect();
     const made = read(
       await client.callTool({ name: "todo_create", arguments: { title: "From the agent" } }),
     );
     expect(made.title).toBe("From the agent");
     await client.close();
+
+    const log = await Identity.internal("test", Permission.all, () =>
+      Event.list({ sourceID: made.id, page: 1, pageSize: 10 }),
+    );
+    const created = log.data.find((e) => e.type === "todo.created");
+    expect(created?.identity).toMatchObject({
+      type: "agent",
+      properties: { name: "copilot", userID },
+    });
   });
 
-  it("rejects a revoked session", async () => {
-    const user = await User.create({
-      name: "Gone",
-      email: `gone-${crypto.randomUUID()}@example.com`,
-    });
-    const dead = await Session.create(user.id);
-    await Session.remove(dead);
-    const res = await app.request("/mcp", {
-      method: "post",
-      headers: {
-        authorization: `Bearer ${dead}`,
-        "content-type": "application/json",
-        accept: "application/json, text/event-stream",
-      },
-      body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "ping" }),
-    });
+  it("refuses a dashboard session as a bearer", async () => {
+    const session = await Session.create(userID);
+    expect((await ping(session)).status).toBe(401);
+  });
+
+  it("points an unauthenticated client at the OAuth metadata", async () => {
+    const res = await ping();
     expect(res.status).toBe(401);
+    expect(res.headers.get("www-authenticate")).toContain(
+      'resource_metadata="http://localhost/.well-known/oauth-protected-resource"',
+    );
+    const meta: any = await (await app.request("/.well-known/oauth-protected-resource")).json();
+    expect(meta.resource).toBe("http://localhost/mcp");
+    expect(meta.authorization_servers).toHaveLength(1);
   });
 
   it("marks reads read-only and leaves writes unmarked", async () => {

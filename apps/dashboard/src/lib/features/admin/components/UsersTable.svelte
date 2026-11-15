@@ -79,9 +79,9 @@
 {#snippet name(row: Cell)}
 	<span class="who" class:gone={!!row.original.timeDeleted}>
 		<Avatar name={row.original.name} image={row.original.image} />
-		<span class="name">
+		<a class="name" href={`/u/${row.original.id}`}>
 			{row.original.name}{#if self(row.original)}<span class="tag">you</span>{/if}
-		</span>
+		</a>
 	</span>
 {/snippet}
 
@@ -118,6 +118,8 @@
 		align-items: center;
 		gap: 0.5em;
 		font-weight: 500;
+		color: inherit;
+		text-decoration: none;
 	}
 
 	.tag {

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { Actor } from "@template/core/actor";
+import { Identity } from "@template/core/identity";
 import { ErrorCodes, VisibleError } from "@template/core/error";
 import { Storage } from "@template/core/storage";
 import { User } from "@template/core/user";
@@ -45,7 +45,7 @@ export namespace Panel {
       thread: z.string().max(255).nullable().default(null),
     }),
     async (input) => {
-      Actor.check(Sql.Grant);
+      Identity.check(Sql.Grant);
       if (JSON.stringify(input.spec).length > SIZE)
         throw new VisibleError(
           "validation",
@@ -74,7 +74,7 @@ export namespace Panel {
 
   /** Every saved panel without its spec, newest first. Shared by everyone who may run SQL. */
   export const list = fn(z.void(), async () => {
-    Actor.check(Sql.Grant);
+    Identity.check(Sql.Grant);
     const keys = await Storage.disk().files(PREFIX);
     const rows = await Promise.all(keys.map((one) => load(one.slice(PREFIX.length, -5))));
     return rows
@@ -90,7 +90,7 @@ export namespace Panel {
   });
 
   export const fromID = fn(z.uuid(), async (id) => {
-    Actor.check(Sql.Grant);
+    Identity.check(Sql.Grant);
     const info = await load(id);
     if (!info)
       throw new VisibleError(
@@ -103,7 +103,7 @@ export namespace Panel {
 
   /** Only its author removes a panel. */
   export const remove = fn(z.uuid(), async (id) => {
-    Actor.check(Sql.Grant);
+    Identity.check(Sql.Grant);
     const info = await load(id);
     if (!info) return;
     own(info);
@@ -130,17 +130,17 @@ export namespace Panel {
 
   // A new panel's identity: its id, its author and when it was made.
   async function origin(id: string = crypto.randomUUID()) {
-    const user = await User.fromID(Actor.userID());
+    const user = await User.fromID(Identity.userID());
     return {
       id,
-      createdBy: Actor.userID(),
+      createdBy: Identity.userID(),
       author: user?.name ?? "",
       timeCreated: new Date().toISOString(),
     };
   }
 
   function own(info: Info) {
-    if (info.createdBy === Actor.userID()) return;
+    if (info.createdBy === Identity.userID()) return;
     throw new VisibleError(
       "forbidden",
       ErrorCodes.Permission.INSUFFICIENT_PERMISSIONS,

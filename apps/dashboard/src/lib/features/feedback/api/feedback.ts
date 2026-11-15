@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { fn } from "@template/core/util/fn";
-import { Actor } from "@template/core/actor";
+import { Identity } from "@template/core/identity";
 import { User } from "@template/core/user";
 
 export namespace Feedback {
@@ -22,7 +22,7 @@ export namespace Feedback {
       if (!token || !repo)
         throw new Error("Feedback disabled. Set FEEDBACK_TOKEN and FEEDBACK_REPO.");
 
-      const user = await User.fromID(Actor.userID());
+      const user = await User.fromID(Identity.userID());
       // The first line stands in for a title; GitHub caps at 256 so truncate well short.
       const line = input.body.split("\n")[0]!.trim();
       const title = line.length > 72 ? `${line.slice(0, 72)}…` : line;

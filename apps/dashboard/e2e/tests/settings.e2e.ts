@@ -1,7 +1,7 @@
 import type { Page } from "@playwright/test";
 import { Database } from "@template/core/drizzle";
 import { Queue } from "@template/core/queue";
-import { Actor } from "@template/core/actor";
+import { Identity } from "@template/core/identity";
 import { Todo } from "@template/core/todo";
 import { test, expect } from "../util/fixtures";
 import { db } from "../util/db";
@@ -14,20 +14,19 @@ const saved = (page: Page) =>
     (res) => res.url().includes("/_app/remote/") && res.request().method() === "POST",
   );
 
-test("settings redirects to the profile page", async ({ page, as }) => {
+test("settings redirects to the account page", async ({ page, as }) => {
   await as();
   await page.goto("/settings");
-  await expect(page).toHaveURL(/\/settings\/profile$/);
-  await expect(page.getByRole("heading", { name: "Profile" })).toBeVisible();
+  await expect(page).toHaveURL(/\/settings\/account$/);
+  await expect(page.getByRole("heading", { name: "Account" })).toBeVisible();
 });
 
-test("the settings nav links the user and workspace sections", async ({ page, as }) => {
+test("the settings nav links the user section", async ({ page, as }) => {
   await as();
   await page.goto("/settings/experience");
 
   const nav = page.locator("aside nav");
-  await expect(nav.getByRole("link", { name: "Profile" })).toBeVisible();
-  await expect(nav.getByRole("link", { name: "API keys" })).toBeVisible();
+  await expect(nav.getByRole("link", { name: "Account" })).toBeVisible();
   await expect(nav.getByRole("link", { name: "Experience" })).toHaveAttribute(
     "aria-current",
     "page",
@@ -81,7 +80,7 @@ test("the date format preference reaches the rest of the app", async ({ page, as
   // its own queue port, this direct call needs one too.
   await Database.provide(db, () =>
     Queue.provide(Queue.Providers.memory(), () =>
-      Actor.provide("user", { userID: session.userID, role: "member" }, () =>
+      Identity.provide("user", { userID: session.userID, role: "member" }, () =>
         Todo.create({ title, dueDate: "2024-03-12T12:00:00.000Z" }),
       ),
     ),

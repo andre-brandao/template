@@ -7,19 +7,21 @@ import {
   desc,
   eq,
   ilike,
+  inArray,
   or,
   type SQL,
   type SQLWrapper,
 } from "drizzle-orm";
 import { fn } from "../../util/fn";
 import { Database } from "../../drizzle";
-import { Actor } from "../../actor";
+import { Identity } from "../../identity";
 import { Common } from "../../common";
 import { Examples } from "../../examples";
 import { Tags } from "../../util/tag";
 import { UserTable } from "../../user/user.sql";
 import { sortable } from "../../drizzle/order";
 import { EventTable } from "./event.sql";
+import { Types } from "../webhook/types";
 
 export namespace Event {
   export const Info = z
@@ -37,6 +39,12 @@ export namespace Event {
         })
         .nullable()
         .meta({ description: "That user, joined in so a log row can name them." }),
+      // Role, zone, scope and credential are an admin's business, not a teammate's reading a
+      // todo's history — so everyone else gets null and the `user` above.
+      identity: Identity.Info.nullable().meta({
+        description:
+          "Who acted, in full: agent name, scope, credential. Null unless you are an admin.",
+      }),
       type: z.string().min(1).max(128).meta({
         description: "What happened, like `todo.created`.",
         example: Examples.Event.type,
@@ -76,6 +84,39 @@ export namespace Event {
     desc(EventTable.timeCreated),
   );
 
+  /**
+   * What one account did, for its profile. Admins see everything; anyone else only the public
+   * types — the same line webhooks draw, so role changes and inbound posts stay back-office.
+   */
+  export const by = fn(
+    z.object({
+      userID: Info.shape.userID.unwrap(),
+      page: z.number().int().min(1).optional(),
+      pageSize: z.number().int().min(1).max(100).optional(),
+    }),
+    (input) => {
+      Identity.check({ user: ["read"] });
+      const where = and(
+        eq(EventTable.userID, input.userID),
+        Identity.can({ admin: ["read"] }) ? undefined : inArray(EventTable.type, [...Types]),
+      );
+      return Database.use((tx) =>
+        tx
+          .select({
+            event: EventTable,
+            user: { id: UserTable.id, name: UserTable.name, image: UserTable.image },
+          })
+          .from(EventTable)
+          .leftJoin(UserTable, eq(UserTable.id, EventTable.userID))
+          .where(where)
+          .orderBy(desc(EventTable.timeCreated))
+          .limit(input.pageSize ?? 25)
+          .offset(((input.page ?? 1) - 1) * (input.pageSize ?? 25))
+          .then((rows) => rows.map((row) => serialize(row.event, row.user))),
+      );
+    },
+  );
+
   export const list = fn(
     Common.Query({
       sort: SortableColumns.schema,
@@ -87,7 +128,7 @@ export namespace Event {
       search: z.string().optional(),
     }),
     (input) => {
-      if (!input.sourceID) Actor.check({ admin: ["read"] });
+      if (!input.sourceID) Identity.check({ admin: ["read"] });
 
       const { page, pageSize, limit, offset } = Common.page(input);
 
@@ -136,7 +177,7 @@ export namespace Event {
 
   /** The values the log filters offer, taken from what has actually been recorded. */
   export const facets = fn(z.void(), () => {
-    Actor.check({ admin: ["read"] });
+    Identity.check({ admin: ["read"] });
     return Database.use(async (tx) => {
       const [types, sources] = await Promise.all([
         tx.selectDistinct({ v: EventTable.type }).from(EventTable).orderBy(asc(EventTable.type)),
@@ -158,6 +199,7 @@ export namespace Event {
       userID: row.userID,
       // The left join yields a row of nulls for system and public actors.
       user: user?.id ? user : null,
+      identity: Identity.can({ admin: ["read"] }) ? row.identity : null,
       type: row.type,
       source: row.source,
       sourceID: row.sourceID,

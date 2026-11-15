@@ -1,7 +1,7 @@
 import { error } from "@sveltejs/kit";
 import { dev } from "$app/environment";
 import { z } from "zod";
-import { Actor } from "@template/core/actor";
+import { Identity } from "@template/core/identity";
 import { remote } from "$lib/server/remote";
 import { call, ops } from "./api";
 
@@ -10,7 +10,7 @@ import { call, ops } from "./api";
 // not admit it exists.
 function gate() {
   if (!dev) error(404, "Not found");
-  if (Actor.use().type !== "user") error(403, "Sign in first");
+  if (Identity.use().type !== "user") error(403, "Sign in first");
 }
 
 const api = remote.public.use(gate);

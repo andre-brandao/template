@@ -1,11 +1,12 @@
 #!/usr/bin/env bun
 
-import { Actor } from "@template/core/actor";
+import { Identity } from "@template/core/identity";
+import { Permission } from "@template/core/permission";
 import { Database, sql } from "@template/core/drizzle";
 import { Project } from "@template/core/project";
 import { Queue } from "@template/core/queue";
 import { Todo } from "@template/core/todo";
-import { Auth } from "@template/core/user/auth";
+import { Auth } from "@template/core/auth";
 import { User } from "@template/core/user";
 import { Key } from "@template/core/key";
 import { boxed } from "./utils/box";
@@ -125,24 +126,24 @@ function status(due: number) {
 
 /** Writes the fixtures and returns the dev account's API key. Assumes its providers are set. */
 async function seed() {
-  const userID = await Auth.provision({ provider: "email", accountId: email, email, name });
+  const userID = await Auth.link({ provider: "email", accountId: email, email, name });
   // The dev account owns the instance: `/admin` is otherwise unreachable without hand-writing
   // the promotion SQL. The team below stay members, so both roles are represented locally.
-  await Actor.provide("system", {}, () => User.assign({ id: userID, role: "admin" }));
+  await Identity.internal("seed", Permission.all, () => User.assign({ id: userID, role: "admin" }));
   // The login screen prefills these credentials in dev, so the dev account needs a real
   // password row for them to match — an account gains one, it never signs up with one.
-  await Actor.provide("user", { userID, role: "admin" }, () => Auth.Pass.set({ password: pw }));
+  await Identity.provide("user", { userID, role: "admin" }, () => Auth.Pass.set({ password: pw }));
   const key = await Key.create({ userID, name: "seed" });
   const mates = await Promise.all(
     team.map((one) =>
-      Auth.provision({ provider: "email", accountId: one.email, email: one.email, name: one.name }),
+      Auth.link({ provider: "email", accountId: one.email, email: one.email, name: one.name }),
     ),
   );
   // Unassigned shows up as its own lane in the board and the load chart.
   const assignees = [userID, ...mates, null, ...mates];
 
   // Matches the row the seed just wrote, so a check that would fail for real fails here too.
-  await Actor.provide("user", { userID, role: "admin" }, async () => {
+  await Identity.provide("user", { userID, role: "admin" }, async () => {
     const list = await Todo.list({ page: 1, pageSize: 100 });
     if (list.total > 0) return;
 

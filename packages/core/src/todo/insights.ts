@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { and, asc, count, eq, gte, isNotNull, isNull, lt, ne, sql } from "drizzle-orm";
 import { fn } from "../util/fn";
-import { Actor } from "../actor";
+import { Identity } from "../identity";
 import { Database } from "../drizzle";
 import { iso } from "../util/fmt";
 import { UserTable } from "../user/user.sql";
@@ -35,7 +35,7 @@ export namespace Insights {
 
   /** Every insight funnels through here, so the read check sits here rather than in all six. */
   function visible(input: Scope) {
-    Actor.check({ todo: ["read"] });
+    Identity.check({ todo: ["read"] });
     return and(
       isNull(TodoTable.timeDeleted),
       input.source ? eq(TodoTable.source, input.source) : undefined,
@@ -47,11 +47,11 @@ export namespace Insights {
   type Stamp = typeof TodoTable.timeCreated | typeof TodoTable.timeDone;
 
   /** The instant a day begins for the reader — the boundary a bucket edge has to agree with. */
-  const at = (day: string) => sql`${day}::timestamp at time zone ${Actor.timezone()}::text`;
+  const at = (day: string) => sql`${day}::timestamp at time zone ${Identity.timezone()}::text`;
 
   /** A day column truncated in the reader's zone, labelled as the plain day it lands on. */
   const bucket = (unit: Unit, col: Stamp) =>
-    sql<string>`to_char(date_trunc(${sql.raw(`'${unit}'`)}, ${col} at time zone ${Actor.timezone()}::text), 'YYYY-MM-DD')`;
+    sql<string>`to_char(date_trunc(${sql.raw(`'${unit}'`)}, ${col} at time zone ${Identity.timezone()}::text), 'YYYY-MM-DD')`;
 
   // Both ends in the reader's zone too. Truncating there but bounding in UTC would leak
   // three hours of the neighbouring day into the first and last bucket.

@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { CloudEvent as Envelope } from "./cloudevent";
-import { Actor } from "../../actor";
+import { Identity } from "../../identity";
 import { Database } from "../../drizzle";
 import { Identifier } from "../../identifier";
 import { Queue } from "../../lib/queue";
@@ -18,8 +18,19 @@ export namespace Bus {
   /** Names this app in every event's `source` (`template/todo`). A fork renames it. */
   export const app = "template";
 
+  /**
+   * Computed at publish and carried beside the envelope, SST-style. Beside, not inside: a
+   * CloudEvent extension must be a primitive, and webhooks get the envelope alone.
+   */
+  export const Metadata = z.object({ identity: Identity.Info });
+  export type Metadata = z.infer<typeof Metadata>;
+
+  export function metadata(): Metadata {
+    return { identity: Identity.use() };
+  }
+
   const defs = new Map<string, z.ZodType>();
-  const subs = new Map<string, (event: any) => Promise<unknown>>();
+  const subs = new Map<string, (event: any, meta: Metadata) => Promise<unknown>>();
 
   /** Declares an event. Public types (the webhook catalog) also go out to webhooks. */
   export function define<S extends z.ZodType>(type: string, schema: S) {
@@ -33,8 +44,13 @@ export namespace Bus {
       public: open,
       /** Records the event in the caller's transaction; delivery waits for the commit. */
       async publish(data: z.input<S>, opts: { subject?: string; tags?: string[] } = {}) {
-        const actor = Actor.use();
-        const userID = actor.type === "user" ? actor.properties.userID : undefined;
+        const actor = Identity.use();
+        const userID = Identity.known() ? Identity.userID() : undefined;
+        // Name the agent or internal code, so an audit tells "copilot for andre" from andre.
+        const agent =
+          actor.type === "agent" || actor.type === "internal"
+            ? [`${actor.type}:${actor.properties.name}`]
+            : [];
         const event = new Envelope({
           id: Identifier.create("event"),
           source: `${app}/${source}`,
@@ -49,17 +65,22 @@ export namespace Bus {
           tx.insert(EventTable).values({
             id: event.id,
             userID: userID ?? null,
+            identity: actor,
             type,
             source,
             sourceID: opts.subject,
-            tags: clean([`actor:${actor.type}`, ...(opts.tags ?? [])]),
+            tags: clean([`actor:${actor.type}`, ...agent, ...(opts.tags ?? [])]),
             data: event.data as Record<string, unknown>,
             timeCreated: new Date(event.time),
           }),
         );
         // After the caller's transaction commits, so a rolled-back write emits nothing.
         await Database.effect(async () => {
-          await job.push(event.toJSON(), { userID });
+          // The queue replays the identity, so the subscriber runs as the publisher.
+          await job.push(
+            { event: event.toJSON(), metadata: metadata() },
+            { identity: Identity.stamp() },
+          );
           if (open) await Webhook.job.push({ event: event.toJSON() });
         });
         return event;
@@ -70,7 +91,7 @@ export namespace Bus {
   /** Binds the one handler for an event. It runs in the worker, as the publishing actor. */
   export function subscribe<S extends z.ZodType>(
     def: { type: string; schema: S },
-    cb: (event: CloudEvent<z.infer<S>>) => Promise<unknown>,
+    cb: (event: CloudEvent<z.infer<S>>, meta: Metadata) => Promise<unknown>,
   ) {
     if (subs.has(def.type)) throw new Error(`Event ${def.type} already has a subscriber`);
     subs.set(def.type, cb);
@@ -78,10 +99,17 @@ export namespace Bus {
   }
 
   /** Every event gets one; the publisher can't know whether a subscriber exists. */
-  export const job = Queue.define("bus.dispatch", Envelope.schema, async (payload) => {
-    const cb = subs.get(payload.type);
-    if (!cb) return;
-    const event = new Envelope(payload);
-    await cb(event.cloneWith({ data: defs.get(event.type)!.parse(event.data) }));
-  });
+  export const job = Queue.define(
+    "bus.dispatch",
+    z.object({ event: Envelope.schema, metadata: Metadata }),
+    async (payload) => {
+      const cb = subs.get(payload.event.type);
+      if (!cb) return;
+      const event = new Envelope(payload.event);
+      await cb(
+        event.cloneWith({ data: defs.get(event.type)!.parse(event.data) }),
+        payload.metadata,
+      );
+    },
+  );
 }

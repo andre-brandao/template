@@ -1,5 +1,5 @@
 import { redirect } from "@sveltejs/kit";
-import { Actor } from "@template/core/actor";
+import { Identity } from "@template/core/identity";
 import { Feedback } from "$lib/features/feedback/api/feedback";
 import { User } from "@template/core/user";
 import { DEFAULTS } from "@template/core/user/prefs";
@@ -16,7 +16,7 @@ export const load: LayoutServerLoad = async (event) => {
   const rail = event.cookies.get("rail") === "tight";
 
   // The actor, not the cookie: a stale or revoked token leaves a `public` actor.
-  const actor = Actor.use();
+  const actor = Identity.use();
   if (actor.type !== "user") return { user: null, prefs: DEFAULTS, feedback, rail };
 
   const user = await User.fromID(actor.properties.userID);

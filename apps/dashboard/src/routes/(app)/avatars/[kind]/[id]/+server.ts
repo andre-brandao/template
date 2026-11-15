@@ -1,7 +1,8 @@
 import { error, json, redirect } from "@sveltejs/kit";
-import { Actor } from "@template/core/actor";
+import { Identity } from "@template/core/identity";
 import { Storage } from "@template/core/storage";
 import { Project } from "@template/core/project";
+import { App } from "@template/core/app";
 import { User } from "@template/core/user";
 import type { RequestHandler } from "./$types";
 
@@ -17,20 +18,33 @@ function at(kind: string, id: string) {
   return { kind, key: `avatar/${kind}/${id}` } as const;
 }
 
-/** Uploading and clearing mutate the subject, so only its owner may. Viewing is open to any user. */
+/** Who may change each kind's avatar. Viewing is open to any user. */
+const guards = {
+  project: async (id: string) => {
+    if (!(await Project.fromID(id))) error(404, "Project not found");
+  },
+  // Your own, or an App's when you manage Apps.
+  user: async (id: string) => {
+    if (id === Identity.userID()) return;
+    if (Identity.can({ app: ["update"] }) && (await App.fromID(id))) return;
+    error(403, "Not your avatar");
+  },
+};
+
+/** Uploading and clearing mutate the subject, so only whoever owns it may. */
 async function owned(kind: "user" | "project", id: string) {
-  if (Actor.use().type !== "user") error(401, "Authentication required");
-  if (kind === "user" && id !== Actor.userID()) error(403, "Not your avatar");
-  if (kind === "project" && !(await Project.fromID(id))) error(404, "Project not found");
+  if (Identity.use().type !== "user") error(401, "Authentication required");
+  await guards[kind](id);
 }
 
 async function save(kind: "user" | "project", id: string, image: string | null) {
-  if (kind === "user") return User.update({ image });
-  await Project.update({ id, image });
+  if (kind === "project") return Project.update({ id, image });
+  if (id === Identity.userID()) return User.update({ image });
+  await App.update({ id, image });
 }
 
 export const GET: RequestHandler = async ({ params }) => {
-  if (Actor.use().type !== "user") error(401, "Authentication required");
+  if (Identity.use().type !== "user") error(401, "Authentication required");
 
   const { key } = at(params.kind, params.id);
   const url = await Storage.disk().temporaryUrl(key);

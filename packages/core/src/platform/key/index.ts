@@ -3,7 +3,7 @@ import { and, desc, eq, gt, isNull, or } from "drizzle-orm";
 import { fn } from "../../util/fn";
 import { iso } from "../../util/fmt";
 import { Assert } from "../../util/assert";
-import { Actor } from "../../actor";
+import { Identity } from "../../identity";
 import { Common } from "../../common";
 import { Database } from "../../drizzle";
 import { Examples } from "../../examples";
@@ -38,7 +38,8 @@ export namespace Key {
     })
     .meta({
       ref: "Key",
-      description: "An API key belonging to a user.",
+      description:
+        "A personal access token (or an App's API key). It acts as the user that owns it.",
       example: Examples.Key,
     });
   export type Info = z.infer<typeof Info>;
@@ -114,7 +115,7 @@ export namespace Key {
         tx.update(KeyTable).set({ timeUsed: new Date() }).where(eq(KeyTable.id, row.id)),
       );
 
-    return row.userID;
+    return row.userID ? { id: row.id, userID: row.userID } : null;
   });
 
   /** Every live key the user has. Pass the caller's secret to flag its key `current`. */
@@ -128,7 +129,7 @@ export namespace Key {
           .from(KeyTable)
           .where(
             and(
-              eq(KeyTable.userID, Actor.userID()),
+              eq(KeyTable.userID, Identity.userID()),
               eq(KeyTable.type, "api"),
               isNull(KeyTable.timeDeleted),
               live(),
@@ -139,13 +140,53 @@ export namespace Key {
       );
     },
     {
-      title: "List keys",
+      title: "List personal access tokens",
       description:
-        "List the current user's API keys. Secrets are stored hashed, so `key` is null here — only `create` ever returns one. The key authenticating this request is flagged `current`.",
+        "List the current user's personal access tokens. Secrets are stored hashed, so `key` is null here — only `create` ever returns one. The key authenticating this request is flagged `current`.",
     },
   );
 
-  /** Revokes an API key — the secret stops authenticating immediately. */
+  /** Someone else's live keys — an App's. Not routed: the caller checks it may manage them. */
+  export const owned = fn(Identifier.schema("user"), (user) =>
+    Database.use((tx) =>
+      tx
+        .select()
+        .from(KeyTable)
+        .where(
+          and(
+            eq(KeyTable.userID, user),
+            eq(KeyTable.type, "api"),
+            isNull(KeyTable.timeDeleted),
+            live(),
+          ),
+        )
+        .orderBy(desc(KeyTable.timeCreated))
+        .then((rows) => rows.map((row) => serialize(row))),
+    ),
+  );
+
+  /** Revokes one of `user`'s keys. Not routed, like `owned`. */
+  export const revoke = fn(z.object({ id: Info.shape.id, user: z.string() }), (input) =>
+    assert.exists(
+      Database.use((tx) =>
+        tx
+          .update(KeyTable)
+          .set({ timeDeleted: new Date() })
+          .where(
+            and(
+              eq(KeyTable.id, input.id),
+              eq(KeyTable.type, "api"),
+              eq(KeyTable.userID, input.user),
+              isNull(KeyTable.timeDeleted),
+            ),
+          )
+          .returning({ id: KeyTable.id })
+          .then((rows) => rows.at(0)),
+      ),
+    ),
+  );
+
+  /** Revokes a personal access token — the secret stops authenticating immediately. */
   export const remove = fn(
     Info.shape.id,
     async (id) =>
@@ -158,7 +199,7 @@ export namespace Key {
               and(
                 eq(KeyTable.id, id),
                 eq(KeyTable.type, "api"),
-                eq(KeyTable.userID, Actor.userID()),
+                eq(KeyTable.userID, Identity.userID()),
                 isNull(KeyTable.timeDeleted),
               ),
             )
@@ -167,8 +208,9 @@ export namespace Key {
         ),
       ),
     {
-      title: "Revoke key",
-      description: "Revoke an API key. The secret stops authenticating immediately.",
+      title: "Revoke personal access token",
+      description:
+        "Revoke one of your personal access tokens. The secret stops authenticating immediately.",
     },
   );
 

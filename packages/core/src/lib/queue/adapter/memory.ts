@@ -21,7 +21,7 @@ export function memory(cfg: Config = {}): Port & { rows: Row[] } {
         id,
         name: job.name,
         payload: job.payload,
-        userID: job.userID,
+        identity: job.identity,
         attempts: 0,
         time: Date.now() + (job.delay ?? 0) * 1000,
         reserved: null,
@@ -41,7 +41,7 @@ export function memory(cfg: Config = {}): Port & { rows: Row[] } {
         id: row.id,
         name: row.name,
         payload: row.payload,
-        userID: row.userID,
+        identity: row.identity,
         attempts: row.attempts,
       };
     },

@@ -3,15 +3,15 @@ export type Job = {
   id: string;
   name: string;
   payload: unknown;
-  /** Actor captured at push time, restored around the handler. Null for public/system pushes. */
-  userID: string | null;
+  /** Who pushed, opaque to the queue and restored around the handler. Null for public/system. */
+  identity: unknown;
   attempts: number;
 };
 
 export type Push = {
   name: string;
   payload: unknown;
-  userID: string | null;
+  identity: unknown;
   /** Seconds to hold the job before it becomes runnable. */
   delay?: number;
 };

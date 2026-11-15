@@ -1,7 +1,7 @@
 import { describe, expect, it } from "bun:test";
 import { z } from "zod";
 import { eq } from "drizzle-orm";
-import { Actor } from "../src/actor";
+import { Identity } from "../src/identity";
 import { Database } from "../src/drizzle";
 import { run } from "../src/jobs";
 import { Queue } from "../src/lib/queue";
@@ -20,7 +20,7 @@ const sendResponse = { metadata: { metrics: { backlogCount: 0, backlogBytes: 0 }
 // Handlers run under whatever actor the runner gives them — the worker targets pass
 // `jobs.run`, which replays the pusher; the `sync` driver inherits the pusher's own.
 const greet = Queue.define("test.greet", z.object({ name: z.string() }), async (input) => {
-  seen.push(`${input.name}:${Actor.use().type}`);
+  seen.push(`${input.name}:${Identity.use().type}`);
 });
 
 const boom = Queue.define("test.boom", z.object({}), async () => {
@@ -32,7 +32,7 @@ describe("queue", () => {
   it("sync runs the job inline at push time", async () => {
     seen.length = 0;
     // `sync` runs handlers itself, so it needs the module's runner — `fromEnv` wires it.
-    await Actor.provide("public", {}, () =>
+    await Identity.provide("public", {}, () =>
       Queue.provide(Queue.fromEnv({ QUEUE_DRIVER: "sync" }), async () => {
         await greet.push({ name: "ada" });
         expect(seen).toEqual(["ada:public"]);
@@ -42,7 +42,7 @@ describe("queue", () => {
   });
 
   it("sync surfaces a failing job to the caller", async () => {
-    await Actor.provide("public", {}, () =>
+    await Identity.provide("public", {}, () =>
       Queue.provide(Queue.fromEnv({ QUEUE_DRIVER: "sync" }), async () => {
         await expect(boom.push({})).rejects.toThrow("nope");
       }),
@@ -52,7 +52,7 @@ describe("queue", () => {
   it("memory holds the job until it is drained", async () => {
     seen.length = 0;
     const queue = memory();
-    await Actor.provide("public", {}, () =>
+    await Identity.provide("public", {}, () =>
       Queue.provide(queue, async () => {
         await greet.push({ name: "grace" });
         expect(seen).toEqual([]);
@@ -68,7 +68,7 @@ describe("queue", () => {
   it("memory retries a failing job, then buries it", async () => {
     seen.length = 0;
     const queue = memory({ retries: 2 });
-    await Actor.provide("public", {}, () =>
+    await Identity.provide("public", {}, () =>
       Queue.provide(queue, async () => {
         await boom.push({});
         expect(await Queue.drain()).toBe(2);
@@ -82,7 +82,7 @@ describe("queue", () => {
 
   it("a delayed job is not runnable yet", async () => {
     const queue = memory();
-    await Actor.provide("public", {}, () =>
+    await Identity.provide("public", {}, () =>
       Queue.provide(queue, async () => {
         await greet.push({ name: "later" }, { delay: 60 });
         expect(await Queue.drain()).toBe(0);
@@ -93,7 +93,7 @@ describe("queue", () => {
 
   it("an unknown job name fails instead of hanging", async () => {
     const queue = memory({ retries: 1 });
-    await Actor.provide("public", {}, () =>
+    await Identity.provide("public", {}, () =>
       Queue.provide(queue, async () => {
         await Queue.push("test.missing", {});
         expect(await Queue.drain()).toBe(1);
@@ -128,7 +128,7 @@ describe("queue", () => {
       },
     };
 
-    await Actor.provide("public", {}, () =>
+    await Identity.provide("public", {}, () =>
       Queue.provide(cloudflare(binding), async () => {
         const id = await greet.push({ name: "ada" }, { delay: 30 });
         expect(id).toStartWith("job_");
@@ -136,7 +136,7 @@ describe("queue", () => {
           id,
           name: "test.greet",
           payload: { name: "ada" },
-          userID: null,
+          identity: null,
           attempts: 0,
         });
         expect(sent[0]?.delay).toBe(30);
@@ -147,9 +147,36 @@ describe("queue", () => {
       }),
     );
 
-    // What the consumer does with each message it receives — no pusher, so system.
+    // What the consumer does with each message it receives — no pusher, so public.
     await run({ ...sent[0]!.body, attempts: 1 });
-    expect(seen).toEqual(["ada:system"]);
+    expect(seen).toEqual(["ada:public"]);
+  });
+
+  it("a job pushed as public replays as public", async () => {
+    seen.length = 0;
+    const stamp = Identity.provide("public", {}, () => Identity.stamp());
+    expect(stamp).toBeNull();
+    await run({
+      id: "job_1",
+      name: "test.greet",
+      payload: { name: "anon" },
+      identity: stamp,
+      attempts: 1,
+    });
+    expect(seen).toEqual(["anon:public"]);
+  });
+
+  it("an internal job replays as that internal, scope intact", async () => {
+    seen.length = 0;
+    const scope = { todo: ["read"] } as const;
+    const stamp = Identity.internal("sync", scope, () => Identity.stamp());
+    expect(stamp).toEqual({ type: "internal", name: "sync", scope });
+    const replay = Queue.define("test.replay", z.object({}), async () => {
+      seen.push(`${Identity.use().type}`);
+      expect(Identity.use()).toEqual({ type: "internal", properties: { name: "sync", scope } });
+    });
+    await run({ id: "job_2", name: replay.name, payload: {}, identity: stamp, attempts: 1 });
+    expect(seen).toEqual(["internal"]);
   });
 
   withTestUser("cloudflare captures the pushing user for the consumer", async ({ userID }) => {
@@ -162,18 +189,37 @@ describe("queue", () => {
           return sendResponse;
         },
       }),
-      () => greet.push({ name: "meta" }, { userID }),
+      () => greet.push({ name: "meta" }, { identity: Identity.stamp() }),
     );
 
-    expect(sent[0]?.userID).toBe(userID);
+    expect(sent[0]?.identity).toEqual({ type: "user", userID });
     await run({ ...sent[0]!, attempts: 1 });
     expect(seen).toEqual(["meta:user"]);
+  });
+
+  withTestUser("an agent's job replays as that agent, scope intact", async ({ userID }) => {
+    seen.length = 0;
+    const scope = { todo: ["read"] } as const;
+    const stamp = await Identity.provide(
+      "agent",
+      { name: "copilot", userID, role: "member", scope },
+      () => Identity.stamp(),
+    );
+    expect(stamp).toEqual({ type: "agent", userID, name: "copilot", scope });
+    await run({
+      id: "job_1",
+      name: "test.greet",
+      payload: { name: "bot" },
+      identity: stamp,
+      attempts: 1,
+    });
+    expect(seen).toEqual(["bot:agent"]);
   });
 
   withTestUser("db stores the job with its pusher, the worker runs it", async ({ userID }) => {
     seen.length = 0;
     await Queue.provide(db({ use: Database.use }), async () => {
-      const id = await greet.push({ name: "stored" }, { userID });
+      const id = await greet.push({ name: "stored" }, { identity: Identity.stamp() });
       const row = await Database.use((tx) =>
         tx
           .select()
@@ -182,7 +228,7 @@ describe("queue", () => {
           .then((rows) => rows[0]),
       );
       expect(row?.name).toBe("test.greet");
-      expect(row?.userID).toBe(userID);
+      expect(row?.identity).toEqual({ type: "user", userID });
       expect(seen).toEqual([]);
 
       // The worker loop hands `jobs.run` to `tick`, replaying the pusher.

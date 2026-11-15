@@ -10,7 +10,7 @@ export function sync(run: (job: Job) => Promise<void>): Port {
   return {
     async push(job) {
       const id = Identifier.create("job");
-      await run({ id, name: job.name, payload: job.payload, userID: job.userID, attempts: 1 });
+      await run({ id, name: job.name, payload: job.payload, identity: job.identity, attempts: 1 });
       return id;
     },
     async reserve() {

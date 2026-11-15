@@ -56,7 +56,7 @@ export namespace Agent {
   }
 
   /**
-   * The app's MCP as the owner of `token`, so every tool call runs as them. Undefined
+   * The app's MCP as whoever `token` resolves to — a delegation, so the agent for its user. Undefined
    * without `MCP_URL` or when it is unreachable.
    */
   export async function mcp(token: string, opts?: { readonly?: boolean }, env?: Env) {

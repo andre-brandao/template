@@ -19,7 +19,7 @@ import { Assert } from "../util/assert";
 import { ErrorCodes, VisibleError } from "../error";
 import { fn } from "../util/fn";
 import { Database } from "../drizzle";
-import { Actor } from "../actor";
+import { Identity } from "../identity";
 import { Common } from "../common";
 import { Examples } from "../examples";
 import { Identifier } from "../identifier";
@@ -199,7 +199,7 @@ export namespace Todo {
       dueDate: Info.shape.dueDate.optional(),
     }),
     async (input) => {
-      Actor.check({ todo: ["create"] });
+      Identity.check({ todo: ["create"] });
       const id = Identifier.create("todo");
       const tags = clean(input.tags);
       const status = input.status ?? "backlog";
@@ -217,7 +217,7 @@ export namespace Todo {
           .where(siblings(parent?.id ?? null, owner));
         await tx.insert(TodoTable).values({
           id,
-          createdBy: Actor.userID(),
+          createdBy: Identity.userID(),
           assignee: input.assignee ?? null,
           source: owner.source,
           sourceID: owner.sourceID,
@@ -267,7 +267,7 @@ export namespace Todo {
       search: z.string().optional(),
     }),
     (input) => {
-      Actor.check({ todo: ["read"] });
+      Identity.check({ todo: ["read"] });
       const { page, pageSize, limit, offset } = Common.page(input);
       const conditions = [isNull(TodoTable.timeDeleted)];
       if (input.source) conditions.push(eq(TodoTable.source, input.source));
@@ -321,7 +321,7 @@ export namespace Todo {
       sourceID: Info.shape.sourceID.unwrap().optional(),
     }),
     (input) => {
-      Actor.check({ todo: ["read"] });
+      Identity.check({ todo: ["read"] });
       return Database.use((tx) =>
         tx
           .select({
@@ -369,7 +369,7 @@ export namespace Todo {
       sourceID: Info.shape.sourceID.unwrap().optional(),
     }),
     (input) => {
-      Actor.check({ todo: ["update"] });
+      Identity.check({ todo: ["update"] });
       return Database.use((tx) =>
         tx
           .update(TodoTable)
@@ -390,7 +390,7 @@ export namespace Todo {
   export const fromID = fn(
     Info.shape.id,
     (id) => {
-      Actor.check({ todo: ["read"] });
+      Identity.check({ todo: ["read"] });
       return Database.use((tx) =>
         tx
           .select({ todo: TodoTable, user: AssigneeColumns })
@@ -407,7 +407,7 @@ export namespace Todo {
     Patch.extend({ id: Info.shape.id }),
     async ({ id, ...patch }) => {
       const before = await assert.exists(fromID.force(id));
-      Actor.check({ todo: ["update"] }, before.createdBy);
+      Identity.check({ todo: ["update"] }, before.createdBy);
       const next = {
         ...patch,
         ...(patch.tags !== undefined ? { tags: clean(patch.tags) } : {}),
@@ -439,7 +439,7 @@ export namespace Todo {
     }),
     async (input) => {
       const before = await assert.exists(fromID.force(input.id));
-      Actor.check({ todo: ["update"] }, before.createdBy);
+      Identity.check({ todo: ["update"] }, before.createdBy);
       if (input.parentID) await parent(input.parentID, before);
 
       return Database.transaction(async (tx) => {
@@ -482,7 +482,7 @@ export namespace Todo {
     Link.extend({ id: Info.shape.id }),
     async (input) => {
       const before = await assert.exists(fromID.force(input.id));
-      Actor.check({ todo: ["update"] }, before.createdBy);
+      Identity.check({ todo: ["update"] }, before.createdBy);
       const links = before.metadata.links;
       if (links.length >= 50 && !links.some((item) => item.url === input.url))
         throw new VisibleError(
@@ -516,7 +516,7 @@ export namespace Todo {
     z.object({ id: Info.shape.id, url: z.string().meta({ description: "The link to drop." }) }),
     async (input) => {
       const before = await assert.exists(fromID.force(input.id));
-      Actor.check({ todo: ["update"] }, before.createdBy);
+      Identity.check({ todo: ["update"] }, before.createdBy);
       await Database.use((tx) =>
         tx
           .update(TodoTable)
@@ -533,7 +533,7 @@ export namespace Todo {
     Annotate.extend({ id: Info.shape.id }),
     async (input) => {
       const before = await assert.exists(fromID.force(input.id));
-      Actor.check({ todo: ["update"] }, before.createdBy);
+      Identity.check({ todo: ["update"] }, before.createdBy);
       await Database.use((tx) =>
         tx
           .update(TodoTable)
@@ -554,7 +554,7 @@ export namespace Todo {
     Info.shape.id,
     async (id) => {
       const before = await assert.exists(fromID.force(id));
-      Actor.check({ todo: ["delete"] }, before.createdBy);
+      Identity.check({ todo: ["delete"] }, before.createdBy);
 
       return Database.transaction(async (tx) => {
         await tx.update(TodoTable).set({ timeDeleted: new Date() }).where(eq(TodoTable.id, id));

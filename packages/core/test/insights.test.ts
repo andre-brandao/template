@@ -1,6 +1,6 @@
 import { describe, expect } from "bun:test";
 import { eq } from "drizzle-orm";
-import { Actor } from "../src/actor";
+import { Identity } from "../src/identity";
 import { Database } from "../src/drizzle";
 import { Insights, Todo } from "../src/todo";
 import { TodoTable } from "../src/todo/todo.sql";
@@ -94,7 +94,7 @@ describe("insights", () => {
     );
 
     const as = (timezone?: string) =>
-      Actor.provide("user", { userID, role: "member", timezone }, () => Insights.calendar(r));
+      Identity.provide("user", { userID, role: "member", timezone }, () => Insights.calendar(r));
 
     expect((await as()).days).toEqual([{ day: "2026-06-08", count: 1 }]);
     expect((await as("America/Sao_Paulo")).days).toEqual([{ day: "2026-06-07", count: 1 }]);
@@ -111,7 +111,7 @@ describe("insights", () => {
     );
 
     const as = (timezone?: string) =>
-      Actor.provide("user", { userID, role: "member", timezone }, () => Insights.calendar(r));
+      Identity.provide("user", { userID, role: "member", timezone }, () => Insights.calendar(r));
 
     // In UTC it lands on the first day of the range; in São Paulo it is the day before,
     // so it falls outside — and must not come back as a stray bucket.

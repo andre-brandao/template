@@ -34,12 +34,16 @@
 						<span class="name">{user.name}</span>
 						<span class="email">{user.email}</span>
 					</div>
+					<a class="item" role="menuitem" href={`/u/${user.id}`} onclick={close}>Profile</a>
 					<a
 						class="item"
 						role="menuitem"
-						href={resolve('/settings/profile')}
+						href={resolve('/settings/account')}
 						aria-current={active ? 'page' : undefined}
 						onclick={close}>Settings</a
+					>
+					<a class="item" role="menuitem" href={resolve('/developers')} onclick={close}
+						>Developers</a
 					>
 					<Can grants={{ admin: ['read'] }}>
 						<a class="item" role="menuitem" href={resolve('/admin')} onclick={close}>Admin</a>

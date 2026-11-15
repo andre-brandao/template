@@ -2,7 +2,7 @@
 	import { page } from '$app/state';
 	import { resolve } from '$app/paths';
 	import { Button, Field, Input } from '@template/ui';
-	import { mintKey } from '$lib/features/keys/api/keys.remote';
+	import { mintKey } from '$lib/features/developers/api/keys.remote';
 	import Nav from '../Nav.svelte';
 	import { doc } from './api.remote';
 	import { createToken } from './token.svelte';
@@ -35,10 +35,10 @@
 			/>
 		</Field>
 		<div class="mint">
-			<Button variant="secondary" pending={!!mintKey.pending} onclick={mint}>Mint a test key</Button>
+			<Button variant="secondary" pending={!!mintKey.pending} onclick={mint}>Mint a test token</Button>
 			<p class="hint">
-				Expires in a day. Any other key has to be pasted — one is only readable when minted, in
-				<a href="/settings/keys">settings</a>.
+				Expires in a day. Any other token has to be pasted — one is only readable when minted, in
+				<a href="/developers/keys">Personal access tokens</a>.
 			</p>
 		</div>
 	{/snippet}

@@ -3,7 +3,7 @@ import { and, arrayContains, desc, eq, inArray, isNull, or, sql } from "drizzle-
 import { fn } from "../../util/fn";
 import { CloudEvent, HTTP } from "../bus/cloudevent";
 import { iso } from "../../util/fmt";
-import { Actor } from "../../actor";
+import { Identity } from "../../identity";
 import { Common } from "../../common";
 import { Database } from "../../drizzle";
 import { Examples } from "../../examples";
@@ -35,6 +35,10 @@ export namespace Webhook {
     .object({
       id: z.string().meta({ description: Common.IdDescription, example: Examples.Webhook.id }),
       url: z.url().max(2000).meta({ description: "Where deliveries are POSTed." }),
+      userID: z.string().meta({
+        description: "Who it belongs to: an App's account, or the admin who made it.",
+        example: Examples.User.id,
+      }),
       secret: z.string().meta({ description: "Signing secret. Handed back in full to admins." }),
       display: z.string().meta({ description: "Masked secret, safe to show in a list." }),
       types: z
@@ -64,16 +68,17 @@ export namespace Webhook {
 
   const Patch = Info.pick({ url: true, types: true, enabled: true }).partial();
 
+  /** `userID` files it under an App; without one it is the caller's own. */
   export const create = fn(
-    Info.pick({ url: true, types: true }).partial({ types: true }),
+    Info.pick({ url: true, types: true, userID: true }).partial({ types: true, userID: true }),
     (input) => {
-      Actor.check({ webhook: ["create"] });
+      Identity.check({ webhook: ["create"] });
       return Database.use((tx) =>
         tx
           .insert(WebhookTable)
           .values({
             id: Identifier.create("webhook"),
-            createdBy: Actor.userID(),
+            userID: input.userID ?? Identity.userID(),
             url: input.url,
             secret: token("whsec_"),
             types: input.types ?? [],
@@ -84,13 +89,16 @@ export namespace Webhook {
     },
   );
 
-  export const list = fn(z.void(), () => {
-    Actor.check({ webhook: ["read"] });
+  /** Every subscription, or one owner's — an App's page asks for its own. */
+  export const list = fn(z.string().optional(), (owner) => {
+    Identity.check({ webhook: ["read"] });
     return Database.use((tx) =>
       tx
         .select()
         .from(WebhookTable)
-        .where(isNull(WebhookTable.timeDeleted))
+        .where(
+          and(isNull(WebhookTable.timeDeleted), owner ? eq(WebhookTable.userID, owner) : undefined),
+        )
         .orderBy(desc(WebhookTable.timeCreated))
         .then((rows) => rows.map((row) => serialize(row))),
     );
@@ -98,7 +106,7 @@ export namespace Webhook {
 
   /** Re-enabling clears the failure count, so a fixed endpoint doesn't trip the limit again. */
   export const update = fn(Patch.extend({ id: Info.shape.id }), async ({ id, ...patch }) => {
-    Actor.check({ webhook: ["update"] });
+    Identity.check({ webhook: ["update"] });
     await assert.exists(
       Database.use((tx) =>
         tx
@@ -112,7 +120,7 @@ export namespace Webhook {
   });
 
   export const remove = fn(Info.shape.id, async (id) => {
-    Actor.check({ webhook: ["delete"] });
+    Identity.check({ webhook: ["delete"] });
     await assert.exists(
       Database.use((tx) =>
         tx
@@ -216,6 +224,7 @@ export namespace Webhook {
     return {
       id: row.id,
       url: row.url,
+      userID: row.userID,
       secret: row.secret,
       display: `${row.secret.slice(0, 10)}...${row.secret.slice(-4)}`,
       types: row.types as Info["types"],

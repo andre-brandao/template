@@ -4,7 +4,7 @@ import { Assert } from "../util/assert";
 import { ErrorCodes, VisibleError } from "../error";
 import { fn } from "../util/fn";
 import { Database } from "../drizzle";
-import { Actor } from "../actor";
+import { Identity } from "../identity";
 import { Common } from "../common";
 import { Examples } from "../examples";
 import { Identifier } from "../identifier";
@@ -65,12 +65,12 @@ export namespace Project {
   export const create = fn(
     z.object({ name: Info.shape.name, description: Info.shape.description.optional() }),
     async (input) => {
-      Actor.check({ project: ["create"] });
+      Identity.check({ project: ["create"] });
       const id = Identifier.create("project");
       return Database.transaction(async (tx) => {
         await tx.insert(ProjectTable).values({
           id,
-          createdBy: Actor.userID(),
+          createdBy: Identity.userID(),
           name: input.name,
           description: input.description ?? null,
         });
@@ -85,7 +85,7 @@ export namespace Project {
   export const list = fn(
     Common.Query({ sort: SortableColumns.schema, search: z.string().optional() }),
     (input) => {
-      Actor.check({ project: ["read"] });
+      Identity.check({ project: ["read"] });
       const { page, pageSize, limit, offset } = Common.page(input);
       const conditions = [isNull(ProjectTable.timeDeleted)];
       if (input.search) conditions.push(ilike(ProjectTable.name, `%${input.search}%`));
@@ -114,7 +114,7 @@ export namespace Project {
   export const fromID = fn(
     Info.shape.id,
     (id) => {
-      Actor.check({ project: ["read"] });
+      Identity.check({ project: ["read"] });
       return Database.use((tx) =>
         tx
           .select()
@@ -133,7 +133,7 @@ export namespace Project {
     Patch.extend({ id: Info.shape.id }),
     async ({ id, ...patch }) => {
       const before = await assert.exists(fromID.force(id));
-      Actor.check({ project: ["update"] }, before.createdBy);
+      Identity.check({ project: ["update"] }, before.createdBy);
 
       return Database.transaction(async (tx) => {
         await tx
@@ -163,7 +163,7 @@ export namespace Project {
     Link.extend({ id: Info.shape.id }),
     async (input) => {
       const before = await assert.exists(fromID.force(input.id));
-      Actor.check({ project: ["update"] }, before.createdBy);
+      Identity.check({ project: ["update"] }, before.createdBy);
       const links = before.metadata.links;
       if (links.length >= 50 && !links.some((item) => item.url === input.url))
         throw new VisibleError(
@@ -197,7 +197,7 @@ export namespace Project {
     z.object({ id: Info.shape.id, url: z.string().meta({ description: "The link to drop." }) }),
     async (input) => {
       const before = await assert.exists(fromID.force(input.id));
-      Actor.check({ project: ["update"] }, before.createdBy);
+      Identity.check({ project: ["update"] }, before.createdBy);
       await Database.use((tx) =>
         tx
           .update(ProjectTable)
@@ -214,7 +214,7 @@ export namespace Project {
     Annotate.extend({ id: Info.shape.id }),
     async (input) => {
       const before = await assert.exists(fromID.force(input.id));
-      Actor.check({ project: ["update"] }, before.createdBy);
+      Identity.check({ project: ["update"] }, before.createdBy);
       await Database.use((tx) =>
         tx
           .update(ProjectTable)
@@ -238,7 +238,7 @@ export namespace Project {
     Info.shape.id,
     async (id) => {
       const before = await assert.exists(fromID.force(id));
-      Actor.check({ project: ["delete"] }, before.createdBy);
+      Identity.check({ project: ["delete"] }, before.createdBy);
 
       return Database.transaction(async (tx) => {
         await tx

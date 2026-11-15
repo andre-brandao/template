@@ -1,7 +1,7 @@
 import { AsyncLocalStorage } from "node:async_hooks";
 import { toolDefinition } from "@tanstack/ai";
 import { z } from "zod";
-import { Actor } from "@template/core/actor";
+import { Identity } from "@template/core/identity";
 import { Database, sql, type SQL } from "@template/core/drizzle";
 import { ErrorCodes, VisibleError } from "@template/core/error";
 import type { Permission } from "@template/core/permission";
@@ -56,7 +56,7 @@ export namespace Sql {
 
   /** The tables the actor may query, with their columns and foreign keys. */
   export const tables = fn(z.void(), async () => {
-    Actor.check(Grant);
+    Identity.check(Grant);
     const names = permitted();
     if (!names.length) return [];
     const [columns, refs] = await Promise.all([
@@ -97,7 +97,7 @@ export namespace Sql {
    * each must be one the actor may read.
    */
   export const run = fn(Input, async (input): Promise<Result> => {
-    Actor.check(Grant);
+    Identity.check(Grant);
     const query = input.sql.replace(/[\s;]+$/, "");
     if (FORBIDDEN.test(query) || /\bu&["']/i.test(query)) refuse();
     // A subquery admits only a query, and a prepared statement only one: no writes, no `;`.
@@ -147,7 +147,7 @@ export namespace Sql {
 
   /** The prompt and tools for whoever may run SQL; nothing for anyone else. */
   export function kit() {
-    if (!Actor.can(Grant)) return { prompts: [], tools: [] };
+    if (!Identity.can(Grant)) return { prompts: [], tools: [] };
     return { prompts: [guide], tools: tools() };
   }
 
@@ -225,7 +225,7 @@ export namespace Sql {
 
   function permitted() {
     return (Object.keys(Tables) as Table[]).filter((name) =>
-      Actor.can({ [Tables[name]]: ["read"] } as Permission.Grants),
+      Identity.can({ [Tables[name]]: ["read"] } as Permission.Grants),
     );
   }
 

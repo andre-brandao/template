@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Card } from '@template/ui';
-	import type { ProviderId } from '@template/core/user/provider.sql';
+	import type { ProviderId } from '@template/core/auth/provider.sql';
 	import Frame from '../components/Frame.svelte';
 	import LoginForm from '../components/LoginForm.svelte';
 	import OauthList from '../components/OauthList.svelte';

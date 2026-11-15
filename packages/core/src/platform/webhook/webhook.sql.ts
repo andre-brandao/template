@@ -10,7 +10,8 @@ export const WebhookTable = table(
   {
     id: id(),
     ...timestamps,
-    createdBy: ulid("created_by").notNull(),
+    /** Who it belongs to: an App's account, or the admin who made it. */
+    userID: ulid("user_id").notNull(),
     url: text().notNull(),
     secret: text().notNull(),
     // Empty means every public type. Matched with `types @> ARRAY[type]`.
@@ -20,5 +21,5 @@ export const WebhookTable = table(
     lastStatus: integer("last_status"),
     timeDelivered: timestamp("time_delivered"),
   },
-  (table) => [index("webhook_enabled").on(table.enabled)],
+  (table) => [index("webhook_enabled").on(table.enabled), index("webhook_user").on(table.userID)],
 );

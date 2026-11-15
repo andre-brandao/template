@@ -1,8 +1,9 @@
 import { describe, expect, it } from "bun:test";
-import { Actor } from "@template/core/actor";
+import { Identity } from "@template/core/identity";
 import { key } from "../src/lib/server/files";
 
-const as = <T>(fn: () => T) => Actor.provide("user", { userID: "usr_01ABC", role: "member" }, fn);
+const as = <T>(fn: () => T) =>
+  Identity.provide("user", { userID: "usr_01ABC", role: "member" }, fn);
 
 describe("key", () => {
   it("prefixes the storage key with the acting user", () => {

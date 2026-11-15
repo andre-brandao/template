@@ -34,6 +34,14 @@ export type User = {
    */
   role: "admin" | "member";
   /**
+   * A `system` account is an App: nobody logs in as it — an external system or CI acting through API keys.
+   */
+  kind: "human" | "system";
+  /**
+   * For an App, the person answerable for it. Null for people.
+   */
+  ownerID: string | null;
+  /**
    * Display preferences. Every key has a default, so this is always complete.
    */
   prefs: {
@@ -94,7 +102,7 @@ export type ErrorResponse = {
 };
 
 /**
- * An API key belonging to a user.
+ * A personal access token (or an App's API key). It acts as the user that owns it.
  */
 export type Key = {
   /**
@@ -359,7 +367,7 @@ export type GetKeyError = GetKeyErrors[keyof GetKeyErrors];
 
 export type GetKeyResponses = {
   /**
-   * An API key belonging to a user.
+   * A personal access token (or an App's API key). It acts as the user that owns it.
    */
   200: Array<Key>;
 };
@@ -398,7 +406,7 @@ export type PostKeyError = PostKeyErrors[keyof PostKeyErrors];
 
 export type PostKeyResponses = {
   /**
-   * An API key belonging to a user.
+   * A personal access token (or an App's API key). It acts as the user that owns it.
    */
   200: Key;
 };
@@ -1385,3 +1393,43 @@ export type PatchFileByNameResponses = {
 };
 
 export type PatchFileByNameResponse = PatchFileByNameResponses[keyof PatchFileByNameResponses];
+
+export type PostHookByAppData = {
+  body?: never;
+  path: {
+    app: string;
+  };
+  query?: never;
+  url: "/hook/{app}";
+};
+
+export type PostHookByAppErrors = {
+  /**
+   * Bad Request
+   */
+  400: ErrorResponse;
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Internal Server Error
+   */
+  500: ErrorResponse;
+};
+
+export type PostHookByAppError = PostHookByAppErrors[keyof PostHookByAppErrors];
+
+export type PostHookByAppResponses = {
+  /**
+   * The post was verified and recorded.
+   */
+  202: {
+    /**
+     * The recorded event's id.
+     */
+    id: string;
+  };
+};
+
+export type PostHookByAppResponse = PostHookByAppResponses[keyof PostHookByAppResponses];

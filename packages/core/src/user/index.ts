@@ -4,7 +4,7 @@ import { Assert } from "../util/assert";
 import { fn } from "../util/fn";
 import { iso } from "../util/fmt";
 import { Database } from "../drizzle";
-import { Actor } from "../actor";
+import { Identity } from "../identity";
 import { Common } from "../common";
 import { ErrorCodes, VisibleError } from "../error";
 import { Bus } from "../platform/bus";
@@ -14,7 +14,7 @@ import { Permission } from "../permission";
 import { sortable } from "../drizzle/order";
 import { UserTable } from "./user.sql";
 import { Patch, Prefs } from "./prefs";
-import { ProviderIds, ProviderTable } from "./provider.sql";
+import { ProviderIds, ProviderTable } from "../auth/provider.sql";
 
 export namespace User {
   export const assert = Assert.create("User");
@@ -34,6 +34,14 @@ export namespace User {
       role: z.enum(Permission.roles).meta({
         description: "Decides everything the account may do. Only `user:assign` can change it.",
       }),
+      kind: z.enum(["human", "system"]).meta({
+        description:
+          "A `system` account is an App: nobody logs in as it — an external system or CI acting through API keys.",
+      }),
+      ownerID: z
+        .string()
+        .nullable()
+        .meta({ description: "For an App, the person answerable for it. Null for people." }),
       prefs: Prefs.meta({
         description: "Display preferences. Every key has a default, so this is always complete.",
       }),
@@ -52,6 +60,10 @@ export namespace User {
 
   export const Event = {
     Assigned: Bus.define("user.assigned", z.object({ from: Info.shape.role, to: Info.shape.role })),
+    // Recorded as whoever made the account: the `auth` agent on signup, an admin for an App.
+    Created: Bus.define("user.created", Info.pick({ email: true, kind: true })),
+    // A new way into an existing account — Google added to one made by emailed code.
+    Linked: Bus.define("user.linked", z.object({ provider: z.string() })),
     Removed: Bus.define("user.removed", Info.pick({ email: true })),
     Restored: Bus.define("user.restored", Info.pick({ email: true })),
   };
@@ -88,7 +100,7 @@ export namespace User {
           timeCreated: ProviderTable.timeCreated,
         })
         .from(ProviderTable)
-        .where(eq(ProviderTable.userID, Actor.userID()));
+        .where(eq(ProviderTable.userID, Identity.userID()));
 
       return ProviderIds.map((id) => {
         const row = rows.find((row) => row.providerId === id);
@@ -108,9 +120,13 @@ export namespace User {
       email: Info.shape.email,
       emailVerified: Info.shape.emailVerified,
       image: Info.shape.image.optional(),
+      kind: Info.shape.kind.optional(),
+      ownerID: z.string().optional(),
     }),
+    // A grant, not an open door: signup holds it through the `auth` agent, an App through its admin.
     async (input) => {
-      return Database.use((tx) =>
+      Identity.check({ user: ["create"] });
+      const user = await Database.use((tx) =>
         tx
           .insert(UserTable)
           .values({
@@ -119,10 +135,14 @@ export namespace User {
             email: input.email,
             emailVerified: input.emailVerified ?? false,
             image: input.image ?? null,
+            kind: input.kind ?? "human",
+            ownerID: input.ownerID ?? null,
           })
           .returning()
           .then((rows) => serialize(rows[0]!)),
       );
+      await Event.Created.publish({ email: user.email, kind: user.kind }, { subject: user.id });
+      return user;
     },
   );
 
@@ -157,6 +177,42 @@ export namespace User {
     ),
   );
 
+  /**
+   * Another account as a teammate sees it: no prefs, and no address for an App — its email is a
+   * placeholder. Any signed-in reader holds `user:read`, the same grant the assignee picker uses.
+   */
+  export const Profile = Info.pick({
+    id: true,
+    name: true,
+    image: true,
+    kind: true,
+    role: true,
+    timeCreated: true,
+  })
+    .extend({
+      email: Info.shape.email.nullable(),
+      owner: z.object({ id: z.string(), name: z.string() }).nullable(),
+    })
+    .meta({ ref: "Profile", description: "An account as other signed-in users see it." });
+  export type Profile = z.infer<typeof Profile>;
+
+  export const profile = fn(Info.shape.id, async (id): Promise<Profile | null> => {
+    Identity.check({ user: ["read"] });
+    const row = await fromID(id);
+    if (!row) return null;
+    const owner = row.ownerID ? await fromID(row.ownerID) : null;
+    return {
+      id: row.id,
+      name: row.name,
+      image: row.image,
+      kind: row.kind,
+      role: row.role,
+      timeCreated: row.timeCreated,
+      email: row.kind === "system" ? null : row.email,
+      owner: owner ? { id: owner.id, name: owner.name } : null,
+    };
+  });
+
   export const fromEmail = fn(Info.shape.email, (email) =>
     Database.use((tx) =>
       tx
@@ -174,7 +230,7 @@ export namespace User {
         tx
           .update(UserTable)
           .set({ ...input, timeUpdated: new Date() })
-          .where(eq(UserTable.id, Actor.userID())),
+          .where(eq(UserTable.id, Identity.userID())),
       ),
   );
 
@@ -187,7 +243,7 @@ export namespace User {
           prefs: sql`${UserTable.prefs} || ${JSON.stringify(input)}::jsonb`,
           timeUpdated: new Date(),
         })
-        .where(eq(UserTable.id, Actor.userID())),
+        .where(eq(UserTable.id, Identity.userID())),
     ),
   );
 
@@ -203,8 +259,7 @@ export namespace User {
 
   /** Both ways an admin could lock themselves out: demoting or disabling their own account. */
   function other(id: string) {
-    const actor = Actor.use();
-    if (actor.type === "user" && actor.properties.userID === id)
+    if (Identity.known() && Identity.userID() === id)
       throw new VisibleError(
         "validation",
         ErrorCodes.Validation.INVALID_STATE,
@@ -215,7 +270,7 @@ export namespace User {
   export const assign = fn(
     z.object({ id: Info.shape.id, role: Info.shape.role }),
     async (input) => {
-      Actor.check({ user: ["assign"] });
+      Identity.check({ user: ["assign"] });
       other(input.id);
       const before = await assert.exists(target(input.id));
       if (before.role === input.role) return;
@@ -232,7 +287,7 @@ export namespace User {
 
   /** Disables an account. Their rows stay put — one `restore` away, nothing orphaned. */
   export const remove = fn(Info.shape.id, async (id) => {
-    Actor.check({ user: ["delete"] });
+    Identity.check({ user: ["delete"] });
     other(id);
     const before = await assert.exists(target(id));
     if (before.timeDeleted) return;
@@ -244,7 +299,7 @@ export namespace User {
   });
 
   export const restore = fn(Info.shape.id, async (id) => {
-    Actor.check({ user: ["delete"] });
+    Identity.check({ user: ["delete"] });
     const before = await assert.exists(target(id));
     if (!before.timeDeleted) return;
 
@@ -265,6 +320,8 @@ export namespace User {
       emailVerified: row.emailVerified,
       image: row.image,
       role: row.role,
+      kind: row.kind,
+      ownerID: row.ownerID,
       // Parsed, not passed through: a row written before a preference existed is missing
       // that key, and the column's `$type` would claim otherwise.
       prefs: Prefs.parse(row.prefs),

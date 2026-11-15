@@ -13,6 +13,8 @@ export namespace Permission {
     todo: ["read", "create", "update", "delete"],
     key: ["read", "create", "update", "delete"],
     webhook: ["read", "create", "update", "delete"],
+    // External systems registered in Developers: a system account, its keys and its inbound secret.
+    app: ["read", "create", "update", "delete"],
   } as const;
 
   type Res = keyof typeof Statement;
@@ -20,6 +22,9 @@ export namespace Permission {
 
   /** What a caller asks for. Base actions only — you never *request* an own-scoped action. */
   export type Grants = { [R in Res]?: readonly Act<R>[] };
+
+  /** Every action of every resource: what a seed or a test's setup holds, since nothing skips checks. */
+  export const all: Grants = Statement;
 
   /** What a role holds. `delete:own` narrows the action to rows the actor created. */
   type Held = { [R in Res]?: readonly (Act<R> | `${Act<R>}:own`)[] };
@@ -33,6 +38,7 @@ export namespace Permission {
       todo: ["read", "create", "update", "delete"],
       key: ["read", "create", "update", "delete"],
       webhook: ["read", "create", "update", "delete"],
+      app: ["read", "create", "update", "delete"],
     },
     member: {
       user: ["read", "update:own"],
@@ -46,6 +52,14 @@ export namespace Permission {
 
   /** Non-empty tuple, for `z.enum` and the drizzle `$type`. */
   export const roles = Object.keys(Roles) as [Role, ...Role[]];
+
+  /** True when every requested action is inside `scope` — an agent's narrowing of a role. */
+  export function within(scope: Grants, grants: Grants) {
+    const held: any = scope;
+    return Object.entries(grants).every(([res, acts]: [string, any]) =>
+      (acts ?? []).every((a: string) => held[res]?.includes(a)),
+    );
+  }
 
   /** True when `role` holds every listed action. `owned` unlocks the `:own` variants. */
   export function can(role: Role | undefined, grants: Grants, owned = false) {

@@ -2,7 +2,7 @@ import { z } from "zod";
 import { ErrorResponse, ErrorCodes, VisibleError } from "@template/core/error";
 import { validator as zodValidator, resolver } from "hono-openapi";
 import type { MiddlewareHandler, ValidationTargets } from "hono";
-import { Actor } from "@template/core/actor";
+import { Identity } from "@template/core/identity";
 
 const num = (v: unknown) => (typeof v === "string" ? Number(v) : v);
 
@@ -24,7 +24,7 @@ export function PaginatedQuery<T extends z.ZodObject<any>>(schema: T): T {
 export const noop: MiddlewareHandler = (_c, next) => next();
 
 export const authRequired: MiddlewareHandler = async (_c, next) => {
-  const actor = Actor.use();
+  const actor = Identity.use();
   if (actor.type === "public")
     throw new VisibleError(
       "authentication",

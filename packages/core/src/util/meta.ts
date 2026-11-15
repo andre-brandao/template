@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { sql, type SQLWrapper } from "drizzle-orm";
-import { Actor } from "../actor";
+import { Identity } from "../identity";
 import { ErrorCodes, VisibleError } from "../error";
 
 /**
@@ -44,14 +44,14 @@ export const Annotate = z.object({
   unset: Key.array().optional().meta({ description: "Keys to drop." }),
 });
 
-/** Namespaces only a sync engine (the system actor) writes, so people can't fake a link. */
+/** Namespaces only a sync engine (an `internal` identity) writes, so people can't fake a link. */
 const RESERVED = ["github.com/"];
 
 /** The merge as one SQL expression on the `metadata` column, so writers to other keys don't clobber each other. */
 export function annotate(column: SQLWrapper, input: z.infer<typeof Annotate>) {
   const keys = [...Object.keys(input.set ?? {}), ...(input.unset ?? [])];
   if (
-    Actor.use().type !== "system" &&
+    Identity.use().type !== "internal" &&
     keys.some((key) => RESERVED.some((ns) => key.startsWith(ns)))
   )
     throw new VisibleError(

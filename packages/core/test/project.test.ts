@@ -1,5 +1,6 @@
 import { describe, expect } from "bun:test";
-import { Actor } from "../src/actor";
+import { Identity } from "../src/identity";
+import { Permission } from "../src/permission";
 import { Project } from "../src/project";
 import { Todo } from "../src/todo";
 import { withTestUser } from "./util";
@@ -45,7 +46,7 @@ describe("project", () => {
 
   withTestUser("a signed-out caller is denied", async () => {
     const { id } = await Project.create({ name: "Private" });
-    await Actor.provide("public", {}, async () => {
+    await Identity.provide("public", {}, async () => {
       // `list` guards before it touches a promise, same as the zod parse in `fn`; `remove`
       // is async, so the identical throw surfaces as a rejection.
       expect(() => Project.list({})).toThrow(/project:read/);
@@ -59,12 +60,12 @@ describe("project", () => {
     const { id } = await Project.create({ name: "Mine" });
     const before = await Project.fromID(id);
     expect(before?.createdBy).toBe(userID);
-    expect(Actor.can({ project: ["delete"] }, before?.createdBy)).toBe(true);
+    expect(Identity.can({ project: ["delete"] }, before?.createdBy)).toBe(true);
   });
 
   withTestUser("system bypasses enforcement", async () => {
     const { id } = await Project.create({ name: "Batch" });
-    await Actor.provide("system", {}, async () => {
+    await Identity.internal("test", Permission.all, async () => {
       await Project.update({ id, name: "Renamed by a job" });
       expect((await Project.fromID(id))?.name).toBe("Renamed by a job");
     });

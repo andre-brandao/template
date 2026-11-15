@@ -1,5 +1,5 @@
 import { error } from "@sveltejs/kit";
-import { Actor } from "@template/core/actor";
+import { Identity } from "@template/core/identity";
 
 export const MAX = 20 * 1024 * 1024;
 
@@ -10,5 +10,5 @@ export const MAX = 20 * 1024 * 1024;
 export function key(name: string) {
   const base = name.split(/[\\/]/).at(-1)?.trim();
   if (!base || base === "." || base === "..") error(400, `Invalid filename: ${name}`);
-  return `${Actor.userID()}/${base}`;
+  return `${Identity.userID()}/${base}`;
 }

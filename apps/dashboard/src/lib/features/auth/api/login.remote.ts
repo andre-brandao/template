@@ -1,7 +1,7 @@
 import { getRequestEvent } from "$app/server";
 import { redirect } from "@sveltejs/kit";
 import { z } from "zod";
-import { Auth } from "@template/core/user/auth";
+import { Auth } from "@template/core/auth";
 import { remote } from "$lib/server/remote";
 import * as session from "$lib/server/session";
 import * as next from "$lib/server/next";

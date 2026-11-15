@@ -1,72 +1,30 @@
-import { type MiddlewareHandler, type Next } from "hono";
+import { type MiddlewareHandler } from "hono";
 import { VisibleError, ErrorCodes } from "@template/core/error";
-import { Actor } from "@template/core/actor";
-import { Key } from "@template/core/key";
-import { Session } from "@template/core/key/session";
-import { User } from "@template/core/user";
-import { zone } from "@template/core/user/prefs";
-import { subjects } from "../auth/subject";
+import { Identity } from "@template/core/identity";
+import { Auth } from "@template/core/auth";
+import { verifier } from "../auth/subject";
 import { client } from "./auth";
 
-// Every token kind resolves to a bare user id. The role always comes from the row, so an
-// API key can never outlive the permissions of the user who minted it.
-async function actor(userID: string, next: Next) {
-  const row = await User.fromID(userID);
-  if (!row)
-    throw new VisibleError(
-      "authentication",
-      ErrorCodes.Authentication.INVALID_TOKEN,
-      "Token belongs to a user that no longer exists",
-    );
-  return Actor.provide("user", { userID, role: row.role, timezone: zone(row.prefs) }, next);
+const issuer = verifier(client);
+
+/**
+ * Every bearer kind — session, `sk-` key, `agt-` delegation, issuer JWT — goes through
+ * `Auth.resolve`, which owns the formats. `audience` is which service is asking.
+ */
+export function auth(audience: "api" | "mcp" = "api"): MiddlewareHandler {
+  return async (c, next) => {
+    const header = c.req.header("authorization");
+    if (!header) return Identity.provide("public", {}, next);
+
+    const token = header.match(/^Bearer (.+)$/)?.[1];
+    if (!token)
+      throw new VisibleError(
+        "authentication",
+        ErrorCodes.Authentication.UNAUTHORIZED,
+        "Bearer token not found or improperly formatted",
+      );
+
+    const info = await Auth.Issuer.provide(issuer, () => Auth.resolve(token, audience));
+    return Identity.enter(info, next);
+  };
 }
-
-export const auth: MiddlewareHandler = async (c, next) => {
-  const header = c.req.header("authorization");
-  if (!header) return Actor.provide("public", {}, next);
-
-  const match = header.match(/^Bearer (.+)$/);
-  if (!match || !match[1])
-    throw new VisibleError(
-      "authentication",
-      ErrorCodes.Authentication.UNAUTHORIZED,
-      "Bearer token not found or improperly formatted",
-    );
-  const token = match[1];
-
-  // A dashboard session (`<id>.ses-…`), forwarded server-to-server by the dashboard agent so
-  // its MCP calls run as the signed-in user. Collapses to the same user actor.
-  if (token.includes(".ses-")) {
-    const me = await Session.verify(token);
-    if (!me)
-      throw new VisibleError(
-        "authentication",
-        ErrorCodes.Authentication.INVALID_TOKEN,
-        "Invalid or expired session",
-      );
-    return actor(me.userID, next);
-  }
-
-  // `sk-` secrets are user-minted API keys, resolved in Postgres. Anything else
-  // is a JWT from the OpenAuth issuer, verified statelessly against its JWKS.
-  if (token.startsWith("sk-")) {
-    const userID = await Key.verify(token);
-    if (!userID)
-      throw new VisibleError(
-        "authentication",
-        ErrorCodes.Authentication.INVALID_TOKEN,
-        "Invalid or expired API key",
-      );
-    return actor(userID, next);
-  }
-
-  const result = await client.verify(subjects, token);
-  if (result.err)
-    throw new VisibleError(
-      "authentication",
-      ErrorCodes.Authentication.INVALID_TOKEN,
-      "Invalid or expired token",
-    );
-
-  return actor(result.subject.properties.userID, next);
-};

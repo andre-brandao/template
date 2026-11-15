@@ -2,14 +2,14 @@ import { command, form, query } from "$app/server";
 import { error, invalid } from "@sveltejs/kit";
 import type { RemoteForm, RemoteFormInput } from "@sveltejs/kit";
 import type { z } from "zod";
-import { Actor } from "@template/core/actor";
+import { Identity } from "@template/core/identity";
 import { VisibleError } from "@template/core/error";
 import type { Permission } from "@template/core/permission";
 
 // 401, not 403: no session at all is fixable by signing in, where a `forbidden` from
-// `Actor.check` is not. The client branches on the difference.
+// `Identity.check` is not. The client branches on the difference.
 function auth() {
-  if (Actor.use().type !== "user") error(401, "Authentication required");
+  if (Identity.use().type !== "user") error(401, "Authentication required");
 }
 
 /** How a `VisibleError` gets out: as a form issue, or as a status the error page owns. */
@@ -111,7 +111,7 @@ type Remote = ReturnType<typeof terminals> & {
  * never repeated at a call site. Gates come first and the terminal last — which terminal you
  * reach for decides the guard's mode, so it is never passed by hand.
  *
- * `can` is a role-level gate: `Actor.check` resolves `:own` grants only when handed the row's
+ * `can` is a role-level gate: `Identity.check` resolves `:own` grants only when handed the row's
  * owner, which a static chain cannot know, so ownership-scoped checks stay inside core.
  */
 function make(gates: Gate[]): Remote {
@@ -123,7 +123,7 @@ function make(gates: Gate[]): Remote {
       return (bare ??= make(gates.filter((gate) => gate !== auth)));
     },
     use: (gate) => make([...gates, gate]),
-    can: (grants) => make([...gates, () => Actor.check(grants)]),
+    can: (grants) => make([...gates, () => Identity.check(grants)]),
   };
 }
 

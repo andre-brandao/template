@@ -1,5 +1,5 @@
 import { it } from "bun:test";
-import { Actor } from "../src/actor";
+import { Identity } from "../src/identity";
 import { Permission } from "../src/permission";
 import { User } from "../src/user";
 
@@ -19,9 +19,14 @@ export function withTestUser(
 ) {
   return it(name, async () => {
     const email = testEmail();
-    const user = await Actor.provide("system", {}, () => User.create({ name: "Test User", email }));
-    await Actor.provide("user", { userID: user.id, role }, async () => {
+    const user = await createUser({ name: "Test User", email });
+    await Identity.provide("user", { userID: user.id, role }, async () => {
       await cb({ userID: user.id, email });
     });
   });
+}
+
+/** `User.create` wants `user:create`; test setup holds it as `internal`. */
+export function createUser(input: Parameters<typeof User.create>[0]) {
+  return Identity.internal("test", Permission.all, () => User.create(input));
 }

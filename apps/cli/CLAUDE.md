@@ -24,9 +24,10 @@ The one entrypoint that runs and talks to the template. Bun-only, no build step 
 
 ## Rules
 
-- **Never hardcode API method names.** `api.ts` reflects `TemplateSdk.prototype`, so
+- **Never hardcode API method names.** `api.ts` reflects the functions `@template/sdk/sdk.gen` exports, so
   new endpoints appear automatically after `bun run gen`. Adding a method to the
-  command surface should require zero edits here.
+  command surface should require zero edits here. Import `sdk.gen`, never the barrel: it
+  re-exports the TanStack helpers, an optional peer this package lacks.
 - **Adding a command** = add one function and one entry in `commands` in `index.ts`,
   then update the `help` string in the same file. Commands take `rest: string[]`.
 - **Adding a serve target** = one entry in `targets` in `serve.ts`, plus its port in

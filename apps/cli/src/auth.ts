@@ -1,5 +1,6 @@
 import { createClient } from "@openauthjs/openauth/client";
 import { sdk, output } from "./api";
+import { getMe } from "@template/sdk/sdk.gen";
 import { value } from "./args";
 import * as config from "./config";
 
@@ -77,6 +78,5 @@ export async function logout() {
 }
 
 export async function whoami() {
-  const res = await sdk(await config.token(), await config.url()).getMe();
-  output(res);
+  output(await getMe({ client: sdk(await config.token(), await config.url()) }));
 }

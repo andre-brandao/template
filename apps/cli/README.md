@@ -55,12 +55,15 @@ new ones show up automatically after `bun run gen`.
 ```sh
 template-cli api                              # list callable methods
 template-cli api getTodo                      # GET /todo
-template-cli api postTodo --title "Ship it"   # POST /todo
-template-cli api postTodo '{"title":"Ship"}'  # same, via a JSON blob
-template-cli api getTodoById --id tod_123
+template-cli api postTodo --body.title "Ship it"   # POST /todo
+template-cli api postTodo '{"body":{"title":"Ship"}}'  # same, via a JSON blob
+template-cli api getTodoById --path.id tod_123
+template-cli api getTodo --query.search ship --query.pageSize 10
 ```
 
-Flags map to call params (`--key value`, `--key=value`, or bare `--flag` for `true`).
+Flags map to call params, grouped the way the SDK takes them: `--path.<key>`, `--query.<key>`,
+`--body.<key>` (`--x.key value`, `--x.key=value`, or bare `--x.flag` for `true`). A JSON blob
+is the whole `{ path, query, body }` object.
 `--token` and `--url` override the saved config for a single call.
 
 ## Auth

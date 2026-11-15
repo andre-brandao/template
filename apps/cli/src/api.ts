@@ -1,22 +1,23 @@
 import { createClient } from "@template/sdk/client";
-import { TemplateSdk } from "@template/sdk";
+// Not the barrel: it also re-exports the TanStack helpers, an optional peer the CLI lacks.
+import * as ops from "@template/sdk/sdk.gen";
 import { strip, value } from "./args";
 import * as config from "./config";
 
-/** A configured SDK instance pointed at `url` with an optional bearer `token`. */
+/** An SDK client pointed at `url` with an optional bearer `token`; calls take it as `{ client }`. */
 export function sdk(token?: string, url = "http://localhost:3000") {
-  const client = createClient({
+  return createClient({
     baseUrl: url,
     headers: token ? { authorization: `Bearer ${token}` } : {},
   });
-  return new TemplateSdk({ client });
 }
+
+const table = ops as unknown as Record<string, (opts: Record<string, unknown>) => Promise<Result>>;
 
 /** Callable method names, reflected off the SDK so they track the generated client. */
 export function methods() {
-  const proto = TemplateSdk.prototype as unknown as Record<string, unknown>;
-  return Object.getOwnPropertyNames(proto)
-    .filter((n) => n !== "constructor" && typeof proto[n] === "function")
+  return Object.keys(table)
+    .filter((n) => typeof table[n] === "function")
     .sort();
 }
 
@@ -28,7 +29,15 @@ function coerce(v: string) {
   return v !== "" && !Number.isNaN(n) ? n : v;
 }
 
-/** Turn `["--title", "hi", "--done"]` into `{ title: "hi", done: true }`. Also accepts a `{json}` blob. */
+/** `path.id` lands in `out.path.id`, since the SDK takes `{ path, query, body }`. */
+function set(out: Record<string, unknown>, key: string, val: unknown) {
+  const dot = key.indexOf(".");
+  if (dot < 0) return void (out[key] = val);
+  const group = (out[key.slice(0, dot)] ??= {}) as Record<string, unknown>;
+  group[key.slice(dot + 1)] = val;
+}
+
+/** Turn `["--body.title", "hi", "--body.done"]` into `{ body: { title: "hi", done: true } }`. Also accepts a `{json}` blob. */
 export function params(args: string[]) {
   if (args[0]?.startsWith("{")) return JSON.parse(args[0]) as Record<string, unknown>;
   const out: Record<string, unknown> = {};
@@ -37,15 +46,15 @@ export function params(args: string[]) {
     if (!a.startsWith("--")) continue;
     const eq = a.indexOf("=");
     if (eq >= 0) {
-      out[a.slice(2, eq)] = coerce(a.slice(eq + 1));
+      set(out, a.slice(2, eq), coerce(a.slice(eq + 1)));
       continue;
     }
     const next = args[i + 1];
     if (next === undefined || next.startsWith("--")) {
-      out[a.slice(2)] = true;
+      set(out, a.slice(2), true);
       continue;
     }
-    out[a.slice(2)] = coerce(next);
+    set(out, a.slice(2), coerce(next));
     i++;
   }
   return out;
@@ -54,7 +63,9 @@ export function params(args: string[]) {
 export async function api(rest: string[]) {
   const method = rest[0];
   if (!method || method === "help") {
-    console.log(`Usage: template-cli api <method> [--key value | '{json}']\n`);
+    console.log(
+      `Usage: template-cli api <method> [--path.<key> v] [--query.<key> v] [--body.<key> v | '{json}']\n`,
+    );
     console.log("Methods:");
     for (const m of methods()) console.log(`  ${m}`);
     return;
@@ -71,10 +82,7 @@ export async function api(rest: string[]) {
     await config.token(value(raw, "--token")),
     await config.url(value(raw, "--url")),
   );
-  // Invoke as a member so `this` binds to the client instance.
-  const call = client as unknown as Record<string, (p: unknown) => Promise<Result>>;
-  const res = await call[method]!(params(strip(raw, ["--token", "--url"])));
-  output(res);
+  output(await table[method]!({ ...params(strip(raw, ["--token", "--url"])), client }));
 }
 
 type Result = { data?: unknown; error?: unknown };

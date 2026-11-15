@@ -4,12 +4,12 @@ import { strip, value } from "../src/args";
 import { probe } from "../src/health";
 
 describe("methods", () => {
-  it("reflects SDK methods off the prototype", () => {
+  it("reflects the SDK's operation functions, not the TanStack helpers", () => {
     const names = methods();
     expect(names).toContain("getMe");
     expect(names).toContain("getTodo");
     expect(names).toContain("postTodo");
-    expect(names).not.toContain("constructor");
+    expect(names).not.toContain("getTodoOptions");
   });
 
   it("returns sorted, non-empty names", () => {
@@ -20,9 +20,7 @@ describe("methods", () => {
 });
 
 describe("sdk", () => {
-  // `client` is protected on TemplateSdk; reaching it is the only way to assert plumbing.
-  const cfg = (token?: string, url?: string) =>
-    (sdk(token, url) as any).client.getConfig() as { baseUrl?: string; headers?: unknown };
+  const cfg = (token?: string, url?: string) => sdk(token, url).getConfig();
 
   it("defaults to localhost:3000 with no auth header", () => {
     const c = cfg();
@@ -43,6 +41,13 @@ describe("params", () => {
       title: "hi",
       page: 2,
       done: true,
+    });
+  });
+
+  it("nests dotted keys into the SDK's groups", () => {
+    expect(params(["--path.id", "tod_1", "--body.title=hi", "--body.done"])).toEqual({
+      path: { id: "tod_1" },
+      body: { title: "hi", done: true },
     });
   });
 

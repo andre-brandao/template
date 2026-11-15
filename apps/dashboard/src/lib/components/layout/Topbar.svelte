@@ -15,8 +15,7 @@
 		onmenu,
 		head,
 		crumbs,
-		tools,
-		account
+		tools
 	}: {
 		user: User.Info | null;
 		onmenu?: () => void;
@@ -24,8 +23,6 @@
 		crumbs?: { href?: string; label: string }[];
 		/** Utilities a route composes in, before the account, e.g. the assistant toggle. */
 		tools?: Snippet;
-		/** Extra rows in the account menu. */
-		account?: Snippet;
 	} = $props();
 </script>
 
@@ -53,7 +50,7 @@
 	<!-- The right cluster, Cloudflare-style: utilities first, then the account. -->
 	<div class="tail">
 		{@render tools?.()}
-		<Me {user} {account} />
+		<Me {user} />
 	</div>
 </header>
 

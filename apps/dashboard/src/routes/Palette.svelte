@@ -8,6 +8,7 @@
 	import { page } from '$app/state';
 	import { createHotkey } from '@tanstack/svelte-hotkeys';
 	import { useQueryClient } from '@tanstack/svelte-query';
+	import { Themes, type Prefs } from '@template/core/user/prefs';
 	import { getProjectQueryKey, type Project } from '@template/sdk/query';
 	import { Command, Kbd, modal, toast, type Action } from '@template/ui';
 	import Keys from '#lib/components/layout/Keys.svelte';
@@ -42,12 +43,11 @@
 		run: () => goto(href)
 	});
 
-	function theme() {
+	const labels = { system: 'System', light: 'Light', dark: 'Dark' };
+
+	// The one quick switch; Settings → Experience is the other place the theme is picked.
+	function theme(next: Prefs['theme']) {
 		const before = me.prefs.theme;
-		const dark =
-			before === 'dark' ||
-			(before === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);
-		const next = dark ? 'light' : 'dark';
 		swap(next);
 		write.mutate({ theme: next }, { onError: () => swap(before) });
 	}
@@ -86,7 +86,12 @@
 					}
 				]
 			: []),
-		{ group: 'Actions', label: 'Toggle theme', run: theme },
+		...Themes.map((one) => ({
+			group: 'Theme',
+			label: `Theme: ${labels[one]}`,
+			hint: one === me.prefs.theme ? 'current' : undefined,
+			run: () => theme(one)
+		})),
 		{
 			group: 'Actions',
 			label: rail.tight ? 'Expand sidebar' : 'Collapse sidebar',

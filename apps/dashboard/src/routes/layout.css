@@ -227,7 +227,7 @@ a {
   outline-offset: 2px;
 }
 
-/* The theme swap, wiped in as a circle from the control that was clicked. `ThemeToggle`
+/* The theme swap, wiped in as a circle from the control that was clicked. `swap()`
    sets --x/--y/--r on the root and flips `data-theme` inside a view transition; custom
    properties inherit into the pseudo tree, so the keyframes below read them from there. */
 :root[data-scope="theme"] * {

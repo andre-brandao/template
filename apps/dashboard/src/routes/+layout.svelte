@@ -12,7 +12,6 @@
 	import Dock from '#lib/features/agent/components/Dock.svelte';
 	import Toggle from '#lib/features/agent/components/Toggle.svelte';
 	import Feedback from '#lib/features/feedback/components/Feedback.svelte';
-	import ThemeToggle from '#lib/features/settings/components/ThemeToggle.svelte';
 
 	let { data, children } = $props();
 
@@ -46,7 +45,6 @@
 					{#if data.user && data.agent}<Toggle />{/if}
 					{#if data.user && data.feedback}<Feedback />{/if}
 				{/snippet}
-				{#snippet account()}<ThemeToggle />{/snippet}
 				{#snippet side()}
 					<!-- No LLM env, no dock: its model list would throw on every page. -->
 					{#if data.user && data.agent}<Dock />{/if}

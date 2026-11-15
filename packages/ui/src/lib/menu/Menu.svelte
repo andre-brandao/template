@@ -31,10 +31,22 @@
 
 	createMenu({ close: () => pop?.close() });
 
-	/** Wire to `oncontextmenu` on any element to open the menu at the pointer. */
+	/**
+	 * Wire to `oncontextmenu` on any element to open the menu at the pointer. Shift, editable
+	 * text, a selection under the pointer and a nested popover keep the native menu.
+	 */
 	export function at(e: MouseEvent) {
+		const el = e.target instanceof Element ? e.target : undefined;
+		const nest = el?.closest('[popover]');
+		const sel = getSelection();
+		if (e.shiftKey || el?.closest('input, textarea, select, [contenteditable]')) return;
+		if (nest && e.currentTarget instanceof Node && e.currentTarget.contains(nest)) return;
+		if (el && sel && !sel.isCollapsed && sel.containsNode(el, true)) return;
 		e.preventDefault();
-		pop?.show({ x: e.clientX, y: e.clientY });
+		// Shift+F10 or the menu key: no pointer, so the menu opens under the focused element.
+		const key = (e instanceof PointerEvent && !e.pointerType) || (!e.clientX && !e.clientY);
+		const rect = el?.getBoundingClientRect();
+		pop?.show(key && rect ? { x: rect.left, y: rect.bottom } : { x: e.clientX, y: e.clientY });
 	}
 
 	function keys(e: KeyboardEvent & { currentTarget: HTMLElement }) {

@@ -50,6 +50,7 @@
 	import Month from './Month.svelte';
 	import Week from './Week.svelte';
 	import Tray from './Tray.svelte';
+	import Quick from './Quick.svelte';
 	import { createDrag } from './drag.svelte';
 	import { apply, clock, item, resize, same, slide, type Spot } from './layout';
 
@@ -172,6 +173,14 @@
 	const create = (day: Day) =>
 		modal(TodoForm, { scope: { source: filters.source, sourceID: filters.sourceID }, due: day });
 
+	let quick: Quick | undefined = $state();
+
+	// Enter on a day is a click with no pointer (`detail` 0), so it opens under that day.
+	function add(day: Day, e: MouseEvent) {
+		const box = e.target instanceof Element ? e.target.closest('button')?.getBoundingClientRect() : undefined;
+		quick?.open(day, !e.detail && box ? { x: box.left, y: box.bottom } : { x: e.clientX, y: e.clientY });
+	}
+
 	function list(day: Day, e: MouseEvent) {
 		picked = day;
 		more?.show({ x: e.clientX, y: e.clientY });
@@ -228,7 +237,7 @@
 				{items}
 				{hit}
 				{chips}
-				onpick={create}
+				onpick={add}
 				onmore={list}
 			/>
 		{:else}
@@ -241,7 +250,7 @@
 				{hit}
 				{preview}
 				{chips}
-				onpick={create}
+				onpick={add}
 			/>
 		{/if}
 		<Tray
@@ -252,6 +261,8 @@
 		/>
 	</div>
 </div>
+
+<Quick bind:this={quick} scope={{ source: filters.source, sourceID: filters.sourceID }} onmore={create} />
 
 <Popover bind:this={more} label="Todos on this day">
 	{#if picked}

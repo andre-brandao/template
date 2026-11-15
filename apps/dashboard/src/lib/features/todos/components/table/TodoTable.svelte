@@ -2,9 +2,7 @@
 	import { z } from 'zod';
 	import { createTable, renderSnippet } from '@tanstack/svelte-table';
 	import type { ColumnDef, Row } from '@tanstack/svelte-table';
-	import { goto } from '$app/navigation';
 	import { DataTable, Menu, Status, features } from '@template/ui';
-	import Ellipsis from '@lucide/svelte/icons/ellipsis';
 	import { SvelteSet } from 'svelte/reactivity';
 	import type { Todo } from '@template/core/todo';
 	import { query } from '$lib/utils/params';
@@ -14,6 +12,7 @@
 	import TagList from '../TagList.svelte';
 	import { move } from '../../api/todos.query';
 	import Delete from '../Delete.svelte';
+	import Actions from '../Actions.svelte';
 	import { moves, tree, visible, type Node } from '../../tree';
 	import { sort } from '../../sort';
 
@@ -30,6 +29,8 @@
 	}
 
 	const shift = move();
+	// Each row's ⋯ menu, so a right-click anywhere on the row opens that same menu.
+	const menus: Record<string, Actions | null> = {};
 
 	const nest = (to: { id: string; parentID: string | null; position?: number }) =>
 		shift.mutate({ path: { id: to.id }, body: { parentID: to.parentID, position: to.position } });
@@ -146,29 +147,23 @@
 	{@const to = moves(nodes, row.original)}
 	<Delete id={row.original.id} title={row.original.title}>
 		{#snippet children(ask, deleting)}
-			<Menu.Root label="{row.original.title} actions" align="end">
-				{#snippet trigger(attrs)}
-					<button class="dots" aria-label="{row.original.title} actions" {...attrs}>
-						<Ellipsis size={16} strokeWidth={1.75} />
-					</button>
-				{/snippet}
-				<Menu.Item onselect={() => goto(`/todos/${row.original.id}`)}>Open</Menu.Item>
-				<Menu.Item
-					disabled={!to.indent || shift.isPending}
-					onselect={() => to.indent && nest(to.indent)}>Indent</Menu.Item
-				>
-				<Menu.Item
-					disabled={!to.outdent || shift.isPending}
-					onselect={() => to.outdent && nest(to.outdent)}>Outdent</Menu.Item
-				>
-				<Menu.Separator />
-				<Menu.Item danger disabled={deleting} onselect={ask}>Delete</Menu.Item>
-			</Menu.Root>
+			<span class="act">
+				<Actions bind:this={menus[row.original.id]} todo={row.original} {deleting} {ask}>
+					<Menu.Item
+						disabled={!to.indent || shift.isPending}
+						onselect={() => to.indent && nest(to.indent)}>Indent</Menu.Item
+					>
+					<Menu.Item
+						disabled={!to.outdent || shift.isPending}
+						onselect={() => to.outdent && nest(to.outdent)}>Outdent</Menu.Item
+					>
+				</Actions>
+			</span>
 		{/snippet}
 	</Delete>
 {/snippet}
 
-<DataTable {table} empty="No tasks yet" />
+<DataTable {table} empty="No tasks yet" oncontextmenu={(e, row) => menus[row.id]?.at(e)} />
 
 <style>
 	.dim {
@@ -177,23 +172,11 @@
 		white-space: nowrap;
 	}
 
-	.dots {
-		display: grid;
-		place-items: center;
-		width: 1.9em;
-		height: 1.9em;
-		margin-left: auto;
-		border: none;
-		border-radius: var(--radius-sm);
-		background: none;
-		color: var(--muted);
-		cursor: pointer;
-	}
-
-	.dots:hover,
-	.dots[aria-expanded='true'] {
-		background: var(--hover);
-		color: var(--ink);
+	/* The table has no row hover to reveal the ⋯, so it always shows. */
+	.act {
+		--dots: 1;
+		display: flex;
+		justify-content: flex-end;
 	}
 
 	.title {

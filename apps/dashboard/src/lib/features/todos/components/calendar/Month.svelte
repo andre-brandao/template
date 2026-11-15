@@ -22,7 +22,7 @@
 		/** Days a drag in flight would cover. */
 		hit: (day: Day) => boolean;
 		chips: Chips;
-		onpick: (day: Day) => void;
+		onpick: (day: Day, e: MouseEvent) => void;
 		onmore: (day: Day, e: MouseEvent) => void;
 	} = $props();
 

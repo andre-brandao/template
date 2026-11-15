@@ -12,6 +12,7 @@
 	let { todo }: { todo: Todo.Info } = $props();
 
 	let renaming = $state(false);
+	let actions: Actions | undefined = $state();
 </script>
 
 <Delete id={todo.id} title={todo.title}>
@@ -20,10 +21,11 @@
 			class={['card', { deleting }]}
 			aria-busy={deleting}
 			style:--c={color(todo.status)}
+			oncontextmenu={(e) => actions?.at(e)}
 		>
 			<div class="head">
 				<div class="main"><Title {todo} bind:renaming busy={deleting} /></div>
-				<Actions {todo} {deleting} {ask} onrename={() => (renaming = true)} />
+				<Actions bind:this={actions} {todo} {deleting} {ask} onrename={() => (renaming = true)} />
 			</div>
 			{#if todo.stage || todo.tags.length}
 				<div class="tags">

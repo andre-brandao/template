@@ -75,6 +75,7 @@ const ops = [
   entry("todo", "read", Todo.list, () => ({})),
   entry("todo", "read", Todo.fromID, () => fx.todo),
   entry("todo", "read", Todo.stages, () => ({})),
+  entry("todo", "read", Todo.labels, () => ({})),
   entry("todo", "read", Insights.stats, () => range),
   entry("todo", "read", Insights.status, () => range),
   entry("todo", "read", Insights.load, () => range),

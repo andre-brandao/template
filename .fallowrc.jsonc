@@ -92,6 +92,9 @@
     "@cloudflare/workers-types",
     "@sveltejs/package",
     "@tanstack/svelte-query",
+    // Peers of `alchemy` (infra/alchemy): installed for it, never imported by us.
+    "@effect/platform-bun",
+    "@effect/platform-node",
   ],
   "ignoreUnresolvedImports": ["@template/ui"],
   "boundaries": {

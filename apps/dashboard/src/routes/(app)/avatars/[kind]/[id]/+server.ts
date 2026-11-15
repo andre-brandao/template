@@ -18,16 +18,23 @@ function at(kind: string, id: string) {
   return { kind, key: `avatar/${kind}/${id}` } as const;
 }
 
-/**
- * Uploading and clearing mutate the subject, so only its owner may — or, for an App, an admin
- * managing its App. Viewing is open to any user.
- */
+/** Who may change each kind's avatar. Viewing is open to any user. */
+const guards = {
+  project: async (id: string) => {
+    if (!(await Project.fromID(id))) error(404, "Project not found");
+  },
+  // Your own, or an App's when you manage Apps.
+  user: async (id: string) => {
+    if (id === Identity.userID()) return;
+    if (Identity.can({ app: ["update"] }) && (await App.fromID(id))) return;
+    error(403, "Not your avatar");
+  },
+};
+
+/** Uploading and clearing mutate the subject, so only whoever owns it may. */
 async function owned(kind: "user" | "project", id: string) {
   if (Identity.use().type !== "user") error(401, "Authentication required");
-  if (kind === "project" && !(await Project.fromID(id))) error(404, "Project not found");
-  if (kind !== "user" || id === Identity.userID()) return;
-  const app = (await User.fromID(id))?.kind === "system";
-  if (!app || !Identity.can({ app: ["update"] })) error(403, "Not your avatar");
+  await guards[kind](id);
 }
 
 async function save(kind: "user" | "project", id: string, image: string | null) {

@@ -52,6 +52,22 @@
             "enum": ["admin", "member"],
             "description": "Decides everything the account may do. Only `user:assign` can change it."
           },
+          "kind": {
+            "type": "string",
+            "enum": ["human", "system"],
+            "description": "A `system` account is an App: nobody logs in as it — an external system or CI acting through API keys."
+          },
+          "ownerID": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "For an App, the person answerable for it. Null for people."
+          },
           "prefs": {
             "type": "object",
             "properties": {
@@ -110,7 +126,18 @@
             "description": "When the account was created."
           }
         },
-        "required": ["id", "name", "email", "image", "role", "prefs", "timeDeleted", "timeCreated"],
+        "required": [
+          "id",
+          "name",
+          "email",
+          "image",
+          "role",
+          "kind",
+          "ownerID",
+          "prefs",
+          "timeDeleted",
+          "timeCreated"
+        ],
         "description": "A user account.",
         "example": {
           "id": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX",
@@ -119,6 +146,8 @@
           "emailVerified": true,
           "image": null,
           "role": "member",
+          "kind": "human",
+          "ownerID": null,
           "prefs": {
             "theme": "system",
             "locale": "en",
@@ -250,7 +279,7 @@
           }
         },
         "required": ["id", "name", "display", "key", "timeUsed", "expiresAt", "current"],
-        "description": "An API key belonging to a user.",
+        "description": "A personal access token (or an App's API key). It acts as the user that owns it.",
         "example": {
           "id": "key_XXXXXXXXXXXXXXXXXXXXXXXXX",
           "name": "laptop",
@@ -770,6 +799,8 @@
                   "emailVerified": true,
                   "image": null,
                   "role": "member",
+                  "kind": "human",
+                  "ownerID": null,
                   "prefs": {
                     "theme": "system",
                     "locale": "en",
@@ -821,8 +852,8 @@
       "get": {
         "operationId": "getKey",
         "tags": ["Key"],
-        "summary": "List keys",
-        "description": "List the current user's API keys. Secrets are stored hashed, so `key` is null here — only `create` ever returns one. The key authenticating this request is flagged `current`.",
+        "summary": "List personal access tokens",
+        "description": "List the current user's personal access tokens. Secrets are stored hashed, so `key` is null here — only `create` ever returns one. The key authenticating this request is flagged `current`.",
         "responses": {
           "200": {
             "content": {
@@ -832,7 +863,7 @@
                   "items": {
                     "$ref": "#/components/schemas/Key"
                   },
-                  "description": "An API key belonging to a user.",
+                  "description": "A personal access token (or an App's API key). It acts as the user that owns it.",
                   "example": [
                     {
                       "id": "key_XXXXXXXXXXXXXXXXXXXXXXXXX",
@@ -858,7 +889,7 @@
                 ]
               }
             },
-            "description": "An API key belonging to a user."
+            "description": "A personal access token (or an App's API key). It acts as the user that owns it."
           },
           "401": {
             "content": {
@@ -895,8 +926,8 @@
       "post": {
         "operationId": "postKey",
         "tags": ["Key"],
-        "summary": "Create key",
-        "description": "Mint a named API key for the current user. Pass `expiresInDays` to set an expiry; omit it for a key that never expires.",
+        "summary": "Create personal access token",
+        "description": "Mint a named personal access token that acts as the current user. Pass `expiresInDays` to set an expiry; omit it for a key that never expires.",
         "responses": {
           "200": {
             "content": {
@@ -915,7 +946,7 @@
                 }
               }
             },
-            "description": "An API key belonging to a user."
+            "description": "A personal access token (or an App's API key). It acts as the user that owns it."
           },
           "400": {
             "content": {
@@ -1002,8 +1033,8 @@
       "delete": {
         "operationId": "deleteKeyById",
         "tags": ["Key"],
-        "summary": "Revoke key",
-        "description": "Revoke an API key. The secret stops authenticating immediately.",
+        "summary": "Revoke personal access token",
+        "description": "Revoke one of your personal access tokens. The secret stops authenticating immediately.",
         "responses": {
           "200": {
             "content": {
@@ -3776,6 +3807,98 @@
             "schema": {
               "type": "string"
             },
+            "required": true
+          }
+        ]
+      }
+    },
+    "/hook/{app}": {
+      "post": {
+        "operationId": "postHookByApp",
+        "tags": ["Hook"],
+        "summary": "Post an event",
+        "description": "Send `{ type, data }` as an App. Sign it like outbound webhooks: base64url HMAC-SHA256 of `${body}.${timestamp}` with the App's inbound secret, in `x-webhook-signature`, and the unix `x-webhook-timestamp` (within five minutes). It is recorded as an `app.received` event for a subscriber to act on.",
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "description": "The recorded event's id."
+                    }
+                  },
+                  "required": ["id"],
+                  "description": "The post was verified and recorded."
+                }
+              }
+            },
+            "description": "The post was verified and recorded."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "validation",
+                  "code": "invalid_parameter",
+                  "message": "Invalid input: expected string, received undefined",
+                  "param": "email",
+                  "details": {
+                    "issues": [
+                      {
+                        "path": "email",
+                        "message": "Invalid input: expected string, received undefined"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "authentication",
+                  "code": "unauthorized",
+                  "message": "Authentication required"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "internal",
+                  "code": "internal_error",
+                  "message": "Internal server error"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "name": "app",
             "required": true
           }
         ]

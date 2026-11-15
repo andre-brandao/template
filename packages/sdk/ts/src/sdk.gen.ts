@@ -48,6 +48,8 @@ import type {
   PatchTodoByIdResponses,
   PostFileErrors,
   PostFileResponses,
+  PostHookByAppErrors,
+  PostHookByAppResponses,
   PostKeyErrors,
   PostKeyResponses,
   PostProjectErrors,
@@ -129,9 +131,9 @@ export class TemplateSdk extends HeyApiClient {
   }
 
   /**
-   * List keys
+   * List personal access tokens
    *
-   * List the current user's API keys. Secrets are stored hashed, so `key` is null here — only `create` ever returns one. The key authenticating this request is flagged `current`.
+   * List the current user's personal access tokens. Secrets are stored hashed, so `key` is null here — only `create` ever returns one. The key authenticating this request is flagged `current`.
    */
   public getKey<ThrowOnError extends boolean = false>(
     options?: Options<never, ThrowOnError>,
@@ -144,9 +146,9 @@ export class TemplateSdk extends HeyApiClient {
   }
 
   /**
-   * Create key
+   * Create personal access token
    *
-   * Mint a named API key for the current user. Pass `expiresInDays` to set an expiry; omit it for a key that never expires.
+   * Mint a named personal access token that acts as the current user. Pass `expiresInDays` to set an expiry; omit it for a key that never expires.
    */
   public postKey<ThrowOnError extends boolean = false>(
     parameters: {
@@ -180,9 +182,9 @@ export class TemplateSdk extends HeyApiClient {
   }
 
   /**
-   * Revoke key
+   * Revoke personal access token
    *
-   * Revoke an API key. The secret stops authenticating immediately.
+   * Revoke one of your personal access tokens. The secret stops authenticating immediately.
    */
   public deleteKeyById<ThrowOnError extends boolean = false>(
     parameters: {
@@ -852,6 +854,30 @@ export class TemplateSdk extends HeyApiClient {
         ...options?.headers,
         ...params.headers,
       },
+    });
+  }
+
+  /**
+   * Post an event
+   *
+   * Send `{ type, data }` as an App. Sign it like outbound webhooks: base64url HMAC-SHA256 of `${body}.${timestamp}` with the App's inbound secret, in `x-webhook-signature`, and the unix `x-webhook-timestamp` (within five minutes). It is recorded as an `app.received` event for a subscriber to act on.
+   */
+  public postHookByApp<ThrowOnError extends boolean = false>(
+    parameters: {
+      app: string;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<PostHookByAppResponses, PostHookByAppErrors, ThrowOnError> {
+    const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "app" }] }]);
+    return (options?.client ?? this.client).post<
+      PostHookByAppResponses,
+      PostHookByAppErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/hook/{app}",
+      ...options,
+      ...params,
     });
   }
 }

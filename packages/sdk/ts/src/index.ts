@@ -237,6 +237,7 @@ export type {
   InsightStatuses,
   Key,
   Link,
+  LinkOutput,
   Metadata,
   PatchFileByNameData,
   PatchFileByNameError,

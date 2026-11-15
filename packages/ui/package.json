@@ -46,7 +46,7 @@
     "@tanstack/highlight": "0.0.10",
     "@tanstack/markdown": "0.0.13",
     "@tanstack/svelte-hotkeys": "catalog:frontend",
-    "@tanstack/svelte-table": "^9.1.2",
+    "@tanstack/svelte-table": "^9.3.2",
     "beautiful-mermaid": "^1.1.3"
   },
   "devDependencies": {
@@ -56,7 +56,7 @@
     "@sveltejs/package": "^2.5.8",
     "@sveltejs/vite-plugin-svelte": "catalog:frontend",
     "@testing-library/svelte": "catalog:testing",
-    "publint": "^0.3.21",
+    "publint": "^0.3.25",
     "svelte": "catalog:frontend",
     "svelte-check": "catalog:frontend",
     "typescript": "^5.9.3",

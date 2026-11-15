@@ -9,7 +9,7 @@
 
 	const save = update();
 	// The picked status stays up until the refetch lands; a failure falls back to the stored one.
-	const shown = $derived((save.isPending && save.variables?.body.status) || todo.status);
+	const shown = $derived((save.isPending && save.variables?.body?.status) || todo.status);
 	const mark = $derived(
 		save.isPending ? 'pending' : save.isError ? 'failed' : save.isSuccess ? 'saved' : 'idle'
 	);

@@ -30,7 +30,7 @@
 	let draft = $state('');
 	let editing = $state(false);
 	let pending = $state(false);
-	let failed = $state(false);
+	let failed = $state<string>();
 	let face: HTMLButtonElement | undefined;
 	// Focus handed back after a save must not reopen the editor.
 	let quiet = false;
@@ -41,7 +41,7 @@
 			return;
 		}
 		draft = shown;
-		failed = false;
+		failed = undefined;
 		editing = true;
 	}
 
@@ -65,9 +65,9 @@
 		new Promise((ok) => ok(onsave(next)))
 			.then(
 				() => {},
-				() => {
+				(err: { message?: string } | undefined) => {
 					shown = prev;
-					failed = true;
+					failed = err?.message || 'Not saved';
 				}
 			)
 			.finally(() => (pending = false));
@@ -130,7 +130,7 @@
 			{shown || placeholder}
 		</button>
 	{/if}
-	{#if pending || failed}<span class="spin"><Status state={pending ? 'pending' : 'failed'} /></span>{/if}
+	{#if pending || failed}<span class="spin"><Status state={pending ? 'pending' : 'failed'} message={failed} /></span>{/if}
 </span>
 
 <style>

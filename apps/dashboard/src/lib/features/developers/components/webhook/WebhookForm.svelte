@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { dev } from '$app/environment';
-	import { Button, Field, Input, Issue } from '@template/ui';
+	import { Field, Input, Issue } from '@template/ui';
 	import { Types } from '@template/core/webhook/types';
 	import { subscribe } from '../../api/webhooks.query';
+	import Actions from '../Actions.svelte';
 
 	// Modal content. `owner` files the subscription under that App.
 	let { owner, close }: { owner?: string; close: () => void } = $props();
@@ -79,10 +80,7 @@
 		</div>
 	</fieldset>
 
-	<div class="actions">
-		<Button variant="ghost" onclick={close}>Cancel</Button>
-		<Button variant="primary" type="submit" pending={save.isPending}>Create</Button>
-	</div>
+	<Actions {close} pending={save.isPending} />
 </form>
 
 <style>
@@ -91,11 +89,6 @@
 		font-size: 1.05em;
 	}
 
-	.actions {
-		display: flex;
-		justify-content: flex-end;
-		gap: 0.4em;
-	}
 
 	form {
 		display: flex;

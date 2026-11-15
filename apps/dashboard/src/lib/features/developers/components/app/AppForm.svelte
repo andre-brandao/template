@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { Button, Field, Input, Issue } from '@template/ui';
+	import { Field, Input, Issue } from '@template/ui';
 	import { create } from '../../api/apps.query';
+	import Actions from '../Actions.svelte';
 
 	// Modal content. An App is its account's profile, so that page is where it is configured.
 	let { close }: { close: () => void } = $props();
@@ -36,10 +37,7 @@
 		/>
 	</Field>
 	<p class="hint">A system account you own. Its keys act as it, never above your role.</p>
-	<div class="actions">
-		<Button variant="ghost" onclick={close}>Cancel</Button>
-		<Button variant="primary" type="submit" pending={save.isPending}>Create</Button>
-	</div>
+	<Actions {close} pending={save.isPending} />
 </form>
 
 <style>
@@ -60,9 +58,4 @@
 		color: var(--muted);
 	}
 
-	.actions {
-		display: flex;
-		justify-content: flex-end;
-		gap: 0.4em;
-	}
 </style>

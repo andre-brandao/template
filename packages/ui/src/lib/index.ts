@@ -42,6 +42,7 @@ export { default as Scroll } from "./pane/Scroll.svelte";
 export { default as Section } from "./section/Section.svelte";
 export { default as Skeleton } from "./skeleton/Skeleton.svelte";
 export { default as Spinner } from "./spinner/Spinner.svelte";
+export { default as Status, type State } from "./status/Status.svelte";
 // A container and its items, so it lands as a namespace like Combobox.
 export * as Tabs from "./tabs";
 export { default as Toaster } from "./toast/Toaster.svelte";

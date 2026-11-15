@@ -1,35 +1,68 @@
 <script lang="ts">
-	import { Button, Field, FormBoundary, Input, Issue } from '@template/ui';
-	import { createApp } from '../../api/apps.remote';
+	import { goto } from '$app/navigation';
+	import { Button, Field, Input, Issue } from '@template/ui';
+	import { create } from '../../api/apps.query';
+
+	// Modal content. An App is its account's profile, so that page is where it is configured.
+	let { close }: { close: () => void } = $props();
+
+	let name = $state('');
+
+	const save = create({
+		onSuccess: (app) => {
+			close();
+			goto(`/u/${app.id}`);
+		}
+	});
 </script>
 
-<!-- Creating redirects to the new App, so there is no success state to show here. -->
-<FormBoundary>
-	{#each createApp.fields.allIssues() ?? [] as issue (issue)}
-		<Issue>{issue.message}</Issue>
-	{/each}
+<h2>New app</h2>
 
-	<form {...createApp}>
-		<Field label="Name">
-			<Input placeholder="e.g. Billing, CI" {...createApp.fields.name.as('text')} />
-		</Field>
-		<p class="hint">
-			Registers a system account you own. Its keys act as it, never above your role.
-		</p>
-		<Button type="submit" pending={!!createApp.pending}>Create app</Button>
-	</form>
-</FormBoundary>
+<form
+	onsubmit={(e) => {
+		e.preventDefault();
+		save.mutate({ name });
+	}}
+>
+	{#if save.error}
+		<Issue>{save.error.message}</Issue>
+	{/if}
+	<Field label="Name">
+		<Input
+			placeholder="e.g. Billing, CI"
+			required
+			value={name}
+			oninput={(e) => (name = e.currentTarget.value)}
+		/>
+	</Field>
+	<p class="hint">A system account you own. Its keys act as it, never above your role.</p>
+	<div class="actions">
+		<Button variant="ghost" onclick={close}>Cancel</Button>
+		<Button type="submit" pending={save.isPending}>Create</Button>
+	</div>
+</form>
 
 <style>
+	h2 {
+		margin: 0 0 1em;
+		font-size: 1.05em;
+	}
+
 	form {
 		display: flex;
 		flex-direction: column;
-		gap: 0.8em;
+		gap: 0.9em;
 	}
 
 	.hint {
 		margin: 0;
 		font-size: 0.8em;
 		color: var(--muted);
+	}
+
+	.actions {
+		display: flex;
+		justify-content: flex-end;
+		gap: 0.4em;
 	}
 </style>

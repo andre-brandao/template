@@ -18,6 +18,7 @@ export { default as Avatar } from "./avatar/Avatar.svelte";
 export { default as Badge, type Tone } from "./badge/Badge.svelte";
 export { default as Card } from "./card/Card.svelte";
 export { default as Code } from "./code/Code.svelte";
+export { default as Command, type Action } from "./command/Command.svelte";
 // A family of parts, so it lands as a namespace: `<Combobox.Root>`, `<Combobox.Item>`.
 export * as Combobox from "./combobox";
 export { default as DataTable } from "./table/DataTable.svelte";
@@ -28,14 +29,20 @@ export { default as Field } from "./field/Field.svelte";
 export { default as Fill } from "./pane/Fill.svelte";
 export { default as FormBoundary } from "./boundary/FormBoundary.svelte";
 export { default as Full } from "./full/Full.svelte";
+export { default as Inline } from "./inline/Inline.svelte";
 export { default as Issue } from "./issue/Issue.svelte";
+export { default as Kbd } from "./kbd/Kbd.svelte";
+// Root, Item and Separator: `<Menu.Root>`.
+export * as Menu from "./menu";
 export { default as Modals } from "./modal/Modals.svelte";
 export { modal, type Ask } from "./modal/modal.svelte";
 export { default as Pagination } from "./pagination/Pagination.svelte";
+export { default as Popover, type Align, type Trigger } from "./popover/Popover.svelte";
 export { default as Scroll } from "./pane/Scroll.svelte";
 export { default as Section } from "./section/Section.svelte";
 export { default as Skeleton } from "./skeleton/Skeleton.svelte";
 export { default as Spinner } from "./spinner/Spinner.svelte";
+export { default as Status, type State } from "./status/Status.svelte";
 // A container and its items, so it lands as a namespace like Combobox.
 export * as Tabs from "./tabs";
 export { default as Toaster } from "./toast/Toaster.svelte";

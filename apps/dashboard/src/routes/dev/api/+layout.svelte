@@ -2,7 +2,7 @@
 	import { page } from '$app/state';
 	import { resolve } from '$app/paths';
 	import { Button, Field, Input } from '@template/ui';
-	import { mintKey } from '$lib/features/developers/api/keys.remote';
+	import { mint } from '$lib/features/developers/api/keys.query';
 	import Nav from '../Nav.svelte';
 	import { doc } from './api.remote';
 	import { createToken } from './token.svelte';
@@ -12,8 +12,9 @@
 
 	// Before the awaits below: context has to be set while the component initializes.
 	const token = createToken();
+	// Named for where it came from, and short-lived so it cleans up.
+	const minter = mint({ onSuccess: (key) => (token.current = key.key ?? '') });
 	const ops = $derived((await doc()).list);
-	const mint = async () => (token.current = await mintKey());
 	const items = $derived(
 		ops.map((op) => ({
 			href: resolve('/dev/api/[op]', { op: op.id }),
@@ -35,7 +36,13 @@
 			/>
 		</Field>
 		<div class="mint">
-			<Button variant="secondary" pending={!!mintKey.pending} onclick={mint}>Mint a test token</Button>
+			<Button
+				variant="secondary"
+				pending={minter.isPending}
+				onclick={() => minter.mutate({ body: { name: 'api console', expiresInDays: 1 } })}
+			>
+				Mint a test token
+			</Button>
 			<p class="hint">
 				Expires in a day. Any other token has to be pasted — one is only readable when minted, in
 				<a href="/developers/keys">Personal access tokens</a>.

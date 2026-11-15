@@ -24,6 +24,8 @@ import {
   getTodo,
   getTodoById,
   getTodoStage,
+  getUserById,
+  getUserByIdHistory,
   type Options,
   patchFileByName,
   patchProjectById,
@@ -80,6 +82,12 @@ import type {
   GetTodoStageData,
   GetTodoStageError,
   GetTodoStageResponse,
+  GetUserByIdData,
+  GetUserByIdError,
+  GetUserByIdHistoryData,
+  GetUserByIdHistoryError,
+  GetUserByIdHistoryResponse,
+  GetUserByIdResponse,
   PatchFileByNameData,
   PatchFileByNameError,
   PatchFileByNameResponse,
@@ -171,6 +179,60 @@ export const getMeOptions = (options?: Options<GetMeData>) =>
       return data;
     },
     queryKey: getMeQueryKey(options),
+  });
+
+export const getUserByIdQueryKey = (options: Options<GetUserByIdData>) =>
+  createQueryKey("getUserById", options, false, ["User"]);
+
+/**
+ * Get profile
+ *
+ * Fetch an account as a teammate sees it: no prefs, and no email for an App.
+ */
+export const getUserByIdOptions = (options: Options<GetUserByIdData>) =>
+  queryOptions<
+    GetUserByIdResponse,
+    GetUserByIdError,
+    GetUserByIdResponse,
+    ReturnType<typeof getUserByIdQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await getUserById({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: getUserByIdQueryKey(options),
+  });
+
+export const getUserByIdHistoryQueryKey = (options: Options<GetUserByIdHistoryData>) =>
+  createQueryKey("getUserByIdHistory", options, false, ["User"]);
+
+/**
+ * Get user history
+ *
+ * What one account did, newest first. Anyone but an admin sees only the public event types.
+ */
+export const getUserByIdHistoryOptions = (options: Options<GetUserByIdHistoryData>) =>
+  queryOptions<
+    GetUserByIdHistoryResponse,
+    GetUserByIdHistoryError,
+    GetUserByIdHistoryResponse,
+    ReturnType<typeof getUserByIdHistoryQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await getUserByIdHistory({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: getUserByIdHistoryQueryKey(options),
   });
 
 export const getKeyQueryKey = (options?: Options<GetKeyData>) =>

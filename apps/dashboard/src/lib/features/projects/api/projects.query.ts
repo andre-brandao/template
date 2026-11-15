@@ -1,4 +1,4 @@
-import { createMutation } from "@tanstack/svelte-query";
+import { createMutation, keepPreviousData } from "@tanstack/svelte-query";
 import {
   deleteProjectByIdLinkMutation,
   deleteProjectByIdMutation,
@@ -13,8 +13,11 @@ import {
 // Lists and rows both carry the tag, so a write to one project refreshes everything showing it.
 const project = [{ tags: ["Project"] }];
 
-export const list = (q?: string) =>
-  getProjectOptions({ query: { search: q || undefined, pageSize: 100 } });
+// A new search keeps the old rows on screen until its results land.
+export const list = (q?: string) => ({
+  ...getProjectOptions({ query: { search: q || undefined, pageSize: 100 } }),
+  placeholderData: keepPreviousData,
+});
 
 export const get = (id: string) => getProjectByIdOptions({ path: { id } });
 

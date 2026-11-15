@@ -41,6 +41,10 @@ import type {
   GetTodoResponses,
   GetTodoStageErrors,
   GetTodoStageResponses,
+  GetUserByIdErrors,
+  GetUserByIdHistoryErrors,
+  GetUserByIdHistoryResponses,
+  GetUserByIdResponses,
   Link,
   PatchFileByNameErrors,
   PatchFileByNameResponses,
@@ -131,6 +135,54 @@ export class TemplateSdk extends HeyApiClient {
       security: [{ scheme: "bearer", type: "http" }],
       url: "/me",
       ...options,
+    });
+  }
+
+  /**
+   * Get profile
+   *
+   * Fetch an account as a teammate sees it: no prefs, and no email for an App.
+   */
+  public getUserById<ThrowOnError extends boolean = false>(
+    parameters: {
+      id: string;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<GetUserByIdResponses, GetUserByIdErrors, ThrowOnError> {
+    const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
+    return (options?.client ?? this.client).get<
+      GetUserByIdResponses,
+      GetUserByIdErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/user/{id}",
+      ...options,
+      ...params,
+    });
+  }
+
+  /**
+   * Get user history
+   *
+   * What one account did, newest first. Anyone but an admin sees only the public event types.
+   */
+  public getUserByIdHistory<ThrowOnError extends boolean = false>(
+    parameters: {
+      id: string;
+    },
+    options?: Options<never, ThrowOnError>,
+  ): RequestResult<GetUserByIdHistoryResponses, GetUserByIdHistoryErrors, ThrowOnError> {
+    const params = buildClientParams([parameters], [{ args: [{ in: "path", key: "id" }] }]);
+    return (options?.client ?? this.client).get<
+      GetUserByIdHistoryResponses,
+      GetUserByIdHistoryErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/user/{id}/history",
+      ...options,
+      ...params,
     });
   }
 

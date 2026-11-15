@@ -216,7 +216,399 @@
           }
         },
         "required": ["type", "code", "message"],
-        "description": "Permission error"
+        "description": "Not found error"
+      },
+      "Profile": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique object identifier.\nThe format and length of IDs may change over time.",
+            "example": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Display name."
+          },
+          "image": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Avatar URL, or null for none."
+          },
+          "kind": {
+            "type": "string",
+            "enum": ["human", "system"],
+            "description": "A `system` account is an App: nobody logs in as it — an external system or CI acting through API keys."
+          },
+          "role": {
+            "type": "string",
+            "enum": ["admin", "member"],
+            "description": "Decides everything the account may do. Only `user:assign` can change it."
+          },
+          "timeCreated": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+            "description": "When the account was created."
+          },
+          "email": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "email",
+                "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                "description": "Login address. Unique across accounts."
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "owner": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  }
+                },
+                "required": ["id", "name"]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": ["id", "name", "image", "kind", "role", "timeCreated", "email", "owner"],
+        "description": "An account as other signed-in users see it."
+      },
+      "Identity": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "public"
+              },
+              "properties": {
+                "type": "object",
+                "properties": {}
+              }
+            },
+            "required": ["type", "properties"]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "user"
+              },
+              "properties": {
+                "type": "object",
+                "properties": {
+                  "userID": {
+                    "type": "string",
+                    "description": "Who answers for the act."
+                  },
+                  "role": {
+                    "type": "string",
+                    "enum": ["admin", "member"],
+                    "description": "The role held at the time."
+                  },
+                  "timezone": {
+                    "description": "IANA zone, when known.",
+                    "type": "string"
+                  },
+                  "credential": {
+                    "description": "The key or delegation that acted, so an audit can name it.",
+                    "type": "string"
+                  }
+                },
+                "required": ["userID", "role"]
+              }
+            },
+            "required": ["type", "properties"]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "agent"
+              },
+              "properties": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Which agent: `copilot`, or an MCP client like `claude`."
+                  },
+                  "userID": {
+                    "type": "string",
+                    "description": "Who answers for the act."
+                  },
+                  "role": {
+                    "type": "string",
+                    "enum": ["admin", "member"],
+                    "description": "The role held at the time."
+                  },
+                  "scope": {
+                    "description": "Exactly what it may do."
+                  },
+                  "timezone": {
+                    "description": "IANA zone, when known.",
+                    "type": "string"
+                  },
+                  "credential": {
+                    "description": "The key or delegation that acted, so an audit can name it.",
+                    "type": "string"
+                  }
+                },
+                "required": ["name", "userID", "role"]
+              }
+            },
+            "required": ["type", "properties"]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "system"
+              },
+              "properties": {
+                "type": "object",
+                "properties": {
+                  "userID": {
+                    "type": "string",
+                    "description": "Who answers for the act."
+                  },
+                  "role": {
+                    "type": "string",
+                    "enum": ["admin", "member"],
+                    "description": "The role held at the time."
+                  },
+                  "owner": {
+                    "type": "object",
+                    "properties": {
+                      "userID": {
+                        "type": "string",
+                        "description": "Who answers for the act."
+                      },
+                      "role": {
+                        "type": "string",
+                        "enum": ["admin", "member"],
+                        "description": "The role held at the time."
+                      }
+                    },
+                    "required": ["userID", "role"],
+                    "description": "The person answerable for the App."
+                  },
+                  "credential": {
+                    "description": "The key or delegation that acted, so an audit can name it.",
+                    "type": "string"
+                  }
+                },
+                "required": ["userID", "role", "owner"]
+              }
+            },
+            "required": ["type", "properties"]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "internal"
+              },
+              "properties": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Which part of the app, like `auth` or `seed`."
+                  },
+                  "scope": {
+                    "description": "Exactly what it may do."
+                  }
+                },
+                "required": ["name", "scope"]
+              }
+            },
+            "required": ["type", "properties"]
+          }
+        ],
+        "description": "Who acted: a person, an agent for one, an App, or the app itself."
+      },
+      "Event": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique object identifier.\nThe format and length of IDs may change over time.",
+            "example": "evt_XXXXXXXXXXXXXXXXXXXXXXXXX"
+          },
+          "userID": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Who caused it. Null for system and public actors."
+          },
+          "user": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "image": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": ["id", "name", "image"]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "That user, joined in so a log row can name them."
+          },
+          "identity": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Identity"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Who acted, in full: agent name, scope, credential. Null unless you are an admin."
+          },
+          "type": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "What happened, like `todo.created`.",
+            "example": "todo.created"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Kind of entity it happened to, like `todo`."
+          },
+          "sourceID": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Id of that entity."
+          },
+          "tags": {
+            "maxItems": 20,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "description": "Filter labels. Always carries the actor kind, like `actor:user`."
+          },
+          "data": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {},
+            "description": "The payload declared for its type. Webhooks get the same."
+          },
+          "timeCreated": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+            "description": "When it was recorded."
+          }
+        },
+        "required": [
+          "id",
+          "userID",
+          "user",
+          "identity",
+          "type",
+          "source",
+          "sourceID",
+          "tags",
+          "data",
+          "timeCreated"
+        ],
+        "description": "An immutable audit-log entry.",
+        "example": {
+          "id": "evt_XXXXXXXXXXXXXXXXXXXXXXXXX",
+          "userID": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX",
+          "user": {
+            "id": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX",
+            "name": "John Doe",
+            "image": null
+          },
+          "identity": {
+            "type": "agent",
+            "properties": {
+              "name": "copilot",
+              "userID": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX",
+              "role": "member",
+              "timezone": "UTC"
+            }
+          },
+          "type": "todo.created",
+          "source": "todo",
+          "sourceID": "tod_XXXXXXXXXXXXXXXXXXXXXXXXX",
+          "tags": ["actor:user"],
+          "data": {
+            "title": "Write the quarterly report"
+          },
+          "timeCreated": "2026-06-07T00:00:00.000Z"
+        }
       },
       "Key": {
         "type": "object",
@@ -846,6 +1238,283 @@
             "description": "Internal Server Error"
           }
         }
+      }
+    },
+    "/user/{id}": {
+      "get": {
+        "operationId": "getUserById",
+        "tags": ["User"],
+        "summary": "Get profile",
+        "description": "Fetch an account as a teammate sees it: no prefs, and no email for an App.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Profile"
+                }
+              }
+            },
+            "description": "An account as other signed-in users see it."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "validation",
+                  "code": "invalid_parameter",
+                  "message": "Invalid input: expected string, received undefined",
+                  "param": "email",
+                  "details": {
+                    "issues": [
+                      {
+                        "path": "email",
+                        "message": "Invalid input: expected string, received undefined"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "authentication",
+                  "code": "unauthorized",
+                  "message": "Authentication required"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "forbidden",
+                  "code": "permission_denied",
+                  "message": "You do not have permission"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "not_found",
+                  "code": "resource_not_found",
+                  "message": "The requested resource could not be found"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "internal",
+                  "code": "internal_error",
+                  "message": "Internal server error"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string",
+              "example": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX"
+            },
+            "required": true,
+            "description": "Unique object identifier.\nThe format and length of IDs may change over time."
+          }
+        ]
+      }
+    },
+    "/user/{id}/history": {
+      "get": {
+        "operationId": "getUserByIdHistory",
+        "tags": ["User"],
+        "summary": "Get user history",
+        "description": "What one account did, newest first. Anyone but an admin sees only the public event types.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Event"
+                  },
+                  "description": "An immutable audit-log entry.",
+                  "example": [
+                    {
+                      "id": "evt_XXXXXXXXXXXXXXXXXXXXXXXXX",
+                      "userID": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX",
+                      "user": {
+                        "id": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX",
+                        "name": "John Doe",
+                        "image": null
+                      },
+                      "identity": {
+                        "type": "agent",
+                        "properties": {
+                          "name": "copilot",
+                          "userID": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX",
+                          "role": "member",
+                          "timezone": "UTC"
+                        }
+                      },
+                      "type": "todo.created",
+                      "source": "todo",
+                      "sourceID": "tod_XXXXXXXXXXXXXXXXXXXXXXXXX",
+                      "tags": ["actor:user"],
+                      "data": {
+                        "title": "Write the quarterly report"
+                      },
+                      "timeCreated": "2026-06-07T00:00:00.000Z"
+                    }
+                  ]
+                },
+                "example": [
+                  {
+                    "id": "evt_XXXXXXXXXXXXXXXXXXXXXXXXX",
+                    "userID": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX",
+                    "user": {
+                      "id": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX",
+                      "name": "John Doe",
+                      "image": null
+                    },
+                    "identity": {
+                      "type": "agent",
+                      "properties": {
+                        "name": "copilot",
+                        "userID": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX",
+                        "role": "member",
+                        "timezone": "UTC"
+                      }
+                    },
+                    "type": "todo.created",
+                    "source": "todo",
+                    "sourceID": "tod_XXXXXXXXXXXXXXXXXXXXXXXXX",
+                    "tags": ["actor:user"],
+                    "data": {
+                      "title": "Write the quarterly report"
+                    },
+                    "timeCreated": "2026-06-07T00:00:00.000Z"
+                  }
+                ]
+              }
+            },
+            "description": "An immutable audit-log entry."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "validation",
+                  "code": "invalid_parameter",
+                  "message": "Invalid input: expected string, received undefined",
+                  "param": "email",
+                  "details": {
+                    "issues": [
+                      {
+                        "path": "email",
+                        "message": "Invalid input: expected string, received undefined"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "authentication",
+                  "code": "unauthorized",
+                  "message": "Authentication required"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "forbidden",
+                  "code": "permission_denied",
+                  "message": "You do not have permission"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "type": "internal",
+                  "code": "internal_error",
+                  "message": "Internal server error"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string",
+              "example": "usr_XXXXXXXXXXXXXXXXXXXXXXXXX"
+            },
+            "required": true,
+            "description": "Unique object identifier.\nThe format and length of IDs may change over time."
+          }
+        ]
       }
     },
     "/key": {

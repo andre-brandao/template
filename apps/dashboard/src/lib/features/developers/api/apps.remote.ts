@@ -1,9 +1,10 @@
-import { redirect } from "@sveltejs/kit";
 import { z } from "zod";
 import { env } from "$env/dynamic/private";
 import { App } from "@template/core/app";
+import { Key } from "@template/core/key";
 import { remote } from "$lib/server/remote";
 
+// Admin configuration: no API route, so these are the only way in. Core holds the grants.
 export const getApps = remote
   .core(App.list)
   .with(z.void().transform(() => undefined))
@@ -13,33 +14,31 @@ export const getApp = remote.core(App.fromID).query();
 
 export const getAppKeys = remote.core(App.keys).query();
 
-/** Where the App posts in. The API's public origin, which only the server knows. */
+/** Where the App posts in. The API's public origin is dashboard config only the server knows. */
 export const getEndpoint = remote.query(App.Info.shape.id, (id) =>
   new URL(`/hook/${id}`, env.API_URL ?? "http://localhost:3000").toString(),
 );
 
-/** The App's profile fields. A separate form from the user's own rename: different grant. */
-export const renameApp = remote.form(
-  z.object({ id: App.Info.shape.id, name: App.Info.shape.name }),
-  (input) => App.update(input),
+export const createApp = remote.core(App.create).command();
+
+export const renameApp = remote.core(App.update).command();
+
+export const removeApp = remote.core(App.remove).command();
+
+export const revokeAppKey = remote.core(App.revoke).command();
+
+/** Mints the inbound secret, retiring the last. Shown once, like a key. */
+export const rotateSecret = remote.command(App.Info.shape.id, async (id) => ({
+  secret: await App.secret(id),
+}));
+
+// Days, not a date: the form picks a span and the server turns it into an instant.
+export const createAppKey = remote.command(
+  z.object({
+    app: App.Info.shape.id,
+    name: Key.Info.shape.name,
+    expiresInDays: z.number().int().positive().optional(),
+  }),
+  (input) =>
+    App.key({ app: input.app, name: input.name, expiresAt: Key.expires(input.expiresInDays) }),
 );
-
-export const createApp = remote.form(App.Info.pick({ name: true }), async (input) => {
-  const app = await App.create(input);
-  await getApps().refresh();
-  // An App is its account's profile: that page is where it is configured.
-  redirect(303, `/u/${app.id}`);
-});
-
-export const removeApp = remote.form(z.object({ id: App.Info.shape.id }), async (input) => {
-  await App.remove(input.id);
-  await getApps().refresh();
-  redirect(303, "/developers/apps");
-});
-
-/** Mints the inbound secret, retiring the last. Shown once, like a key; the row keeps it plain. */
-export const rotateSecret = remote.form(z.object({ id: App.Info.shape.id }), async (input) => {
-  const secret = await App.secret(input.id);
-  await getApp(input.id).refresh();
-  return { secret };
-});

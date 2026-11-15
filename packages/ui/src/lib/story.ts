@@ -13,17 +13,23 @@ import * as avatar from "./avatar/Avatar.story.svelte";
 import * as badge from "./badge/Badge.story.svelte";
 import * as card from "./card/Card.story.svelte";
 import * as code from "./code/Code.story.svelte";
+import * as command from "./command/Command.story.svelte";
 import * as combobox from "./combobox/Combobox.story.svelte";
 import * as drawer from "./drawer/Drawer.story.svelte";
 import * as empty from "./empty/Empty.story.svelte";
 import * as field from "./field/Field.story.svelte";
 import * as boundary from "./boundary/FormBoundary.story.svelte";
+import * as inline from "./inline/Inline.story.svelte";
 import * as issue from "./issue/Issue.story.svelte";
+import * as kbd from "./kbd/Kbd.story.svelte";
+import * as menu from "./menu/Menu.story.svelte";
 import * as modal from "./modal/Modals.story.svelte";
 import * as pagination from "./pagination/Pagination.story.svelte";
+import * as popover from "./popover/Popover.story.svelte";
 import * as scroll from "./pane/Scroll.story.svelte";
 import * as skeleton from "./skeleton/Skeleton.story.svelte";
 import * as spinner from "./spinner/Spinner.story.svelte";
+import * as status from "./status/Status.story.svelte";
 import * as tabs from "./tabs/Tabs.story.svelte";
 import * as toggle from "./toggle/Toggle.story.svelte";
 import * as toaster from "./toast/Toaster.story.svelte";
@@ -84,17 +90,23 @@ export const stories = [
   { slug: "badge", story: badge.story, demo: badge.default },
   { slug: "card", story: card.story, demo: card.default },
   { slug: "code", story: code.story, demo: code.default },
+  { slug: "command", story: command.story, demo: command.default },
   { slug: "combobox", story: combobox.story, demo: combobox.default },
   { slug: "drawer", story: drawer.story, demo: drawer.default },
   { slug: "empty", story: empty.story, demo: empty.default },
   { slug: "field", story: field.story, demo: field.default },
   { slug: "formboundary", story: boundary.story, demo: boundary.default },
+  { slug: "inline", story: inline.story, demo: inline.default },
   { slug: "issue", story: issue.story, demo: issue.default },
+  { slug: "kbd", story: kbd.story, demo: kbd.default },
+  { slug: "menu", story: menu.story, demo: menu.default },
   { slug: "modals", story: modal.story, demo: modal.default },
   { slug: "pagination", story: pagination.story, demo: pagination.default },
+  { slug: "popover", story: popover.story, demo: popover.default },
   { slug: "scroll", story: scroll.story, demo: scroll.default },
   { slug: "skeleton", story: skeleton.story, demo: skeleton.default },
   { slug: "spinner", story: spinner.story, demo: spinner.default },
+  { slug: "status", story: status.story, demo: status.default },
   { slug: "tabs", story: tabs.story, demo: tabs.default },
   { slug: "toaster", story: toaster.story, demo: toaster.default },
   { slug: "toggle", story: toggle.story, demo: toggle.default },

@@ -27,6 +27,10 @@ export default $config({
     },
   },
   async run() {
+    // postgres.js 4's workerd entry imports cloudflare:sockets, which only the runtime provides.
+    $transform(sst.cloudflare.Worker, (args) => {
+      args.build = { ...(args.build as object), esbuild: { external: ["cloudflare:*"] } };
+    });
     const infra = await import("./infra/sst/cf");
     const outputs = {};
     for (const mod of Object.values(infra))

@@ -1,4 +1,5 @@
 import { redirect } from "@sveltejs/kit";
+import { detectPlatform } from "@tanstack/svelte-hotkeys";
 import { Identity } from "@template/core/identity";
 import { Feedback } from "$lib/features/feedback/api/feedback";
 import { User } from "@template/core/user";
@@ -14,13 +15,15 @@ export const load: LayoutServerLoad = async (event) => {
   // Unsigned, client-writable on purpose — worst forgery picks a sidebar width. A cookie
   // (not localStorage) so the first painted HTML is already the right width.
   const rail = event.cookies.get("rail") === "tight";
+  // Hotkey labels render on the server too, so they need the reader's OS up front.
+  const platform = detectPlatform(event.request.headers.get("user-agent"));
 
   // The actor, not the cookie: a stale or revoked token leaves a `public` actor.
   const actor = Identity.use();
-  if (actor.type !== "user") return { user: null, prefs: DEFAULTS, feedback, rail };
+  if (actor.type !== "user") return { user: null, prefs: DEFAULTS, feedback, rail, platform };
 
   const user = await User.fromID(actor.properties.userID);
-  if (!user) return { user: null, prefs: DEFAULTS, feedback, rail };
+  if (!user) return { user: null, prefs: DEFAULTS, feedback, rail, platform };
 
   // `provision` names a fresh account after its address, so a code or OAuth signup arrives
   // with no real name. Everything else waits behind onboarding until there is one.
@@ -34,5 +37,12 @@ export const load: LayoutServerLoad = async (event) => {
   // and from then on it is the user's, so a deliberate choice is never overwritten.
   const seed = await zone.seed(event, user.prefs.zone);
 
-  return { user, prefs: { ...user.prefs, zone: seed }, feedback, rail, agent: Agent.ready() };
+  return {
+    user,
+    prefs: { ...user.prefs, zone: seed },
+    feedback,
+    rail,
+    platform,
+    agent: Agent.ready(),
+  };
 };

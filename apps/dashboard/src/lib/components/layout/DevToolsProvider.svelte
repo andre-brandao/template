@@ -7,7 +7,7 @@
 	// Every devtools import lives here; ShellProvider mounts it under `{#if dev}`.
 	let { client }: { client: QueryClient } = $props();
 
-	// Bottom-left: the Svelte inspector's toggle owns bottom-right. Alt+D toggles the panel.
+	// Bottom-left, beside the Svelte inspector's toggle (vite.config.ts). Alt+D toggles the panel.
 	const tools = {
 		triggerMode: 'fixed',
 		position: 'bottom-left',
@@ -23,16 +23,17 @@
 		localStorage.setItem(key, JSON.stringify({ ...stored, ...tools }));
 	}
 
-	// A quiet pill: surface, hairline border, accent dot. Core reruns this on theme change.
+	// Svelte orange on white, like the inspector: dev chrome reads apart from the app.
+	// Core reruns this on theme change.
 	function trigger(el: HTMLElement) {
 		const pill = document.createElement('span');
 		pill.title = 'Devtools (Alt+D)';
 		pill.style.cssText =
-			'display:grid;place-items:center;width:26px;height:26px;margin:0 0 6px 6px;' +
-			'border:1px solid var(--border);border-radius:999px;background:var(--surface);' +
+			'display:grid;place-items:center;width:32px;height:32px;margin:0 0 8px 8px;' +
+			'border:1px solid #ff3e00;border-radius:8px;background:#fff;' +
 			'box-shadow:0 1px 3px rgb(0 0 0 / 0.25);cursor:pointer';
 		const dot = document.createElement('span');
-		dot.style.cssText = 'width:8px;height:8px;border-radius:50%;background:var(--accent)';
+		dot.style.cssText = 'width:10px;height:10px;border-radius:50%;background:#ff3e00';
 		pill.replaceChildren(dot);
 		el.replaceChildren(pill);
 	}
@@ -42,3 +43,11 @@
 	config={{ ...tools, openHotkey: [...tools.openHotkey], customTrigger: trigger }}
 	plugins={[{ name: 'Query', component: QueryPanel, props: { client } }, hotkeysDevtoolsPlugin()]}
 />
+
+<style>
+	/* The inspector pins itself 8px from the corner; nudge it right so the two sit side by side
+	   instead of under our trigger's box. This component only mounts in dev. */
+	:global(#svelte-inspector-toggle) {
+		left: 48px !important;
+	}
+</style>

@@ -2,6 +2,7 @@ import type { Handle } from "@sveltejs/kit";
 import { env } from "$env/dynamic/private";
 import { Context } from "@template/core/context";
 import { Database } from "@template/core/drizzle";
+import { Kv } from "@template/core/kv";
 import { Queue } from "@template/core/queue";
 import { Storage } from "@template/core/storage";
 import { Email } from "@template/core/email";
@@ -32,6 +33,8 @@ function fromEnv(): Handle {
   );
   const disks = Storage.fromEnv(env);
   const q = Queue.fromEnv(env, Database.use);
+  // No redis: the server build can run under Node, which has no `"bun"`.
+  const kv = Kv.fromEnv(env, Database.use);
   const email = Email.Providers.queue();
 
   return ({ event, resolve }) =>
@@ -41,6 +44,7 @@ function fromEnv(): Handle {
       Storage.provider(disks),
       Email.provider(email),
       Queue.provider(q),
+      Kv.provider(kv),
     );
 }
 

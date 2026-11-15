@@ -2,6 +2,8 @@ import { Context } from "@template/core/context";
 import { Database } from "@template/core/drizzle";
 import { Email } from "@template/core/email";
 import { run } from "@template/core/jobs";
+import { Kv } from "@template/core/kv";
+import { redis } from "@template/core/kv/adapter/redis";
 import { Queue } from "@template/core/queue";
 import { Storage } from "@template/core/storage";
 
@@ -25,6 +27,7 @@ await Context.withProviders(
   Storage.provider(Storage.fromEnv(process.env)),
   Email.provider(Email.fromEnv(process.env)),
   Queue.provider(Queue.Providers.db({ use: Database.use })),
+  Kv.provider(Kv.fromEnv(process.env, Database.use, { redis })),
 );
 
 // The pool holds the loop open once work() returns.

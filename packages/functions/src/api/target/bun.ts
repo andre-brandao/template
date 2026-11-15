@@ -1,5 +1,7 @@
 import { bun } from "../../target";
 import { Database } from "@template/core/drizzle";
+import { Kv } from "@template/core/kv";
+import { redis } from "@template/core/kv/adapter/redis";
 import { Queue } from "@template/core/queue";
 import { Storage } from "@template/core/storage";
 import { app } from "../routes";
@@ -12,4 +14,5 @@ export default bun(
   port,
   Storage.provider(Storage.fromEnv(process.env)),
   Queue.provider(Queue.fromEnv(process.env, Database.use)),
+  Kv.provider(Kv.fromEnv(process.env, Database.use, { redis })),
 );

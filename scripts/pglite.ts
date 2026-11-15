@@ -30,6 +30,8 @@ process.env.DATABASE_URL ??= `postgresql://postgres:password@${host}:${port}/pos
 // Mutations push webhook jobs, and the `db` default needs a runner no test wires up.
 // Tests that care drive the queue themselves through `Queue.provide`.
 process.env.QUEUE_DRIVER ??= "memory";
+// Same for kv: its `pg` default needs a runner, and the kv suite builds its own drivers.
+process.env.KV_DRIVER ??= "memory";
 // The socket server accepts exactly one connection, so the pool must not grow.
 process.env.PG_MAX = "1";
 

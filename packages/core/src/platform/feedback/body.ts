@@ -40,7 +40,8 @@ export function title(body: string) {
 export function trailer(input: Context, sender?: Sender, files: File[] = []) {
   const lines = [
     clean(input.body),
-    ...(files.length ? ["", ...files.map(link)] : []),
+    // One paragraph each, or markdown runs the links into one line.
+    ...files.flatMap((file) => ["", link(file)]),
     "",
     "---",
     `Page: ${clean(input.page ?? "") || "-"}`,

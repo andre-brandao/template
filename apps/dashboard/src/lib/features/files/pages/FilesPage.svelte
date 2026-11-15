@@ -1,35 +1,33 @@
 <script lang="ts">
-	import { Drawer, Empty, Issue } from '@template/ui';
-	import type { Storage } from '@template/core/storage';
+	import { createQuery } from '@tanstack/svelte-query';
+	import { Button, Empty, Issue, Skeleton } from '@template/ui';
 	import * as Header from '$lib/components/header';
 	import { size } from '$lib/utils/size';
-	import { getFiles } from '../api/files.remote';
-	import FileCard from '../components/FileCard.svelte';
-	import FileForm from '../components/FileForm.svelte';
+	import { list, upload } from '../api/files.query';
+	import Pending from '../components/Pending.svelte';
+	import Row from '../components/Row.svelte';
 	import Upload from '../components/Upload.svelte';
 
-	const files = $derived(await getFiles());
+	const files = createQuery(() => list());
+	const put = upload();
 
-	let editing = $state<Storage.Entry | null>(null);
-	let open = $state(false);
-	let uploading = $state(false);
-	let failed = $state<string[]>([]);
+	let up: Upload | undefined = $state();
+	let sending = $state<{ id: string; file: File; error?: string }[]>([]);
 	let drag = $state(0);
 
-	async function upload(picked: FileList) {
-		uploading = true;
-		failed = [];
-		const results = await Promise.all(
-			[...picked].map(async (file) => {
-				const body = new FormData();
-				body.append('file', file);
-				const res = await fetch('/files', { method: 'POST', body });
-				return res.ok ? null : file.name;
-			})
-		);
-		failed = results.filter((name): name is string => name !== null);
-		uploading = false;
-		await getFiles().refresh();
+	// The list refetches before mutateAsync settles, so a sent row hands over without a gap.
+	function send(picked: FileList) {
+		[...picked].forEach((file) => {
+			const id = crypto.randomUUID();
+			sending.push({ id, file });
+			put.mutateAsync({ body: { file } }).then(
+				() => (sending = sending.filter((one) => one.id !== id)),
+				(err: Error) => {
+					const one = sending.find((x) => x.id === id);
+					if (one) one.error = err?.message ?? 'Upload failed';
+				}
+			);
+		});
 	}
 
 	function enter(e: DragEvent) {
@@ -41,13 +39,12 @@
 	function drop(e: DragEvent) {
 		e.preventDefault();
 		drag = 0;
-		if (e.dataTransfer?.files.length) upload(e.dataTransfer.files);
+		if (e.dataTransfer?.files.length) send(e.dataTransfer.files);
 	}
-
 </script>
 
 <div
-	class={['page', { drop: drag > 0 }]}
+	class="page"
 	role="region"
 	aria-label="Files"
 	ondragenter={enter}
@@ -56,43 +53,54 @@
 	ondrop={drop}
 >
 	<Header.Root title="Files" lead="Uploads kept in storage. Drop files anywhere on the page.">
-		<Header.Item label="Files">{files.length}</Header.Item>
-		<Header.Item label="Total size">{size(files.reduce((sum, file) => sum + file.size, 0))}</Header.Item>
+		<Header.Item label="Files">{files.data?.length ?? '–'}</Header.Item>
+		<Header.Item label="Total size">
+			{files.data ? size(files.data.reduce((sum, file) => sum + file.size, 0)) : '–'}
+		</Header.Item>
 		{#snippet actions()}
-			<Upload {upload} pending={uploading} />
+			<Upload bind:this={up} upload={send} />
 		{/snippet}
 	</Header.Root>
 
-	{#each failed as name (name)}
-		<Issue>Upload failed: {name}</Issue>
-	{/each}
+	{#if sending.length}
+		<ul class="list" aria-label="Uploads">
+			{#each sending as one (one.id)}
+				<Pending
+					file={one.file}
+					error={one.error}
+					ondismiss={() => (sending = sending.filter((x) => x.id !== one.id))}
+				/>
+			{/each}
+		</ul>
+	{/if}
 
-	<div class="list">
-		{#each files as file (file.key)}
-			<FileCard
-				{file}
-				onedit={() => {
-					editing = file;
-					open = true;
-				}}
-			/>
-		{/each}
-		{#if files.length === 0}
-			<Empty>No files yet. Drop one here or use Upload.</Empty>
-		{/if}
-	</div>
+	{#if files.isPending}
+		<div class="skeleton" aria-busy="true">
+			{#each [0, 1, 2, 3, 4] as i (i)}
+				<Skeleton h="2.6em" />
+			{/each}
+		</div>
+	{:else if files.isError}
+		<Issue>{files.error.message}</Issue>
+	{:else if files.data.length === 0 && !sending.length}
+		<Empty>
+			No files yet. Drop one anywhere on the page, or pick some to upload.
+			{#snippet action()}
+				<Button onclick={() => up?.open()}>Upload files</Button>
+			{/snippet}
+		</Empty>
+	{:else}
+		<ul class="list">
+			{#each files.data as file (file.key)}
+				<Row {file} />
+			{/each}
+		</ul>
+	{/if}
 
 	{#if drag > 0}
 		<div class="overlay">Drop files to upload</div>
 	{/if}
 </div>
-
-<Drawer bind:open>
-	{#if editing}
-		<h2>Rename file</h2>
-		<FileForm file={editing} onsuccess={() => (open = false)} />
-	{/if}
-</Drawer>
 
 <style>
 	.page {
@@ -100,15 +108,16 @@
 		min-height: 60vh;
 	}
 
-	h2 {
-		margin: 0 0 1em;
-		font-size: 1.15em;
+	.list {
+		margin: 0;
+		padding: 0;
+		list-style: none;
 	}
 
-	.list {
+	.skeleton {
 		display: flex;
 		flex-direction: column;
-		gap: 0.6em;
+		gap: 2px;
 	}
 
 	.overlay {
@@ -118,10 +127,22 @@
 		align-items: center;
 		justify-content: center;
 		border: 2px dashed var(--accent);
-		border-radius: var(--radius, 8px);
+		border-radius: var(--radius);
 		background: color-mix(in srgb, var(--surface) 80%, transparent);
 		color: var(--ink);
-		font-family: var(--font-mono);
 		pointer-events: none;
+		animation: enter 140ms ease-out;
+	}
+
+	@keyframes enter {
+		from {
+			opacity: 0;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.overlay {
+			animation: none;
+		}
 	}
 </style>

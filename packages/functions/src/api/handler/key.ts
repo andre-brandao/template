@@ -16,10 +16,9 @@ export namespace KeyApi {
         ...doc.errors(401, 500),
       }),
       authRequired,
-      async (c) => {
-        const keys = await Key.list(c.req.header("authorization")!.replace(/^Bearer /, ""));
-        return c.json(keys, 200);
-      },
+      // The dashboard's `/api` hook carries a session cookie, not a bearer, so nothing is current.
+      async (c) =>
+        c.json(await Key.list(c.req.header("authorization")?.replace(/^Bearer /, "")), 200),
     )
     .post(
       "/",

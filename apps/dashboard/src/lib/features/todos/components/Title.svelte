@@ -15,9 +15,6 @@
 	const save = update();
 	// The typed title stays up until the refetch lands; a failure falls back to the stored one.
 	const shown = $derived((save.isPending && save.variables?.body?.title) || todo.title);
-	const mark = $derived(
-		save.isPending ? 'pending' : save.isError ? 'failed' : save.isSuccess ? 'saved' : 'idle'
-	);
 
 	let anchor: HTMLAnchorElement | undefined;
 
@@ -52,7 +49,7 @@
 				anchor = el;
 			}}>{shown}</a
 		>
-		<Status state={busy ? 'pending' : mark} message={save.error?.message} />
+		<Status of={save} state={busy ? 'pending' : undefined} />
 	</span>
 {/if}
 

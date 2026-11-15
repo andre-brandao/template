@@ -118,7 +118,7 @@
 			<span class="dim">{node.done}/{node.total}</span>
 		{/if}
 		{#if shift.variables?.path.id === node.id}
-			<Status state={shift.isPending ? 'pending' : shift.isError ? 'failed' : 'saved'} message={shift.error?.message} />
+			<Status of={shift} />
 		{/if}
 	</span>
 {/snippet}

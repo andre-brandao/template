@@ -23,7 +23,7 @@ curl -X POST ${to} -H "x-webhook-timestamp: $ts" -H "x-webhook-signature: $sig" 
 
 <Section divider title="Inbound" description={signed}>
 	<div class="bar">
-		{#if inbound.spin.error}<Status state="failed" message={inbound.spin.error.message} />{/if}
+		{#if inbound.spin.isError}<Status of={inbound.spin} />{/if}
 		<Button pending={inbound.spin.isPending} onclick={() => inbound.run(app)}>
 			{app.inbound ? 'Rotate secret' : 'Generate secret'}
 		</Button>

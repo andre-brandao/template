@@ -59,6 +59,12 @@ Every component is re-exported from `src/lib/index.ts`, and every story is regis
 - **Buttons.** `Button` defaults to `secondary`; `variant="primary"` is for the one main action
   on a screen. An icon-only control is `IconButton`, whose `label` is required.
 - **Status, not words.** Saving shows a `Status` dot or a button's `pending`, never "Saving…".
+  Hand it the mutations (`<Status of={save} />`, `of={[save, drop]}`) instead of mapping
+  `isPending`/`isError` by hand; `state`/`message` are for what isn't a mutation.
+- **One announcer.** Dots carry no live region. A failed `Status` is read out once through the
+  assertive region `Toaster` mounts (`toast/Announcer.svelte`); never add `aria-live` per row.
+- **Inline cue.** An `Inline` face shows a faint pencil on hover or focus and a dotted underline
+  on hover. Headers edit in place; rows open on click and rename from their menu.
 - **Saves return promises.** `Inline.onsave` gets `mutateAsync`, not `mutate`, so a rejection
   can revert and mark the field failed.
 - **Dialogs** share `modal/dialog.ts`: an unlabelled one is named after its first heading.

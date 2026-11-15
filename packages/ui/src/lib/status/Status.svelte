@@ -1,18 +1,59 @@
 <script lang="ts" module>
 	export type State = 'idle' | 'pending' | 'saved' | 'failed';
+
+	/** The slice of a TanStack mutation (or anything shaped like one) that `of` reads. */
+	type Of = {
+		isPending: boolean;
+		isError: boolean;
+		isSuccess: boolean;
+		error?: { message?: string } | null;
+	};
 </script>
 
 <script lang="ts">
-	// A dot, not words: colour carries the state, and the label is for screen readers and hover.
-	let { state, message }: { state: State; message?: string } = $props();
+	import { announce } from '../toast/announce.svelte';
 
-	const label = $derived(
-		{ idle: '', pending: 'Saving', saved: 'Saved', failed: message ?? 'Not saved' }[state]
+	// A dot, not words: colour carries the state, the title is for hover, and a failure is
+	// read out once through the Toaster's announcer.
+	let {
+		of,
+		state,
+		message
+	}: {
+		/** One or more mutations: pending beats failed beats saved. */
+		of?: Of | Of[];
+		/** Explicit state for anything that isn't a mutation; wins over `of`. */
+		state?: State;
+		message?: string;
+	} = $props();
+
+	const all = $derived(of ? [of].flat() : []);
+	const shown = $derived<State>(
+		state ??
+			(all.some((one) => one.isPending)
+				? 'pending'
+				: all.some((one) => one.isError)
+					? 'failed'
+					: all.some((one) => one.isSuccess)
+						? 'saved'
+						: 'idle')
 	);
+	const label = $derived(
+		{
+			idle: '',
+			pending: 'Saving',
+			saved: 'Saved',
+			failed: message ?? all.find((one) => one.isError)?.error?.message ?? 'Not saved'
+		}[shown]
+	);
+
+	$effect(() => {
+		if (shown === 'failed') announce(label);
+	});
 </script>
 
-<span class={['dot', state]} title={label || undefined} role="status" aria-live="polite">
-	<span class="sr">{label}</span>
+<span class={['dot', shown]} title={label || undefined}>
+	{#if shown === 'failed'}<span class="sr">{label}</span>{/if}
 </span>
 
 <style>

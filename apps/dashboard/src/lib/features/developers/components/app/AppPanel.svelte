@@ -85,7 +85,7 @@
 			<Button variant="danger" pending={drop.isPending} onclick={() => del(app.name)}>
 				Delete app
 			</Button>
-			{#if drop.error}<Status state="failed" message={drop.error.message} />{/if}
+			{#if drop.isError}<Status of={drop} />{/if}
 		</div>
 	</Section>
 {/if}

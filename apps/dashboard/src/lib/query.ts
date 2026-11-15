@@ -7,7 +7,7 @@ import {
   type MutationOptions,
   type QueryKey,
 } from "@tanstack/svelte-query";
-import { client } from "@template/sdk/query/client.gen";
+import { client } from "@template/sdk/client.gen";
 
 declare module "@tanstack/svelte-query" {
   interface Register {

@@ -5,17 +5,12 @@ import {
   getTodoByIdOptions,
   getTodoByIdQueryKey,
   getTodoInsightsActivityOptions,
-  getTodoInsightsActivityQueryKey,
   getTodoInsightsCalendarOptions,
-  getTodoInsightsCalendarQueryKey,
   getTodoInsightsDueOptions,
   getTodoInsightsDueQueryKey,
   getTodoInsightsLoadOptions,
-  getTodoInsightsLoadQueryKey,
   getTodoInsightsStatsOptions,
-  getTodoInsightsStatsQueryKey,
   getTodoInsightsStatusOptions,
-  getTodoInsightsStatusQueryKey,
   getTodoOptions,
   getTodoQueryKey,
   getTodoStageOptions,
@@ -37,15 +32,14 @@ type Range = Scope & { start: string; end: string };
 const todo = [[{ tags: ["Todo"] }], [{ tags: ["Project"] }]];
 
 // Everything but rows: a removed todo's own query would refetch straight into a 404.
+// Range insights need a query to build a key, so they match on the SDK's `_id` alone.
 const views = () => [
   getTodoQueryKey(),
   getTodoStageQueryKey(),
-  getTodoInsightsStatsQueryKey(),
-  getTodoInsightsStatusQueryKey(),
-  getTodoInsightsLoadQueryKey(),
   getTodoInsightsDueQueryKey(),
-  getTodoInsightsCalendarQueryKey(),
-  getTodoInsightsActivityQueryKey(),
+  ...["Stats", "Status", "Load", "Calendar", "Activity"].map((x) => [
+    { _id: `getTodoInsights${x}` },
+  ]),
   [{ tags: ["Project"] }],
 ];
 

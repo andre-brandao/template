@@ -9,7 +9,7 @@
 		children
 	}: {
 		title: string;
-		query: { data: T | undefined; error: Error | null; isPlaceholderData: boolean };
+		query: { data: T | undefined; error: { message: string } | null; isPlaceholderData: boolean };
 		/** The loaded body's height, so the skeleton holds the layout. */
 		height: string;
 		children: Snippet<[T]>;

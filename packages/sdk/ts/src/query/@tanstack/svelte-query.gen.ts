@@ -14,6 +14,7 @@ import {
   deleteProjectById,
   deleteProjectByIdLink,
   deleteTodoById,
+  deleteTodoByIdLink,
   getFile,
   getFileByNameContent,
   getFileSigned,
@@ -23,19 +24,28 @@ import {
   getProjectById,
   getTodo,
   getTodoById,
+  getTodoInsightsActivity,
+  getTodoInsightsCalendar,
+  getTodoInsightsDue,
+  getTodoInsightsLoad,
+  getTodoInsightsStats,
+  getTodoInsightsStatus,
   getTodoStage,
+  getUser,
   getUserById,
   getUserByIdHistory,
   type Options,
   patchFileByName,
   patchProjectById,
   patchTodoById,
+  patchTodoStage,
   postFile,
   postHookByApp,
   postKey,
   postProject,
   postProjectByIdLink,
   postTodo,
+  postTodoByIdLink,
   postTodoByIdMove,
 } from "../sdk.gen";
 import type {
@@ -53,6 +63,9 @@ import type {
   DeleteProjectByIdResponse,
   DeleteTodoByIdData,
   DeleteTodoByIdError,
+  DeleteTodoByIdLinkData,
+  DeleteTodoByIdLinkError,
+  DeleteTodoByIdLinkResponse,
   DeleteTodoByIdResponse,
   GetFileByNameContentData,
   GetFileByNameContentError,
@@ -78,6 +91,24 @@ import type {
   GetTodoByIdResponse,
   GetTodoData,
   GetTodoError,
+  GetTodoInsightsActivityData,
+  GetTodoInsightsActivityError,
+  GetTodoInsightsActivityResponse,
+  GetTodoInsightsCalendarData,
+  GetTodoInsightsCalendarError,
+  GetTodoInsightsCalendarResponse,
+  GetTodoInsightsDueData,
+  GetTodoInsightsDueError,
+  GetTodoInsightsDueResponse,
+  GetTodoInsightsLoadData,
+  GetTodoInsightsLoadError,
+  GetTodoInsightsLoadResponse,
+  GetTodoInsightsStatsData,
+  GetTodoInsightsStatsError,
+  GetTodoInsightsStatsResponse,
+  GetTodoInsightsStatusData,
+  GetTodoInsightsStatusError,
+  GetTodoInsightsStatusResponse,
   GetTodoResponse,
   GetTodoStageData,
   GetTodoStageError,
@@ -88,6 +119,9 @@ import type {
   GetUserByIdHistoryError,
   GetUserByIdHistoryResponse,
   GetUserByIdResponse,
+  GetUserData,
+  GetUserError,
+  GetUserResponse,
   PatchFileByNameData,
   PatchFileByNameError,
   PatchFileByNameResponse,
@@ -97,6 +131,9 @@ import type {
   PatchTodoByIdData,
   PatchTodoByIdError,
   PatchTodoByIdResponse,
+  PatchTodoStageData,
+  PatchTodoStageError,
+  PatchTodoStageResponse,
   PostFileData,
   PostFileError,
   PostFileResponse,
@@ -112,6 +149,9 @@ import type {
   PostProjectData,
   PostProjectError,
   PostProjectResponse,
+  PostTodoByIdLinkData,
+  PostTodoByIdLinkError,
+  PostTodoByIdLinkResponse,
   PostTodoByIdMoveData,
   PostTodoByIdMoveError,
   PostTodoByIdMoveResponse,
@@ -158,6 +198,28 @@ const createQueryKey = <TOptions extends Options>(
   }
   return [params];
 };
+
+export const getUserQueryKey = (options?: Options<GetUserData>) =>
+  createQueryKey("getUser", options, false, ["User"]);
+
+/**
+ * List users
+ *
+ * The user directory by name, at most 100, optionally narrowed by a name search.
+ */
+export const getUserOptions = (options?: Options<GetUserData>) =>
+  queryOptions<GetUserResponse, GetUserError, GetUserResponse, ReturnType<typeof getUserQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await getUser({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: getUserQueryKey(options),
+  });
 
 export const getMeQueryKey = (options?: Options<GetMeData>) =>
   createQueryKey("getMe", options, false, ["User"]);
@@ -452,6 +514,444 @@ export const getTodoStageOptions = (options?: Options<GetTodoStageData>) =>
   });
 
 /**
+ * Rename stage
+ *
+ * Rename a stage across every todo wearing it.
+ */
+export const patchTodoStageMutation = (
+  options?: Partial<Options<PatchTodoStageData>>,
+): MutationOptions<PatchTodoStageResponse, PatchTodoStageError, Options<PatchTodoStageData>> => {
+  const mutationOptions: MutationOptions<
+    PatchTodoStageResponse,
+    PatchTodoStageError,
+    Options<PatchTodoStageData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await patchTodoStage({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+export const getTodoInsightsStatsQueryKey = (options: Options<GetTodoInsightsStatsData>) =>
+  createQueryKey("getTodoInsightsStats", options, false, ["Todo"]);
+
+/**
+ * Todo stats
+ *
+ * Created, done, active and blocked counts for a range, plus overdue all time.
+ */
+export const getTodoInsightsStatsOptions = (options: Options<GetTodoInsightsStatsData>) =>
+  queryOptions<
+    GetTodoInsightsStatsResponse,
+    GetTodoInsightsStatsError,
+    GetTodoInsightsStatsResponse,
+    ReturnType<typeof getTodoInsightsStatsQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await getTodoInsightsStats({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: getTodoInsightsStatsQueryKey(options),
+  });
+
+export const getTodoInsightsStatsInfiniteQueryKey = (
+  options: Options<GetTodoInsightsStatsData>,
+): QueryKey<Options<GetTodoInsightsStatsData>> =>
+  createQueryKey("getTodoInsightsStats", options, true);
+
+/**
+ * Todo stats
+ *
+ * Created, done, active and blocked counts for a range, plus overdue all time.
+ */
+export const getTodoInsightsStatsInfiniteOptions = (options: Options<GetTodoInsightsStatsData>) => {
+  const opts = infiniteQueryOptions<
+    GetTodoInsightsStatsResponse,
+    GetTodoInsightsStatsError,
+    InfiniteData<GetTodoInsightsStatsResponse>,
+    QueryKey<Options<GetTodoInsightsStatsData>>,
+    | string
+    | Pick<QueryKey<Options<GetTodoInsightsStatsData>>[0], "body" | "headers" | "path" | "query">
+  >(
+    // @ts-ignore
+    {
+      queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<
+          QueryKey<Options<GetTodoInsightsStatsData>>[0],
+          "body" | "headers" | "path" | "query"
+        > =
+          typeof pageParam === "object"
+            ? pageParam
+            : {
+                query: {
+                  start: pageParam,
+                },
+              };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await getTodoInsightsStats({
+          ...options,
+          ...params,
+          signal,
+          throwOnError: true,
+        });
+        return data;
+      },
+      queryKey: getTodoInsightsStatsInfiniteQueryKey(options),
+    },
+  );
+  return opts as Omit<typeof opts, "initialData">;
+};
+
+export const getTodoInsightsStatusQueryKey = (options: Options<GetTodoInsightsStatusData>) =>
+  createQueryKey("getTodoInsightsStatus", options, false, ["Todo"]);
+
+/**
+ * Todos by status
+ *
+ * Todos created in a range, totalled per status in pipeline order.
+ */
+export const getTodoInsightsStatusOptions = (options: Options<GetTodoInsightsStatusData>) =>
+  queryOptions<
+    GetTodoInsightsStatusResponse,
+    GetTodoInsightsStatusError,
+    GetTodoInsightsStatusResponse,
+    ReturnType<typeof getTodoInsightsStatusQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await getTodoInsightsStatus({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: getTodoInsightsStatusQueryKey(options),
+  });
+
+export const getTodoInsightsStatusInfiniteQueryKey = (
+  options: Options<GetTodoInsightsStatusData>,
+): QueryKey<Options<GetTodoInsightsStatusData>> =>
+  createQueryKey("getTodoInsightsStatus", options, true);
+
+/**
+ * Todos by status
+ *
+ * Todos created in a range, totalled per status in pipeline order.
+ */
+export const getTodoInsightsStatusInfiniteOptions = (
+  options: Options<GetTodoInsightsStatusData>,
+) => {
+  const opts = infiniteQueryOptions<
+    GetTodoInsightsStatusResponse,
+    GetTodoInsightsStatusError,
+    InfiniteData<GetTodoInsightsStatusResponse>,
+    QueryKey<Options<GetTodoInsightsStatusData>>,
+    | string
+    | Pick<QueryKey<Options<GetTodoInsightsStatusData>>[0], "body" | "headers" | "path" | "query">
+  >(
+    // @ts-ignore
+    {
+      queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<
+          QueryKey<Options<GetTodoInsightsStatusData>>[0],
+          "body" | "headers" | "path" | "query"
+        > =
+          typeof pageParam === "object"
+            ? pageParam
+            : {
+                query: {
+                  start: pageParam,
+                },
+              };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await getTodoInsightsStatus({
+          ...options,
+          ...params,
+          signal,
+          throwOnError: true,
+        });
+        return data;
+      },
+      queryKey: getTodoInsightsStatusInfiniteQueryKey(options),
+    },
+  );
+  return opts as Omit<typeof opts, "initialData">;
+};
+
+export const getTodoInsightsLoadQueryKey = (options: Options<GetTodoInsightsLoadData>) =>
+  createQueryKey("getTodoInsightsLoad", options, false, ["Todo"]);
+
+/**
+ * Todos by assignee
+ *
+ * Todos created in a range, per assignee and status, busiest first.
+ */
+export const getTodoInsightsLoadOptions = (options: Options<GetTodoInsightsLoadData>) =>
+  queryOptions<
+    GetTodoInsightsLoadResponse,
+    GetTodoInsightsLoadError,
+    GetTodoInsightsLoadResponse,
+    ReturnType<typeof getTodoInsightsLoadQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await getTodoInsightsLoad({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: getTodoInsightsLoadQueryKey(options),
+  });
+
+export const getTodoInsightsLoadInfiniteQueryKey = (
+  options: Options<GetTodoInsightsLoadData>,
+): QueryKey<Options<GetTodoInsightsLoadData>> =>
+  createQueryKey("getTodoInsightsLoad", options, true);
+
+/**
+ * Todos by assignee
+ *
+ * Todos created in a range, per assignee and status, busiest first.
+ */
+export const getTodoInsightsLoadInfiniteOptions = (options: Options<GetTodoInsightsLoadData>) => {
+  const opts = infiniteQueryOptions<
+    GetTodoInsightsLoadResponse,
+    GetTodoInsightsLoadError,
+    InfiniteData<GetTodoInsightsLoadResponse>,
+    QueryKey<Options<GetTodoInsightsLoadData>>,
+    | string
+    | Pick<QueryKey<Options<GetTodoInsightsLoadData>>[0], "body" | "headers" | "path" | "query">
+  >(
+    // @ts-ignore
+    {
+      queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<
+          QueryKey<Options<GetTodoInsightsLoadData>>[0],
+          "body" | "headers" | "path" | "query"
+        > =
+          typeof pageParam === "object"
+            ? pageParam
+            : {
+                query: {
+                  start: pageParam,
+                },
+              };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await getTodoInsightsLoad({
+          ...options,
+          ...params,
+          signal,
+          throwOnError: true,
+        });
+        return data;
+      },
+      queryKey: getTodoInsightsLoadInfiniteQueryKey(options),
+    },
+  );
+  return opts as Omit<typeof opts, "initialData">;
+};
+
+export const getTodoInsightsDueQueryKey = (options?: Options<GetTodoInsightsDueData>) =>
+  createQueryKey("getTodoInsightsDue", options, false, ["Todo"]);
+
+/**
+ * Next due todos
+ *
+ * The five open todos coming due soonest.
+ */
+export const getTodoInsightsDueOptions = (options?: Options<GetTodoInsightsDueData>) =>
+  queryOptions<
+    GetTodoInsightsDueResponse,
+    GetTodoInsightsDueError,
+    GetTodoInsightsDueResponse,
+    ReturnType<typeof getTodoInsightsDueQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await getTodoInsightsDue({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: getTodoInsightsDueQueryKey(options),
+  });
+
+export const getTodoInsightsCalendarQueryKey = (options: Options<GetTodoInsightsCalendarData>) =>
+  createQueryKey("getTodoInsightsCalendar", options, false, ["Todo"]);
+
+/**
+ * Todo calendar
+ *
+ * Todos created per day in a range, in the reader's timezone.
+ */
+export const getTodoInsightsCalendarOptions = (options: Options<GetTodoInsightsCalendarData>) =>
+  queryOptions<
+    GetTodoInsightsCalendarResponse,
+    GetTodoInsightsCalendarError,
+    GetTodoInsightsCalendarResponse,
+    ReturnType<typeof getTodoInsightsCalendarQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await getTodoInsightsCalendar({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: getTodoInsightsCalendarQueryKey(options),
+  });
+
+export const getTodoInsightsCalendarInfiniteQueryKey = (
+  options: Options<GetTodoInsightsCalendarData>,
+): QueryKey<Options<GetTodoInsightsCalendarData>> =>
+  createQueryKey("getTodoInsightsCalendar", options, true);
+
+/**
+ * Todo calendar
+ *
+ * Todos created per day in a range, in the reader's timezone.
+ */
+export const getTodoInsightsCalendarInfiniteOptions = (
+  options: Options<GetTodoInsightsCalendarData>,
+) => {
+  const opts = infiniteQueryOptions<
+    GetTodoInsightsCalendarResponse,
+    GetTodoInsightsCalendarError,
+    InfiniteData<GetTodoInsightsCalendarResponse>,
+    QueryKey<Options<GetTodoInsightsCalendarData>>,
+    | string
+    | Pick<QueryKey<Options<GetTodoInsightsCalendarData>>[0], "body" | "headers" | "path" | "query">
+  >(
+    // @ts-ignore
+    {
+      queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<
+          QueryKey<Options<GetTodoInsightsCalendarData>>[0],
+          "body" | "headers" | "path" | "query"
+        > =
+          typeof pageParam === "object"
+            ? pageParam
+            : {
+                query: {
+                  start: pageParam,
+                },
+              };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await getTodoInsightsCalendar({
+          ...options,
+          ...params,
+          signal,
+          throwOnError: true,
+        });
+        return data;
+      },
+      queryKey: getTodoInsightsCalendarInfiniteQueryKey(options),
+    },
+  );
+  return opts as Omit<typeof opts, "initialData">;
+};
+
+export const getTodoInsightsActivityQueryKey = (options: Options<GetTodoInsightsActivityData>) =>
+  createQueryKey("getTodoInsightsActivity", options, false, ["Todo"]);
+
+/**
+ * Todo activity
+ *
+ * Todos created and completed per day, week or month, coarser as the range grows.
+ */
+export const getTodoInsightsActivityOptions = (options: Options<GetTodoInsightsActivityData>) =>
+  queryOptions<
+    GetTodoInsightsActivityResponse,
+    GetTodoInsightsActivityError,
+    GetTodoInsightsActivityResponse,
+    ReturnType<typeof getTodoInsightsActivityQueryKey>
+  >({
+    queryFn: async ({ queryKey, signal }) => {
+      const { data } = await getTodoInsightsActivity({
+        ...options,
+        ...queryKey[0],
+        signal,
+        throwOnError: true,
+      });
+      return data;
+    },
+    queryKey: getTodoInsightsActivityQueryKey(options),
+  });
+
+export const getTodoInsightsActivityInfiniteQueryKey = (
+  options: Options<GetTodoInsightsActivityData>,
+): QueryKey<Options<GetTodoInsightsActivityData>> =>
+  createQueryKey("getTodoInsightsActivity", options, true);
+
+/**
+ * Todo activity
+ *
+ * Todos created and completed per day, week or month, coarser as the range grows.
+ */
+export const getTodoInsightsActivityInfiniteOptions = (
+  options: Options<GetTodoInsightsActivityData>,
+) => {
+  const opts = infiniteQueryOptions<
+    GetTodoInsightsActivityResponse,
+    GetTodoInsightsActivityError,
+    InfiniteData<GetTodoInsightsActivityResponse>,
+    QueryKey<Options<GetTodoInsightsActivityData>>,
+    | string
+    | Pick<QueryKey<Options<GetTodoInsightsActivityData>>[0], "body" | "headers" | "path" | "query">
+  >(
+    // @ts-ignore
+    {
+      queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<
+          QueryKey<Options<GetTodoInsightsActivityData>>[0],
+          "body" | "headers" | "path" | "query"
+        > =
+          typeof pageParam === "object"
+            ? pageParam
+            : {
+                query: {
+                  start: pageParam,
+                },
+              };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await getTodoInsightsActivity({
+          ...options,
+          ...params,
+          signal,
+          throwOnError: true,
+        });
+        return data;
+      },
+      queryKey: getTodoInsightsActivityInfiniteQueryKey(options),
+    },
+  );
+  return opts as Omit<typeof opts, "initialData">;
+};
+
+/**
  * Delete todo
  *
  * Soft-delete a todo. Its sub-issues move up to its parent.
@@ -547,6 +1047,64 @@ export const postTodoByIdMoveMutation = (
   > = {
     mutationFn: async (fnOptions) => {
       const { data } = await postTodoByIdMove({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Unlink todo
+ *
+ * Drop the link at a url from a todo.
+ */
+export const deleteTodoByIdLinkMutation = (
+  options?: Partial<Options<DeleteTodoByIdLinkData>>,
+): MutationOptions<
+  DeleteTodoByIdLinkResponse,
+  DeleteTodoByIdLinkError,
+  Options<DeleteTodoByIdLinkData>
+> => {
+  const mutationOptions: MutationOptions<
+    DeleteTodoByIdLinkResponse,
+    DeleteTodoByIdLinkError,
+    Options<DeleteTodoByIdLinkData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await deleteTodoByIdLink({
+        ...options,
+        ...fnOptions,
+        throwOnError: true,
+      });
+      return data;
+    },
+  };
+  return mutationOptions;
+};
+
+/**
+ * Link todo
+ *
+ * Attach an outside link to a todo, or retitle the one at that url.
+ */
+export const postTodoByIdLinkMutation = (
+  options?: Partial<Options<PostTodoByIdLinkData>>,
+): MutationOptions<
+  PostTodoByIdLinkResponse,
+  PostTodoByIdLinkError,
+  Options<PostTodoByIdLinkData>
+> => {
+  const mutationOptions: MutationOptions<
+    PostTodoByIdLinkResponse,
+    PostTodoByIdLinkError,
+    Options<PostTodoByIdLinkData>
+  > = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await postTodoByIdLink({
         ...options,
         ...fnOptions,
         throwOnError: true,

@@ -1,17 +1,17 @@
 import { describe, expect, it } from "bun:test";
 import { User } from "../src/user";
-import { Auth } from "../src/user/auth";
-import { Actor } from "../src/actor";
-import { ProviderIds } from "../src/user/provider.sql";
+import { Auth } from "../src/auth";
+import { Identity } from "../src/identity";
+import { ProviderIds } from "../src/auth/provider.sql";
 import { DEFAULTS, zone } from "../src/user/prefs";
 import { testEmail, withTestUser } from "./util";
 
 describe("user", () => {
   it("providers reports email as connected after provisioning, and never leaks a password", async () => {
     const email = testEmail();
-    const userID = await Auth.provision({ provider: "email", accountId: email, email });
+    const userID = await Auth.link({ provider: "email", accountId: email, email });
 
-    const providers = await Actor.provide("user", { userID, role: "member" }, () =>
+    const providers = await Identity.provide("user", { userID, role: "member" }, () =>
       User.providers(),
     );
 
@@ -34,7 +34,7 @@ describe("user", () => {
 
   withTestUser("providers are scoped to the actor", async () => {
     const email = testEmail();
-    const otherID = await Auth.provision({ provider: "email", accountId: email, email });
+    const otherID = await Auth.link({ provider: "email", accountId: email, email });
     expect(otherID).toBeString();
 
     // This user was created directly, so it has no provider rows of its own —

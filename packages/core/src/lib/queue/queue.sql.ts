@@ -1,5 +1,5 @@
 import { index, integer, jsonb, pgTable as table, text } from "drizzle-orm/pg-core";
-import { id, timestamp, timestamps, ulid } from "../../drizzle/types";
+import { id, timestamp, timestamps } from "../../drizzle/types";
 
 export const JobTable = table(
   "job",
@@ -8,7 +8,8 @@ export const JobTable = table(
     ...timestamps,
     name: text().notNull(),
     payload: jsonb().notNull().default({}),
-    userID: ulid("user_id"),
+    // Opaque to the queue: whoever pushed, as `Identity.stamp()` wrote it. Null for system.
+    identity: jsonb(),
     attempts: integer().notNull().default(0),
     error: text(),
     /** When the job becomes runnable — push delay and retry backoff both move it forward. */

@@ -3,7 +3,7 @@ import { Hono } from "hono";
 import { describeRoute } from "hono-openapi";
 import { validator, authRequired } from "../common";
 import { describe } from "../doc";
-import { Actor } from "@template/core/actor";
+import { Identity } from "@template/core/identity";
 import { Signing } from "@template/core/key/signing";
 import { Storage } from "@template/core/storage";
 import { check } from "@template/core/storage/adapter/serve";
@@ -53,7 +53,7 @@ export namespace FileApi {
         ErrorCodes.Validation.INVALID_PARAMETER,
         `Invalid filename: ${name}`,
       );
-    return `${Actor.userID()}/${base}`;
+    return `${Identity.userID()}/${base}`;
   }
 
   export const route = new Hono()
@@ -124,7 +124,7 @@ export namespace FileApi {
       ),
       authRequired,
       async (c) => {
-        const rows = await Storage.disk().list(`${Actor.userID()}/`);
+        const rows = await Storage.disk().list(`${Identity.userID()}/`);
         rows.sort((a, b) => (b.lastModified?.getTime() ?? 0) - (a.lastModified?.getTime() ?? 0));
         return c.json(rows, 200);
       },

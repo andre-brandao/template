@@ -3,7 +3,7 @@ import { and, arrayContains, desc, eq, inArray, isNull, or, sql } from "drizzle-
 import { fn } from "../../util/fn";
 import { CloudEvent, HTTP } from "../bus/cloudevent";
 import { iso } from "../../util/fmt";
-import { Actor } from "../../actor";
+import { Identity } from "../../identity";
 import { Common } from "../../common";
 import { Database } from "../../drizzle";
 import { Examples } from "../../examples";
@@ -67,13 +67,13 @@ export namespace Webhook {
   export const create = fn(
     Info.pick({ url: true, types: true }).partial({ types: true }),
     (input) => {
-      Actor.check({ webhook: ["create"] });
+      Identity.check({ webhook: ["create"] });
       return Database.use((tx) =>
         tx
           .insert(WebhookTable)
           .values({
             id: Identifier.create("webhook"),
-            createdBy: Actor.userID(),
+            createdBy: Identity.userID(),
             url: input.url,
             secret: token("whsec_"),
             types: input.types ?? [],
@@ -85,7 +85,7 @@ export namespace Webhook {
   );
 
   export const list = fn(z.void(), () => {
-    Actor.check({ webhook: ["read"] });
+    Identity.check({ webhook: ["read"] });
     return Database.use((tx) =>
       tx
         .select()
@@ -98,7 +98,7 @@ export namespace Webhook {
 
   /** Re-enabling clears the failure count, so a fixed endpoint doesn't trip the limit again. */
   export const update = fn(Patch.extend({ id: Info.shape.id }), async ({ id, ...patch }) => {
-    Actor.check({ webhook: ["update"] });
+    Identity.check({ webhook: ["update"] });
     await assert.exists(
       Database.use((tx) =>
         tx
@@ -112,7 +112,7 @@ export namespace Webhook {
   });
 
   export const remove = fn(Info.shape.id, async (id) => {
-    Actor.check({ webhook: ["delete"] });
+    Identity.check({ webhook: ["delete"] });
     await assert.exists(
       Database.use((tx) =>
         tx

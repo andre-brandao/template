@@ -12,6 +12,7 @@ export namespace Examples {
     emailVerified: true,
     image: null,
     role: "member",
+    kind: "human",
     prefs: DEFAULTS,
     timeDeleted: null,
     timeCreated: "2026-06-07T00:00:00.000Z",
@@ -89,6 +90,10 @@ export namespace Examples {
     id: Id("event"),
     userID: Id("user"),
     user: { id: Id("user"), name: "John Doe", image: null },
+    identity: {
+      type: "agent",
+      properties: { name: "copilot", userID: Id("user"), role: "member", timezone: "UTC" },
+    },
     type: "todo.created",
     source: "todo",
     sourceID: Id("todo"),

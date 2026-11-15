@@ -3,8 +3,8 @@ import { eq } from "drizzle-orm";
 import { Database } from "../src/drizzle";
 import { Key } from "../src/platform/key";
 import { KeyTable } from "../src/platform/key/key.sql";
-import { Session } from "../src/platform/key/session";
-import { Actor } from "../src/actor";
+import { Session } from "../src/auth/session";
+import { Identity } from "../src/identity";
 import { User } from "../src/user";
 import { withTestUser } from "./util";
 
@@ -25,7 +25,7 @@ describe("Session", () => {
       // Nothing stored yet, so the zone is the UTC fallback.
       expect(await Session.verify(raw)).toEqual({ userID, email, role: "member", timezone: "UTC" });
 
-      await Actor.provide("user", { userID, role: "member" }, () =>
+      await Identity.provide("user", { userID, role: "member" }, () =>
         User.prefs({ zone: "America/Sao_Paulo" }),
       );
       expect((await Session.verify(raw))?.timezone).toBe("America/Sao_Paulo");

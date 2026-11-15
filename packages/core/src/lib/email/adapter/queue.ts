@@ -1,4 +1,4 @@
-import { Actor } from "../../../actor";
+import { Identity } from "../../../identity";
 import type { Email } from "../index";
 import type { Port } from "../port";
 
@@ -9,8 +9,7 @@ import type { Port } from "../port";
 export function queue(push: typeof Email.job.push): Port {
   return {
     async send(msg) {
-      const info = Actor.use();
-      await push(msg, { userID: info.type === "user" ? info.properties.userID : null });
+      await push(msg, { identity: Identity.stamp() });
     },
   };
 }

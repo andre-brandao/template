@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { Key } from "@template/core/key";
-import { Actor } from "@template/core/actor";
+import { Identity } from "@template/core/identity";
 import { remote } from "$lib/server/remote";
 
 export const getKeys = remote
@@ -13,7 +13,7 @@ export const createKey = remote.form(
   z.object({ name: Key.Info.shape.name, ttl: z.enum(["", "30", "90", "365"]).optional() }),
   async (input) => {
     const key = await Key.create({
-      userID: Actor.userID(),
+      userID: Identity.userID(),
       name: input.name,
       expiresAt: Key.expires(input.ttl ? Number(input.ttl) : undefined),
     });
@@ -30,7 +30,7 @@ export const removeKey = remote.form(z.object({ id: Key.Info.shape.id }), async 
 /** A key for the API console: named for where it came from, and short-lived so it cleans up. */
 export const mintKey = remote.command(z.void(), async () => {
   const key = await Key.create({
-    userID: Actor.userID(),
+    userID: Identity.userID(),
     name: "api console",
     expiresAt: Key.expires(1),
   });

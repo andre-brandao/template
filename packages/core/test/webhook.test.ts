@@ -225,7 +225,7 @@ describe("webhook", () => {
   );
 
   withTestUser("a member cannot manage subscriptions", async () => {
-    // `Actor.check` runs before the query, so these throw rather than reject.
+    // `Identity.check` runs before the query, so these throw rather than reject.
     expect(() => Webhook.list()).toThrow("Requires webhook:read");
     expect(() => Webhook.create({ url: "https://example.com/hook" })).toThrow(
       "Requires webhook:create",

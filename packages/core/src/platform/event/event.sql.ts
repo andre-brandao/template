@@ -1,5 +1,6 @@
 import { index, jsonb, pgTable as table, text } from "drizzle-orm/pg-core";
 import { id, timestamps, ulid } from "../../drizzle/types";
+import type { Identity } from "../../identity";
 
 export const EventTable = table(
   "event",
@@ -7,6 +8,8 @@ export const EventTable = table(
     id: id(),
     ...timestamps,
     userID: ulid("user_id"),
+    // The whole identity as it stood: an agent's name and scope, the role it held.
+    identity: jsonb().$type<Identity.Info>().notNull().default({ type: "system", properties: {} }),
     type: text().notNull(),
     source: text(),
     sourceID: ulid("source_id"),

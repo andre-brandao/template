@@ -26,7 +26,7 @@ export function db(cfg: Config & { use: Runner }): Port {
           id,
           name: job.name,
           payload: job.payload,
-          userID: job.userID,
+          identity: job.identity,
           timeAvailable: new Date(Date.now() + (job.delay ?? 0) * 1000),
         }),
       );
@@ -63,7 +63,7 @@ export function db(cfg: Config & { use: Runner }): Port {
         id: row.id,
         name: row.name,
         payload: row.payload,
-        userID: row.userID,
+        identity: row.identity,
         attempts: row.attempts,
       };
     },

@@ -10,7 +10,6 @@ export const GET: RequestHandler = async (event) => {
   if (err) error(400, event.url.searchParams.get("error_description") ?? err);
   if (!code) error(400, "Missing code");
 
-  const tokens = await exchange(event.url.origin, code);
-  await session.write(event, tokens.userID);
+  await session.write(event, await exchange(event.url.origin, code));
   redirect(303, next.take(event));
 };

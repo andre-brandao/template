@@ -3,7 +3,7 @@ import { authRequired } from "../common";
 import { describe } from "../doc";
 import { User } from "@template/core/user";
 import { ErrorCodes, VisibleError } from "@template/core/error";
-import { Actor } from "@template/core/actor";
+import { Identity } from "@template/core/identity";
 
 export namespace UserApi {
   const doc = describe("User");
@@ -24,7 +24,7 @@ export namespace UserApi {
     ),
     authRequired,
     async (c) => {
-      const user = await User.fromID(Actor.userID());
+      const user = await User.fromID(Identity.userID());
       if (!user)
         throw new VisibleError(
           "not_found",

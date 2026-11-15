@@ -2,7 +2,7 @@ import { z } from "zod";
 import { and, count, ilike, isNotNull, isNull, or, sql, type SQL } from "drizzle-orm";
 import { fn } from "../../util/fn";
 import { iso } from "../../util/fmt";
-import { Actor } from "../../actor";
+import { Identity } from "../../identity";
 import { Common } from "../../common";
 import { Database } from "../../drizzle";
 import { ProjectTable } from "../../project/project.sql";
@@ -22,7 +22,7 @@ export namespace Admin {
       deleted: z.boolean().optional(),
     }),
     (input) => {
-      Actor.check({ admin: ["read"] });
+      Identity.check({ admin: ["read"] });
       const { page, pageSize, limit, offset } = Common.page(input);
       const where = and(
         input.deleted ? undefined : isNull(UserTable.timeDeleted),
@@ -66,7 +66,7 @@ export namespace Admin {
 
   /** Per-table size and row estimate (planner's `n_live_tup` — cheap), plus the db total. */
   export const tables = fn(z.void(), async () => {
-    Actor.check({ admin: ["read"] });
+    Identity.check({ admin: ["read"] });
     const [rows, size] = await Promise.all([
       raw(sql`
         SELECT relname AS name,
@@ -92,7 +92,7 @@ export namespace Admin {
 
   /** Queue depth and the age of the oldest thing still waiting — the "is it stuck" number. */
   export const queue = fn(z.void(), () => {
-    Actor.check({ admin: ["read"] });
+    Identity.check({ admin: ["read"] });
     return Database.use(async (tx) => {
       const [pending, running, failed, oldest] = await Promise.all([
         tx
@@ -127,7 +127,7 @@ export namespace Admin {
 
   /** Product tallies rather than storage ones — what the instance actually holds. */
   export const counts = fn(z.void(), () => {
-    Actor.check({ admin: ["read"] });
+    Identity.check({ admin: ["read"] });
     return Database.use(async (tx) => {
       const one = (table: typeof UserTable | typeof ProjectTable | typeof TodoTable, where?: any) =>
         tx
@@ -149,7 +149,7 @@ export namespace Admin {
 
   /** Version, connection headroom and uptime — what you want when the pool misbehaves. */
   export const server = fn(z.void(), async () => {
-    Actor.check({ admin: ["read"] });
+    Identity.check({ admin: ["read"] });
     const rows = await raw(sql`
       -- server_version carries the packager's whole string; keep the leading number.
       SELECT split_part(current_setting('server_version'), ' ', 1) AS version,

@@ -1,13 +1,13 @@
-import { Actor } from "@template/core/actor";
+import { Identity } from "@template/core/identity";
 import { Database } from "@template/core/drizzle";
 import type { Permission } from "@template/core/permission";
 import { User } from "@template/core/user";
-import { Session } from "@template/core/key/session";
+import { Session } from "@template/core/auth/session";
 import { db } from "./db";
 
 // Creates a real user in the same database the app reads, then opens a session row the
 // same way /callback does — so a browser carrying the `auth` cookie is authenticated
-// (hooks/server/auth.ts → read → Actor). No login UI, no issuer.
+// (hooks/server/auth.ts → read → Identity). No login UI, no issuer.
 export function mint(
   role: Permission.Role = "member",
   opts: { email?: string; name?: string } = {},
@@ -18,7 +18,7 @@ export function mint(
     // Signup makes everyone a member and the session join reads the role off the row, so
     // anything else has to be written there — the cookie is opaque and carries nothing.
     if (role !== "member")
-      await Actor.provide("system", {}, () => User.assign({ id: userID, role }));
+      await Identity.provide("system", {}, () => User.assign({ id: userID, role }));
     const cookie = await Session.create(userID);
     return { userID, email, role, cookie };
   });

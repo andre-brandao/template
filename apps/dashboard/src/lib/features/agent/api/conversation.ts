@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { Actor } from "@template/core/actor";
+import { Identity } from "@template/core/identity";
 import { Database, and, asc, desc, eq, isNull } from "@template/core/drizzle";
 import { ErrorCodes, VisibleError } from "@template/core/error";
 import { fn } from "@template/core/util/fn";
@@ -60,7 +60,7 @@ export namespace Conversation {
       ),
     }),
     async (input) => {
-      const user = Actor.userID();
+      const user = Identity.userID();
       const first = input.messages.find((message) => message.role === "user" && message.text);
       return Database.transaction(async (tx) => {
         const made = await tx
@@ -129,7 +129,7 @@ export namespace Conversation {
           .from(ConversationTable)
           .where(
             and(
-              eq(ConversationTable.userID, Actor.userID()),
+              eq(ConversationTable.userID, Identity.userID()),
               eq(ConversationTable.agent, input.agent),
               isNull(ConversationTable.timeDeleted),
             ),
@@ -152,7 +152,7 @@ export namespace Conversation {
           .where(
             and(
               eq(ConversationTable.id, id),
-              eq(ConversationTable.userID, Actor.userID()),
+              eq(ConversationTable.userID, Identity.userID()),
               isNull(ConversationTable.timeDeleted),
             ),
           )
@@ -176,7 +176,7 @@ export namespace Conversation {
       tx
         .update(ConversationTable)
         .set({ timeDeleted: new Date() })
-        .where(and(eq(ConversationTable.id, id), eq(ConversationTable.userID, Actor.userID()))),
+        .where(and(eq(ConversationTable.id, id), eq(ConversationTable.userID, Identity.userID()))),
     ).then(() => undefined),
   );
 

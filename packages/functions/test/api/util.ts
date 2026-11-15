@@ -2,7 +2,7 @@ import { beforeAll, expect, test as _test, mock } from "bun:test";
 import { app } from "../../src/api/routes";
 import { User } from "@template/core/user";
 import { Key } from "@template/core/key";
-import { Actor } from "@template/core/actor";
+import { Identity } from "@template/core/identity";
 import { z } from "zod";
 
 /**
@@ -13,7 +13,7 @@ export function setupApiTest() {
   let token: string;
 
   const withContext = async <T>(fn: () => T | Promise<T>): Promise<T> => {
-    return Actor.provide("user", { userID, role: "member" }, fn);
+    return Identity.provide("user", { userID, role: "member" }, fn);
   };
 
   beforeAll(async () => {

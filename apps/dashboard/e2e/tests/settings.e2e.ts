@@ -1,7 +1,7 @@
 import type { Page } from "@playwright/test";
 import { Database } from "@template/core/drizzle";
 import { Queue } from "@template/core/queue";
-import { Actor } from "@template/core/actor";
+import { Identity } from "@template/core/identity";
 import { Todo } from "@template/core/todo";
 import { test, expect } from "../util/fixtures";
 import { db } from "../util/db";
@@ -81,7 +81,7 @@ test("the date format preference reaches the rest of the app", async ({ page, as
   // its own queue port, this direct call needs one too.
   await Database.provide(db, () =>
     Queue.provide(Queue.Providers.memory(), () =>
-      Actor.provide("user", { userID: session.userID, role: "member" }, () =>
+      Identity.provide("user", { userID: session.userID, role: "member" }, () =>
         Todo.create({ title, dueDate: "2024-03-12T12:00:00.000Z" }),
       ),
     ),

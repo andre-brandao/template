@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { ProviderId } from '@template/core/user/provider.sql';
+	import type { ProviderId } from '@template/core/auth/provider.sql';
 
 	let { providers }: { providers: ProviderId[] } = $props();
 

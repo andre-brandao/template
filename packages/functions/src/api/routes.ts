@@ -24,7 +24,7 @@ app
     c.header("Cache-Control", "no-store");
     return next();
   })
-  .use(auth);
+  .use(auth());
 
 export const routes = app
   .route("/", UserApi.route)

@@ -1,12 +1,13 @@
 import { index, pgTable as table, text, uniqueIndex, varchar } from "drizzle-orm/pg-core";
-import { id, timestamp, timestamps, ulid } from "../drizzle/types";
+import { id, timestamps, ulid } from "../drizzle/types";
 
 export const ProviderIds = ["email", "password", "github", "google"] as const;
 export type ProviderId = (typeof ProviderIds)[number];
 
-/** The subset that holds a real OAuth tokenset. `accessToken` means something else elsewhere. */
+/** The subset served by the issuer, local or shared. The rest are the app's own. */
 export const OauthIds = ["github", "google"] as const;
 
+/** One login linked to a user. OAuth tokens stay at the issuer; apps never hold them. */
 export const ProviderTable = table(
   "provider",
   {
@@ -15,12 +16,8 @@ export const ProviderTable = table(
     userID: ulid("user_id").notNull(),
     providerId: text("provider_id", { enum: ProviderIds }).notNull(),
     accountId: varchar("account_id", { length: 255 }).notNull(),
-    // Whatever secret the provider hands back: an OAuth access token under `OauthIds`, the
-    // password hash under `password`. Tokens are plaintext, like `key` secrets — a dump
-    // exposes them — so only the hash may leave the row, and never through `Auth.tokens`.
-    accessToken: text("access_token"),
-    refreshToken: text("refresh_token"),
-    tokenExpiresAt: timestamp("token_expires_at"),
+    /** The password hash under `password`. Null for every other provider. */
+    secret: text(),
   },
   (table) => [
     uniqueIndex("provider_account").on(table.providerId, table.accountId),

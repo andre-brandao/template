@@ -29,13 +29,13 @@
 - Default: one module = one `index.ts` exporting a `namespace Foo { ... }`
   (see `todo/`).
 - Split into multiple files inside the module directory when `index.ts`
-  grows hard to navigate or mixes unrelated concerns (see `user/`, which
-  splits profile CRUD (`index.ts`, `User`) from credentials/sessions
-  (`auth.ts`, `Auth`)).
+  grows hard to navigate or mixes unrelated concerns (see `auth/`, which
+  splits credentials (`index.ts`, `Auth`) from sessions (`session.ts`) and
+  agent delegations (`delegation.ts`)).
 - No top-level shim files at `src/<module>.ts` alongside `src/<module>/`.
   Consumers import through the directory via `@template/core/<module>`.
 - SQL schemas live next to the module they belong to (`user/user.sql.ts`,
-  `user/provider.sql.ts`, `todo/todo.sql.ts`).
+  `auth/provider.sql.ts`, `todo/todo.sql.ts`).
 - Inside a file, order for a reader asking what the module does, not how:
   schemas and their inferred types, shared constants, exported operations in
   lifecycle order (`create`, `list`, `fromID`, `update`, `remove`), then

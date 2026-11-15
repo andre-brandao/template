@@ -14,6 +14,10 @@ export const UserTable = table(
     image: text("image"),
     // `$type` narrows `$inferSelect` to the role union, so the actor boundary needs no cast.
     role: text().$type<Permission.Role>().notNull().default("member"),
+    // A `bot` is an account nobody logs in as — an external system, CI — acting through keys.
+    kind: text({ enum: ["human", "bot"] })
+      .notNull()
+      .default("human"),
     // Defaulting to the whole object, not `{}`, backfills existing rows in the same
     // ALTER statement — so reads never have to cope with a half-empty blob.
     prefs: jsonb().$type<Prefs>().notNull().default(DEFAULTS),

@@ -3,7 +3,7 @@ import { and, desc, eq, gt, isNull, or } from "drizzle-orm";
 import { fn } from "../../util/fn";
 import { iso } from "../../util/fmt";
 import { Assert } from "../../util/assert";
-import { Actor } from "../../actor";
+import { Identity } from "../../identity";
 import { Common } from "../../common";
 import { Database } from "../../drizzle";
 import { Examples } from "../../examples";
@@ -128,7 +128,7 @@ export namespace Key {
           .from(KeyTable)
           .where(
             and(
-              eq(KeyTable.userID, Actor.userID()),
+              eq(KeyTable.userID, Identity.userID()),
               eq(KeyTable.type, "api"),
               isNull(KeyTable.timeDeleted),
               live(),
@@ -158,7 +158,7 @@ export namespace Key {
               and(
                 eq(KeyTable.id, id),
                 eq(KeyTable.type, "api"),
-                eq(KeyTable.userID, Actor.userID()),
+                eq(KeyTable.userID, Identity.userID()),
                 isNull(KeyTable.timeDeleted),
               ),
             )

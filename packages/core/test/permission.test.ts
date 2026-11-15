@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { Actor } from "../src/actor";
+import { Identity } from "../src/identity";
 import { Permission } from "../src/permission";
 import { VisibleError } from "../src/error";
 
@@ -36,28 +36,41 @@ describe("permission", () => {
 
 describe("actor", () => {
   test("public is denied everything", () => {
-    Actor.provide("public", {}, () => {
-      expect(Actor.can({ project: ["read"] })).toBe(false);
-      expect(() => Actor.check({ project: ["read"] })).toThrow(VisibleError);
+    Identity.provide("public", {}, () => {
+      expect(Identity.can({ project: ["read"] })).toBe(false);
+      expect(() => Identity.check({ project: ["read"] })).toThrow(VisibleError);
     });
   });
 
   test("system bypasses every check", () => {
-    Actor.provide("system", {}, () => {
-      expect(Actor.can({ user: ["delete"] })).toBe(true);
+    Identity.provide("system", {}, () => {
+      expect(Identity.can({ user: ["delete"] })).toBe(true);
     });
   });
 
   test("the owner argument unlocks :own", () => {
-    Actor.provide("user", { userID: "usr_1", role: "member" }, () => {
-      expect(Actor.can({ key: ["delete"] }, "usr_2")).toBe(false);
-      expect(Actor.can({ key: ["delete"] }, "usr_1")).toBe(true);
+    Identity.provide("user", { userID: "usr_1", role: "member" }, () => {
+      expect(Identity.can({ key: ["delete"] }, "usr_2")).toBe(false);
+      expect(Identity.can({ key: ["delete"] }, "usr_1")).toBe(true);
     });
   });
 
   test("a denial names what it needed", () => {
-    Actor.provide("user", { userID: "usr_1", role: "member" }, () => {
-      expect(() => Actor.check({ user: ["delete"] })).toThrow(/user:delete/);
+    Identity.provide("user", { userID: "usr_1", role: "member" }, () => {
+      expect(() => Identity.check({ user: ["delete"] })).toThrow(/user:delete/);
+    });
+  });
+
+  test("an agent holds its user's role, narrowed to its scope", () => {
+    const scope = { todo: ["read"] } as const;
+    Identity.provide("agent", { name: "claude", userID: "usr_1", role: "admin", scope }, () => {
+      expect(Identity.can({ todo: ["read"] })).toBe(true);
+      expect(Identity.can({ todo: ["delete"] })).toBe(false);
+      expect(Identity.userID()).toBe("usr_1");
+    });
+    Identity.provide("agent", { name: "copilot", userID: "usr_1", role: "member" }, () => {
+      expect(Identity.can({ todo: ["delete"] })).toBe(true);
+      expect(Identity.can({ user: ["delete"] })).toBe(false);
       expect(new VisibleError("forbidden", "x", "y").statusCode()).toBe(403);
     });
   });

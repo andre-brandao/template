@@ -4,7 +4,7 @@ import { Assert } from "../util/assert";
 import { fn } from "../util/fn";
 import { iso } from "../util/fmt";
 import { Database } from "../drizzle";
-import { Actor } from "../actor";
+import { Identity } from "../identity";
 import { Common } from "../common";
 import { ErrorCodes, VisibleError } from "../error";
 import { Bus } from "../platform/bus";
@@ -14,7 +14,7 @@ import { Permission } from "../permission";
 import { sortable } from "../drizzle/order";
 import { UserTable } from "./user.sql";
 import { Patch, Prefs } from "./prefs";
-import { ProviderIds, ProviderTable } from "./provider.sql";
+import { ProviderIds, ProviderTable } from "../auth/provider.sql";
 
 export namespace User {
   export const assert = Assert.create("User");
@@ -33,6 +33,10 @@ export namespace User {
       // only way to change one, and it wants `user: ["assign"]`.
       role: z.enum(Permission.roles).meta({
         description: "Decides everything the account may do. Only `user:assign` can change it.",
+      }),
+      kind: z.enum(["human", "bot"]).meta({
+        description:
+          "A `bot` is an account nobody logs in as — an external system or CI acting through API keys.",
       }),
       prefs: Prefs.meta({
         description: "Display preferences. Every key has a default, so this is always complete.",
@@ -88,7 +92,7 @@ export namespace User {
           timeCreated: ProviderTable.timeCreated,
         })
         .from(ProviderTable)
-        .where(eq(ProviderTable.userID, Actor.userID()));
+        .where(eq(ProviderTable.userID, Identity.userID()));
 
       return ProviderIds.map((id) => {
         const row = rows.find((row) => row.providerId === id);
@@ -108,6 +112,7 @@ export namespace User {
       email: Info.shape.email,
       emailVerified: Info.shape.emailVerified,
       image: Info.shape.image.optional(),
+      kind: Info.shape.kind.optional(),
     }),
     async (input) => {
       return Database.use((tx) =>
@@ -119,6 +124,7 @@ export namespace User {
             email: input.email,
             emailVerified: input.emailVerified ?? false,
             image: input.image ?? null,
+            kind: input.kind ?? "human",
           })
           .returning()
           .then((rows) => serialize(rows[0]!)),
@@ -174,7 +180,7 @@ export namespace User {
         tx
           .update(UserTable)
           .set({ ...input, timeUpdated: new Date() })
-          .where(eq(UserTable.id, Actor.userID())),
+          .where(eq(UserTable.id, Identity.userID())),
       ),
   );
 
@@ -187,7 +193,7 @@ export namespace User {
           prefs: sql`${UserTable.prefs} || ${JSON.stringify(input)}::jsonb`,
           timeUpdated: new Date(),
         })
-        .where(eq(UserTable.id, Actor.userID())),
+        .where(eq(UserTable.id, Identity.userID())),
     ),
   );
 
@@ -203,8 +209,7 @@ export namespace User {
 
   /** Both ways an admin could lock themselves out: demoting or disabling their own account. */
   function other(id: string) {
-    const actor = Actor.use();
-    if (actor.type === "user" && actor.properties.userID === id)
+    if (Identity.known() && Identity.userID() === id)
       throw new VisibleError(
         "validation",
         ErrorCodes.Validation.INVALID_STATE,
@@ -215,7 +220,7 @@ export namespace User {
   export const assign = fn(
     z.object({ id: Info.shape.id, role: Info.shape.role }),
     async (input) => {
-      Actor.check({ user: ["assign"] });
+      Identity.check({ user: ["assign"] });
       other(input.id);
       const before = await assert.exists(target(input.id));
       if (before.role === input.role) return;
@@ -232,7 +237,7 @@ export namespace User {
 
   /** Disables an account. Their rows stay put — one `restore` away, nothing orphaned. */
   export const remove = fn(Info.shape.id, async (id) => {
-    Actor.check({ user: ["delete"] });
+    Identity.check({ user: ["delete"] });
     other(id);
     const before = await assert.exists(target(id));
     if (before.timeDeleted) return;
@@ -244,7 +249,7 @@ export namespace User {
   });
 
   export const restore = fn(Info.shape.id, async (id) => {
-    Actor.check({ user: ["delete"] });
+    Identity.check({ user: ["delete"] });
     const before = await assert.exists(target(id));
     if (!before.timeDeleted) return;
 
@@ -265,6 +270,7 @@ export namespace User {
       emailVerified: row.emailVerified,
       image: row.image,
       role: row.role,
+      kind: row.kind,
       // Parsed, not passed through: a row written before a preference existed is missing
       // that key, and the column's `$type` would claim otherwise.
       prefs: Prefs.parse(row.prefs),

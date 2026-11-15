@@ -13,7 +13,7 @@ import {
 } from "drizzle-orm";
 import { fn } from "../../util/fn";
 import { Database } from "../../drizzle";
-import { Actor } from "../../actor";
+import { Identity } from "../../identity";
 import { Common } from "../../common";
 import { Examples } from "../../examples";
 import { Tags } from "../../util/tag";
@@ -37,6 +37,7 @@ export namespace Event {
         })
         .nullable()
         .meta({ description: "That user, joined in so a log row can name them." }),
+      identity: Identity.Info,
       type: z.string().min(1).max(128).meta({
         description: "What happened, like `todo.created`.",
         example: Examples.Event.type,
@@ -87,7 +88,7 @@ export namespace Event {
       search: z.string().optional(),
     }),
     (input) => {
-      if (!input.sourceID) Actor.check({ admin: ["read"] });
+      if (!input.sourceID) Identity.check({ admin: ["read"] });
 
       const { page, pageSize, limit, offset } = Common.page(input);
 
@@ -136,7 +137,7 @@ export namespace Event {
 
   /** The values the log filters offer, taken from what has actually been recorded. */
   export const facets = fn(z.void(), () => {
-    Actor.check({ admin: ["read"] });
+    Identity.check({ admin: ["read"] });
     return Database.use(async (tx) => {
       const [types, sources] = await Promise.all([
         tx.selectDistinct({ v: EventTable.type }).from(EventTable).orderBy(asc(EventTable.type)),
@@ -158,6 +159,7 @@ export namespace Event {
       userID: row.userID,
       // The left join yields a row of nulls for system and public actors.
       user: user?.id ? user : null,
+      identity: row.identity,
       type: row.type,
       source: row.source,
       sourceID: row.sourceID,

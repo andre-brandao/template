@@ -73,7 +73,7 @@ import { and, count, desc, eq, ilike, isNull, type SQLWrapper } from "drizzle-or
 import { fn } from "../util/fn";
 import { found } from "../error";
 import { Database } from "../drizzle";
-import { Actor } from "../actor";
+import { Identity } from "../identity";
 import { Common } from "../common";
 import { Examples } from "../examples";
 import { Identifier } from "../identifier";
@@ -110,7 +110,7 @@ export namespace ${pascal} {
         .insert(${pascal}Table)
         .values({
           id: Identifier.create("${name}"),
-          userID: Actor.userID(),
+          userID: Identity.userID(),
           title: input.title,
         })
         .returning()
@@ -124,7 +124,7 @@ export namespace ${pascal} {
     (input) => {
       const { page, pageSize, limit, offset } = Common.page(input);
       const conditions = [
-        eq(${pascal}Table.userID, Actor.userID()),
+        eq(${pascal}Table.userID, Identity.userID()),
         isNull(${pascal}Table.timeDeleted),
       ];
       if (input.search) conditions.push(ilike(${pascal}Table.title, \`%\${input.search}%\`));
@@ -154,7 +154,7 @@ export namespace ${pascal} {
         .where(
           and(
             eq(${pascal}Table.id, id),
-            eq(${pascal}Table.userID, Actor.userID()),
+            eq(${pascal}Table.userID, Identity.userID()),
             isNull(${pascal}Table.timeDeleted),
           ),
         )
@@ -172,7 +172,7 @@ export namespace ${pascal} {
         tx
           .update(${pascal}Table)
           .set({ title, timeUpdated: new Date() })
-          .where(and(eq(${pascal}Table.id, id), eq(${pascal}Table.userID, Actor.userID()))),
+          .where(and(eq(${pascal}Table.id, id), eq(${pascal}Table.userID, Identity.userID()))),
       );
     },
     { title: "Update ${name}", description: "Update a ${name}'s title." },
@@ -185,7 +185,7 @@ export namespace ${pascal} {
       tx
         .update(${pascal}Table)
         .set({ timeDeleted: new Date() })
-        .where(and(eq(${pascal}Table.id, id), eq(${pascal}Table.userID, Actor.userID()))),
+        .where(and(eq(${pascal}Table.id, id), eq(${pascal}Table.userID, Identity.userID()))),
     );
   }, { title: "Delete ${name}", description: "Soft-delete a ${name}." });
 

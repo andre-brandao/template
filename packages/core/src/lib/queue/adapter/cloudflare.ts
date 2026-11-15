@@ -14,7 +14,7 @@ export function cloudflare(binding: Producer): Port {
     async push(job) {
       const id = Identifier.create("job");
       await binding.send(
-        { id, name: job.name, payload: job.payload, userID: job.userID, attempts: 0 },
+        { id, name: job.name, payload: job.payload, identity: job.identity, attempts: 0 },
         { delaySeconds: job.delay },
       );
       return id;

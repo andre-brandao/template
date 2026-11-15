@@ -3,52 +3,74 @@ import { and, eq, gt } from "drizzle-orm";
 import { fn } from "../util/fn";
 import { decode, digest, encode, equal } from "../util/hash";
 import { Password } from "../util/password";
-import { Actor } from "../actor";
+import { Context } from "../context";
+import { Identity } from "../identity";
+import { Permission } from "../permission";
 import { Database } from "../drizzle";
 import { ErrorCodes, VisibleError } from "../error";
 import { Examples } from "../examples";
 import { Identifier } from "../identifier";
 import { Template } from "../lib/email/template";
+import { Key } from "../platform/key";
 import { KeyTable } from "../platform/key/key.sql";
-import { User } from "./index";
-import { UserTable } from "./user.sql";
-import { OauthIds, ProviderIds, ProviderTable } from "./provider.sql";
+import { User } from "../user";
+import { zone } from "../user/prefs";
+import { UserTable } from "../user/user.sql";
+import { Delegation } from "./delegation";
+import { ProviderIds, ProviderTable } from "./provider.sql";
 
 /**
- * Who a login belongs to. `provision` and `tokens` are shared ground; each way in gets its
- * own namespace below, holding the schemas and storage only it understands.
+ * Credentials in, `Identity` out. `link` ties a login to a local user; `resolve` turns any
+ * bearer into whoever is acting. Each way in gets its own namespace below.
  */
 export namespace Auth {
-  const Tokens = z.object({
-    access: z.string(),
-    refresh: z.string().nullable().optional(),
-    expiresAt: z.date().nullable().optional(),
+  /**
+   * What the issuer vouches for — the OpenAuth `identity` subject. App-agnostic on purpose: no
+   * local `userID`, so one issuer can serve every app, and each app links it to its own row.
+   */
+  export const Subject = z.object({
+    /** Stable at the issuer: `<provider>:<id at the provider>`. */
+    id: z.string(),
+    provider: z.enum(ProviderIds),
+    email: z.email(),
+    name: z.string().optional(),
   });
-  export type Tokens = z.infer<typeof Tokens>;
+  export type Subject = z.infer<typeof Subject>;
+
+  /** A verified issuer token. `aud` is the OAuth client it was minted for. */
+  export type Claims = { aud: string; subject: Subject };
 
   /**
-   * Resolves a login to a `userID`, from the issuer's `success` handler. Idempotent; a new
-   * provider for a known email links onto that user. OAuth tokens are stored per login.
+   * Verifies issuer JWTs. A port because the verifier is OpenAuth's client, which the targets
+   * hold — core never imports it. Unset means no issuer: JWTs are refused.
    */
-  export const provision = fn(
+  export const Issuer = Context.port<{ verify(token: string): Promise<Claims | null> } | null>(
+    () => null,
+  );
+
+  /** OAuth clients whose tokens act as an agent, not as the person: MCP clients register as `mcp:<name>`. */
+  const AGENT = "mcp:";
+
+  /**
+   * Resolves a login to a `userID`. Idempotent; a new provider for a known email links onto
+   * that user. Bots are never linked — nobody logs in as one.
+   */
+  export const link = fn(
     z.object({
       provider: z.enum(ProviderIds),
       /** The identity at the provider — its own id, or the email for email/code. */
       accountId: z.string(),
       email: z.email(),
       name: z.string().min(1).optional(),
-      tokens: Tokens.optional(),
     }),
     (input) =>
       Database.transaction(async (tx) => {
-        const tokens = input.tokens && {
-          accessToken: input.tokens.access,
-          refreshToken: input.tokens.refresh ?? null,
-          tokenExpiresAt: input.tokens.expiresAt ?? null,
-        };
-
-        const byProvider = await tx
-          .select({ userID: ProviderTable.userID, timeDeleted: UserTable.timeDeleted })
+        const linked = await tx
+          .select({
+            userID: ProviderTable.userID,
+            timeDeleted: UserTable.timeDeleted,
+            kind: UserTable.kind,
+          })
           .from(ProviderTable)
           .innerJoin(UserTable, eq(UserTable.id, ProviderTable.userID))
           .where(
@@ -58,31 +80,19 @@ export namespace Auth {
             ),
           )
           .then((rows) => rows.at(0));
-        alive(byProvider);
-        if (byProvider) {
-          if (tokens)
-            await tx
-              .update(ProviderTable)
-              .set({ ...tokens, timeUpdated: new Date() })
-              .where(
-                and(
-                  eq(ProviderTable.providerId, input.provider),
-                  eq(ProviderTable.accountId, input.accountId),
-                ),
-              );
-          return byProvider.userID;
-        }
+        alive(linked);
+        if (linked) return linked.userID;
 
         // Linking a new provider onto a disabled account would hand it back — same guard.
-        const byEmail = await tx
-          .select({ id: UserTable.id, timeDeleted: UserTable.timeDeleted })
+        const known = await tx
+          .select({ id: UserTable.id, timeDeleted: UserTable.timeDeleted, kind: UserTable.kind })
           .from(UserTable)
           .where(eq(UserTable.email, input.email))
           .then((rows) => rows.at(0));
-        alive(byEmail);
+        alive(known);
 
         const userID =
-          byEmail?.id ??
+          known?.id ??
           (await User.create({ name: input.name ?? input.email, email: input.email })).id;
 
         await tx.insert(ProviderTable).values({
@@ -90,7 +100,6 @@ export namespace Auth {
           userID,
           providerId: input.provider,
           accountId: input.accountId,
-          ...tokens,
         });
 
         return userID;
@@ -98,31 +107,56 @@ export namespace Auth {
   );
 
   /**
-   * Stored OAuth tokens for `provider`, or null if not connected. Raw secrets — server-only.
-   * Scoped to `OauthIds`: under `password` the same column holds the password hash.
+   * Any bearer to whoever is acting, or a thrown 401: `agt-` delegations, `sk-` keys, then
+   * issuer JWTs. Dashboard sessions are cookies only — an agent gets a delegation instead. `audience` is who is asking: a token minted for an MCP client only works
+   * on the MCP, so a client registered for tools can't drive the API.
    */
-  export const tokens = fn(z.enum(OauthIds), (provider) =>
-    Database.use((tx) =>
-      tx
-        .select({
-          access: ProviderTable.accessToken,
-          refresh: ProviderTable.refreshToken,
-          expiresAt: ProviderTable.tokenExpiresAt,
-        })
-        .from(ProviderTable)
-        .where(
-          and(eq(ProviderTable.userID, Actor.userID()), eq(ProviderTable.providerId, provider)),
-        )
-        .then((rows) => {
-          const row = rows.at(0);
-          return row?.access ? row : null;
-        }),
-    ),
-  );
+  export async function resolve(token: string, audience: "api" | "mcp" = "api") {
+    if (token.startsWith("agt-")) {
+      const lent = await Delegation.verify(token);
+      if (!lent) invalid("Invalid or expired delegation");
+      return identify(lent.userID, { name: lent.name, scope: lent.scope });
+    }
+
+    if (token.startsWith("sk-")) {
+      const userID = await Key.verify(token);
+      if (!userID) invalid("Invalid or expired API key");
+      return identify(userID);
+    }
+
+    const claims = await Issuer.use()?.verify(token);
+    if (!claims) invalid("Invalid or expired token");
+    const userID = await link({
+      provider: claims.subject.provider,
+      accountId: claims.subject.id,
+      email: claims.subject.email,
+      name: claims.subject.name,
+    });
+    if (!claims.aud.startsWith(AGENT)) return identify(userID);
+    if (audience !== "mcp") invalid("This token was issued for an MCP client");
+    return identify(userID, { name: claims.aud.slice(AGENT.length) });
+  }
+
+  /**
+   * The identity a `userID` acts as. The role always comes from the row, so no credential can
+   * outlive the permissions of the user behind it. `agent` narrows it to software acting for them.
+   */
+  export async function identify(
+    userID: string,
+    agent?: { name: string; scope?: Permission.Grants },
+  ): Promise<Identity.Info> {
+    const row = await User.fromID(userID);
+    if (!row) invalid("Token belongs to a user that no longer exists");
+    const base = { userID, role: row.role };
+    if (row.kind === "bot") return { type: "bot", properties: base };
+    const timezone = zone(row.prefs);
+    if (agent) return { type: "agent", properties: { ...base, ...agent, timezone } };
+    return { type: "user", properties: { ...base, timezone } };
+  }
 
   /**
    * Password. There is no signup by password: an account is made by code or by OAuth and
-   * gains a password afterwards, which is why `set` reads the address off the actor's own
+   * gains a password afterwards, which is why `set` reads the address off the identity's own
    * row rather than taking one.
    */
   export namespace Pass {
@@ -140,7 +174,7 @@ export namespace Auth {
         password: z.string().min(8).meta({ description: "At least 8 characters." }),
       }),
       async (input) => {
-        const me = await User.assert.exists(User.fromID(Actor.userID()));
+        const me = await User.assert.exists(User.fromID(Identity.userID()));
 
         const hash = await Password.hash(input.password);
         await Database.use((tx) =>
@@ -151,13 +185,13 @@ export namespace Auth {
               userID: me.id,
               providerId: "password",
               accountId: me.email,
-              accessToken: hash,
+              secret: hash,
             })
             // Emails are unique and never reassigned, so the only row this can collide with
             // is this account's own earlier password — which is what a change replaces.
             .onConflictDoUpdate({
               target: [ProviderTable.providerId, ProviderTable.accountId],
-              set: { accessToken: hash, timeUpdated: new Date() },
+              set: { secret: hash, timeUpdated: new Date() },
             }),
         );
       },
@@ -250,7 +284,7 @@ export namespace Auth {
             "That code is wrong or has expired",
           );
 
-        return provision({ provider: "email", accountId: input.email, email: input.email });
+        return link({ provider: "email", accountId: input.email, email: input.email });
       },
     );
   }
@@ -258,16 +292,28 @@ export namespace Auth {
   /**
    * Magic links — not built. The shape when it lands: `request({ email, url })` mints a long
    * token into the `key` table under `type: "link"` and mails `${url}?token=…`, and
-   * `verify({ token })` spends it and provisions. The token is wide enough that `Code`'s
-   * spend-on-attempt rule buys nothing, but whatever consumes it has to be a POST — mail
+   * `verify({ token })` spends it and links. Whatever consumes it has to be a POST — mail
    * scanners prefetch links, and a GET would burn one before its owner clicked.
    */
   export namespace Link {}
 
+  /**
+   * Signed inbound webhooks — not built. An external system posting with an HMAC over the body
+   * resolves to a `bot` identity: the secret lives in the `key` table under `type: "signing"`,
+   * owned by the bot's user row, and verifying it is the whole adapter.
+   */
+  export namespace Signature {}
+
   // === UTILS ===
 
-  /** Turn disabled accounts away at login, not at the first query after. */
-  function alive(row?: { timeDeleted: Date | null }) {
+  /** Turn disabled accounts and bots away at login, not at the first query after. */
+  function alive(row?: { timeDeleted: Date | null; kind?: "human" | "bot" }) {
+    if (row?.kind === "bot")
+      throw new VisibleError(
+        "forbidden",
+        ErrorCodes.Permission.ACCOUNT_RESTRICTED,
+        "Bot accounts can't log in",
+      );
     if (!row?.timeDeleted) return;
     throw new VisibleError(
       "forbidden",
@@ -276,14 +322,19 @@ export namespace Auth {
     );
   }
 
-  /** The password row for an address, aliased away from the column it shares with OAuth. */
+  function invalid(message: string): never {
+    throw new VisibleError("authentication", ErrorCodes.Authentication.INVALID_TOKEN, message);
+  }
+
+  /** The password row for an address. */
   function account(email: string) {
     return Database.use((tx) =>
       tx
         .select({
           userID: ProviderTable.userID,
-          hash: ProviderTable.accessToken,
+          hash: ProviderTable.secret,
           timeDeleted: UserTable.timeDeleted,
+          kind: UserTable.kind,
         })
         .from(ProviderTable)
         .innerJoin(UserTable, eq(UserTable.id, ProviderTable.userID))

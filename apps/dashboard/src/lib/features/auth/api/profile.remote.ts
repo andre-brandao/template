@@ -1,12 +1,12 @@
 import { error, redirect } from "@sveltejs/kit";
 import { z } from "zod";
 import { User } from "@template/core/user";
-import { Auth } from "@template/core/user/auth";
-import { Actor } from "@template/core/actor";
+import { Auth } from "@template/core/auth";
+import { Identity } from "@template/core/identity";
 import { remote } from "$lib/server/remote";
 
 export const getMe = remote.query(z.void(), async () => {
-  const user = await User.fromID(Actor.userID());
+  const user = await User.fromID(Identity.userID());
   if (!user) error(404, "User not found");
   return user;
 });

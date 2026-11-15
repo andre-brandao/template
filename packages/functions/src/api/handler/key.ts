@@ -3,7 +3,7 @@ import { Hono } from "hono";
 import { validator, authRequired } from "../common";
 import { describe } from "../doc";
 import { Key } from "@template/core/key";
-import { Actor } from "@template/core/actor";
+import { Identity } from "@template/core/identity";
 
 export namespace KeyApi {
   const doc = describe("Key");
@@ -46,7 +46,7 @@ export namespace KeyApi {
       async (c) => {
         const body = c.req.valid("json");
         const key = await Key.create({
-          userID: Actor.userID(),
+          userID: Identity.userID(),
           name: body.name,
           expiresAt: Key.expires(body.expiresInDays),
         });

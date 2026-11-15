@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { sql, type SQLWrapper } from "drizzle-orm";
-import { Actor } from "../actor";
+import { Identity } from "../identity";
 import { ErrorCodes, VisibleError } from "../error";
 
 /**
@@ -51,7 +51,7 @@ const RESERVED = ["github.com/"];
 export function annotate(column: SQLWrapper, input: z.infer<typeof Annotate>) {
   const keys = [...Object.keys(input.set ?? {}), ...(input.unset ?? [])];
   if (
-    Actor.use().type !== "system" &&
+    Identity.use().type !== "system" &&
     keys.some((key) => RESERVED.some((ns) => key.startsWith(ns)))
   )
     throw new VisibleError(

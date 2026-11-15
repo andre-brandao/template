@@ -1,15 +1,15 @@
 import { describe, expect } from "bun:test";
-import { Actor } from "../src/actor";
+import { Identity } from "../src/identity";
 import { Admin } from "../src/platform/admin";
 import { Event } from "../src/platform/event";
-import { Auth } from "../src/user/auth";
+import { Auth } from "../src/auth";
 import { User } from "../src/user";
 import { testEmail, withTestUser } from "./util";
 
 /** A second account to act on, created outside the acting actor. */
 function mate() {
   const email = testEmail();
-  return Actor.provide("system", {}, async () => ({
+  return Identity.provide("system", {}, async () => ({
     email,
     id: (await User.create({ name: "Mate", email })).id,
   }));
@@ -76,7 +76,7 @@ describe("admin users", () => {
       expect((await Admin.users({ search: one.email })).total).toBe(0);
       expect((await Admin.users({ search: one.email, deleted: true })).total).toBe(1);
       await expect(
-        Auth.provision({ provider: "email", accountId: one.email, email: one.email }),
+        Auth.link({ provider: "email", accountId: one.email, email: one.email }),
       ).rejects.toThrow(/disabled/);
 
       await User.restore(one.id);

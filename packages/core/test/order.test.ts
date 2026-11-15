@@ -1,5 +1,5 @@
 import { describe, expect } from "bun:test";
-import { Actor } from "../src/actor";
+import { Identity } from "../src/identity";
 import { Admin } from "../src/platform/admin";
 import { Todo } from "../src/todo";
 import { User } from "../src/user";
@@ -12,7 +12,7 @@ const project = () => ({ source: "project", sourceID: Identifier.create("project
 const titles = (page: { data: Todo.Info[] }) => page.data.map((todo) => todo.title);
 
 const mint = (name: string) =>
-  Actor.provide("system", {}, async () => (await User.create({ name, email: testEmail() })).id);
+  Identity.provide("system", {}, async () => (await User.create({ name, email: testEmail() })).id);
 
 describe("order", () => {
   withTestUser("sorts ascending and descending on one key", async () => {

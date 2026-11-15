@@ -47,6 +47,14 @@ export namespace Permission {
   /** Non-empty tuple, for `z.enum` and the drizzle `$type`. */
   export const roles = Object.keys(Roles) as [Role, ...Role[]];
 
+  /** True when every requested action is inside `scope` — an agent's narrowing of a role. */
+  export function within(scope: Grants, grants: Grants) {
+    const held: any = scope;
+    return Object.entries(grants).every(([res, acts]: [string, any]) =>
+      (acts ?? []).every((a: string) => held[res]?.includes(a)),
+    );
+  }
+
   /** True when `role` holds every listed action. `owned` unlocks the `:own` variants. */
   export function can(role: Role | undefined, grants: Grants, owned = false) {
     if (!role) return false;

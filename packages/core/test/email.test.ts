@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { Actor } from "../src/actor";
+import { Identity } from "../src/identity";
 import { Email } from "../src/lib/email";
 import { Queue } from "../src/lib/queue";
 import { memory } from "../src/lib/queue/adapter/memory";
@@ -20,7 +20,7 @@ describe("email queue sender", () => {
     const queue = memory();
     const real = capture();
 
-    await Actor.provide("public", {}, () =>
+    await Identity.provide("public", {}, () =>
       Queue.provide(queue, async () => {
         await Email.provide(Email.Providers.queue(), () =>
           Email.send({

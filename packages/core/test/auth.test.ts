@@ -1,81 +1,53 @@
 import { describe, expect, it } from "bun:test";
-import { Auth } from "../src/user/auth";
+import { Auth } from "../src/auth";
 import { User } from "../src/user";
-import { Actor } from "../src/actor";
+import { Identity } from "../src/identity";
 import { Email } from "../src/lib/email";
+import { Key } from "../src/platform/key";
+import { Delegation } from "../src/auth/delegation";
 import { testEmail } from "./util";
 
 describe("auth", () => {
-  it("provision creates a user on first sight", async () => {
+  it("link creates a user on first sight", async () => {
     const email = testEmail();
-    const userID = await Auth.provision({ provider: "email", accountId: email, email });
+    const userID = await Auth.link({ provider: "email", accountId: email, email });
 
     const user = await User.fromID(userID);
     expect(user?.email).toBe(email);
   });
 
-  it("provision is idempotent for the same provider identity", async () => {
+  it("link is idempotent for the same provider identity", async () => {
     const email = testEmail();
-    const first = await Auth.provision({ provider: "email", accountId: email, email });
-    const second = await Auth.provision({ provider: "email", accountId: email, email });
+    const first = await Auth.link({ provider: "email", accountId: email, email });
+    const second = await Auth.link({ provider: "email", accountId: email, email });
 
     expect(second).toBe(first);
   });
 
-  it("provision links a new provider onto an existing email", async () => {
+  it("link links a new provider onto an existing email", async () => {
     const email = testEmail();
-    const viaEmail = await Auth.provision({ provider: "email", accountId: email, email });
-    const viaGithub = await Auth.provision({ provider: "github", accountId: "gh-123", email });
+    const viaEmail = await Auth.link({ provider: "email", accountId: email, email });
+    const viaGithub = await Auth.link({ provider: "github", accountId: "gh-123", email });
 
     // Same person, two providers → one user.
     expect(viaGithub).toBe(viaEmail);
   });
 
-  it("provision keeps distinct emails distinct", async () => {
+  it("link keeps distinct emails distinct", async () => {
     const one = testEmail();
     const two = testEmail();
-    const a = await Auth.provision({ provider: "email", accountId: one, email: one });
-    const b = await Auth.provision({ provider: "email", accountId: two, email: two });
+    const a = await Auth.link({ provider: "email", accountId: one, email: one });
+    const b = await Auth.link({ provider: "email", accountId: two, email: two });
 
     expect(a).not.toBe(b);
   });
 
-  it("provision stores provider tokens and refreshes them on re-login", async () => {
+  it("link refuses a bot account", async () => {
     const email = testEmail();
-    const userID = await Auth.provision({
-      provider: "github",
-      accountId: "gh-42",
-      email,
-      tokens: { access: "tok-1", refresh: "ref-1" },
-    });
-
-    const first = await Actor.provide("user", { userID, role: "member" }, () =>
-      Auth.tokens("github"),
+    await User.create({ name: "CI", email, kind: "bot" });
+    await expect(Auth.link({ provider: "email", accountId: email, email })).rejects.toThrow(
+      "Bot accounts can't log in",
     );
-    expect(first?.access).toBe("tok-1");
-    expect(first?.refresh).toBe("ref-1");
-
-    // A second login for the same identity updates the stored tokens.
-    await Auth.provision({
-      provider: "github",
-      accountId: "gh-42",
-      email,
-      tokens: { access: "tok-2", refresh: "ref-2" },
-    });
-    const second = await Actor.provide("user", { userID, role: "member" }, () =>
-      Auth.tokens("github"),
-    );
-    expect(second?.access).toBe("tok-2");
-  });
-
-  it("tokens returns null for a provider the user has not connected", async () => {
-    const email = testEmail();
-    const userID = await Auth.provision({ provider: "email", accountId: email, email });
-
-    const tokens = await Actor.provide("user", { userID, role: "member" }, () =>
-      Auth.tokens("github"),
-    );
-    expect(tokens).toBeNull();
   });
 });
 
@@ -83,12 +55,12 @@ describe("auth password", () => {
   /** A password is something an existing account gains, so every case starts with one. */
   async function account() {
     const email = testEmail();
-    const userID = await Auth.provision({ provider: "email", accountId: email, email });
+    const userID = await Auth.link({ provider: "email", accountId: email, email });
     return { email, userID };
   }
 
   const as = <T>(userID: string, fn: () => Promise<T>) =>
-    Actor.provide("user", { userID, role: "member" }, fn);
+    Identity.provide("user", { userID, role: "member" }, fn);
 
   it("a password set on an account logs it back in", async () => {
     const { email, userID } = await account();
@@ -123,15 +95,6 @@ describe("auth password", () => {
     await expect(Auth.Pass.login({ email, password: "password123" })).rejects.toThrow(
       "Invalid email or password",
     );
-  });
-
-  it("the hash never comes back out through tokens", async () => {
-    const { userID } = await account();
-    await as(userID, () => Auth.Pass.set({ password: "password123" }));
-
-    // `tokens` takes `OauthIds`, so "password" is not even expressible here — the closest
-    // a caller gets is asking for a provider this account has not connected.
-    expect(await as(userID, () => Auth.tokens("github"))).toBeNull();
   });
 });
 
@@ -187,5 +150,61 @@ describe("auth code", () => {
 
     // Had the first request's row survived alongside the second, this would have logged in.
     await expect(Auth.Code.verify({ email, code: first })).rejects.toThrow("wrong or has expired");
+  });
+});
+
+describe("auth resolve", () => {
+  const as = <T>(userID: string, fn: () => Promise<T>) =>
+    Identity.provide("user", { userID, role: "member" }, fn);
+
+  it("an api key resolves to its user, a bot's key to a bot", async () => {
+    const human = await User.create({ name: "Ada", email: testEmail() });
+    const bot = await User.create({ name: "CI", email: testEmail(), kind: "bot" });
+    const one = await Key.create({ userID: human.id, name: "k" });
+    const two = await Key.create({ userID: bot.id, name: "k" });
+
+    expect((await Auth.resolve(one.key!)).type).toBe("user");
+    const info = await Auth.resolve(two.key!);
+    expect(info).toEqual({ type: "bot", properties: { userID: bot.id, role: "member" } });
+  });
+
+  it("a delegation resolves to an agent acting for its user, narrowed to its scope", async () => {
+    const user = await User.create({ name: "Ada", email: testEmail() });
+    const token = await as(user.id, () =>
+      Delegation.create({ name: "copilot", scope: { todo: ["read"] } }),
+    );
+    const info = await Auth.resolve(token);
+    expect(info.type).toBe("agent");
+    await Identity.enter(info, async () => {
+      expect(Identity.userID()).toBe(user.id);
+      expect(Identity.can({ todo: ["read"] })).toBe(true);
+      expect(Identity.can({ todo: ["create"] })).toBe(false);
+    });
+  });
+
+  it("an unknown bearer is a 401", async () => {
+    await expect(Auth.resolve("agt-nope")).rejects.toThrow("Invalid or expired delegation");
+    await expect(Auth.resolve("sk-nope")).rejects.toThrow("Invalid or expired API key");
+    // No issuer port provided, so a JWT has nothing to verify it.
+    await expect(Auth.resolve("eyJ.a.b")).rejects.toThrow("Invalid or expired token");
+  });
+
+  it("an issuer token links its subject; an MCP client's works only on the MCP", async () => {
+    const email = testEmail();
+    const subject = { id: "github:7", provider: "github" as const, email };
+    const issuer = (aud: string) => ({ verify: async () => ({ aud, subject }) });
+
+    const user = await Auth.Issuer.provide(issuer("dashboard"), () => Auth.resolve("jwt"));
+    expect(user.type).toBe("user");
+
+    const mcp = issuer("mcp:claude");
+    await expect(Auth.Issuer.provide(mcp, () => Auth.resolve("jwt"))).rejects.toThrow(
+      "issued for an MCP client",
+    );
+    const agent = await Auth.Issuer.provide(mcp, () => Auth.resolve("jwt", "mcp"));
+    expect(agent.type === "agent" && agent.properties.name).toBe("claude");
+    expect(agent.type === "agent" && agent.properties.userID).toBe(
+      user.type === "user" ? user.properties.userID : "",
+    );
   });
 });

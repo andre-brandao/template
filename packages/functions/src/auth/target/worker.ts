@@ -1,20 +1,14 @@
 import type { ExecutionContext } from "@cloudflare/workers-types";
 import { CloudflareStorage } from "@openauthjs/openauth/storage/cloudflare";
-import { Context } from "@template/core/context";
-import { Database } from "@template/core/drizzle";
-import { Email } from "@template/core/email";
 import type { AuthEnv } from "../../cf";
 import { createAuth } from "../index";
 
 let app: ReturnType<typeof createAuth> | null = null;
 
+// Stateless toward apps: no Hyperdrive, no mail — only its own KV.
 export default {
   async fetch(request: Request, env: AuthEnv, ctx: ExecutionContext) {
-    if (!app) app = createAuth(CloudflareStorage({ namespace: env.AuthKv }));
-    return Context.withProviders(
-      () => app!.fetch(request, env, ctx),
-      Database.provider(Database.connect(env.Hyperdrive.connectionString)),
-      Email.provider(Email.Providers.cloudflare(env.SEND_EMAIL)),
-    );
+    app ??= createAuth(CloudflareStorage({ namespace: env.AuthKv }));
+    return app.fetch(request, env, ctx);
   },
 };

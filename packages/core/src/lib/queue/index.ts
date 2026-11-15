@@ -38,7 +38,7 @@ export namespace Queue {
     return {
       name,
       schema,
-      push: (input: z.infer<S>, opts?: { delay?: number; userID?: string | null }) =>
+      push: (input: z.infer<S>, opts?: { delay?: number; identity?: unknown }) =>
         push(name, schema.parse(input), opts),
     };
   }
@@ -46,10 +46,10 @@ export namespace Queue {
   export function push(
     name: string,
     payload: unknown,
-    opts?: { delay?: number; userID?: string | null },
+    opts?: { delay?: number; identity?: unknown },
   ) {
     log.info("push", { name, delay: opts?.delay ?? 0 });
-    return use().push({ name, payload, userID: opts?.userID ?? null, delay: opts?.delay });
+    return use().push({ name, payload, identity: opts?.identity ?? null, delay: opts?.delay });
   }
 
   /** Runs one job's handler, throwing on failure. The Cloudflare consumer calls it directly. */

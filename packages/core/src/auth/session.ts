@@ -1,22 +1,22 @@
 import { z } from "zod";
 import { and, eq, gt, isNull, or } from "drizzle-orm";
-import { fn } from "../../util/fn";
-import { Common } from "../../common";
-import { Database } from "../../drizzle";
-import { Examples } from "../../examples";
-import { Identifier } from "../../identifier";
-import { Permission } from "../../permission";
-import { decode, digest, encode, equal } from "../../util/hash";
-import { token } from "../../util/token";
-import { Prefs, zone } from "../../user/prefs";
-import { UserTable } from "../../user/user.sql";
-import { KeyTable } from "./key.sql";
+import { fn } from "../util/fn";
+import { Common } from "../common";
+import { Database } from "../drizzle";
+import { Examples } from "../examples";
+import { Identifier } from "../identifier";
+import { Permission } from "../permission";
+import { decode, digest, encode, equal } from "../util/hash";
+import { token } from "../util/token";
+import { Prefs, zone } from "../user/prefs";
+import { UserTable } from "../user/user.sql";
+import { KeyTable } from "../platform/key/key.sql";
 
 /**
  * Dashboard logins. Nothing is signed, so there is no secret to hold or rotate: the cookie
  * is `<id>.<secret>`, the row is what makes it true, and revoking one is a delete. Shares
- * the `key` table under `type: "session"`; `Key.verify` resolves `api` alone; the API
- * middleware takes a session bearer only through `Session.verify`, for the dashboard copilot.
+ * the `key` table under `type: "session"`. Never a bearer: the API and MCP refuse it, and the
+ * copilot carries a `Delegation` instead.
  */
 export namespace Session {
   export const Info = z

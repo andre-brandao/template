@@ -1,5 +1,5 @@
 import { error, json, redirect } from "@sveltejs/kit";
-import { Actor } from "@template/core/actor";
+import { Identity } from "@template/core/identity";
 import { Storage } from "@template/core/storage";
 import { Project } from "@template/core/project";
 import { User } from "@template/core/user";
@@ -19,8 +19,8 @@ function at(kind: string, id: string) {
 
 /** Uploading and clearing mutate the subject, so only its owner may. Viewing is open to any user. */
 async function owned(kind: "user" | "project", id: string) {
-  if (Actor.use().type !== "user") error(401, "Authentication required");
-  if (kind === "user" && id !== Actor.userID()) error(403, "Not your avatar");
+  if (Identity.use().type !== "user") error(401, "Authentication required");
+  if (kind === "user" && id !== Identity.userID()) error(403, "Not your avatar");
   if (kind === "project" && !(await Project.fromID(id))) error(404, "Project not found");
 }
 
@@ -30,7 +30,7 @@ async function save(kind: "user" | "project", id: string, image: string | null) 
 }
 
 export const GET: RequestHandler = async ({ params }) => {
-  if (Actor.use().type !== "user") error(401, "Authentication required");
+  if (Identity.use().type !== "user") error(401, "Authentication required");
 
   const { key } = at(params.kind, params.id);
   const url = await Storage.disk().temporaryUrl(key);

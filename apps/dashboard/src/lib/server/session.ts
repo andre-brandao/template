@@ -1,5 +1,5 @@
 import type { RequestEvent } from "@sveltejs/kit";
-import { Session } from "@template/core/key/session";
+import { Session } from "@template/core/auth/session";
 
 // The cookie is an opaque token; the row behind it carries who, the role and the expiry.
 // `dev` reads NODE_ENV, not $app/environment, so the e2e `mint` helper works outside SvelteKit.
@@ -25,11 +25,6 @@ export async function read(event: RequestEvent) {
   // The row's window slides on use, so re-set the cookie or the browser's copy expires first.
   event.cookies.set(COOKIE, raw, OPTS);
   return me;
-}
-
-/** The raw session token, for forwarding as a bearer (the copilot's MCP calls). Unverified. */
-export function token(event: RequestEvent) {
-  return event.cookies.get(COOKIE);
 }
 
 export async function write(event: RequestEvent, user: string) {

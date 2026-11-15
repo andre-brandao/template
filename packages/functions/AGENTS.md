@@ -24,24 +24,31 @@ environment it runs in, so the app itself never knows where it runs. See `docs/r
 
 ## Key Patterns
 
-**Actor** — every handler runs under an actor resolved by `middleware.ts`. Use the `Actor` namespace:
+**Identity** — every handler runs under the identity `middleware.ts` resolved: `public`, `system`,
+`user`, `bot` (a `kind: "bot"` user acting through keys) or `agent` (software acting for a user,
+narrowed to a scope).
 
 ```ts
-import { Actor } from "@template/core/actor";
+import { Identity } from "@template/core/identity";
 
-Actor.use(); // get current actor ({ type, properties }) — falls back to "public"
-Actor.userID(); // get the current user's id, throws if actor is "public"
-Actor.assert("user"); // assert type and return typed actor
+Identity.use(); // the current identity ({ type, properties })
+Identity.userID(); // who answers for the act — the user, the bot, or the agent's user
+Identity.check({ todo: ["read"] }); // 403 unless held (an agent also needs it in scope)
 ```
 
-Middleware sets the actor via `Actor.provide(type, properties, next)` — handlers never call `provide` directly.
+Handlers never call `provide` — the middleware does, with whatever `Auth.resolve` returned.
 
-**Auth** — a request carries `Authorization: Bearer <token>`, and `middleware.ts` resolves it three
-ways: an `sk-` prefix is a user-minted API key looked up in Postgres (`Key.verify`), a `.ses-` token
-is a dashboard session the copilot forwards to the MCP (`Session.verify`), anything else is a JWT
-from the OpenAuth issuer, verified statelessly against its JWKS. All three collapse to a bare
-user id, and the role always comes from the user row — so an API key can never outlive the
-permissions of whoever minted it. No header at all means the `public` actor.
+**Auth** — a request carries `Authorization: Bearer <token>`, and `Auth.resolve` (core) owns every
+format: `agt-` is a delegation (the copilot → `agent`), `sk-` an API key (`user` or `bot`), anything
+else a JWT from the OpenAuth issuer, verified through the `Auth.Issuer` port and linked to a local
+user. A JWT minted for an `mcp:*` client is an `agent` and only works on the MCP. The role always
+comes from the user row. Dashboard sessions are cookies only — never a bearer. No header means
+`public`.
+
+**Issuer** — `auth/` only says who someone is (`identity` subject: `provider:id` + email) and never
+touches an app's database, so one issuer (`id.developing.company`) can serve every app. It adds
+dynamic client registration and PKCE metadata for MCP clients; `AUTH_REDIRECTS` lists extra
+allowed redirect origins.
 
 **Errors** — throw `VisibleError` for client-safe error responses:
 
@@ -76,7 +83,7 @@ standard error bodies and `doc.errors` several of them, spread in. The same `met
 MCP tool over that op, so the two can never drift.
 
 Nothing is merged in: a route lists every status it can return, and only those. `authRequired`
-means 401, a `validator` means 400, a reachable `Actor.check` means 403, a reachable `found()`
+means 401, a `validator` means 400, a reachable `Identity.check` means 403, a reachable `found()`
 means 404, and 500 is on every route via `onError`. The API tests read the spec back and drive
 each declared status, so an error documented on a route that cannot produce it fails the suite.
 

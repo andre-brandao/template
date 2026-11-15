@@ -1,6 +1,6 @@
 import { describe, expect } from "bun:test";
 import { z } from "zod";
-import { Actor } from "../src/actor";
+import { Identity } from "../src/identity";
 import { Bus } from "../src/platform/bus";
 import { Event } from "../src/platform/event";
 import { Identifier } from "../src/identifier";
@@ -48,10 +48,10 @@ describe("event", () => {
 
   withTestUser("a pinned read shows every actor, not just the caller", async ({ userID }) => {
     const { id } = await Todo.create({ title: "Shared", source: "test", sourceID: "shared" });
-    const mate = await Actor.provide("system", {}, () =>
+    const mate = await Identity.provide("system", {}, () =>
       User.create({ name: "Mate", email: testEmail() }),
     );
-    await Actor.provide("user", { userID: mate.id, role: "member" }, () =>
+    await Identity.provide("user", { userID: mate.id, role: "member" }, () =>
       Todo.update({ id, status: "active" }),
     );
 

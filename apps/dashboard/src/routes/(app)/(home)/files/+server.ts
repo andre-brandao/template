@@ -1,11 +1,11 @@
 import { error, json } from "@sveltejs/kit";
-import { Actor } from "@template/core/actor";
+import { Identity } from "@template/core/identity";
 import { Storage } from "@template/core/storage";
 import { MAX, key } from "$lib/server/files";
 import type { RequestHandler } from "./$types";
 
 export const POST: RequestHandler = async ({ request }) => {
-  if (Actor.use().type !== "user") error(401, "Authentication required");
+  if (Identity.use().type !== "user") error(401, "Authentication required");
 
   const form = await request.formData();
   const file = form.get("file");

@@ -1,8 +1,8 @@
 import { chatParamsFromRequestBody, toServerSentEventsResponse } from "@tanstack/ai";
 import { error, type RequestEvent } from "@sveltejs/kit";
 import { z } from "zod";
-import { Actor } from "@template/core/actor";
-import { token } from "$lib/server/session";
+import { Identity } from "@template/core/identity";
+import { Delegation } from "@template/core/auth/delegation";
 import { agents } from "./agents";
 import { Agent } from "./core";
 
@@ -38,12 +38,11 @@ export function forwarded(raw: unknown, fallback: string, models: string[]) {
 }
 
 /**
- * The SSE endpoint, behind the dashboard session. The session cookie is also the bearer the
- * MCP accepts, so every server tool call runs as the signed-in user.
+ * The SSE endpoint, behind the dashboard session. MCP calls carry a delegation, so they run as
+ * the `copilot` agent for the signed-in user; in-process tools run as the user.
  */
 export async function serve(event: RequestEvent) {
-  const session = token(event);
-  if (Actor.use().type !== "user" || !session) error(401, "Authentication required");
+  if (Identity.use().type !== "user") error(401, "Authentication required");
   const body = await event.request.json().catch(() => error(400, "Invalid JSON"));
   const params = await chatParamsFromRequestBody(body);
   const opts = forwarded(params.forwardedProps, params.threadId, (await Agent.models()).ids);
@@ -53,7 +52,9 @@ export async function serve(event: RequestEvent) {
     threadId: params.threadId,
     runId: params.runId,
     messages: params.messages,
-    token: session,
+    // A delegation, not the session: the MCP sees "copilot for this user", and the events it
+    // causes say so. Expires on its own, so a leaked one outlives nothing.
+    token: await Delegation.create({ name: "copilot" }),
     tools: params.tools,
     abortController,
   });

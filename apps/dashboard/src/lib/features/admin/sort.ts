@@ -6,16 +6,13 @@ import { sorted } from "$lib/utils/sort";
 type UserKey = NonNullable<Parameters<typeof Admin.users>[0]["sort"]>[number];
 type EventKey = NonNullable<Parameters<typeof Event.list>[0]["sort"]>[number];
 
-export const users = sorted([
-  "name",
-  "email",
-  "role",
-  "timeCreated",
-] as const satisfies readonly Exclude<UserKey, `-${string}`>[]);
-
-export const events = sorted([
-  "type",
-  "source",
-  "user",
-  "timeCreated",
-] as const satisfies readonly Exclude<EventKey, `-${string}`>[]);
+export const keys = {
+  users: sorted(["name", "email", "role", "timeCreated"] as const satisfies readonly Exclude<
+    UserKey,
+    `-${string}`
+  >[]),
+  events: sorted(["type", "source", "user", "timeCreated"] as const satisfies readonly Exclude<
+    EventKey,
+    `-${string}`
+  >[]),
+};

@@ -245,6 +245,8 @@ describe("queue", () => {
     await Queue.provide(db({ use: Database.use, timeout: 0 }), async () => {
       await greet.push({ name: "stalled" });
       const first = await Queue.use().reserve();
+      // The lease is `timeReserved < now() - 0s`: strict, so a re-reserve in the same ms misses it.
+      await new Promise((ok) => setTimeout(ok, 5));
       const again = await Queue.use().reserve();
       expect(again?.id).toBe(first!.id);
       expect(again?.attempts).toBe(2);

@@ -8,7 +8,7 @@
 	import { query } from '$lib/utils/params';
 	import { events as entries, facets } from '../api/admin.query';
 	import LogsTable from '../components/LogsTable.svelte';
-	import { events } from '../sort';
+	import { keys } from '../sort';
 
 	// In the URL so a narrowed log can be linked, reloaded and stepped back through.
 	const params = query(
@@ -18,7 +18,7 @@
 			source: z.string().default(''),
 			user: z.string().default(''),
 			page: z.coerce.number().int().min(1).default(1),
-			sort: events.schema
+			sort: keys.events.schema
 		})
 	);
 
@@ -98,7 +98,7 @@
 		<Scroll fill>
 			<LogsTable
 				rows={log.data.data}
-				sorting={events.decode(params.sort)}
+				sorting={keys.events.decode(params.sort)}
 				onsort={(sort) => pick({ sort })}
 				onuser={(user) => pick({ user })}
 			/>

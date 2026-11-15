@@ -8,7 +8,7 @@
 	import { user } from '$lib/utils/context';
 	import RoleForm from './RoleForm.svelte';
 	import AccessForm from './AccessForm.svelte';
-	import { users } from '../sort';
+	import { keys } from '../sort';
 
 	let {
 		rows,
@@ -16,8 +16,8 @@
 		onsort
 	}: {
 		rows: User.Info[];
-		sorting: ReturnType<typeof users.decode>;
-		onsort: (next: ReturnType<typeof users.encode>) => void;
+		sorting: ReturnType<typeof keys.users.decode>;
+		onsort: (next: ReturnType<typeof keys.users.encode>) => void;
 	} = $props();
 
 	const me = user();
@@ -68,7 +68,7 @@
 			}
 		},
 		onSortingChange: (next) =>
-			onsort(users.encode(typeof next === 'function' ? next(sorting) : next)),
+			onsort(keys.users.encode(typeof next === 'function' ? next(sorting) : next)),
 		manualSorting: true,
 		maxMultiSortColCount: 3
 	});

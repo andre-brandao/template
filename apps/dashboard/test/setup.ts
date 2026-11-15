@@ -4,3 +4,13 @@ import { mock } from "bun:test";
 // Vite build, so shim them for bun test. dev=false exercises the production error branches.
 mock.module("$app/environment", () => ({ dev: false, building: false, browser: false }));
 mock.module("$env/dynamic/private", () => ({ env: {} }));
+mock.module("$app/navigation", () => {
+  const noop = async () => {};
+  return {
+    goto: noop,
+    invalidate: noop,
+    refreshAll: noop,
+    pushState: () => {},
+    afterNavigate: () => {},
+  };
+});

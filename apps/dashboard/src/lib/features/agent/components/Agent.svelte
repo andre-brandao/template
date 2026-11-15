@@ -10,7 +10,6 @@
 	import ListChecks from '@lucide/svelte/icons/list-checks';
 	import Help from '@lucide/svelte/icons/circle-question-mark';
 	import ChartColumn from '@lucide/svelte/icons/chart-column';
-	import History from '@lucide/svelte/icons/history';
 	import { user } from '$lib/utils/context';
 	import { agent } from '../agent.svelte';
 	import { ask } from '../ask/tool';
@@ -89,10 +88,6 @@
 					</button>
 				{/each}
 			</div>
-			<button class="past" type="button" onclick={() => (ctx.tab = 'history')}>
-				<History size={15} strokeWidth={1.75} />
-				Past conversations
-			</button>
 		</div>
 	{/if}
 	<Composer />
@@ -189,30 +184,7 @@
 		font-size: 0.8em;
 	}
 
-	.past {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		gap: 0.5em;
-		margin-top: 1em;
-		padding: 0.55em 0.75em;
-		border: 1px dashed var(--border);
-		border-radius: var(--radius);
-		background: none;
-		color: var(--muted);
-		font: inherit;
-		font-size: 0.82em;
-		cursor: pointer;
-	}
-
-	.past:hover {
-		border-style: solid;
-		background: var(--hover);
-		color: var(--ink);
-	}
-
-	.card:focus-visible,
-	.past:focus-visible {
+	.card:focus-visible {
 		outline: 2px solid var(--accent);
 		outline-offset: 2px;
 	}

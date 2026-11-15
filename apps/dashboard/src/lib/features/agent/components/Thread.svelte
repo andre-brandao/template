@@ -21,6 +21,13 @@
 		refresh: 'Refreshing the page'
 	};
 
+	// Gateway errors lead with their status; the known ones read as what the user can do.
+	function plain(text: string) {
+		if (/^40[13]\b/.test(text)) return "The assistant isn't configured: the model gateway refused its key.";
+		if (/^(429|5\d\d)\b/.test(text)) return 'The model is busy or unavailable. Try again in a moment.';
+		return text;
+	}
+
 	// Follows the stream only while the reader sits at the bottom; scrolling up lets them read.
 	// Resize runs before intersection in a frame, so growth scrolls before `pinned` can flip.
 	const follow: Attachment<HTMLElement> = (el) => {
@@ -58,7 +65,7 @@
 		</ol>
 		{#if ctx.chat.error}
 			<div class="error" role="alert">
-				<Issue>{ctx.chat.error.message}</Issue>
+				<Issue>{plain(ctx.chat.error.message)}</Issue>
 				<Button variant="ghost" onclick={() => ctx.chat.reload()}>
 					<RotateCcw size={14} strokeWidth={1.75} />
 					Retry

@@ -53,7 +53,12 @@
 	<input bind:this={input} type="file" name="avatar" accept="image/*" hidden onchange={pick} />
 
 	{#if image}
-		<button type="button" class="clear" disabled={pending} onclick={() => send({ method: 'DELETE' })}>
+		<button
+			type="button"
+			class="clear"
+			disabled={pending}
+			onclick={() => send({ method: 'DELETE' })}
+		>
 			Remove
 		</button>
 	{/if}

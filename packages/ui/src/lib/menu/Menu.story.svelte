@@ -7,7 +7,7 @@
 	export const story: Story = {
 		title: 'Menu',
 		blurb:
-			'An action menu on top of Popover, holding its exclusive hotkey scope while open. Arrow keys, Home/End and type-ahead move between items, Enter runs one, and Escape or Tab closes it. An item\'s `shortcut` shows as Kbd and fires while the menu is open; bind it page-wide with `createHotkey` (as Edit is here) for when it is closed. Prefer Mod combos so a shortcut never fights type-ahead. `Menu.Item href` renders a real link, and `Menu.Label` a heading the arrows skip. Leave out `trigger` and call `at(e)` from `oncontextmenu` for a right-click menu.',
+			"An action menu on top of Popover, holding its exclusive hotkey scope while open. Arrow keys, Home/End and type-ahead move between items, Enter runs one, and Escape or Tab closes it. An item's `shortcut` shows as Kbd and fires while the menu is open; bind it page-wide with `createHotkey` (as Edit is here) for when it is closed. Prefer Mod combos so a shortcut never fights type-ahead. `Menu.Item href` renders a real link, and `Menu.Label` a heading the arrows skip. Leave out `trigger` and call `at(e)` from `oncontextmenu` for a right-click menu.",
 		of: Root
 	};
 </script>

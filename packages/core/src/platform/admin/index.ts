@@ -79,13 +79,11 @@ export namespace Admin {
     ] as const);
     return {
       // Postgres hands bigints back as strings over the wire; the UI wants numbers.
-      tables: [...rows].map(
-        (row): Table => ({
-          name: row.name,
-          rows: Number(row.rows),
-          bytes: Number(row.bytes),
-        }),
-      ),
+      tables: [...rows].map((row): Table => ({
+        name: row.name,
+        rows: Number(row.rows),
+        bytes: Number(row.bytes),
+      })),
       bytes: Number([...size][0]?.bytes ?? 0),
     };
   });

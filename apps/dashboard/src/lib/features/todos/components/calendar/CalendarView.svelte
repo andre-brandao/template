@@ -79,7 +79,9 @@
 	let shown = $state(untrack(() => focus));
 
 	const start = $derived(weekStart(me.prefs.locale));
-	const first = $derived(mode === 'month' ? week(shown.slice(0, 8) + '01', start) : week(focus, start));
+	const first = $derived(
+		mode === 'month' ? week(shown.slice(0, 8) + '01', start) : week(focus, start)
+	);
 	const last = $derived(shift(first, { days: mode === 'month' ? 41 : 6 }));
 
 	// A day of slack each side, so legacy UTC-midnight dates west or east of UTC still land.
@@ -123,7 +125,10 @@
 	const preview = $derived(
 		drag.active && drag.over
 			? item(
-					apply(drag.active.todo, patch(drag.active.todo, drag.active.kind, drag.active.origin, drag.over)),
+					apply(
+						drag.active.todo,
+						patch(drag.active.todo, drag.active.kind, drag.active.origin, drag.over)
+					),
 					f.zone
 				)
 			: undefined
@@ -167,7 +172,8 @@
 		onchange({ at: day });
 	}
 
-	const step = (n: number) => go(shift(mode === 'month' ? shown : focus, mode === 'month' ? { months: n } : { weeks: n }));
+	const step = (n: number) =>
+		go(shift(mode === 'month' ? shown : focus, mode === 'month' ? { months: n } : { weeks: n }));
 
 	function swap(next: Mode) {
 		if (next === mode) return;
@@ -183,8 +189,12 @@
 
 	// Enter on a day is a click with no pointer (`detail` 0), so it opens under that day.
 	function add(day: Day, e: MouseEvent) {
-		const box = e.target instanceof Element ? e.target.closest('button')?.getBoundingClientRect() : undefined;
-		quick?.open(day, !e.detail && box ? { x: box.left, y: box.bottom } : { x: e.clientX, y: e.clientY });
+		const box =
+			e.target instanceof Element ? e.target.closest('button')?.getBoundingClientRect() : undefined;
+		quick?.open(
+			day,
+			!e.detail && box ? { x: box.left, y: box.bottom } : { x: e.clientX, y: e.clientY }
+		);
 	}
 
 	function list(day: Day, e: MouseEvent) {
@@ -268,7 +278,11 @@
 	</div>
 </div>
 
-<Quick bind:this={quick} scope={{ source: filters.source, sourceID: filters.sourceID }} onmore={create} />
+<Quick
+	bind:this={quick}
+	scope={{ source: filters.source, sourceID: filters.sourceID }}
+	onmore={create}
+/>
 
 <Popover bind:this={more} label="Todos on this day">
 	{#if picked}

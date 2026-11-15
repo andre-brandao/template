@@ -60,8 +60,7 @@
 			tooltip: {
 				use: tooltip,
 				portal,
-				format: (point) =>
-					'part' in point.datum ? `${point.datum.count} ${point.datum.part}` : ''
+				format: (point) => ('part' in point.datum ? `${point.datum.count} ${point.datum.part}` : '')
 			}
 		})
 	);

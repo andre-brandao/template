@@ -1,9 +1,5 @@
 <script lang="ts">
-	let {
-		name,
-		image,
-		size = 28
-	}: { name: string; image?: string | null; size?: number } = $props();
+	let { name, image, size = 28 }: { name: string; image?: string | null; size?: number } = $props();
 
 	const initial = $derived(name.trim().charAt(0).toUpperCase() || '?');
 </script>

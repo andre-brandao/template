@@ -57,22 +57,42 @@
 			accessorFn: (todo) => todo.title,
 			cell: ({ row }) => renderSnippet(title, row)
 		},
-		{ id: 'stage', header: 'Stage', accessorFn: (todo) => todo.stage, cell: ({ row }) => renderSnippet(stage, row) },
+		{
+			id: 'stage',
+			header: 'Stage',
+			accessorFn: (todo) => todo.stage,
+			cell: ({ row }) => renderSnippet(stage, row)
+		},
 		{
 			id: 'assignee',
 			header: 'Assignee',
 			accessorFn: (todo) => todo.assignee?.name,
 			cell: ({ row }) => renderSnippet(who, row)
 		},
-		{ id: 'dueDate', header: 'Due', accessorFn: (todo) => todo.dueDate, cell: ({ row }) => renderSnippet(due, row) },
-		{ id: 'tags', header: 'Tags', enableSorting: false, cell: ({ row }) => renderSnippet(tags, row) },
+		{
+			id: 'dueDate',
+			header: 'Due',
+			accessorFn: (todo) => todo.dueDate,
+			cell: ({ row }) => renderSnippet(due, row)
+		},
+		{
+			id: 'tags',
+			header: 'Tags',
+			enableSorting: false,
+			cell: ({ row }) => renderSnippet(tags, row)
+		},
 		{
 			id: 'status',
 			header: 'Status',
 			accessorFn: (todo) => todo.status,
 			cell: ({ row }) => renderSnippet(status, row)
 		},
-		{ id: 'actions', header: '', enableSorting: false, cell: ({ row }) => renderSnippet(actions, row) }
+		{
+			id: 'actions',
+			header: '',
+			enableSorting: false,
+			cell: ({ row }) => renderSnippet(actions, row)
+		}
 	];
 
 	const table = createTable({

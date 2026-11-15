@@ -46,7 +46,8 @@
 		<img src={node.src} alt={node.alt} title={node.title} loading="lazy" />
 	{/if}
 {:else if node.type === 'footnoteReference'}
-	{@const ref = node.referenceIndex && node.referenceIndex > 1 ? `${node.id}-${node.referenceIndex}` : node.id}
+	{@const ref =
+		node.referenceIndex && node.referenceIndex > 1 ? `${node.id}-${node.referenceIndex}` : node.id}
 	<sup>
 		<a
 			id="user-content-fnref-{ref}"

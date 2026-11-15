@@ -75,7 +75,8 @@
 			return;
 		}
 		if (e.key.length !== 1 || e.metaKey || e.ctrlKey || e.altKey) return;
-		ahead.text = e.timeStamp - ahead.last > 500 ? e.key.toLowerCase() : ahead.text + e.key.toLowerCase();
+		ahead.text =
+			e.timeStamp - ahead.last > 500 ? e.key.toLowerCase() : ahead.text + e.key.toLowerCase();
 		ahead.last = e.timeStamp;
 		// Searching from the next item lets a repeated letter cycle through its matches.
 		const order = [...items.slice(now + 1), ...items.slice(0, now + 1)];

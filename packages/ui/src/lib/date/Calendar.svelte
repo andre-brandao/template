@@ -44,9 +44,9 @@
 	const cfg = dates();
 
 	const raw = $derived(value as any);
-	const picked = $derived(
-		mode === 'range' ? raw?.end : mode === 'multiple' ? raw?.[0] : raw
-	) as Day | undefined;
+	const picked = $derived(mode === 'range' ? raw?.end : mode === 'multiple' ? raw?.[0] : raw) as
+		| Day
+		| undefined;
 
 	// Both follow the value until arrows or the header move them; a range ends on the last month.
 	let focus = $derived(picked ?? today(cfg.zone));
@@ -77,9 +77,7 @@
 	/** Moves the tab stop to `day` and focuses it, like the `T` hotkey. */
 	export function jump(day: Day) {
 		move(day);
-		requestAnimationFrame(() =>
-			root?.querySelector<HTMLElement>(`[data-day="${day}"]`)?.focus()
-		);
+		requestAnimationFrame(() => root?.querySelector<HTMLElement>(`[data-day="${day}"]`)?.focus());
 	}
 
 	/** Drops a half-picked range. */

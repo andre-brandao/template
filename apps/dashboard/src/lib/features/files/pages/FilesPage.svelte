@@ -99,7 +99,9 @@
 	{:else if files.isError}
 		<Issue retry={() => files.refetch()}>{files.error.message}</Issue>
 	{:else if files.data.length === 0 && !sending.length}
-		<Empty>No files yet. Drop some anywhere on the page, or press <Kbd keys="C" /> to pick them.</Empty>
+		<Empty
+			>No files yet. Drop some anywhere on the page, or press <Kbd keys="C" /> to pick them.</Empty
+		>
 	{:else}
 		<List.Root label="Files">
 			{#each files.data as file (file.key)}

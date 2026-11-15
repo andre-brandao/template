@@ -10,8 +10,8 @@
 	import Head from './editor/Head.svelte';
 	import Facts from './editor/Facts.svelte';
 	import Description from './editor/Description.svelte';
-	import Delete from "./Delete.svelte";
-	import Plan from "./editor/Plan.svelte";
+	import Delete from './Delete.svelte';
+	import Plan from './editor/Plan.svelte';
 	import SubIssues from './editor/SubIssues.svelte';
 	import Links from '$lib/components/Links.svelte';
 	import Annotations from '$lib/components/Annotations.svelte';

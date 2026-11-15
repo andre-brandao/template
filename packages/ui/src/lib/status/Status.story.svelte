@@ -18,13 +18,20 @@
 
 	// Stand-ins shaped like a TanStack mutation; a real one is `const save = update()`.
 	const idle = { isPending: false, isError: false, isSuccess: false, error: null };
-	let save = $state<{ isPending: boolean; isError: boolean; isSuccess: boolean; error: { message: string } | null }>({ ...idle });
+	let save = $state<{
+		isPending: boolean;
+		isError: boolean;
+		isSuccess: boolean;
+		error: { message: string } | null;
+	}>({ ...idle });
 	let drop = $state({ ...idle });
 
 	async function run(fail: boolean) {
 		save = { ...idle, isPending: true };
 		await wait(600);
-		save = fail ? { ...idle, isError: true, error: { message: 'Name is taken' } } : { ...idle, isSuccess: true };
+		save = fail
+			? { ...idle, isError: true, error: { message: 'Name is taken' } }
+			: { ...idle, isSuccess: true };
 	}
 </script>
 

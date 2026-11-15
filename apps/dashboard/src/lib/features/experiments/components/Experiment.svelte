@@ -105,7 +105,11 @@
 	<div class="test">
 		<Tabs.Root aria-label="Page variant">
 			{#each names as name (name)}
-				<Tabs.Item active={current === name} title={variants[name].hint} onclick={() => choose(name)}>
+				<Tabs.Item
+					active={current === name}
+					title={variants[name].hint}
+					onclick={() => choose(name)}
+				>
 					{variants[name].label}
 					{#if votes.data?.mine?.variant === name}
 						<Star size={11} fill="currentColor" aria-label="your vote" />
@@ -144,8 +148,8 @@
 <Drawer bind:open>
 	<h2>Vote · {title}</h2>
 	<p class="sub">
-		You're voting for <strong>{variants[current].label}</strong>. Vote again from any variant and
-		it moves there.
+		You're voting for <strong>{variants[current].label}</strong>. Vote again from any variant and it
+		moves there.
 	</p>
 	<div class="form">
 		{#if cast.isError}<Issue>{cast.error.message}</Issue>{/if}

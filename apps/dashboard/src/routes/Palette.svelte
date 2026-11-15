@@ -71,7 +71,9 @@
 		...(me.can({ todo: ['create'] })
 			? [{ group: 'Actions', label: 'New todo', run: () => modal(TodoForm) }]
 			: []),
-		...(me.can({ file: ['create'] }) ? [{ group: 'Actions', label: 'Upload files', run: pick }] : []),
+		...(me.can({ file: ['create'] })
+			? [{ group: 'Actions', label: 'Upload files', run: pick }]
+			: []),
 		...(me.can({ key: ['create'] })
 			? [{ group: 'Actions', label: 'New API key', run: () => modal(KeyForm) }]
 			: []),
@@ -85,7 +87,11 @@
 				]
 			: []),
 		{ group: 'Actions', label: 'Toggle theme', run: theme },
-		{ group: 'Actions', label: rail.tight ? 'Expand sidebar' : 'Collapse sidebar', run: rail.toggle },
+		{
+			group: 'Actions',
+			label: rail.tight ? 'Expand sidebar' : 'Collapse sidebar',
+			run: rail.toggle
+		},
 		{ group: 'Actions', label: 'Keyboard shortcuts', run: () => modal(Keys) },
 		// A server route: a client-side goto would find no page to render.
 		{ group: 'Actions', label: 'Log out', run: () => location.assign('/logout') }
@@ -122,7 +128,11 @@
 	);
 </script>
 
-<Command bind:open commands={[...actions, ...places, ...recent]} placeholder="Search pages and actions">
+<Command
+	bind:open
+	commands={[...actions, ...places, ...recent]}
+	placeholder="Search pages and actions"
+>
 	{#snippet foot()}
 		<span><Kbd keys="ArrowUp" /> <Kbd keys="ArrowDown" /> move</span>
 		<span><Kbd keys="Enter" /> run</span>

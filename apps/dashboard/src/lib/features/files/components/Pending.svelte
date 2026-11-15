@@ -5,15 +5,12 @@
 	import X from '@lucide/svelte/icons/x';
 	import { size } from '$lib/utils/size';
 
-	let {
-		file,
-		error,
-		ondismiss
-	}: { file: File; error?: string; ondismiss: () => void } = $props();
+	let { file, error, ondismiss }: { file: File; error?: string; ondismiss: () => void } = $props();
 </script>
 
 <List.Row title={file.name} state={error ? 'failed' : 'pending'} message={error}>
-	{#snippet lead()}<span class={['icon', { error }]}><Upload size={16} strokeWidth={1.75} /></span>{/snippet}
+	{#snippet lead()}<span class={['icon', { error }]}><Upload size={16} strokeWidth={1.75} /></span
+		>{/snippet}
 	{#snippet meta()}{size(file.size)}{/snippet}
 	{#snippet actions()}
 		{#if error}

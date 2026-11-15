@@ -30,9 +30,7 @@
 	const query = $derived(op.params.filter((one) => one.in === 'query'));
 	const search = $derived(
 		new URLSearchParams(
-			query
-				.filter((one) => values[one.name])
-				.map((one) => [one.name, values[one.name] ?? ''])
+			query.filter((one) => values[one.name]).map((one) => [one.name, values[one.name] ?? ''])
 		).toString()
 	);
 	const url = $derived(search ? `${path}?${search}` : path);

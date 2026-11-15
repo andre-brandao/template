@@ -44,7 +44,9 @@
 	<Field label="Expires" as="div">
 		<Tabs.Root aria-label="Expires">
 			{#each ttls as one (one.value)}
-				<Tabs.Item active={ttl === one.value} onclick={() => (ttl = one.value)}>{one.label}</Tabs.Item>
+				<Tabs.Item active={ttl === one.value} onclick={() => (ttl = one.value)}
+					>{one.label}</Tabs.Item
+				>
 			{/each}
 		</Tabs.Root>
 	</Field>

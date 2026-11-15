@@ -7,10 +7,7 @@
 	import { update } from '../api/todos.query';
 	import { late } from '../status';
 
-	let {
-		todo,
-		field = 'dueDate'
-	}: { todo: Todo.Info; field?: 'dueDate' | 'startDate' } = $props();
+	let { todo, field = 'dueDate' }: { todo: Todo.Info; field?: 'dueDate' | 'startDate' } = $props();
 
 	const name = $derived(field === 'dueDate' ? 'Due' : 'Start');
 
@@ -37,7 +34,10 @@
 	>
 		{#snippet trigger(attrs, text)}
 			<button
-				class={['when', { late: field === 'dueDate' && late({ ...todo, dueDate: shown ?? null }, f.zone) }]}
+				class={[
+					'when',
+					{ late: field === 'dueDate' && late({ ...todo, dueDate: shown ?? null }, f.zone) }
+				]}
 				type="button"
 				aria-label={shown ? `${name} ${text}` : `Set ${name.toLowerCase()} date`}
 				disabled={save.isPending}

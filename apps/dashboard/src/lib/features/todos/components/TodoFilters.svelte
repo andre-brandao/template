@@ -62,7 +62,10 @@
 	const steps = $derived(['none', ...(labels.data ?? []).map((one) => one.name)]);
 
 	const tally = (by: (todo: Todo.Info) => string) =>
-		todos?.reduce((map, one) => map.set(by(one), (map.get(by(one)) ?? 0) + 1), new Map<string, number>());
+		todos?.reduce(
+			(map, one) => map.set(by(one), (map.get(by(one)) ?? 0) + 1),
+			new Map<string, number>()
+		);
 	const counts = $derived({
 		status: tally((one) => one.status),
 		assignee: tally((one) => one.assignee?.id ?? 'none'),
@@ -109,7 +112,10 @@
 	>
 		{#snippet trigger()}{@render any()}{/snippet}
 		{#snippet chip(one)}
-			<span class="dot" style:--c={color(one)}></span>{label(one)}{@render count(counts.status, one)}
+			<span class="dot" style:--c={color(one)}></span>{label(one)}{@render count(
+				counts.status,
+				one
+			)}
 		{/snippet}
 		{#snippet item(one, row)}
 			<span class="dot" style:--c={color(one)}></span>{@render row.marked(label(one))}

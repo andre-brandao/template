@@ -19,8 +19,7 @@
 
 	let said = $state('—');
 
-	const ask = async (opts: Ask) =>
-		(said = (await modal.confirm(opts)) ? 'confirmed' : 'dismissed');
+	const ask = async (opts: Ask) => (said = (await modal.confirm(opts)) ? 'confirmed' : 'dismissed');
 </script>
 
 {#snippet plain()}

@@ -45,7 +45,11 @@
 		...all.filter((one) => one.id !== current && (snaps || !!query.trim() || !tuck.has(one.id)))
 	]);
 
-	createHotkey(hotkeys.model, () => (open = !open), () => ({ enabled: ctx.open }));
+	createHotkey(
+		hotkeys.model,
+		() => (open = !open),
+		() => ({ enabled: ctx.open })
+	);
 
 	// Storage can throw (private window, blocked site data); then the chip lasts this visit.
 	function read() {

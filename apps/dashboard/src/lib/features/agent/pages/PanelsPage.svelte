@@ -1,7 +1,17 @@
 <!-- The panels the assistant built and someone saved, newest first. -->
 <script lang="ts">
 	import { createQuery } from '@tanstack/svelte-query';
-	import { Button, Empty, IconButton, Input, Issue, Skeleton, Toggle, modal, toast } from '@template/ui';
+	import {
+		Button,
+		Empty,
+		IconButton,
+		Input,
+		Issue,
+		Skeleton,
+		Toggle,
+		modal,
+		toast
+	} from '@template/ui';
 	import Trash from '@lucide/svelte/icons/trash-2';
 	import * as Header from '$lib/components/header';
 	import { message } from '$lib/query';
@@ -27,7 +37,11 @@
 	);
 
 	async function erase(row: { id: string; title: string }) {
-		const ok = await modal.confirm({ title: `Delete "${row.title}"`, action: 'Delete', body: warning });
+		const ok = await modal.confirm({
+			title: `Delete "${row.title}"`,
+			action: 'Delete',
+			body: warning
+		});
 		if (!ok) return;
 		await drop.mutateAsync(row.id).catch((err) => toast.error(message(err)));
 	}

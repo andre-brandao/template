@@ -15,7 +15,8 @@
 	const out = $derived.by(() => {
 		try {
 			// colorMode none keeps it plain text, so it renders escaped rather than through {@html}.
-			if (ascii) return { svg: '', text: renderMermaidASCII(value, { colorMode: 'none' }), err: '' };
+			if (ascii)
+				return { svg: '', text: renderMermaidASCII(value, { colorMode: 'none' }), err: '' };
 			const svg = renderMermaidSVG(value, {
 				bg: 'var(--surface)',
 				fg: 'var(--ink)',
@@ -41,13 +42,21 @@
 		</div>
 		<div class="right">
 			{#if view === 'diagram' && !ascii && !out.err}
-				<button type="button" aria-label="Zoom out" onclick={() => (zoom = Math.max(0.5, zoom - 0.25))}>
+				<button
+					type="button"
+					aria-label="Zoom out"
+					onclick={() => (zoom = Math.max(0.5, zoom - 0.25))}
+				>
 					−
 				</button>
 				<button type="button" title="Reset zoom" onclick={() => (zoom = 1)}>
 					{Math.round(zoom * 100)}%
 				</button>
-				<button type="button" aria-label="Zoom in" onclick={() => (zoom = Math.min(4, zoom + 0.25))}>
+				<button
+					type="button"
+					aria-label="Zoom in"
+					onclick={() => (zoom = Math.min(4, zoom + 0.25))}
+				>
 					+
 				</button>
 			{/if}

@@ -16,8 +16,8 @@
 
 <Header.Root title="Webhooks">
 	{#snippet lead()}
-		We POST each event to your endpoint, signed with <code>x-webhook-signature</code> so you can
-		verify it.
+		We POST each event to your endpoint, signed with <code>x-webhook-signature</code> so you can verify
+		it.
 	{/snippet}
 	{#snippet actions()}
 		<Button variant="primary" onclick={create}>New webhook <Kbd keys="C" /></Button>

@@ -22,7 +22,8 @@
 </script>
 
 <div class="row">
-	<Button variant="danger" onclick={() => (broken = true)} disabled={broken}>Break the child</Button>
+	<Button variant="danger" onclick={() => (broken = true)} disabled={broken}>Break the child</Button
+	>
 	<Button variant="ghost" onclick={() => (broken = false)}>Repair</Button>
 </div>
 

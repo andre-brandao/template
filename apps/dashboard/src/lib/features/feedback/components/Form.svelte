@@ -67,8 +67,7 @@
 					placeholder={kind === 'support'
 						? 'What do you need help with? What you tried, where you got stuck'
 						: 'What happened? Steps, context, anything useful'}
-					bind:value={body}
-				></textarea>
+					bind:value={body}></textarea>
 				<input {...form.fields.body.as('hidden', body)} />
 			</Field>
 

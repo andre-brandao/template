@@ -13,7 +13,10 @@
 
 <Question label={props.label} hint={props.hint} reason={props.reason}>
 	<DatePicker
-		bind:value={() => (ctx.values[key] ? String(ctx.values[key]) : undefined), (next) => (ctx.values[key] = next ?? null)}
+		bind:value={
+			() => (ctx.values[key] ? String(ctx.values[key]) : undefined),
+			(next) => (ctx.values[key] = next ?? null)
+		}
 		label={props.label}
 		clearable={!props.required}
 	/>

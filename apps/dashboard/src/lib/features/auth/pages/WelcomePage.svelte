@@ -17,7 +17,11 @@
 
 			<form {...onboard}>
 				<Field label="Display name">
-					<Input {...onboard.fields.name.as('text', '')} autocomplete="name" {@attach (el) => el.focus()} />
+					<Input
+						{...onboard.fields.name.as('text', '')}
+						autocomplete="name"
+						{@attach (el) => el.focus()}
+					/>
 				</Field>
 				<Button variant="primary" type="submit" pending={!!onboard.pending}>Continue</Button>
 			</form>

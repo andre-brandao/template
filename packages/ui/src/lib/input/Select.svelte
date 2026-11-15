@@ -5,7 +5,11 @@
 <script lang="ts">
 	import type { HTMLSelectAttributes } from 'svelte/elements';
 
-	let { options, value = $bindable(), ...rest }: { options: Option[] } & HTMLSelectAttributes = $props();
+	let {
+		options,
+		value = $bindable(),
+		...rest
+	}: { options: Option[] } & HTMLSelectAttributes = $props();
 </script>
 
 <select bind:value {...rest}>
@@ -27,8 +31,10 @@
 		border: 1px solid var(--border);
 		border-radius: var(--radius-sm);
 		background:
-			linear-gradient(45deg, transparent 50%, var(--muted) 50%) calc(100% - 0.95em) 52% / 0.3em 0.3em no-repeat,
-			linear-gradient(-45deg, transparent 50%, var(--muted) 50%) calc(100% - 0.75em) 52% / 0.3em 0.3em no-repeat,
+			linear-gradient(45deg, transparent 50%, var(--muted) 50%) calc(100% - 0.95em) 52% / 0.3em
+				0.3em no-repeat,
+			linear-gradient(-45deg, transparent 50%, var(--muted) 50%) calc(100% - 0.75em) 52% / 0.3em
+				0.3em no-repeat,
 			var(--surface);
 		color: var(--ink);
 		box-shadow: var(--shadow-1);

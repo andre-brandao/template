@@ -29,15 +29,24 @@
 		onpick: (day: Day, e: MouseEvent) => void;
 	} = $props();
 
-	const days = $derived(Array.from({ length: 7 }, (_, i) => shift(week(focus, start), { days: i })));
-	const bars = $derived(lanes(items.filter((one) => !timed(one)), days[0]));
+	const days = $derived(
+		Array.from({ length: 7 }, (_, i) => shift(week(focus, start), { days: i }))
+	);
+	const bars = $derived(
+		lanes(
+			items.filter((one) => !timed(one)),
+			days[0]
+		)
+	);
 	const rows = $derived(Math.max(1, ...bars.map((bar) => bar.lane + 1)));
 	const hours = $derived(
 		new Map(days.map((day) => [day, slots(items.filter((one) => timed(one) && one.start === day))]))
 	);
 	const now = $derived(split(Date.now(), zone));
 	const ghost = $derived(
-		preview && timed(preview) ? slots([preview]).map((one) => ({ ...one, day: preview.start }))[0] : undefined
+		preview && timed(preview)
+			? slots([preview]).map((one) => ({ ...one, day: preview.start }))[0]
+			: undefined
 	);
 
 	const moves: Record<string, number> = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -7, ArrowDown: 7 };

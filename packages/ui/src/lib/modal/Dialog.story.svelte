@@ -31,7 +31,14 @@
 
 <div class="stack">
 	<div class="box">
-		<Dialog title="New project" submit="Create project" {pending} {error} close={() => {}} onsubmit={save}>
+		<Dialog
+			title="New project"
+			submit="Create project"
+			{pending}
+			{error}
+			close={() => {}}
+			onsubmit={save}
+		>
 			<Field label="Name"><Input bind:value={name} placeholder="Quarterly close" /></Field>
 		</Dialog>
 	</div>

@@ -43,7 +43,11 @@
 		padding: 3em;
 		color: var(--ink);
 		background:
-			radial-gradient(90% 70% at 12% 8%, color-mix(in oklab, var(--accent) 16%, transparent), transparent 60%),
+			radial-gradient(
+				90% 70% at 12% 8%,
+				color-mix(in oklab, var(--accent) 16%, transparent),
+				transparent 60%
+			),
 			linear-gradient(color-mix(in oklab, var(--ink) 4%, transparent) 1px, transparent 1px),
 			linear-gradient(90deg, color-mix(in oklab, var(--ink) 4%, transparent) 1px, transparent 1px),
 			var(--bg);

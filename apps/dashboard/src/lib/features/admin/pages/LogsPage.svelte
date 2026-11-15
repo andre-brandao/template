@@ -1,6 +1,16 @@
 <script lang="ts">
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
-	import { Button, Fill, Input, Issue, LazySelect, Pagination, Scroll, Skeleton, Toggle } from '@template/ui';
+	import {
+		Button,
+		Fill,
+		Input,
+		Issue,
+		LazySelect,
+		Pagination,
+		Scroll,
+		Skeleton,
+		Toggle
+	} from '@template/ui';
 	import * as Header from '$lib/components/header';
 	import { debounce } from '$lib/utils/debounce';
 	import { query } from '$lib/utils/params';
@@ -27,7 +37,10 @@
 
 <!-- Header, filters and pagination hold still; only the list scrolls. -->
 <Fill>
-	<Header.Root title="Logs" lead="Every audit entry, newest first. Written by core; read-only here.">
+	<Header.Root
+		title="Logs"
+		lead="Every audit entry, newest first. Written by core; read-only here."
+	>
 		{#snippet strip()}
 			<Header.Group>
 				<Input

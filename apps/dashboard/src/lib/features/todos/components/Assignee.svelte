@@ -17,7 +17,7 @@
 	// The pick stays up until the refetch lands; a failure falls back to the stored one.
 	const next = $derived(save.isPending ? save.variables?.body?.assignee : undefined);
 	const shown = $derived(
-		next === undefined ? todo.assignee : people.data?.find((one) => one.id === next) ?? null
+		next === undefined ? todo.assignee : (people.data?.find((one) => one.id === next) ?? null)
 	);
 
 	function pick(id: string | null, close: () => void) {
@@ -31,7 +31,7 @@
 	<Popover bind:open label="Assign" role="menu" align="end">
 		{#snippet trigger(attrs)}
 			<button
-				class={["face", { full }]}
+				class={['face', { full }]}
 				type="button"
 				aria-label={shown ? `Assigned to ${shown.name}` : 'Assign'}
 				title={shown?.name ?? 'Unassigned'}
@@ -43,7 +43,7 @@
 				{:else}
 					<UserRound size={14} strokeWidth={1.75} />
 				{/if}
-				{#if full}<span class="label">{shown?.name ?? "Unassigned"}</span>{/if}
+				{#if full}<span class="label">{shown?.name ?? 'Unassigned'}</span>{/if}
 			</button>
 		{/snippet}
 		{#snippet children(close)}

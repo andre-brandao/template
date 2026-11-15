@@ -21,8 +21,8 @@
 </script>
 
 {#snippet warn()}
-	<b>{row.name}</b> is signed out and can't sign in until you enable the account again. Nothing
-	they created is deleted.
+	<b>{row.name}</b> is signed out and can't sign in until you enable the account again. Nothing they created
+	is deleted.
 {/snippet}
 
 <FormBoundary>

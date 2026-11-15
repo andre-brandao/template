@@ -5,8 +5,11 @@
 		items,
 		value = $bindable('a'),
 		open = $bindable(false)
-	}: { items: { id: string; name: string; kind: string }[]; value?: string; open?: boolean } =
-		$props();
+	}: {
+		items: { id: string; name: string; kind: string }[];
+		value?: string;
+		open?: boolean;
+	} = $props();
 </script>
 
 <Combobox

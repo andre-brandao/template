@@ -41,7 +41,8 @@
 		{#if page.data.nav && !page.error}
 			<Shell nav={page.data.nav}>
 				{#snippet tools()}
-					{#if data.user}<Button onclick={() => (open = true)}>Search <Kbd keys="Mod+K" /></Button>{/if}
+					{#if data.user}<Button onclick={() => (open = true)}>Search <Kbd keys="Mod+K" /></Button
+						>{/if}
 					{#if data.user && data.agent}<Toggle />{/if}
 					{#if data.user && data.feedback}<Feedback />{/if}
 				{/snippet}

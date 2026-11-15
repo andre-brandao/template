@@ -32,8 +32,7 @@
 				<textarea
 					rows="6"
 					value={String(state[name] ?? '')}
-					oninput={(e) => (state[name] = e.currentTarget.value)}
-				></textarea>
+					oninput={(e) => (state[name] = e.currentTarget.value)}></textarea>
 			{:else if control.type === 'number'}
 				<Input
 					type="number"

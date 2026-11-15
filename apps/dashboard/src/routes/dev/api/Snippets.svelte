@@ -3,9 +3,7 @@
 	import { Code, IconButton, Tabs, toast } from '@template/ui';
 	import { cli, curl, fetch as js, sdk } from './snippets';
 
-	let {
-		input
-	}: { input: Parameters<typeof curl>[0] } = $props();
+	let { input }: { input: Parameters<typeof curl>[0] } = $props();
 
 	const builders = { curl, fetch: js, sdk, cli };
 	const langs = { curl: 'shell', fetch: 'ts', sdk: 'ts', cli: 'shell' };

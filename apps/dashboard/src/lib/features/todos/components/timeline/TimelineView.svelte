@@ -42,7 +42,9 @@
 	});
 
 	// Coarser buckets as the plan stretches, so the axis never turns into a smear.
-	const unit = $derived(!span ? 'day' : span.days <= 70 ? 'day' : span.days <= 240 ? 'week' : 'month');
+	const unit = $derived(
+		!span ? 'day' : span.days <= 70 ? 'day' : span.days <= 240 ? 'week' : 'month'
+	);
 
 	// Days are ruled but only labelled weekly, so a column costs a fraction of its label.
 	const col = $derived(unit === 'day' ? '1.7rem' : unit === 'week' ? '3.6rem' : '4.6rem');

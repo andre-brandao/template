@@ -78,11 +78,11 @@
 		{#if one.fresh}
 			<span class="add">Create</span> “{one.name}”
 		{:else}
-			<span class={['name', { none: !one.name }]}>{@render row.marked(one.name || 'No stage')}</span>
+			<span class={['name', { none: !one.name }]}>{@render row.marked(one.name || 'No stage')}</span
+			>
 		{/if}
 	{/snippet}
 </Combobox>
-
 
 <style>
 	.name {

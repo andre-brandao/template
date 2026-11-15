@@ -4,7 +4,8 @@
 
 	export const story: Story = {
 		title: 'Section',
-		blurb: 'A heading and description beside content. A divider separates sections; narrow screens stack the columns.',
+		blurb:
+			'A heading and description beside content. A divider separates sections; narrow screens stack the columns.',
 		of: Section,
 		slot: 'Section content',
 		props: {

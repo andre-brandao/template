@@ -59,13 +59,21 @@
 					close();
 				}}
 			>
-				<Input placeholder="https://" value={link} oninput={(e) => (link = e.currentTarget.value)} />
+				<Input
+					placeholder="https://"
+					value={link}
+					oninput={(e) => (link = e.currentTarget.value)}
+				/>
 				<Button type="submit">Add</Button>
 			</form>
 		{/snippet}
 	</Popover>
 
-	<span class="note"><Kbd keys="S" /> status · <Kbd keys="L" /> link · link popover {open ? 'open' : 'closed'}{link ? ` · ${link}` : ''}</span>
+	<span class="note"
+		><Kbd keys="S" /> status · <Kbd keys="L" /> link · link popover {open ? 'open' : 'closed'}{link
+			? ` · ${link}`
+			: ''}</span
+	>
 </div>
 
 <style>

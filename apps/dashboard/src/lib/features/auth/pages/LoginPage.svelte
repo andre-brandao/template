@@ -10,7 +10,10 @@
 
 <!-- One box for both: a code for an address nobody holds creates the account, and the lead
      is the only thing that makes that discoverable. -->
-<Frame title="Log in or sign up" lead="Enter your email. If you're new, the code creates your account.">
+<Frame
+	title="Log in or sign up"
+	lead="Enter your email. If you're new, the code creates your account."
+>
 	<Card>
 		<LoginForm />
 	</Card>

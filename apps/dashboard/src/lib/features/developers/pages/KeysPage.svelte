@@ -18,7 +18,8 @@
 	{#if keys.data?.length}
 		<Header.Item label="Used">{keys.data.filter((one) => one.timeUsed).length}</Header.Item>
 	{/if}
-	{#snippet lead()}Keys that act as you. Send as <code>Authorization: Bearer &lt;key&gt;</code>.{/snippet}
+	{#snippet lead()}Keys that act as you. Send as <code>Authorization: Bearer &lt;key&gt;</code
+		>.{/snippet}
 	{#snippet actions()}
 		<Button variant="primary" onclick={create}>New API key <Kbd keys="C" /></Button>
 	{/snippet}

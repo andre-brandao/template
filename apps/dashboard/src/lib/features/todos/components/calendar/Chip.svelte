@@ -61,10 +61,7 @@
 	{#if time}<span class="time">{time}</span>{/if}
 	<span class="name">{todo.title}</span>
 	{#if edge && tail}
-		<span
-			class={['edge', edge]}
-			aria-hidden="true"
-			onpointerdown={(e) => grab(e, todo, 'resize')}
+		<span class={['edge', edge]} aria-hidden="true" onpointerdown={(e) => grab(e, todo, 'resize')}
 		></span>
 	{/if}
 </svelte:element>

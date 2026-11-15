@@ -5,7 +5,8 @@
 
 	export const story: Story = {
 		title: 'Pagination',
-		blurb: 'Renders nothing when there is only one page — the hiding is the point of the component.',
+		blurb:
+			'Renders nothing when there is only one page — the hiding is the point of the component.',
 		of: Pagination
 	};
 </script>

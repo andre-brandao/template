@@ -75,51 +75,51 @@
 	{#if open}
 		<!-- Owns the keyboard while open, so page hotkeys never fire behind the palette. -->
 		<HotkeysProvider scope="command-{id}" exclusive>
-		<input
-			class="search"
-			type="text"
-			role="combobox"
-			autocomplete="off"
-			spellcheck="false"
-			aria-expanded="true"
-			aria-controls="{id}-list"
-			aria-activedescendant={order.length ? `${id}-${active}` : undefined}
-			{placeholder}
-			bind:value={query}
-			oninput={() => (active = 0)}
-			onkeydown={keys}
-			{@attach (el) => el.focus()}
-		/>
-		<div class="list" id="{id}-list" role="listbox" aria-label="Commands">
-			{#each groups as group, g (group.name)}
-				<div class="group" role="group" aria-labelledby="{id}-g{g}">
-					<p class="name" id="{id}-g{g}">{group.name}</p>
-					{#each group.items as item, i (i)}
-						{@const at = order.indexOf(item)}
-						<!-- Pointer only: the keyboard drives the same rows through the input. -->
-						<!-- svelte-ignore a11y_click_events_have_key_events -->
-						<div
-							class="option"
-							id="{id}-{at}"
-							role="option"
-							tabindex="-1"
-							aria-selected={at === active}
-							onpointermove={() => (active = at)}
-							onclick={() => run(item)}
-							{@attach (el) => {
-								if (at === active) el.scrollIntoView({ block: 'nearest' });
-							}}
-						>
-							<span class="label">{item.label}</span>
-							{#if item.hint}<span class="hint">{item.hint}</span>{/if}
-						</div>
-					{/each}
-				</div>
-			{:else}
-				<p class="empty">{empty}</p>
-			{/each}
-		</div>
-		{#if foot}<div class="foot">{@render foot()}</div>{/if}
+			<input
+				class="search"
+				type="text"
+				role="combobox"
+				autocomplete="off"
+				spellcheck="false"
+				aria-expanded="true"
+				aria-controls="{id}-list"
+				aria-activedescendant={order.length ? `${id}-${active}` : undefined}
+				{placeholder}
+				bind:value={query}
+				oninput={() => (active = 0)}
+				onkeydown={keys}
+				{@attach (el) => el.focus()}
+			/>
+			<div class="list" id="{id}-list" role="listbox" aria-label="Commands">
+				{#each groups as group, g (group.name)}
+					<div class="group" role="group" aria-labelledby="{id}-g{g}">
+						<p class="name" id="{id}-g{g}">{group.name}</p>
+						{#each group.items as item, i (i)}
+							{@const at = order.indexOf(item)}
+							<!-- Pointer only: the keyboard drives the same rows through the input. -->
+							<!-- svelte-ignore a11y_click_events_have_key_events -->
+							<div
+								class="option"
+								id="{id}-{at}"
+								role="option"
+								tabindex="-1"
+								aria-selected={at === active}
+								onpointermove={() => (active = at)}
+								onclick={() => run(item)}
+								{@attach (el) => {
+									if (at === active) el.scrollIntoView({ block: 'nearest' });
+								}}
+							>
+								<span class="label">{item.label}</span>
+								{#if item.hint}<span class="hint">{item.hint}</span>{/if}
+							</div>
+						{/each}
+					</div>
+				{:else}
+					<p class="empty">{empty}</p>
+				{/each}
+			</div>
+			{#if foot}<div class="foot">{@render foot()}</div>{/if}
 		</HotkeysProvider>
 	{/if}
 </dialog>

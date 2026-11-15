@@ -8,8 +8,8 @@
 
 <Header.Root title="Mail">
 	{#snippet lead()}
-		Every template in <code>packages/core/src/lib/email/template.ts</code>, rendered against stand-in
-		props. Nothing is sent.
+		Every template in <code>packages/core/src/lib/email/template.ts</code>, rendered against
+		stand-in props. Nothing is sent.
 	{/snippet}
 </Header.Root>
 

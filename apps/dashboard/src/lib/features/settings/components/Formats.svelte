@@ -60,7 +60,11 @@
 	<Field label="Time format" as="div">
 		<Tabs.Root aria-label="Time format">
 			{#each times as one (one.value)}
-				<Tabs.Item active={prefs.time === one.value} title={one.hint} onclick={() => onpick({ time: one.value })}>
+				<Tabs.Item
+					active={prefs.time === one.value}
+					title={one.hint}
+					onclick={() => onpick({ time: one.value })}
+				>
 					{one.label}
 				</Tabs.Item>
 			{/each}

@@ -17,7 +17,11 @@
 	title={slim ? item.label : undefined}
 >
 	<!-- The accent only on the link you stand on: "where am I" is the one state a sidebar has. -->
-	{#if Icon}<Icon size={16} strokeWidth={1.75} color={at(item) ? 'var(--accent)' : undefined} />{/if}
+	{#if Icon}<Icon
+			size={16}
+			strokeWidth={1.75}
+			color={at(item) ? 'var(--accent)' : undefined}
+		/>{/if}
 	{#if !slim}<span class="label">{item.label}</span>{/if}
 </a>
 

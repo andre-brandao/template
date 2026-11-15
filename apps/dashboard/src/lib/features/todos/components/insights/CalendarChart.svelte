@@ -23,7 +23,8 @@
 	const cfg = dates();
 	const DAY = 86_400_000;
 	const at = (iso: string) => new Date(`${iso}T00:00:00`);
-	const short = (day: Date) => day.toLocaleDateString(cfg.locale, { month: 'short', day: 'numeric' });
+	const short = (day: Date) =>
+		day.toLocaleDateString(cfg.locale, { month: 'short', day: 'numeric' });
 	const origin = $derived(['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'].indexOf(cfg.weekStart));
 	// The row a date sits in, counted from the locale's first weekday.
 	const slot = (date: Date) => (date.getDay() - origin + 7) % 7;
@@ -51,7 +52,14 @@
 				ticks.push(week);
 				labels.set(week, date.toLocaleDateString(cfg.locale, { month: 'short' }));
 			}
-			rows.push({ day, date: new Date(date), week, weekday: slot(date), count, level: level(count) });
+			rows.push({
+				day,
+				date: new Date(date),
+				week,
+				weekday: slot(date),
+				count,
+				level: level(count)
+			});
 		}
 		const weeks = [...new Set(rows.map((row) => row.week))];
 		return { rows, weeks, ticks, labels };
@@ -88,7 +96,10 @@
 					}
 				},
 				y: {
-					scale: scaleBand<number>().domain([0, 1, 2, 3, 4, 5, 6]).paddingInner(0.08).paddingOuter(0),
+					scale: scaleBand<number>()
+						.domain([0, 1, 2, 3, 4, 5, 6])
+						.paddingInner(0.08)
+						.paddingOuter(0),
 					axis: false
 				}
 			},

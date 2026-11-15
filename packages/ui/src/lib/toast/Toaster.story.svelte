@@ -32,7 +32,8 @@
 <div class="row">
 	<Button
 		variant="secondary"
-		onclick={() => toast('Deleted', { action: { label: 'Undo', onclick: () => toast('Restored') } })}
+		onclick={() =>
+			toast('Deleted', { action: { label: 'Undo', onclick: () => toast('Restored') } })}
 	>
 		with action
 	</Button>

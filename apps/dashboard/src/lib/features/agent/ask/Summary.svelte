@@ -3,8 +3,7 @@
 	import Check from '@lucide/svelte/icons/check';
 	import type { Answer } from './catalog';
 
-	let { heading, answers, chat }: { heading: string; answers: Answer[]; chat: boolean } =
-		$props();
+	let { heading, answers, chat }: { heading: string; answers: Answer[]; chat: boolean } = $props();
 </script>
 
 <details>
@@ -16,7 +15,9 @@
 		{#each answers as one (one.name)}
 			<div>
 				<dt>{one.label}</dt>
-				<dd>{one.answer}{#if one.recommended}<span class="kept"> · suggested</span>{/if}</dd>
+				<dd>
+					{one.answer}{#if one.recommended}<span class="kept"> · suggested</span>{/if}
+				</dd>
 			</div>
 		{/each}
 	</dl>

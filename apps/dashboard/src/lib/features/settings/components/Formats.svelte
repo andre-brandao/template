@@ -37,24 +37,20 @@
 <div class="grid">
 	<!-- `div`, not the default label: a label wrapping the trigger would toggle it twice. -->
 	<Field label="Time zone" as="div">
-		<Combobox.Root value={prefs.zone ?? here} onpick={(zone) => onpick({ zone })}>
-			<Combobox.Trigger>
-				<span class="name">{prefs.zone ?? here}</span>
-			</Combobox.Trigger>
-
-			<Combobox.Content title="Time zone">
-				<Combobox.Search placeholder="Search zones" />
-				<Combobox.List label="Time zones">
-					{#each zones as name (name)}
-						<Combobox.Item value={name} label={name}>
-							<span class="name">{name}</span>
-							{#if name === here}<span class="hint">Here</span>{/if}
-						</Combobox.Item>
-					{/each}
-				</Combobox.List>
-				<Combobox.Empty>No zone by that name.</Combobox.Empty>
-			</Combobox.Content>
-		</Combobox.Root>
+		<Combobox
+			items={zones}
+			key={(name) => name}
+			value={prefs.zone ?? here}
+			label="Time zone"
+			placeholder="Search zones"
+			onchange={(zone) => onpick({ zone })}
+		>
+			{#snippet item(name, row)}
+				<span class="name">{@render row.marked(name)}</span>
+				{#if name === here}<span class="hint">Here</span>{/if}
+			{/snippet}
+			{#snippet empty()}No zone by that name.{/snippet}
+		</Combobox>
 	</Field>
 
 	<Field label="Date format">

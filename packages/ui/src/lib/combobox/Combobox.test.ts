@@ -7,87 +7,63 @@ import { tick } from "svelte";
 import Fixture from "./Fixture.test.svelte";
 
 const items = [
-  { id: "a", name: "Alpha" },
-  { id: "b", name: "Beta" },
-  { id: "c", name: "Gamma" },
+  { id: "a", name: "gpt-6-luna", kind: "OpenAI" },
+  { id: "b", name: "gpt-5.4-mini", kind: "OpenAI" },
+  { id: "c", name: "claude-sonnet-4-5", kind: "Anthropic" },
 ];
 
-const open = async (container: HTMLElement) => {
-  container.querySelector<HTMLButtonElement>('[role="combobox"]')!.click();
-  await tick();
-};
+const options = (el: HTMLElement) => [...el.querySelectorAll<HTMLElement>('[role="option"]')];
+const search = (el: HTMLElement) => el.querySelector<HTMLInputElement>('[role="combobox"]')!;
 
-const options = (container: HTMLElement) => [
-  ...container.querySelectorAll<HTMLElement>('[role="option"]'),
-];
-
-const type = async (container: HTMLElement, text: string) => {
-  const input = container.querySelector<HTMLInputElement>('input[type="search"]')!;
-  input.value = text;
-  input.dispatchEvent(new Event("input", { bubbles: true }));
+async function type(el: HTMLElement, text: string) {
+  search(el).value = text;
+  search(el).dispatchEvent(new Event("input", { bubbles: true }));
   await tick();
-};
+}
+
+async function key(el: HTMLElement, name: string) {
+  search(el).dispatchEvent(new KeyboardEvent("keydown", { key: name, bubbles: true }));
+  await tick();
+}
 
 describe("Combobox", () => {
-  test("keeps the list unmounted until the trigger opens it", async () => {
+  test("renders no rows until it opens", () => {
     const { container } = render(Fixture, { items });
-    expect(container.querySelector('[role="listbox"]')).toBeNull();
-    await open(container);
-    expect(options(container)).toHaveLength(3);
-  });
-
-  test("the query filters items down to their label", async () => {
-    const { container } = render(Fixture, { items });
-    await open(container);
-    await type(container, "amm");
-    expect(options(container).map((one) => one.textContent)).toEqual(["Gamma"]);
-  });
-
-  test("Empty shows only once nothing survives the query", async () => {
-    const { container } = render(Fixture, { items });
-    await open(container);
-    expect(container.textContent).not.toContain("Nothing matches.");
-    await type(container, "zzz");
     expect(options(container)).toHaveLength(0);
-    expect(container.textContent).toContain("Nothing matches.");
   });
 
-  test("picking an item marks it selected and closes the list", async () => {
-    const { container } = render(Fixture, { items });
-    await open(container);
-    options(container)[1].click();
+  test("tokens match segment prefixes and the hit is marked", async () => {
+    const { container } = render(Fixture, { items, open: true });
+    await type(container, "g6 luna");
+    expect(options(container).map((one) => one.textContent?.trim())).toEqual(["gpt-6-luna ✓"]);
+    expect([...container.querySelectorAll("mark")].map((one) => one.textContent)).toEqual([
+      "g",
+      "6",
+      "luna",
+    ]);
+  });
+
+  test("facet chips count the query's matches and narrow the rows", async () => {
+    const { container } = render(Fixture, { items, open: true });
+    await type(container, "gpt");
+    const chips = [...container.querySelectorAll<HTMLElement>('[role="radio"]')];
+    expect(chips.map((one) => one.textContent)).toEqual(["All2", "Anthropic0", "OpenAI2"]);
+    chips[1].click();
     await tick();
-    expect(container.querySelector('[role="listbox"]')).toBeNull();
-    await open(container);
-    expect(options(container)[1].getAttribute("aria-selected")).toBe("true");
+    expect(options(container)).toHaveLength(0);
+    expect(container.textContent).toContain("Nothing in Anthropic.");
   });
 
-  test("reopening starts from an empty query", async () => {
-    const { container } = render(Fixture, { items });
-    await open(container);
-    await type(container, "alp");
-    expect(options(container)).toHaveLength(1);
-    options(container)[0].click();
-    await tick();
-    await open(container);
-    expect(options(container)).toHaveLength(3);
-  });
-
-  test("Escape closes the list", async () => {
-    const { container } = render(Fixture, { items });
-    await open(container);
-    container
-      .querySelector(".combobox")!
-      .dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
-    await tick();
-    expect(container.querySelector('[role="listbox"]')).toBeNull();
-  });
-
-  test("the trigger reports the open state", async () => {
-    const { container } = render(Fixture, { items });
-    const trigger = container.querySelector('[role="combobox"]')!;
-    expect(trigger.getAttribute("aria-expanded")).toBe("false");
-    await open(container);
-    expect(trigger.getAttribute("aria-expanded")).toBe("true");
+  test("arrows move the active descendant and Enter picks it", async () => {
+    const { container } = render(Fixture, { items, open: true });
+    expect(search(container).getAttribute("aria-activedescendant")).toBe(options(container)[0].id);
+    await key(container, "End");
+    expect(search(container).getAttribute("aria-activedescendant")).toBe(options(container)[2].id);
+    await key(container, "ArrowDown");
+    expect(search(container).getAttribute("aria-activedescendant")).toBe(options(container)[0].id);
+    await key(container, "ArrowDown");
+    await key(container, "Enter");
+    expect(options(container)).toHaveLength(0);
+    expect(container.querySelector(".trigger")?.textContent).toContain("gpt-5.4-mini");
   });
 });

@@ -124,7 +124,8 @@
 		margin: 0;
 		min-width: 10em;
 		max-width: min(var(--popover-max-width, 24em), calc(100vw - 1em));
-		max-height: min(28em, calc(100vh - 1em));
+		/* rem: a trigger in small print (a toolbar, a footer) would otherwise cramp its panel. */
+		max-height: min(28rem, calc(100vh - 1em));
 		overflow: auto;
 		padding: 0.3em;
 		border: 1px solid var(--border, #e6e5e1);

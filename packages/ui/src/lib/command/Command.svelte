@@ -10,6 +10,7 @@
 	import type { Snippet } from 'svelte';
 	import { HotkeysProvider } from '@tanstack/svelte-hotkeys';
 	import { dialog } from '../modal/dialog';
+	import { bucket, mark, step, words } from './model';
 
 	let {
 		open = $bindable(false),
@@ -31,16 +32,13 @@
 	let query = $state('');
 	let active = $state(0);
 
-	// Every word must appear in the group or label, in any order.
+	// Every word must match the group or label, in any order.
 	const groups = $derived.by(() => {
-		const words = query.toLowerCase().split(/\s+/).filter(Boolean);
-		const hits = commands.filter((one) =>
-			words.every((word) => `${one.group} ${one.label}`.toLowerCase().includes(word))
+		const list = words(query);
+		return bucket(
+			commands.filter((one) => mark(`${one.group} ${one.label}`, list)),
+			(one) => one.group
 		);
-		return [...new Set(hits.map((one) => one.group))].map((name) => ({
-			name,
-			items: hits.filter((one) => one.group === name)
-		}));
 	});
 	// Display order, which is what the arrow keys walk.
 	const order = $derived(groups.flatMap((group) => group.items));
@@ -53,15 +51,10 @@
 
 	function keys(e: KeyboardEvent) {
 		if (e.isComposing || !order.length) return;
-		const step = {
-			ArrowDown: active + 1,
-			ArrowUp: active - 1,
-			Home: 0,
-			End: order.length - 1
-		}[e.key];
-		if (step !== undefined) {
+		const next = step(e.key, active, order.length);
+		if (next !== undefined) {
 			e.preventDefault();
-			active = (step + order.length) % order.length;
+			active = next;
 			return;
 		}
 		if (e.key !== 'Enter') return;

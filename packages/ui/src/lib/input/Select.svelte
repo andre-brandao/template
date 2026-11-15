@@ -15,7 +15,7 @@
 </select>
 
 <style>
-	/* The same box as `Input` and a closed `Combobox.Trigger` — the three sit side by side in
+	/* The same box as `Input` and a closed `Combobox` — the three sit side by side in
 	   forms and read as one control family. The chevron is drawn, so it takes the theme. */
 	select {
 		width: 100%;

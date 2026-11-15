@@ -29,7 +29,7 @@
 		const pill = document.createElement('span');
 		pill.title = 'Devtools (Alt+D)';
 		pill.style.cssText =
-			'display:grid;place-items:center;width:32px;height:32px;margin:0 0 8px 8px;' +
+			'display:grid;place-items:center;width:32px;height:32px;margin:0 0 2px 8px;' +
 			'border:1px solid #ff3e00;border-radius:8px;background:#fff;' +
 			'box-shadow:0 1px 3px rgb(0 0 0 / 0.25);cursor:pointer';
 		const dot = document.createElement('span');
@@ -48,6 +48,6 @@
 	/* The inspector pins itself 8px from the corner; nudge it right so the two sit side by side
 	   instead of under our trigger's box. This component only mounts in dev. */
 	:global(#svelte-inspector-toggle) {
-		left: 48px !important;
+		left: 56px !important;
 	}
 </style>

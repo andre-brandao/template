@@ -47,6 +47,7 @@ const server = new PGLiteSocketServer({
 
 // The queue interleaves protocol messages across connections, so another client's Parse can
 // land between a Parse and its Bind. Report a transaction until Sync so it sticks to one client.
+// Reads the private `queryQueue`; pglite-socket is pinned exactly in package.json for that reason.
 let open = false;
 const queue: any = Reflect.get(server, "queryQueue");
 queue.db = {

@@ -18,7 +18,6 @@
 		nav,
 		tools,
 		account,
-		foot,
 		side,
 		children
 	}: {
@@ -26,8 +25,6 @@
 		tools?: Snippet;
 		/** Extra rows in the account menu. */
 		account?: Snippet;
-		/** The rail's foot, above the collapse toggle; gets the collapsed flag. */
-		foot?: Snippet<[boolean]>;
 		side?: Snippet;
 		children: Snippet;
 	} = $props();
@@ -72,10 +69,6 @@
 	{#if nav.head}<nav.head {tight} />{/if}
 {/snippet}
 
-{#snippet base(slim: boolean)}
-	{#if foot}<div class={['foot', { slim }]}>{@render foot(slim)}</div>{/if}
-{/snippet}
-
 <a class="skip" href="#main">Skip to content</a>
 
 <div class="body">
@@ -86,7 +79,6 @@
 		     decide whether the brand carries the wordmark. -->
 		<Rail head={nav.head && crest} slim={rail.shut} />
 		<div class="menu"><Nav {back} sections={nav.sections} slim={rail.shut} /></div>
-		{@render base(rail.shut)}
 		<!-- Below the line, like the content footer across the divider — the two strips
 		     share --footer so their top borders draw one continuous rule. -->
 		<div class="strip">
@@ -123,7 +115,6 @@
 <Drawer bind:open side="left" label="Navigation">
 	<div class="sheet">
 		<Nav {back} sections={nav.sections} />
-		{@render base(false)}
 	</div>
 </Drawer>
 
@@ -188,24 +179,6 @@
 
 	.tight .menu {
 		padding-inline: 0.5em;
-	}
-
-	.foot {
-		display: flex;
-		flex-shrink: 0;
-		min-width: 0;
-		padding: 0.5em 0.625em;
-	}
-
-	.foot.slim {
-		justify-content: center;
-		padding-inline: 0.5em;
-	}
-
-	/* In the drawer it follows the menu, pushed to the bottom of the sheet. */
-	.sheet .foot {
-		margin-top: auto;
-		padding-inline: 0;
 	}
 
 	.strip {

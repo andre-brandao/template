@@ -25,8 +25,6 @@
 
 <svelte:head><link rel="icon" href={favicon} /></svelte:head>
 
-{#snippet feedback(slim: boolean)}<Feedback {slim} fill={!slim} />{/snippet}
-
 <ShellProvider {data}>
 	<ViewTransitions />
 	<Toaster />
@@ -41,10 +39,11 @@
 	     standing. A section opts in by returning `nav`; `/`, auth and every error don't. -->
 	<div class="shell">
 		{#if page.data.nav && !page.error}
-			<Shell nav={page.data.nav} foot={data.user && data.feedback ? feedback : undefined}>
+			<Shell nav={page.data.nav}>
 				{#snippet tools()}
 					{#if data.user}<Button onclick={() => (open = true)}>Search <Kbd keys="Mod+K" /></Button>{/if}
 					{#if data.user && data.agent}<Toggle />{/if}
+					{#if data.user && data.feedback}<Feedback />{/if}
 				{/snippet}
 				{#snippet account()}<ThemeToggle />{/snippet}
 				{#snippet side()}

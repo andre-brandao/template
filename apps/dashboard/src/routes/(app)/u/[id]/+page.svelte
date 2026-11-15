@@ -4,7 +4,7 @@
 	import { get } from '$lib/features/people/api/people.query';
 	import ProfileForm from '$lib/features/auth/components/ProfileForm.svelte';
 	import { getMe } from '$lib/features/auth/api/profile.remote';
-	import AppEditForm from '$lib/features/developers/components/app/AppEditForm.svelte';
+	import AvatarUpload from '$lib/components/AvatarUpload.svelte';
 	import AppName from '$lib/features/developers/components/app/AppName.svelte';
 	import AppPanel from '$lib/features/developers/components/app/AppPanel.svelte';
 	import { invalidate } from '$lib/query';
@@ -34,7 +34,7 @@
 			{#if profile.self}
 				<ProfileForm user={await getMe()} onchange={() => changed(id)} />
 			{:else}
-				<AppEditForm {id} name={profile.name} image={profile.image} onchange={() => changed(id)} />
+				<AvatarUpload name={profile.name} image={profile.image} url="/avatars/user/{id}" onchange={() => changed(id)} />
 			{/if}
 		{/snippet}
 		{#snippet app()}

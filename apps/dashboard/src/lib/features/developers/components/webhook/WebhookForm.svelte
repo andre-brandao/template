@@ -2,7 +2,7 @@
 	import { dev } from '$app/environment';
 	import { Button, Field, Input, Issue } from '@template/ui';
 	import { Types } from '@template/core/webhook/types';
-	import { subscribe } from '../../api/developers.query';
+	import { subscribe } from '../../api/webhooks.query';
 
 	// Modal content. `owner` files the subscription under that App.
 	let { owner, close }: { owner?: string; close: () => void } = $props();
@@ -30,7 +30,7 @@
 <form
 	onsubmit={(e) => {
 		e.preventDefault();
-		save.mutate({ body: { url, types: pick.length ? [...list] : undefined, userID: owner } });
+		save.mutate({ url, types: pick.length ? [...list] : undefined, userID: owner });
 	}}
 >
 	{#if save.error}

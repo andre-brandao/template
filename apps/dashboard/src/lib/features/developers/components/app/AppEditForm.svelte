@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Inline } from '@template/ui';
 	import AvatarUpload from '$lib/components/AvatarUpload.svelte';
-	import { rename } from '../../api/developers.query';
+	import { rename } from '../../api/apps.query';
 
 	// An App's name and avatar, edited by an admin. `onchange` is the profile around it.
 	let {
@@ -20,7 +20,7 @@
 		<Inline
 			label="App name"
 			value={name}
-			onsave={(next) => save.mutateAsync({ path: { id }, body: { name: next } })}
+			onsave={(next) => save.mutateAsync({ id, name: next })}
 		/>
 	</span>
 </div>

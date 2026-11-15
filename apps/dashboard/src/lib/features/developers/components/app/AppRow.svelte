@@ -5,7 +5,7 @@
 	import ArrowUpRight from '@lucide/svelte/icons/arrow-up-right';
 	import { Inline, Menu, Status, Tooltip, modal } from '@template/ui';
 	import { fmt } from '$lib/utils/fmt';
-	import { remove, rename, rotate } from '../../api/developers.query';
+	import { remove, rename, rotate } from '../../api/apps.query';
 	import KeyForm from '../key/KeyForm.svelte';
 	import Reveal from '../Reveal.svelte';
 	import Row from '../Row.svelte';
@@ -29,7 +29,7 @@
 	async function cycle() {
 		if (app.inbound && !(await modal.confirm({ title: 'Rotate secret', action: 'Rotate', body: cut })))
 			return;
-		spin.mutate({ path: { id: app.id } });
+		spin.mutate(app.id);
 	}
 
 	async function ask() {
@@ -39,7 +39,7 @@
 			body: warn,
 			verify: app.name
 		});
-		if (ok) drop.mutate({ path: { id: app.id } });
+		if (ok) drop.mutate(app.id);
 	}
 </script>
 
@@ -56,7 +56,7 @@
 		<Inline
 			label="App name"
 			value={app.name}
-			onsave={(name) => save.mutateAsync({ path: { id: app.id }, body: { name } })}
+			onsave={(name) => save.mutateAsync({ id: app.id, name })}
 		/>
 	</span>
 	<a href="/u/{app.id}" class="open" aria-label="Open {app.name}"><ArrowUpRight size={14} /></a>

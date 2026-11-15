@@ -3,7 +3,8 @@
 	import { createQuery } from '@tanstack/svelte-query';
 	import { Button, Empty, Issue, Skeleton, Status, modal } from '@template/ui';
 	import { getEndpoint } from '../../api/apps.remote';
-	import { app, hooks, owned, remove, rotate } from '../../api/developers.query';
+	import { app, owned, remove, rotate } from '../../api/apps.query';
+	import { hooks } from '../../api/webhooks.query';
 	import KeyForm from '../key/KeyForm.svelte';
 	import KeyList from '../key/KeyList.svelte';
 	import List from '../List.svelte';
@@ -33,12 +34,12 @@
 
 	async function cycle(held: boolean) {
 		if (held && !(await modal.confirm({ title: 'Rotate secret', action: 'Rotate', body: cut }))) return;
-		spin.mutate({ path: { id } });
+		spin.mutate(id);
 	}
 
 	async function ask(name: string) {
 		const ok = await modal.confirm({ title: 'Delete app', action: 'Delete app', body: warn, verify: name });
-		if (ok) drop.mutate({ path: { id } });
+		if (ok) drop.mutate(id);
 	}
 
 	// The signing contract, spelled out where the secret lives so nobody has to go looking.

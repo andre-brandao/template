@@ -75,20 +75,22 @@
 					strokeWidth: 1
 				})
 			],
-			x: {
-				scale: scaleBand<number>().domain(grid.weeks).paddingInner(0.08).paddingOuter(0),
-				axis: {
-					line: false,
-					ticks: {
-						values: grid.ticks,
-						size: 0,
-						format: (week: number) => grid.labels.get(week) ?? ''
+			scales: {
+				x: {
+					scale: scaleBand<number>().domain(grid.weeks).paddingInner(0.08).paddingOuter(0),
+					axis: {
+						line: false,
+						ticks: {
+							values: grid.ticks,
+							size: 0,
+							format: (week: number) => grid.labels.get(week) ?? ''
+						}
 					}
+				},
+				y: {
+					scale: scaleBand<number>().domain([0, 1, 2, 3, 4, 5, 6]).paddingInner(0.08).paddingOuter(0),
+					axis: false
 				}
-			},
-			y: {
-				scale: scaleBand<number>().domain([0, 1, 2, 3, 4, 5, 6]).paddingInner(0.08).paddingOuter(0),
-				axis: false
 			},
 			color: { domain: [0, 1, 2, 3, 4], range: [0, 1, 2, 3, 4].map((n) => `var(--cal-${n})`) },
 			margin: { top: 4, right: 0, bottom: 24, left: 0 },

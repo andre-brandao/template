@@ -51,8 +51,10 @@
 					fontSize: 11
 				})
 			],
-			x: { scale: scaleLinear, axis: false },
-			y: { scale: () => scaleBand().padding(0.3), axis: { line: false, ticks: { size: 0 } } },
+			scales: {
+				x: { scale: scaleLinear, axis: false },
+				y: { scale: () => scaleBand().padding(0.3), axis: { line: false, ticks: { size: 0 } } }
+			},
 			color: { domain: [...parts], range: parts.map(color) },
 			margin: { right: 28 },
 			tooltip: {

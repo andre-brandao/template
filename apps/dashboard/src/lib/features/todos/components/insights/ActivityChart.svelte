@@ -31,8 +31,10 @@
 				lineY(rows, { x: 'date', y: 'value', color: 'kind', strokeWidth: 2 }),
 				crosshair({ x: { strokeDasharray: '3 3' }, y: false })
 			],
-			x: { scale: scaleTime, axis: { ticks: { format: short } } },
-			y: { scale: scaleLinear, nice: true, grid: true, axis: { ticks: { count: 4, format: whole } } },
+			scales: {
+				x: { scale: scaleTime, axis: { ticks: { format: short } } },
+				y: { scale: scaleLinear, nice: true, grid: true, axis: { ticks: { count: 4, format: whole } } }
+			},
 			color: {
 				domain: ['Created', 'Completed'],
 				range: ['var(--series-1)', 'var(--series-2)'],

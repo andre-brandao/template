@@ -43,9 +43,10 @@
 		};
 		const resize = new ResizeObserver(mark);
 		const mutation = new MutationObserver(mark);
+		// No first `mark()` here: mid-render it forced a layout. The observer's first
+		// callback runs after layout, before paint.
 		resize.observe(node);
 		mutation.observe(node, { childList: true });
-		mark();
 		return () => {
 			resize.disconnect();
 			mutation.disconnect();

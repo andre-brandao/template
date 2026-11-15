@@ -197,8 +197,10 @@ async function seed() {
 
 // Fixtures publish events like any other write, so a queue port has to exist. Memory
 // discards the jobs: nobody wants 260 seeded todos POSTed at the target's webhooks.
-const result = await Database.provide(Database.connect(), () =>
+// Released at once: `bun dev` waits on this exit, and an idle pool holds it open for 20s.
+const db = Database.connect();
+const result = await Database.provide(db, () =>
   Queue.provide(Queue.Providers.memory(), seed),
-);
+).finally(() => Database.release(db));
 
 console.log(boxed(["SEED COMPLETE", "", `Email:   ${email}`, `API key: ${result.key}`]));

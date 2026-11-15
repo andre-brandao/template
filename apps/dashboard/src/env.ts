@@ -12,4 +12,6 @@ export const variables = defineEnvVars({
   DATABASE_URL: optional,
   // Inlined at build: it picks the providers at module load, before any request.
   SVELTE_ADAPTER: { ...optional, static: true },
+  // The TanStack devtools block the main thread for ~400ms on every page load in dev.
+  DEVTOOLS: { schema: (value) => value === "1", public: true, static: true },
 });

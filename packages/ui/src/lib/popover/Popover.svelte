@@ -71,7 +71,8 @@
 		const at = point
 			? new DOMRect(point.x, point.y, 0, 0)
 			: (anchor?.getBoundingClientRect() ?? new DOMRect());
-		place(panel, at, side, align);
+		// A point opens the panel from the pointer outward, like a native context menu.
+		place(panel, at, side, point ? 'start' : align);
 	}
 
 	function toggle(e: ToggleEvent) {

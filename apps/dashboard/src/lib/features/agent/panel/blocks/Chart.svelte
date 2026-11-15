@@ -1,5 +1,6 @@
 <!-- Horizontal HTML bars, one per row; without a numeric column it falls back to a table. -->
 <script lang="ts">
+	import { fmt } from '$lib/utils/fmt';
 	import { limits, type Block } from '../catalog';
 	import { bars, formatter } from '../numbers';
 	import Data from './Data.svelte';
@@ -7,6 +8,8 @@
 	import Titled from './Titled.svelte';
 
 	let { props, loading }: Block<'Chart'> = $props();
+
+	const f = fmt();
 </script>
 
 <Titled title={props.title}>
@@ -14,7 +17,7 @@
 		{#snippet children(data)}
 			{@const list = bars(data, props.x, props.y)}
 			{#if list}
-				{@const format = formatter(props.format)}
+				{@const format = formatter(props.format, f.locale)}
 				<ul>
 					{#each list as row, i (i)}
 						<li>

@@ -1,23 +1,44 @@
 <!-- One saved panel, its blocks querying as the viewer. -->
 <script lang="ts">
+	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
+	import { Button, Issue, Skeleton } from '@template/ui';
+	import RotateCcw from '@lucide/svelte/icons/rotate-ccw';
 	import * as Header from '$lib/components/header';
 	import { fmt } from '$lib/utils/fmt';
-	import { getPanel } from '../api/panel.remote';
+	import { panel } from '../api/panel.query';
 	import Render from '../panel/Render.svelte';
 
 	let { id }: { id: string } = $props();
 
-	const panel = $derived(await getPanel(id));
+	const one = createQuery(() => panel(id));
+	const client = useQueryClient();
 	const f = fmt();
+	// Rows are cached for a minute; this reruns every block's SQL now.
+	const rerun = () => client.invalidateQueries({ queryKey: ['rows'] });
 </script>
 
 {#snippet back()}<a href="/admin/panels">Panels</a>{/snippet}
 
-<Header.Root title={panel.title} eyebrow={back}>
-	<Header.Item label="Author">{panel.author || 'Unknown'}</Header.Item>
-	<Header.Item label="Updated">
-		<span title={f.stamp(panel.timeUpdated)}>{f.ago(panel.timeUpdated)}</span>
-	</Header.Item>
-</Header.Root>
+{#snippet actions()}
+	<Button onclick={rerun}>
+		<RotateCcw size={14} strokeWidth={1.75} />
+		Refresh
+	</Button>
+{/snippet}
 
-<Render spec={panel.spec} />
+{#if one.isSuccess}
+	<Header.Root title={one.data.title} eyebrow={back} {actions}>
+		<Header.Item label="Author">{one.data.author || 'Unknown'}</Header.Item>
+		<Header.Item label="Updated">
+			<span title={f.stamp(one.data.timeUpdated)}>{f.ago(one.data.timeUpdated)}</span>
+		</Header.Item>
+	</Header.Root>
+	<Render spec={one.data.spec} />
+{:else}
+	<Header.Root title="Panel" eyebrow={back} />
+	{#if one.isError}
+		<Issue>{one.error.message}</Issue>
+	{:else}
+		<Skeleton h="12em" />
+	{/if}
+{/if}

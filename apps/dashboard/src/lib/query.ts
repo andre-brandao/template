@@ -49,7 +49,11 @@ export const warm = (cache: QueryClient, ...opts: EnsureQueryDataOptions<any, an
 // For remote-function writes: refresh the TanStack queries they touched.
 export const invalidate = (key: QueryKey) => shared?.invalidateQueries({ queryKey: key });
 
-// A remote function rejects with an `HttpError`, which carries no `message`; the views read one.
+/** An error's text. A remote function rejects with an `HttpError`, whose text is `body.message`. */
+export const message = (err: unknown) =>
+  (err as { body?: { message?: string } } | undefined)?.body?.message ??
+  (err instanceof Error ? err.message : String(err));
+
 // A remote query read inside an effect stays cached, so a refetch would replay it: `refresh`
 // makes every call hit the server, once (the proxy's `then` reuses that request).
 export const call =
@@ -57,9 +61,7 @@ export const call =
   (input: I) => {
     const out = fn(input);
     if ("refresh" in out && typeof out.refresh === "function") out.refresh();
-    return Promise.resolve(out).catch((err) =>
-      Promise.reject(new Error(err?.body?.message ?? String(err))),
-    );
+    return Promise.resolve(out).catch((err) => Promise.reject(new Error(message(err))));
   };
 
 /** What a mutation factory accepts, typed from the remote command behind it. */

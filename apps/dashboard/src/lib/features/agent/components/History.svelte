@@ -1,37 +1,42 @@
 <!-- The user's past conversations with the agent, newest first; a row reopens it. -->
 <script lang="ts">
-	import { Button, Empty, Skeleton, modal, toast } from '@template/ui';
-	import { SvelteSet } from 'svelte/reactivity';
+	import { createInfiniteQuery } from '@tanstack/svelte-query';
+	import { Button, Empty, IconButton, Issue, Skeleton, Spinner, modal, toast } from '@template/ui';
 	import Trash from '@lucide/svelte/icons/trash-2';
-	import { getConversations, removeConversation } from '../api/agent.remote';
-	import { agent } from '../agent.svelte';
 	import { message } from '$lib/query';
+	import { fmt } from '$lib/utils/fmt';
+	import { conversations, remove } from '../api/agent.query';
+	import { agent } from '../agent.svelte';
 
 	const ctx = agent();
+	const f = fmt();
+	const list = createInfiniteQuery(() => conversations());
+	const rows = $derived(list.data?.pages.flatMap((page) => page.data) ?? []);
+	const drop = remove();
 
-	let pages = $state(1);
-	// Pages past the first don't refresh after a removal, so the gone rows hide here.
-	const gone = new SvelteSet<string>();
-
-	const when = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' });
+	// The row being reopened; a second click waits for it.
+	let opening = $state<string>();
 
 	function open(id: string) {
-		ctx.resume(id).catch((err) => toast.error(message(err)));
+		if (opening) return;
+		opening = id;
+		ctx
+			.resume(id)
+			.catch((err) => toast.error(message(err)))
+			.finally(() => (opening = undefined));
 	}
 
-	async function remove(row: { id: string; thread: string }) {
+	async function erase(row: { id: string; thread: string }) {
 		const ok = await modal.confirm({
 			title: 'Delete conversation',
 			action: 'Delete',
 			body: warning
 		});
 		if (!ok) return;
-		await removeConversation(row.id)
-			.then(() => {
-				gone.add(row.id);
-				// The open chat would keep writing to a thread that no longer lists.
-				if (row.thread === ctx.thread) ctx.fresh();
-			})
+		await drop
+			.mutateAsync(row.id)
+			// The open chat would keep writing to a thread that no longer lists.
+			.then(() => row.thread === ctx.thread && ctx.fresh())
 			.catch((err) => toast.error(message(err)));
 	}
 </script>
@@ -39,44 +44,42 @@
 {#snippet warning()}It leaves your history and cannot be resumed.{/snippet}
 
 <div class="history">
-	<!-- Mounted only while shown, so each visit fetches the list anew. -->
-	<svelte:boundary>
-		{@const batches = await Promise.all(
-			Array.from({ length: pages }, (_, i) => getConversations(i ? i + 1 : undefined))
-		)}
-		{@const rows = batches.flatMap((batch) => batch.data).filter((row) => !gone.has(row.id))}
-		{#if !rows.length}
-			<Empty>No conversations yet.</Empty>
-		{:else}
-			<ul>
-				{#each rows as row (row.id)}
-					<li class:current={row.thread === ctx.thread}>
-						<button type="button" class="open" onclick={() => open(row.id)}>
-							<span class="title">{row.title ?? 'Untitled'}</span>
-							<small>{when.format(new Date(row.timeUpdated))}</small>
-						</button>
-						<button
-							type="button"
-							class="remove"
-							aria-label="Delete conversation"
-							onclick={() => remove(row)}
-						>
-							<Trash size={14} strokeWidth={1.75} />
-						</button>
-					</li>
-				{/each}
-			</ul>
-			{#if batches.at(-1)?.more}
-				<Button variant="ghost" onclick={() => pages++}>Load more</Button>
-			{/if}
+	{#if list.isPending}
+		<Skeleton h="4em" />
+	{:else if list.isError}
+		<Issue>{list.error.message}</Issue>
+	{:else if !rows.length}
+		<Empty>No conversations yet.</Empty>
+	{:else}
+		<ul>
+			{#each rows as row (row.id)}
+				<li class:current={row.thread === ctx.thread} aria-busy={opening === row.id}>
+					<button type="button" class="open" onclick={() => open(row.id)}>
+						<span class="title">{row.title ?? 'Untitled'}</span>
+						<small>{f.stamp(row.timeUpdated)}</small>
+					</button>
+					{#if opening === row.id}
+						<Spinner />
+					{:else}
+						<span class="remove">
+							<IconButton size="sm" label="Delete conversation" onclick={() => erase(row)}>
+								<Trash size={14} strokeWidth={1.75} />
+							</IconButton>
+						</span>
+					{/if}
+				</li>
+			{/each}
+		</ul>
+		{#if list.hasNextPage}
+			<Button
+				variant="ghost"
+				pending={list.isFetchingNextPage}
+				onclick={() => list.fetchNextPage()}
+			>
+				Load more
+			</Button>
 		{/if}
-		{#snippet pending()}
-			<Skeleton h="4em" />
-		{/snippet}
-		{#snippet failed(err)}
-			<Empty>{message(err)}</Empty>
-		{/snippet}
-	</svelte:boundary>
+	{/if}
 </div>
 
 <style>
@@ -98,6 +101,7 @@
 	li {
 		display: flex;
 		align-items: center;
+		padding-right: 0.25em;
 		border-radius: var(--radius-sm);
 	}
 
@@ -117,11 +121,17 @@
 		min-width: 0;
 		padding: 0.5em 0.6em;
 		border: none;
+		border-radius: var(--radius-sm);
 		background: none;
 		color: var(--ink);
 		font: inherit;
 		text-align: left;
 		cursor: pointer;
+	}
+
+	.open:focus-visible {
+		outline: 2px solid var(--accent);
+		outline-offset: -2px;
 	}
 
 	.title {
@@ -136,15 +146,19 @@
 		font-size: 0.75em;
 	}
 
+	/* Shown on hover or focus, so the list stays quiet and the keyboard still reaches it. */
 	.remove {
-		padding: 0.4em;
-		border: none;
-		background: none;
-		color: var(--muted);
-		cursor: pointer;
+		opacity: 0;
 	}
 
-	.remove:hover {
-		color: var(--danger);
+	li:hover .remove,
+	li:focus-within .remove {
+		opacity: 1;
+	}
+
+	@media (hover: none) {
+		.remove {
+			opacity: 1;
+		}
 	}
 </style>

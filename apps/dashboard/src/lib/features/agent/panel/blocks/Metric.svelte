@@ -1,17 +1,19 @@
 <!-- One big number: `column` of the first row, or its first numeric column. -->
 <script lang="ts">
-	import type { Block } from '../catalog';
+	import { fmt } from '$lib/utils/fmt';
+	import { limits, type Block } from '../catalog';
 	import { formatter, metric } from '../numbers';
 	import Data from './Data.svelte';
 
 	let { props, loading }: Block<'Metric'> = $props();
 
-	const format = $derived(formatter(props.format));
+	const f = fmt();
+	const format = $derived(formatter(props.format, f.locale));
 </script>
 
 <div class="metric">
 	<span class="label">{props.label ?? ''}</span>
-	<Data sql={props.sql} {loading}>
+	<Data sql={props.sql} limit={limits.Metric} meta={false} {loading}>
 		{#snippet children(data)}
 			{@const number = metric(data, props.column)}
 			<span class="value">{number === undefined ? '—' : format(number)}</span>

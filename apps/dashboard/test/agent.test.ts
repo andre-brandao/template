@@ -222,7 +222,9 @@ describe("panel numbers", () => {
       { label: "done", value: 4, width: 100 },
       { label: "active", value: 2, width: 50 },
     ]);
-    expect(bars({ columns: [{ name: "s", type: "text", numeric: false }], rows: [] })).toBeUndefined();
+    expect(
+      bars({ columns: [{ name: "s", type: "text", numeric: false }], rows: [] }),
+    ).toBeUndefined();
   });
 
   it("formats numbers and percents", () => {

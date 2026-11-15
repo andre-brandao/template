@@ -1,11 +1,22 @@
+<!-- Owns the confirm and the write; the caller renders whatever control calls `ask`. -->
 <script lang="ts">
-	import { goto } from '$app/navigation';
-	import { Button, modal, toast } from '@template/ui';
+	import type { Snippet } from 'svelte';
+	import { modal, toast } from '@template/ui';
 	import { remove } from '../api/projects.query';
 
-	let { id, name }: { id: string; name: string } = $props();
+	let {
+		id,
+		name,
+		ondone,
+		children
+	}: {
+		id: string;
+		name: string;
+		ondone?: () => void;
+		children: Snippet<[ask: () => void, pending: boolean]>;
+	} = $props();
 
-	const drop = remove({ onSuccess: () => goto('/projects') });
+	const drop = remove({ onSuccess: () => ondone?.() });
 
 	async function ask() {
 		const ok = await modal.confirm({
@@ -15,14 +26,10 @@
 			verify: name
 		});
 		if (!ok) return;
-		// The toast reports a failure; there is nothing else to do with it here.
-		toast
-			.promise(drop.mutateAsync({ path: { id } }), {
-				loading: 'Deleting project…',
-				success: 'Project deleted',
-				error: (e) => (e as Error)?.message ?? 'Could not delete project'
-			})
-			.catch(() => {});
+		drop.mutate(
+			{ path: { id } },
+			{ onError: (err) => toast.error(err.message ?? 'Could not delete project') }
+		);
 	}
 </script>
 
@@ -31,4 +38,4 @@
 	and stay in the Todos list.
 {/snippet}
 
-<Button variant="danger" onclick={ask}>Delete project</Button>
+{@render children(ask, drop.isPending)}

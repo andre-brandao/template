@@ -2,10 +2,10 @@
 	import type { Snippet } from 'svelte';
 	import { createQuery } from '@tanstack/svelte-query';
 	import type { Event } from '@template/core/event';
-	import { Issue, Section, Skeleton } from '@template/ui';
+	import { Inline, Issue, Section, Skeleton } from '@template/ui';
 	import * as Header from '$lib/components/header';
 	import Timeline from '$lib/features/events/components/Timeline.svelte';
-	import { get, link, unlink } from '../api/projects.query';
+	import { get, link, unlink, update } from '../api/projects.query';
 	import Links from '$lib/components/Links.svelte';
 	import Annotations from '$lib/components/Annotations.svelte';
 	import { fmt } from '$lib/utils/fmt';
@@ -24,6 +24,7 @@
 	const project = createQuery(() => get(id));
 	const attach = link();
 	const detach = unlink();
+	const save = update();
 
 	const eventLabels: Record<string, string> = {
 		'project.created': 'Created',
@@ -34,14 +35,40 @@
 
 {#snippet back()}<a href="/projects">Projects</a>{/snippet}
 
+{#snippet title()}
+	{#if project.data}
+		<span class="edit">
+			<Inline
+				label="Project name"
+				value={project.data.name}
+				onsave={(name) => {
+					if (!name) throw new Error('A project needs a name');
+					return save.mutateAsync({ path: { id }, body: { name } });
+				}}
+			/>
+		</span>
+	{:else}
+		Project
+	{/if}
+{/snippet}
+
+{#snippet lead()}
+	{#if project.data}
+		<span class="edit">
+			<Inline
+				label="Description"
+				placeholder="Add a description"
+				value={project.data.description ?? ''}
+				onsave={(text) => save.mutateAsync({ path: { id }, body: { description: text || null } })}
+			/>
+		</span>
+	{/if}
+{/snippet}
+
 <!-- The boundary is for `facts`, which awaits the todos slice's remote queries. -->
 <svelte:boundary>
 	{#snippet pending()}<Header.Root title="Project" eyebrow={back} />{/snippet}
-	<Header.Root
-		title={project.data?.name ?? 'Project'}
-		eyebrow={back}
-		lead={project.data?.description ?? undefined}
-	>
+	<Header.Root {title} eyebrow={back} {lead}>
 		{@render facts?.()}
 		{#if project.data}
 			<Header.Item label="Created">{f.date(project.data.timeCreated)}</Header.Item>
@@ -97,6 +124,12 @@
 </div>
 
 <style>
+	/* Inline pads its box; pull it back so the text lines up with the eyebrow. */
+	.edit {
+		display: block;
+		margin: -0.2em -0.4em;
+	}
+
 	/* Golden section: the long column is φ (1.618) times the short one. */
 	.split {
 		display: grid;

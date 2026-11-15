@@ -6,9 +6,9 @@ import {
   patchFileByNameMutation,
   postFileMutation,
 } from "@template/sdk/query";
-import type { Opts } from "$lib/query";
+import type { Ctx, Opts } from "$lib/query";
 
-export const list = () => getFileOptions();
+export const list = (ctx?: Ctx) => getFileOptions(ctx);
 
 export const upload = (opts?: Opts<typeof postFileMutation>) =>
   createMutation(() => ({

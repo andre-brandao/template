@@ -1,8 +1,6 @@
 <script lang="ts">
-	import { z } from 'zod';
 	import { page } from '$app/state';
 	import { query } from '$lib/utils/params';
-	import { sort } from '../sort';
 	import * as Header from '$lib/components/header';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { createHotkey } from '@tanstack/svelte-hotkeys';
@@ -10,8 +8,7 @@
 	import { Button, Drawer, Empty, Issue, Kbd, Skeleton, Status, modal } from '@template/ui';
 	import { list } from '../api/todos.query';
 	import Source from '$lib/features/events/components/Source.svelte';
-	import { STATUSES } from '../status';
-	import { keep, server } from '../filter';
+	import { keep, schema, where } from '../filter';
 	import TodoForm from '../components/form/TodoForm.svelte';
 	import TodoFilters from '../components/TodoFilters.svelte';
 	import ViewSelector from '../components/ViewSelector.svelte';
@@ -21,30 +18,12 @@
 
 	let { source, sourceID }: { source?: string; sourceID?: string } = $props();
 
-	const params = query(
-		z.object({
-			q: z.string().default(''),
-			// Repeated params: `?status=active&status=blocked`.
-			status: z.array(z.enum(STATUSES)).default([]),
-			assignee: z.array(z.string()).default([]),
-			stage: z.array(z.string()).default([]),
-			view: z.enum(['list', 'board', 'table', 'timeline', 'calendar']).default('table'),
-			group: z.enum(['status', 'stage', 'assignee']).default('status'),
-			mode: z.enum(['month', 'week']).default('month'),
-			at: z.iso.date().optional(),
-			sort: sort.schema
-		})
-	);
+	const params = query(schema);
 
 	const scope = $derived({ source, sourceID });
 
 	const picks = $derived({ status: params.status, assignee: params.assignee, stage: params.stage });
-	const filters = $derived({
-		...scope,
-		...server(picks),
-		search: params.q || undefined,
-		sort: params.sort
-	});
+	const filters = $derived(where(params, scope));
 	const match = $derived(keep(picks));
 
 	// The calendar asks for its own window, so this page-wide list sits out.

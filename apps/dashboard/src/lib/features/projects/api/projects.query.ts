@@ -10,7 +10,7 @@ import {
   postProjectByIdLinkMutation,
   postProjectMutation,
 } from "@template/sdk/query";
-import { invalidate, type Opts } from "$lib/query";
+import { invalidate, type Ctx, type Opts } from "$lib/query";
 
 // Lists and rows both carry the tag, so a write to one project refreshes everything showing it.
 // Its Logs timeline sits under `events`, so the new entry shows too.
@@ -20,12 +20,12 @@ const labels = ["todos", "labels"];
 const touched = [project, ["events"], labels];
 
 // A new search keeps the old rows on screen until its results land.
-export const list = (q?: string) => ({
-  ...getProjectOptions({ query: { search: q || undefined, pageSize: 100 } }),
+export const list = (q?: string, ctx?: Ctx) => ({
+  ...getProjectOptions({ ...ctx, query: { search: q || undefined, pageSize: 100 } }),
   placeholderData: keepPreviousData,
 });
 
-export const get = (id: string) => getProjectByIdOptions({ path: { id } });
+export const get = (id: string, ctx?: Ctx) => getProjectByIdOptions({ ...ctx, path: { id } });
 
 /** For a write outside the SDK, like the avatar upload. */
 export const refresh = () => invalidate(project);

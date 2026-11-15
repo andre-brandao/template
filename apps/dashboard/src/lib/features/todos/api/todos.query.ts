@@ -23,7 +23,11 @@ import {
   type GetTodoData,
   type Todo,
 } from "@template/sdk/query";
-import { call } from "$lib/query";
+import { zone, type Prefs } from "@template/core/user/prefs";
+import { today } from "@template/ui/day";
+import { call, type Ctx } from "$lib/query";
+import { parse } from "$lib/utils/params";
+import { period, schema, span, where } from "../filter";
 import { getLabels } from "./todos.remote";
 
 type Scope = { source?: string; sourceID?: string };
@@ -43,8 +47,8 @@ const views = () => [
 ];
 
 // Every board view groups this one page client-side; the last page stays up while the next loads.
-export const list = (q: Omit<NonNullable<GetTodoData["query"]>, "pageSize">) => ({
-  ...getTodoOptions({ query: { ...q, pageSize: 100 } }),
+export const list = (q: Omit<NonNullable<GetTodoData["query"]>, "pageSize">, ctx?: Ctx) => ({
+  ...getTodoOptions({ ...ctx, query: { ...q, pageSize: 100 } }),
   placeholderData: keepPreviousData,
 });
 
@@ -56,9 +60,9 @@ export const between = (q: Filters & { from: string; to: string }) => list(q);
 // The calendar tray: todos with neither a start nor a due date.
 export const undated = (q: Filters) => list({ ...q, unscheduled: true });
 
-export const get = (id: string) => getTodoByIdOptions({ path: { id } });
+export const get = (id: string, ctx?: Ctx) => getTodoByIdOptions({ ...ctx, path: { id } });
 
-export const stages = (scope: Scope) => getTodoStageOptions({ query: scope });
+export const stages = (scope: Scope, ctx?: Ctx) => getTodoStageOptions({ ...ctx, query: scope });
 
 export const users = () => getUserOptions();
 
@@ -69,35 +73,63 @@ export const labels = (scope: Scope) => ({
 });
 
 // Insights keep the last range on screen while the next one loads.
-export const stats = (range: Range) => ({
-  ...getInsightsStatsOptions({ query: range }),
+export const stats = (range: Range, ctx?: Ctx) => ({
+  ...getInsightsStatsOptions({ ...ctx, query: range }),
   placeholderData: keepPreviousData,
 });
 
-export const statuses = (range: Range) => ({
-  ...getInsightsStatusOptions({ query: range }),
+export const statuses = (range: Range, ctx?: Ctx) => ({
+  ...getInsightsStatusOptions({ ...ctx, query: range }),
   placeholderData: keepPreviousData,
 });
 
-export const load = (range: Range) => ({
-  ...getInsightsLoadOptions({ query: range }),
+export const load = (range: Range, ctx?: Ctx) => ({
+  ...getInsightsLoadOptions({ ...ctx, query: range }),
   placeholderData: keepPreviousData,
 });
 
-export const due = (scope: Scope) => ({
-  ...getInsightsDueOptions({ query: scope }),
+export const due = (scope: Scope, ctx?: Ctx) => ({
+  ...getInsightsDueOptions({ ...ctx, query: scope }),
   placeholderData: keepPreviousData,
 });
 
-export const calendar = (range: Range) => ({
-  ...getInsightsCalendarOptions({ query: range }),
+export const calendar = (range: Range, ctx?: Ctx) => ({
+  ...getInsightsCalendarOptions({ ...ctx, query: range }),
   placeholderData: keepPreviousData,
 });
 
-export const activity = (range: Range) => ({
-  ...getInsightsActivityOptions({ query: range }),
+export const activity = (range: Range, ctx?: Ctx) => ({
+  ...getInsightsActivityOptions({ ...ctx, query: range }),
   placeholderData: keepPreviousData,
 });
+
+// What a page asks for first, for its load to warm: built from the same URL, so the keys match.
+
+/** The todos page's one list; the calendar asks for its own window, so it waits for that. */
+export const board = (url: URL, scope: Scope, ctx?: Ctx) => {
+  const params = parse(schema, url);
+  return params.view === "calendar" ? [] : [list(where(params, scope), ctx)];
+};
+
+/** Every insights section, for the range in `url`, defaulting to the month to today in the reader's zone. */
+export const insights = (url: URL, prefs: Prefs, scope: Scope, ctx?: Ctx) => {
+  const now = today(zone(prefs));
+  const range = { ...span(parse(period(now), url), now), ...scope };
+  return [
+    stats(range, ctx),
+    activity(range, ctx),
+    statuses(range, ctx),
+    calendar(range, ctx),
+    due(scope, ctx),
+    load(range, ctx),
+  ];
+};
+
+/** A todo and its sub-issues. */
+export const detail = (id: string, ctx?: Ctx) => [
+  get(id, ctx),
+  list({ parentID: id, sort: ["position"] }, ctx),
+];
 
 export const create = (opts?: Pick<ReturnType<typeof postTodoMutation>, "onSuccess">) =>
   createMutation(() => ({

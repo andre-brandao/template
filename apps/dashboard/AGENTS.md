@@ -59,8 +59,10 @@ Reference: `features/projects`. `$lib/query` owns the client; the `api` hook ser
 - After a remote-function write, call `invalidate(key)` from `$lib/query`.
 - Keep remote functions for internal-only data (no API route) and forms needing `enhance` or field issues.
 - Internal/admin data (no API route, e.g. `developers` apps and webhooks) still uses TanStack: `queryFn` over remote functions with plain array keys (`["apps"]`); public resources use the SDK's `getXOptions`.
-- SSR is opt-in per page with an inline `+page.ts` (let `content-type` through `filterSerializedResponseHeaders`):
-  ``const data = await event.parent(); await data.queryClient.prefetchQuery(getXOptions({ baseUrl: `${event.url.origin}/api`, fetch: event.fetch, ... }))``
+- Every list and detail route has a `+page.ts` that warms what the page renders first, with the slice's own
+  factories so the keys match: `await warm((await event.parent()).queryClient, list({ fetch: event.fetch }))`.
+  SDK factories take that trailing `ctx` (the load's `fetch`, so SSR reads replay on hydration); remote-function
+  ones need none. URL-driven args come from a schema shared with the page: `parse(schema, event.url)`.
 - App-wide providers (query client, shared contexts) live in `components/layout/ShellProvider.svelte`; a slice's context (`createAgent`) stays in the root layout.
 
 ## Palette and hotkeys

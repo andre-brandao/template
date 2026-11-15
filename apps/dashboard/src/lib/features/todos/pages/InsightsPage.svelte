@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { z } from 'zod';
 	import { query } from '$lib/utils/params';
 	import * as Header from '$lib/components/header';
 	import { useIsFetching } from '@tanstack/svelte-query';
-	import { RangePicker, Status, last, today, valid } from '@template/ui';
+	import { RangePicker, Status, today } from '@template/ui';
+	import { period, span } from '../filter';
 	import { debounce } from '$lib/utils/debounce';
 	import { fmt } from '$lib/utils/fmt';
 	import StatsSection from '../components/insights/StatsSection.svelte';
@@ -19,16 +19,9 @@
 	const f = fmt();
 	// The stored zone's today, so the server render and the browser agree on the range.
 	const now = today(f.zone);
-	const fallback = last(30, now);
-	const params = query(
-		z.object({
-			start: z.iso.date().default(fallback.start),
-			end: z.iso.date().default(fallback.end)
-		})
-	);
+	const params = query(period(now));
 	const scope = $derived({ source, sourceID });
-	// valid() rejects out-of-order or over-long ranges, so garbage params collapse to the fallback.
-	const picked = $derived(valid(params) ? { start: params.start, end: params.end } : fallback);
+	const picked = $derived(span(params, now));
 	const range = $derived({ ...picked, ...scope });
 	const commit = debounce(params.update, 250);
 	// Every insight carries the Insights tag; the dot pulses while a new range loads.

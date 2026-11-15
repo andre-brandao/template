@@ -12,6 +12,8 @@ import { File } from "../src/platform/file";
 import { Admin } from "../src/platform/admin";
 import { Event } from "../src/platform/event";
 import { Feedback } from "../src/platform/feedback";
+import { Conversation } from "../src/platform/conversation";
+import { Panel } from "../src/platform/panel";
 import { createUser, testEmail } from "./util";
 
 type Res = keyof typeof Permission.Statement;
@@ -38,6 +40,9 @@ function entry<R extends Res, T extends Op>(
 const png = () => new globalThis.File([new Uint8Array([1])], "x.png", { type: "image/png" });
 const range = { start: "2026-01-01", end: "2026-01-31" };
 const test1 = { key: "sweep", title: "Sweep" };
+const spec = { root: "r", elements: { r: { type: "Text", props: {}, children: [] } } };
+// Panels live under the caller's own prefix, so no fixture: the check runs before the read.
+const panel = crypto.randomUUID();
 
 const ops = [
   entry("admin", "read", Admin.users, () => ({})),
@@ -126,6 +131,12 @@ const ops = [
     label: "A",
   })),
   entry("feedback", "create", Feedback.Experiment.expose, () => ({ key: "sweep", variant: "a" })),
+
+  entry("panel", "read", Panel.list, () => undefined),
+  entry("panel", "read", Panel.fromID, () => panel),
+  entry("panel", "create", Panel.create, () => ({ title: "Sweep", spec })),
+  entry("panel", "update", Panel.update, () => ({ id: panel, title: "Renamed", spec }), true),
+  entry("panel", "delete", Panel.remove, () => panel, true),
 ];
 
 /** Ops that check nothing on purpose: a signature or the caller's own lookup is the gate. */
@@ -138,6 +149,11 @@ const exempt = new Set<unknown>([
   User.providers,
   App.receive,
   File.signed,
+  // Scoped to the caller's own conversations by `userID`.
+  Conversation.record,
+  Conversation.list,
+  Conversation.fromID,
+  Conversation.remove,
   // Reads a tracker row before it can know whose it is; needs a live adapter to reach the check.
   Feedback.get,
 ]);
@@ -159,6 +175,8 @@ const exported = [
   Event,
   Feedback,
   Feedback.Experiment,
+  Conversation,
+  Panel,
 ].flatMap((ns) =>
   Object.entries(ns).filter((pair) => typeof pair[1] === "function" && "schema" in pair[1]),
 );

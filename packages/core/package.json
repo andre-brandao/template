@@ -36,7 +36,9 @@
     "./file": "./src/platform/file/index.ts",
     "./webhook": "./src/platform/webhook/index.ts",
     "./webhook/*": "./src/platform/webhook/*.ts",
+    "./conversation": "./src/platform/conversation/index.ts",
     "./conversation/*": "./src/platform/conversation/*.ts",
+    "./panel": "./src/platform/panel/index.ts",
     "./util/*": "./src/util/*.ts"
   },
   "scripts": {

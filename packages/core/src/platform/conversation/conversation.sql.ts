@@ -12,7 +12,6 @@ import {
 } from "drizzle-orm/pg-core";
 import { timestamp, timestamps, ulid } from "../../drizzle/types";
 
-// DDL only: the dashboard's agent feature records and reads these itself.
 export const RoleValues = ["user", "assistant", "tool"] as const;
 
 /** One thread with an agent. `time_updated` is its last activity. */

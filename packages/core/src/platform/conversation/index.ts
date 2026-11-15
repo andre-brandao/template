@@ -1,25 +1,22 @@
 import { z } from "zod";
-import { Identity } from "@template/core/identity";
-import { Database, and, asc, desc, eq, isNull } from "@template/core/drizzle";
-import { ErrorCodes, VisibleError } from "@template/core/error";
-import { fn } from "@template/core/util/fn";
-import { Assert } from "@template/core/util/assert";
-import {
-  ConversationMessageTable,
-  ConversationTable,
-  RoleValues,
-} from "@template/core/conversation/conversation.sql";
+import { and, asc, desc, eq, isNull } from "drizzle-orm";
+import { Database } from "../../drizzle";
+import { ErrorCodes, VisibleError } from "../../error";
+import { Identity } from "../../identity";
+import { Assert } from "../../util/assert";
+import { fn } from "../../util/fn";
+import { ConversationMessageTable, ConversationTable, RoleValues } from "./conversation.sql";
 
 /**
- * The agent's history: each user's own threads, recorded by the run's middleware. Persists
- * and reads only; running the agent is `Agent`'s.
+ * An agent's history: each user's own threads, recorded by the dashboard's run middleware.
+ * Every op is scoped to the caller's own rows, so none needs a grant.
  */
 export namespace Conversation {
   const assert = Assert.create("Conversation");
 
   export const Role = z.enum(RoleValues);
 
-  // A key of `agents`; free text here so this module never imports the registry.
+  // A key of the dashboard's agent registry; free text so core never knows it.
   export const Agent = z.string().min(1).max(64);
 
   export const Info = z.object({

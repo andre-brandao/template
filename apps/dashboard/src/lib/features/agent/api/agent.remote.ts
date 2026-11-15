@@ -1,7 +1,7 @@
 import { z } from "zod";
+import { Conversation } from "@template/core/conversation";
 import { remote } from "$lib/server/remote";
 import { Agent } from "./core";
-import { Conversation } from "./conversation";
 
 export const getModels = remote.query(z.void(), () => Agent.models());
 

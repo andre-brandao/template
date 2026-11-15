@@ -4,19 +4,19 @@
 	import { Button, Field, Input } from '@template/ui';
 	import { create } from '$lib/features/developers/api/keys.query';
 	import Nav from '../Nav.svelte';
-	import { doc } from './api.remote';
+	import { createQuery } from '@tanstack/svelte-query';
+	import { spec } from './api.query';
 	import { createToken } from './token.svelte';
 	import Method from './Method.svelte';
 
 	let { children } = $props();
 
-	// Before the awaits below: context has to be set while the component initializes.
 	const token = createToken();
 	// Named for where it came from, and short-lived so it cleans up.
 	const minter = create({ onSuccess: (key) => (token.current = key.key ?? '') });
-	const ops = $derived((await doc()).list);
+	const q = createQuery(spec);
 	const items = $derived(
-		ops.map((op) => ({
+		(q.data?.list ?? []).map((op) => ({
 			href: resolve('/dev/api/[op]', { op: op.id }),
 			label: op.path,
 			group: op.tag,

@@ -1,19 +1,20 @@
 <script lang="ts">
 	import { Issue } from '@template/ui';
+	import { createQuery } from '@tanstack/svelte-query';
 	import { page } from '$app/state';
-	import { doc } from '../api.remote';
+	import { spec } from '../api.query';
 	import Console from '../Console.svelte';
 
 	// `params` is briefly empty mid-navigation, so read it behind the guard.
 	const id = $derived(page.params.op);
-	const spec = $derived(await doc());
-	const op = $derived(spec.list.find((one) => one.id === id));
+	const q = createQuery(spec);
+	const op = $derived(q.data?.list.find((one) => one.id === id));
 </script>
 
-{#if id}
+{#if id && q.data}
 	{#if op}
 		{#key op.id}
-			<Console {op} base={spec.base} />
+			<Console {op} base={q.data.base} />
 		{/key}
 	{:else}
 		<Issue>No operation named <code>{id}</code>.</Issue>

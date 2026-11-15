@@ -40,9 +40,9 @@ type Gate = () => void | Promise<void>;
 const wrap =
   <I, R>(gates: Gate[], fn: (input: I) => R, mode: Mode) =>
   (input: I) =>
-    guard(async () => {
+    guard(async (): Promise<Awaited<R>> => {
       for (const gate of gates) await gate();
-      return fn(input);
+      return await fn(input);
     }, mode);
 
 // `form` types its schema through a conditional that only resolves once the schema is

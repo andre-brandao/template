@@ -11,7 +11,7 @@
 	let change = $state(false);
 
 	const seed = (v: string) => (dev ? v : '');
-	const sent = $derived(change ? undefined : (await start.result)?.sent);
+	const sent = $derived(change ? undefined : start.result?.sent);
 	const send = start.enhance(async (f) => {
 		await f.submit();
 		change = false;

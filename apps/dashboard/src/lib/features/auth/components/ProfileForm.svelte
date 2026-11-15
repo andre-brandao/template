@@ -2,7 +2,9 @@
 	import type { User } from '@template/core/user';
 	import { Button, Field, FormBoundary, Input, Issue, toast } from '@template/ui';
 	import AvatarUpload from '$lib/components/AvatarUpload.svelte';
-	import { getMe, rename } from '../api/profile.remote';
+	import { invalidate } from '$lib/query';
+	import { rename } from '../api/profile.remote';
+	import { me } from '../api/profile.query';
 
 	// `onchange` is for the page around the form, which shows the avatar too.
 	let { user, onchange }: { user: User.Info; onchange?: () => void } = $props();
@@ -19,7 +21,7 @@
 		url="/avatars/user/{user.id}"
 		size={56}
 		onchange={() => {
-			getMe().refresh();
+			invalidate(me().queryKey);
 			onchange?.();
 		}}
 	/>
@@ -37,6 +39,7 @@
 	<form
 		{...rename.enhance(async (f) => {
 			await f.submit();
+			invalidate(me().queryKey);
 			toast.success('Name saved');
 		})}
 	>

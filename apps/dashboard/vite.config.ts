@@ -71,8 +71,6 @@ export default defineConfig({
         // Force runes mode for the project, except for libraries. Can be removed in svelte 6.
         runes: ({ filename }) =>
           filename.split(/[/\\]/).includes("node_modules") ? undefined : true,
-        // Required for remote functions (`$app/server`'s query/form/command) to use top-level await.
-        experimental: { async: true },
       },
       // Required for remote functions (`$app/server`'s query/form/command). This is a `kit`-level
       // option, but since config is passed inline here (no svelte.config.js in this app), SvelteKit

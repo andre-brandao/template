@@ -8,9 +8,18 @@ const COOKIE = "next";
 const safe = (path?: string | null) =>
   path?.startsWith("/") && !/^\/[/\\]/.test(path) ? path : undefined;
 
+const here = (event: RequestEvent) => encodeURIComponent(event.url.pathname + event.url.search);
+
 /** Sends a signed-out visitor to login, remembering the page they asked for. */
-export function login(event: RequestEvent): never {
-  redirect(303, `/login?next=${encodeURIComponent(event.url.pathname + event.url.search)}`);
+function login(event: RequestEvent): never {
+  redirect(303, `/login?next=${here(event)}`);
+}
+
+/** Lets a named user through; anyone else logs in or finishes onboarding first. */
+export function gate(event: RequestEvent, user: { name: string; email: string } | null) {
+  if (!user) login(event);
+  // `provision` names a fresh account after its address, so a match means no name yet.
+  if (user.name === user.email) redirect(303, `/welcome?next=${here(event)}`);
 }
 
 /** Holds `path` for the next `take`; a visit without one clears any older value. */

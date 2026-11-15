@@ -4,13 +4,13 @@
 	(grants, signed out) lives with the markup it guards.
 -->
 <script lang="ts">
+	import type { Snippet } from 'svelte';
 	import { resolve } from '$app/paths';
 	import type { User } from '@template/core/user';
 	import { Avatar, IconButton, Menu } from '@template/ui';
-	import ThemeToggle from './ThemeToggle.svelte';
 	import Can from '../Can.svelte';
 
-	let { user }: { user: User.Info | null } = $props();
+	let { user, account }: { user: User.Info | null; account?: Snippet } = $props();
 </script>
 
 {#if user}
@@ -30,7 +30,7 @@
 			<Can grants={{ admin: ['read'] }}>
 				<Menu.Item href={resolve('/admin')}>Admin</Menu.Item>
 			</Can>
-			<ThemeToggle />
+			{@render account?.()}
 			<Menu.Item href={resolve('/logout')}>Log out</Menu.Item>
 		</Menu.Root>
 	</div>

@@ -7,6 +7,7 @@
 		type = 'button',
 		pending = false,
 		disabled = false,
+		href,
 		onclick,
 		children
 	}: {
@@ -14,20 +15,33 @@
 		type?: 'button' | 'submit' | 'reset';
 		pending?: boolean;
 		disabled?: boolean;
+		/** Renders a link with the same look. */
+		href?: string;
 		onclick?: (e: MouseEvent) => void;
 		children: Snippet;
 	} = $props();
 </script>
 
-<button {type} class={variant} disabled={pending || disabled} aria-busy={pending} {onclick}>
-	{#if pending}
-		<Spinner />
-	{/if}
-	{@render children()}
-</button>
+{#if href}
+	<a {href} class={['button', variant]}>{@render children()}</a>
+{:else}
+	<button
+		{type}
+		class={['button', variant]}
+		disabled={pending || disabled}
+		aria-busy={pending}
+		{onclick}
+	>
+		{#if pending}
+			<Spinner />
+		{/if}
+		{@render children()}
+	</button>
+{/if}
 
 <style>
-	button {
+	.button {
+		text-decoration: none;
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
@@ -51,23 +65,23 @@
 			opacity 0.12s ease;
 	}
 
-	button:hover:not(:disabled) {
+	.button:hover:not(:disabled) {
 		background: var(--surface-2, #f2f1ee);
 	}
 
-	button:focus-visible {
+	.button:focus-visible {
 		outline: none;
 		border-color: var(--accent, #2f7f68);
 		box-shadow: var(--ring, 0 0 0 3px color-mix(in oklab, var(--accent, #2f7f68) 16%, transparent));
 	}
 
-	button:disabled {
+	.button:disabled {
 		cursor: default;
 		opacity: 0.55;
 	}
 
 	/* Ink on paper: the one solid control on a screen, so it is never mistaken. */
-	button.primary {
+	.button.primary {
 		background: var(--primary, #1c1b19);
 		border-color: var(--primary, #1c1b19);
 		color: var(--primary-ink, #fff);
@@ -83,7 +97,7 @@
 		border-color: var(--border-bright, #d3d1cc);
 	}
 
-	button.danger {
+	.button.danger {
 		color: var(--danger, #b8452c);
 	}
 
@@ -92,7 +106,7 @@
 		border-color: color-mix(in oklab, var(--danger, #b8452c) 40%, transparent);
 	}
 
-	button.ghost {
+	.button.ghost {
 		background: transparent;
 		border-color: transparent;
 		box-shadow: none;

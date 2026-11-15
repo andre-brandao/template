@@ -5,7 +5,7 @@ import { list } from "../src/lib/features/projects/api/projects.query";
 import { queryClient } from "../src/lib/query";
 
 const hits = (key: QueryKey, target: QueryKey) => {
-  const client = queryClient();
+  const client = queryClient("http://localhost");
   client.setQueryData(target, 1);
   return matchQuery(
     { queryKey: key },
@@ -28,7 +28,7 @@ describe("query keys", () => {
 
 describe("mutation cache", () => {
   it("refetches before the factory and call-site onSuccess run", async () => {
-    const client = queryClient();
+    const client = queryClient("http://localhost");
     const log: string[] = [];
     const fetches = { list: 0, row: 0 };
     const watch = (key: QueryKey, name: keyof typeof fetches) =>
@@ -60,7 +60,7 @@ describe("mutation cache", () => {
   });
 
   it("invalidates everything without meta", async () => {
-    const client = queryClient();
+    const client = queryClient("http://localhost");
     const keys = [list().queryKey, getProjectByIdQueryKey({ path: { id: "p" } })];
     keys.forEach((key) => client.setQueryData(key, 1));
     await client

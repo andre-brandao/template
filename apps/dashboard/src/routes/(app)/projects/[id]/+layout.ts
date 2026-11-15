@@ -1,21 +1,33 @@
+import { error } from "@sveltejs/kit";
 import ChartLine from "@lucide/svelte/icons/chart-line";
 import LayoutDashboard from "@lucide/svelte/icons/layout-dashboard";
 import ListTodo from "@lucide/svelte/icons/list-todo";
 import Settings from "@lucide/svelte/icons/settings";
-import { getProjectByIdOptions } from "@template/sdk/query";
+import { getProjectByIdOptions, getProjectQueryKey, type Project } from "@template/sdk/query";
 import Head from "./Head.svelte";
 import type { LayoutLoad } from "./$types";
 
 export const load: LayoutLoad = async (event) => {
   const data = await event.parent();
-  // Same origin as the browser client, so this lands under the key the page reads.
-  const project = await data.queryClient.fetchQuery(
-    getProjectByIdOptions({
-      path: { id: event.params.id },
-      baseUrl: `${event.url.origin}/api`,
-      fetch: event.fetch,
-    }),
-  );
+  // Seeded from any cached list, and a cached row returns at once (the page refreshes it),
+  // so only a cold open waits. Same origin as the browser client, so the keys match.
+  const listed = data.queryClient
+    .getQueriesData<{ data: Project[] }>({ queryKey: getProjectQueryKey() })
+    .flatMap((entry) => entry[1]?.data ?? [])
+    .find((one) => one.id === event.params.id);
+  const project = await data.queryClient
+    .ensureQueryData({
+      ...getProjectByIdOptions({
+        path: { id: event.params.id },
+        baseUrl: `${event.url.origin}/api`,
+        fetch: event.fetch,
+      }),
+      initialData: listed,
+      // Stale on arrival, so the page refetches the full row behind the seed.
+      initialDataUpdatedAt: 0,
+      revalidateIfStale: true,
+    })
+    .catch(() => error(404, "Not found"));
   const base = `/projects/${event.params.id}`;
   return {
     nav: {

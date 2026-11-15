@@ -1,29 +1,15 @@
 import Sparkles from "@lucide/svelte/icons/sparkles";
 import UserRound from "@lucide/svelte/icons/user-round";
-import type { LayoutLoad } from "./$types";
+import { section } from "$lib/components/layout/nav";
 
-// `data` is the server load's output: a sibling +layout.ts shadows it, so it only
-// reaches `page.data` through this spread.
-export const load: LayoutLoad = ({ data }) => ({
-  ...data,
-  nav: {
-    root: "/settings",
-    fallback: "/todos",
-    back: { label: "Back" },
-    crumbs: [
-      { href: "/", label: "Home" },
-      { href: "/settings", label: "Settings" },
-    ],
-    sections: {
-      top: [
-        {
-          title: "User",
-          items: [
-            { href: "/settings/account", label: "Account", icon: UserRound },
-            { href: "/settings/experience", label: "Experience", icon: Sparkles },
-          ],
-        },
+export const load = () => ({
+  nav: section("/settings", "Settings", [
+    {
+      title: "User",
+      items: [
+        { href: "/settings/account", label: "Account", icon: UserRound },
+        { href: "/settings/experience", label: "Experience", icon: Sparkles },
       ],
     },
-  },
+  ]),
 });

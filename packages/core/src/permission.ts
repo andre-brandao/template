@@ -15,6 +15,8 @@ export namespace Permission {
     webhook: ["read", "create", "update", "delete"],
     // External systems registered in Developers: a system account, its keys and its inbound secret.
     app: ["read", "create", "update", "delete"],
+    // Submissions live on the tracker, not a table; a member reads only their own.
+    feedback: ["read", "create"],
   } as const;
 
   type Res = keyof typeof Statement;
@@ -39,12 +41,14 @@ export namespace Permission {
       key: ["read", "create", "update", "delete"],
       webhook: ["read", "create", "update", "delete"],
       app: ["read", "create", "update", "delete"],
+      feedback: ["read", "create"],
     },
     member: {
       user: ["read", "update:own"],
       project: ["read", "create", "update", "delete"],
       todo: ["read", "create", "update", "delete"],
       key: ["read:own", "create", "delete:own"],
+      feedback: ["read:own", "create"],
     },
   } as const satisfies Record<string, Held>;
 

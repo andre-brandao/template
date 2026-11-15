@@ -21,8 +21,6 @@ export function PaginatedQuery<T extends z.ZodObject<any>>(schema: T): T {
   }) as any;
 }
 
-export const noop: MiddlewareHandler = (_c, next) => next();
-
 export const authRequired: MiddlewareHandler = async (_c, next) => {
   const actor = Identity.use();
   if (actor.type === "public")
@@ -123,7 +121,7 @@ export const ErrorResponses = {
         schema: resolver(ErrorResponse.meta({ description: "Permission error" })),
         example: {
           type: "forbidden",
-          code: "permission_denied",
+          code: ErrorCodes.Permission.INSUFFICIENT_PERMISSIONS,
           message: "You do not have permission",
         },
       },

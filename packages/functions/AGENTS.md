@@ -8,15 +8,21 @@ Hono services backed by `@template/core`: `api` (3000, OpenAPI-documented), `mcp
 ```
 src/
   target.ts             — one wrapper per environment (bun, lambda, worker)
+  providers.ts          — Hono middleware running a request inside providers (lambda)
+  health.ts             — /healthz, /readyz and /startupz, mounted by every service
+  cf.ts                 — Cloudflare binding types
   api/
-    index.ts            — mounts all routers
-    routes.ts           — route definitions
+    index.ts            — re-exports app, routes and embed
+    routes.ts           — mounts every handler router; `app` adds logging and bearer auth
+    error.ts            — `fail`, the onError every service shares
     common.ts           — validator/authRequired/PaginatedQuery/ErrorResponses helpers
     doc.ts              — describe(tag) → doc(), the OpenAPI shaping for a handler
-    middleware.ts       — actor resolution (bearer token) + error → HTTP response
+    middleware.ts       — identity resolution from the bearer token
+    auth.ts             — the issuer URL and its OpenAuth client
+    spec.ts             — the OpenAPI document, read by gen:spec and the dev api inspector
     handler/            — one file per domain (file, hook, insights, key, project, todo, user)
     target/             — bun.ts | lambda.ts | worker.ts, the entry points
-  auth/ mcp/ queue/     — same shape: the service, plus its target/
+  auth/ mcp/ queue/     — same shape: the service, plus its target/ (mcp/tool/ per domain)
 ```
 
 Each service is a plain Hono app; its `target/` wraps it with a database connection for the
@@ -76,19 +82,19 @@ const doc = describe("Todo"); // binds the tag once for the file
   }),
   authRequired,
   validator("param", id),
-  async (c) => c.json(found("Todo", await Todo.fromID(c.req.valid("param").id)), 200),
+  async (c) => c.json(await Todo.assert.exists(Todo.fromID(c.req.valid("param").id)), 200),
 )
 ```
 
 `doc()` takes the op's docs and the route's own responses — so summary, description, 200
 description and example all come from schemas that already exist. `doc.json` wraps one,
-`doc.page` a page of them, `doc.list` an array, `doc.ok` a bare `"ok"`, `doc.error` one of the
-standard error bodies and `doc.errors` several of them, spread in. The same `meta` feeds the
-MCP tool over that op, so the two can never drift.
+`doc.page` a page of them, `doc.list` an array, `doc.ok` a bare `"ok"`, and `doc.errors` the
+standard error bodies, spread in. The same `meta` feeds the MCP tool over that op, so the two
+can never drift.
 
 Nothing is merged in: a route lists every status it can return, and only those. `authRequired`
-means 401, a `validator` means 400, a reachable `Identity.check` means 403, a reachable `found()`
-means 404, and 500 is on every route via `onError`. The API tests read the spec back and drive
+means 401, a `validator` means 400, a reachable `Identity.check` means 403, a reachable
+`X.assert.exists` means 404, and 500 is on every route via `onError`. The API tests read the spec back and drive
 each declared status, so an error documented on a route that cannot produce it fails the suite.
 
 Pass a literal `{ title, description }` instead when a route reshapes its input into something core

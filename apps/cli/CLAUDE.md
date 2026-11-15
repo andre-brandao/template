@@ -34,9 +34,9 @@ The one entrypoint that runs and talks to the template. Bun-only, no build step 
 - Resolution order is defined once in `config.ts` and must stay that way:
   token is `--token` › `TEMPLATE_TOKEN` › saved `sk-` key › OAuth access (auto-refreshed);
   url is `--url` › `API_URL` › saved config › `http://localhost:3000`.
-- `serve api`/`serve mcp`/`serve auth` must wrap the fetch handler in
-  `Database.provide(url, ...)`. Dev pglite allows only one live connection, so a
-  per-request client will fail against it.
+- `serve api`/`serve mcp` run under one process-wide pool plus the providers the matching
+  `functions/src/*/target/bun.ts` wires (Storage, Queue). Keep the two in step: a missing
+  Queue makes every publish after a commit throw. `serve auth` serves bare, like its target.
 - Output goes through `output()` in `api.ts`: JSON to stdout, errors to stderr with a
   non-zero exit. Keep the CLI pipeable.
 - Env read by this package: `API_URL`, `AUTH_URL`, `TEMPLATE_TOKEN`, `PORT`, `API_PORT`, `MCP_PORT`,

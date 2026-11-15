@@ -2,7 +2,6 @@
 	import { untrack, type Snippet } from 'svelte';
 	import { dev } from '$app/environment';
 	import { QueryClientProvider, type QueryClient } from '@tanstack/svelte-query';
-	import { SvelteQueryDevtools } from '@tanstack/svelte-query-devtools';
 	import { HotkeysProvider, type HotkeyPlatform } from '@tanstack/svelte-hotkeys';
 	import { TanStackDevtools } from '@tanstack/svelte-devtools';
 	import { hotkeysDevtoolsPlugin } from '@tanstack/svelte-hotkeys-devtools';
@@ -11,6 +10,7 @@
 	import type { Prefs } from '@template/core/user/prefs';
 	import { createUser } from '$lib/utils/context';
 	import { createRail } from './rail.svelte';
+	import QueryPanel from './QueryPanel.svelte';
 
 	let {
 		data,
@@ -38,6 +38,14 @@
 		},
 		can: (grants, owned) => Permission.can(data.user?.role, grants, owned)
 	});
+
+	// A quiet accent dot in place of the logo; core reruns this on theme change.
+	function trigger(el: HTMLElement) {
+		const dot = document.createElement('span');
+		dot.style.cssText =
+			'display:block;width:8px;height:8px;border-radius:50%;background:var(--accent)';
+		el.replaceChildren(dot);
+	}
 </script>
 
 <QueryClientProvider client={data.queryClient}>
@@ -46,8 +54,20 @@
 		{@render children()}
 		<!-- Dev only: `dev` is a build-time constant, so prod drops these imports. -->
 		{#if dev}
-			<TanStackDevtools plugins={[hotkeysDevtoolsPlugin()]} />
-			<SvelteQueryDevtools buttonPosition="bottom-left" />
+			<!-- Ctrl+~ opens it. Config only seeds localStorage; clear it to pick up changes. -->
+			<TanStackDevtools
+				config={{
+					triggerMode: 'fixed',
+					position: 'bottom-right',
+					hideUntilHover: true,
+					openHotkey: ['Control', '~'],
+					customTrigger: trigger
+				}}
+				plugins={[
+					{ name: 'Query', component: QueryPanel, props: { client: data.queryClient } },
+					hotkeysDevtoolsPlugin()
+				]}
+			/>
 		{/if}
 	</HotkeysProvider>
 </QueryClientProvider>

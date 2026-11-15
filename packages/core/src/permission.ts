@@ -17,6 +17,8 @@ export namespace Permission {
     app: ["read", "create", "update", "delete"],
     // Objects on the caller's own storage prefix: the prefix is the ownership.
     file: ["read", "create", "update", "delete"],
+    // Submissions live on the tracker, not a table; a member reads only their own.
+    feedback: ["read", "create"],
   } as const;
 
   type Res = keyof typeof Statement;
@@ -40,6 +42,7 @@ export namespace Permission {
       todo: ["read", "create", "update", "delete"],
       key: ["read:own", "create", "delete:own"],
       file: ["read", "create", "update", "delete"],
+      feedback: ["read:own", "create"],
     },
   } as const satisfies Record<string, Held>;
 

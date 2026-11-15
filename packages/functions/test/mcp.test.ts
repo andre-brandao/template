@@ -38,6 +38,17 @@ describe("mcp", () => {
     const names = tools.tools.map((tool) => tool.name);
     expect(names).toContain("todo_list");
     expect(names).toContain("todo_create");
+    expect(names).toContain("feedback_create");
+    await client.close();
+  });
+
+  it("files feedback through a tool", async () => {
+    const client = await connect();
+    const result = await client.callTool({
+      name: "feedback_create",
+      arguments: { body: "The MCP server works nicely", tag: "feature" },
+    });
+    expect(read(result)).toMatchObject({ title: "The MCP server works nicely", tag: "feature" });
     await client.close();
   });
 

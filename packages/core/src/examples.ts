@@ -94,7 +94,7 @@ export namespace Examples {
     user: { id: Id("user"), name: "John Doe", image: null },
     identity: {
       type: "agent",
-      properties: { name: "copilot", userID: Id("user"), role: "member", timezone: "UTC" },
+      properties: { name: "orchestrator", userID: Id("user"), role: "member", timezone: "UTC" },
     },
     type: "todo.created",
     source: "todo",

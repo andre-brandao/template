@@ -33,7 +33,7 @@ export namespace Identity {
         type: z.literal("agent"),
         properties: z.object({
           name: z.string().meta({
-            description: "Which agent: `copilot`, or an MCP client like `claude`.",
+            description: "Which agent: `orchestrator`, or an MCP client like `claude`.",
           }),
           userID: id,
           role,

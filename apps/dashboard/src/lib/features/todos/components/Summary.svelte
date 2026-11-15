@@ -2,7 +2,8 @@
 <script lang="ts">
 	import { createQuery } from '@tanstack/svelte-query';
 	import * as Header from '$lib/components/header';
-	import { day, fmt, today } from '$lib/utils/fmt';
+	import { toDay, today } from '@template/ui';
+	import { fmt } from '$lib/utils/fmt';
 	import { list, stages } from '../api/todos.query';
 
 	let { scope }: { scope: { source: string; sourceID: string } } = $props();
@@ -15,7 +16,7 @@
 	const stage = $derived(
 		spans.data?.find(
 			(one) =>
-				one.start && one.end && day(one.start, f.zone) <= now && now <= day(one.end, f.zone)
+				one.start && one.end && toDay(one.start, f.zone) <= now && now <= toDay(one.end, f.zone)
 		) ?? spans.data?.find((one) => one.done < one.total)
 	);
 </script>

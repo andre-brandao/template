@@ -195,7 +195,7 @@ export type Identity =
       type: "agent";
       properties: {
         /**
-         * Which agent: `copilot`, or an MCP client like `claude`.
+         * Which agent: `orchestrator`, or an MCP client like `claude`.
          */
         name: string;
         /**

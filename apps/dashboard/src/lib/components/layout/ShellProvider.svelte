@@ -5,7 +5,8 @@
 	import { HotkeysProvider, type HotkeyPlatform } from '@tanstack/svelte-hotkeys';
 	import { Permission } from '@template/core/permission';
 	import type { User } from '@template/core/user';
-	import type { Prefs } from '@template/core/user/prefs';
+	import { zone, type Prefs } from '@template/core/user/prefs';
+	import { setDates } from '@template/ui';
 	import { createUser } from '$lib/utils/context';
 	import { createRail } from './rail.svelte';
 	import DevToolsProvider from './DevToolsProvider.svelte';
@@ -35,6 +36,17 @@
 			return data.prefs;
 		},
 		can: (grants, owned) => Permission.can(data.user?.role, grants, owned)
+	});
+
+	// Getters, so a prefs change reaches every picker without a reload.
+	setDates({
+		get locale() {
+			return data.prefs.locale;
+		},
+		get zone() {
+			return zone(data.prefs);
+		},
+		format: { year: 'numeric', month: 'short', day: 'numeric' }
 	});
 </script>
 

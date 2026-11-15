@@ -6,6 +6,7 @@ import { issuer } from "../api/auth";
 import { fail } from "../api/error";
 import { auth } from "../api/middleware";
 import { authRequired } from "../api/common";
+import { feedback } from "./tool/feedback";
 import { todo } from "./tool/todo";
 import { project } from "./tool/project";
 import { health } from "../health";
@@ -28,6 +29,7 @@ function server() {
   const s = new McpServer({ name: "template", version: pkg.version });
   todo(s);
   project(s);
+  feedback(s);
   return s;
 }
 

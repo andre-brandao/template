@@ -81,9 +81,9 @@
 		min-height: 2em;
 		padding: 0.3em 0.55em;
 		border: none;
-		border-radius: var(--radius-sm, 6px);
+		border-radius: var(--radius-sm);
 		background: none;
-		color: var(--ink, #1c1b19);
+		color: var(--ink);
 		font: inherit;
 		font-size: 0.88em;
 		text-align: left;
@@ -94,20 +94,20 @@
 
 	/* Pointer moves focus, so one highlight serves mouse and keyboard alike. */
 	.item:focus {
-		background: var(--hover, rgb(0 0 0 / 0.06));
+		background: var(--hover);
 	}
 
 	.item:disabled {
-		color: var(--dim, #75736d);
+		color: var(--dim);
 		cursor: default;
 	}
 
 	.danger {
-		color: var(--danger, #b8452c);
+		color: var(--danger);
 	}
 
 	.danger:focus {
-		background: color-mix(in oklab, var(--danger, #b8452c) 10%, transparent);
+		background: color-mix(in oklab, var(--danger) 10%, transparent);
 	}
 
 	.label {

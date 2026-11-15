@@ -220,15 +220,15 @@
 		gap: 0.2em;
 		min-height: 2.25em;
 		padding: 0 0.25em 0 0;
-		border: 1px solid var(--border, #ddd);
-		border-radius: var(--radius-sm, 6px);
-		background: var(--surface, #fff);
-		box-shadow: var(--shadow-1, 0 1px 2px rgb(0 0 0 / 0.05));
+		border: 1px solid var(--border);
+		border-radius: var(--radius-sm);
+		background: var(--surface);
+		box-shadow: var(--shadow-1);
 	}
 
 	.field:focus-within {
-		border-color: var(--accent, #2f7f68);
-		box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent, #2f7f68) 16%, transparent);
+		border-color: var(--accent);
+		box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent) 16%, transparent);
 	}
 
 	.inner {
@@ -248,7 +248,7 @@
 		min-width: 0;
 		border: none;
 		background: none;
-		color: var(--ink, #111);
+		color: var(--ink);
 		font: inherit;
 		outline: none;
 	}
@@ -260,27 +260,27 @@
 	}
 
 	.text::placeholder {
-		color: var(--dim, #999);
+		color: var(--dim);
 	}
 
 	.time {
 		flex: none;
 		width: 6.5em;
 		padding: 0.4em 0.2em;
-		border-left: 1px solid var(--border, #ddd);
+		border-left: 1px solid var(--border);
 		padding-left: 0.5em;
 	}
 
 	.preview {
 		flex: none;
 		padding-right: 0.4em;
-		color: var(--muted, #666);
+		color: var(--muted);
 		font-size: 0.8em;
 		white-space: nowrap;
 	}
 
 	.miss {
-		color: var(--danger, #d14343);
+		color: var(--danger);
 	}
 
 	.icon {
@@ -291,15 +291,15 @@
 		height: 1.8em;
 		padding: 0;
 		border: none;
-		border-radius: var(--radius-sm, 6px);
+		border-radius: var(--radius-sm);
 		background: none;
-		color: var(--muted, #666);
+		color: var(--muted);
 		cursor: pointer;
 	}
 
 	.icon:hover {
-		background: var(--hover, #f1f0ed);
-		color: var(--ink, #111);
+		background: var(--hover);
+		color: var(--ink);
 	}
 
 	.icon svg {
@@ -320,16 +320,16 @@
 
 	.preset {
 		padding: 0.2em 0.55em;
-		border: 1px solid var(--border, #e6e5e1);
-		border-radius: var(--radius-sm, 6px);
+		border: 1px solid var(--border);
+		border-radius: var(--radius-sm);
 		background: none;
-		color: var(--ink, #1c1b19);
+		color: var(--ink);
 		font: inherit;
 		font-size: 0.8em;
 		cursor: pointer;
 	}
 
 	.preset:hover {
-		background: var(--hover, #f1f0ed);
+		background: var(--hover);
 	}
 </style>

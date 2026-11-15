@@ -17,12 +17,12 @@
 		margin: auto;
 		width: min(30em, calc(100vw - 2em));
 		max-width: none;
-		border: 1px solid var(--border, #e6e5e1);
-		border-radius: calc(var(--radius, 8px) + 4px);
+		border: 1px solid var(--border);
+		border-radius: calc(var(--radius) + 4px);
 		padding: 1.5em;
-		background: var(--surface, #fff);
-		color: var(--ink, #1c1b19);
-		box-shadow: var(--shadow-2, 0 16px 32px -12px rgb(0 0 0 / 0.16));
+		background: var(--surface);
+		color: var(--ink);
+		box-shadow: var(--shadow-2);
 		opacity: 0;
 		scale: 0.97;
 		transition:

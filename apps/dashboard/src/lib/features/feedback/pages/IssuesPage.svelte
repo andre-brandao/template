@@ -90,6 +90,6 @@
 		text-overflow: ellipsis;
 		white-space: nowrap;
 		font-size: 0.85em;
-		color: var(--muted, #666);
+		color: var(--muted);
 	}
 </style>

@@ -13,8 +13,8 @@
 		display: inline-flex;
 		gap: 2px;
 		padding: 2px;
-		border-radius: var(--radius-sm, 6px);
-		background: var(--surface-2, #f2f1ee);
+		border-radius: var(--radius-sm);
+		background: var(--surface-2);
 		/* Squeezed below its labels, the row scrolls inside itself instead of breaking a tab. */
 		max-width: 100%;
 		overflow-x: auto;

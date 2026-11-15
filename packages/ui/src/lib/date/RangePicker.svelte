@@ -146,15 +146,15 @@
 		gap: 1px;
 		min-width: 8.5em;
 		padding: 0.3em 0.6em 0.3em 0.1em;
-		border-right: 1px solid var(--border, #e6e5e1);
+		border-right: 1px solid var(--border);
 	}
 
 	.preset {
 		padding: 0.35em 0.55em;
 		border: none;
-		border-radius: var(--radius-sm, 6px);
+		border-radius: var(--radius-sm);
 		background: none;
-		color: var(--ink, #1c1b19);
+		color: var(--ink);
 		font: inherit;
 		font-size: 0.85em;
 		text-align: left;
@@ -164,11 +164,11 @@
 
 	.preset:hover,
 	.preset:focus-visible {
-		background: var(--hover, #f1f0ed);
+		background: var(--hover);
 		outline: none;
 	}
 
 	.on {
-		box-shadow: inset 2px 0 0 var(--accent, #2f7f68);
+		box-shadow: inset 2px 0 0 var(--accent);
 	}
 </style>

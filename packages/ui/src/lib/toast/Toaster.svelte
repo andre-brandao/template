@@ -108,13 +108,13 @@
 		align-items: center;
 		gap: 0.6em;
 		padding: 0.7em 0.85em;
-		border: 1px solid var(--border, #e6e5e1);
-		border-inline-start: 3px solid var(--border-bright, #d3d1cc);
-		border-radius: var(--radius, 8px);
-		background: var(--surface, #fff);
-		color: var(--ink, #1c1b19);
-		box-shadow: var(--shadow-2, 0 16px 32px -12px rgb(0 0 0 / 0.16));
-		font-family: var(--font-sans, ui-sans-serif, system-ui, sans-serif);
+		border: 1px solid var(--border);
+		border-inline-start: 3px solid var(--border-bright);
+		border-radius: var(--radius);
+		background: var(--surface);
+		color: var(--ink);
+		box-shadow: var(--shadow-2);
+		font-family: var(--font-sans);
 		font-size: 0.9em;
 		pointer-events: auto;
 		transform-origin: bottom center;
@@ -127,15 +127,15 @@
 	}
 
 	li.success {
-		border-inline-start-color: var(--done, #2f7f68);
+		border-inline-start-color: var(--done);
 	}
 
 	li.error {
-		border-inline-start-color: var(--danger, #b8452c);
+		border-inline-start-color: var(--danger);
 	}
 
 	li.loading {
-		border-inline-start-color: var(--accent, #2f7f68);
+		border-inline-start-color: var(--accent);
 	}
 
 	@starting-style {
@@ -179,14 +179,14 @@
 		padding: 0 0.2em;
 		font-size: 0.9em;
 		line-height: 1;
-		color: var(--muted, #64625d);
+		color: var(--muted);
 		cursor: pointer;
 		opacity: 0;
 		transition: opacity 0.2s ease;
 	}
 
 	.x:hover {
-		color: var(--ink, #1c1b19);
+		color: var(--ink);
 	}
 
 	ol[data-open] .x,

@@ -28,18 +28,18 @@
 	}
 
 	.pending {
-		background: var(--pending, #6b6a64);
+		background: var(--pending);
 		animation: pulse 0.9s ease-in-out infinite;
 	}
 
 	/* Flashes, then gets out of the way: a saved row needs no marker. */
 	.saved {
-		background: var(--done, #2f7f68);
+		background: var(--done);
 		animation: fade 1.2s ease-out forwards;
 	}
 
 	.failed {
-		background: var(--danger, #b8452c);
+		background: var(--danger);
 	}
 
 	.sr {

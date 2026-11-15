@@ -2,7 +2,7 @@
    a consumer sizes the frame with `max`, never by reaching into it. */
 
 .tm-code {
-  --tm-comment: var(--dim, #75736d);
+  --tm-comment: var(--dim);
   --tm-key: light-dark(#8250df, #c08cf5);
   --tm-str: light-dark(#0a7d55, #6dc39c);
   --tm-num: light-dark(#a3672a, #c98a3f);
@@ -11,10 +11,10 @@
 
   margin: 0.8em 0;
   padding: 0.8em 1em;
-  border-radius: var(--radius, 8px);
+  border-radius: var(--radius);
   overflow-x: auto;
-  background: var(--surface-2, #f2f1ee);
-  font-family: var(--font-mono, ui-monospace, monospace);
+  background: var(--surface-2);
+  font-family: var(--font-mono);
   tab-size: 2;
 }
 
@@ -22,8 +22,8 @@
   margin: 0;
   overflow: auto;
   padding: 0.9em 1em;
-  border: 1px solid var(--border, #e6e5e1);
-  background: var(--surface, #fff);
+  border: 1px solid var(--border);
+  background: var(--surface);
   font-size: 0.78em;
   line-height: 1.5;
 }
@@ -59,15 +59,15 @@
 }
 
 .tm-code .tm-operator {
-  color: var(--muted, #64625d);
+  color: var(--muted);
 }
 
 .tm-code .tm-inserted {
-  color: var(--done, #2f7f68);
+  color: var(--done);
 }
 
 .tm-code .tm-deleted {
-  color: var(--danger, #b8452c);
+  color: var(--danger);
 }
 
 .tm-code-frame {
@@ -79,8 +79,8 @@
 }
 
 .tm-code-frame figcaption {
-  color: var(--muted, #64625d);
-  font-family: var(--font-mono, ui-monospace, monospace);
+  color: var(--muted);
+  font-family: var(--font-mono);
   font-size: 0.78em;
   padding-bottom: 0.4em;
 }

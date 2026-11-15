@@ -21,28 +21,28 @@
 		width: 100%;
 		min-width: 0;
 		box-sizing: border-box;
-		min-height: var(--control, 2.25em);
+		min-height: var(--control);
 		font: inherit;
 		padding: 0.4em 2em 0.4em 0.7em;
-		border: 1px solid var(--border, #e6e5e1);
-		border-radius: var(--radius-sm, 6px);
+		border: 1px solid var(--border);
+		border-radius: var(--radius-sm);
 		background:
-			linear-gradient(45deg, transparent 50%, var(--muted, #64625d) 50%) calc(100% - 0.95em) 52% / 0.3em 0.3em no-repeat,
-			linear-gradient(-45deg, transparent 50%, var(--muted, #64625d) 50%) calc(100% - 0.75em) 52% / 0.3em 0.3em no-repeat,
-			var(--surface, #fff);
-		color: var(--ink, #1c1b19);
-		box-shadow: var(--shadow-1, 0 1px 2px rgb(0 0 0 / 0.04));
+			linear-gradient(45deg, transparent 50%, var(--muted) 50%) calc(100% - 0.95em) 52% / 0.3em 0.3em no-repeat,
+			linear-gradient(-45deg, transparent 50%, var(--muted) 50%) calc(100% - 0.75em) 52% / 0.3em 0.3em no-repeat,
+			var(--surface);
+		color: var(--ink);
+		box-shadow: var(--shadow-1);
 		appearance: none;
 		cursor: pointer;
 	}
 
 	select:hover {
-		border-color: var(--border-bright, #d3d1cc);
+		border-color: var(--border-bright);
 	}
 
 	select:focus-visible {
-		border-color: var(--accent, #2f7f68);
-		box-shadow: var(--ring, 0 0 0 3px color-mix(in oklab, var(--accent, #2f7f68) 16%, transparent));
+		border-color: var(--accent);
+		box-shadow: var(--ring);
 		outline: none;
 	}
 </style>

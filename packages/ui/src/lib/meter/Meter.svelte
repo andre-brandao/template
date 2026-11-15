@@ -34,7 +34,7 @@
 		min-width: 3em;
 		height: 0.4em;
 		border-radius: 999px;
-		background: var(--surface-2, #f2f1ee);
+		background: var(--surface-2);
 		overflow: hidden;
 	}
 
@@ -42,10 +42,10 @@
 		display: block;
 		height: 100%;
 		border-radius: inherit;
-		background: var(--accent, #2f7f68);
+		background: var(--accent);
 	}
 
 	.danger .fill {
-		background: var(--danger, #b8452c);
+		background: var(--danger);
 	}
 </style>

@@ -128,11 +128,11 @@
 		max-height: min(28rem, calc(100vh - 1em));
 		overflow: auto;
 		padding: 0.3em;
-		border: 1px solid var(--border, #e6e5e1);
-		border-radius: var(--radius, 8px);
-		background: var(--surface, #fff);
-		color: var(--ink, #1c1b19);
-		box-shadow: var(--shadow-2, 0 16px 32px -12px rgb(0 0 0 / 0.16));
+		border: 1px solid var(--border);
+		border-radius: var(--radius);
+		background: var(--surface);
+		color: var(--ink);
+		box-shadow: var(--shadow-2);
 		outline: none;
 		opacity: 0;
 		translate: 0 -2px;

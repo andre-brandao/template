@@ -24,7 +24,6 @@
         "@sveltejs/adapter-node": "^5.5.4",
         "@sveltejs/kit": "^2.70.2",
         "@sveltejs/vite-plugin-svelte": "^7.3.0",
-        "@tailwindcss/vite": "^4.3.3",
         "@tanstack/query-devtools": "5.107.1",
         "@tanstack/svelte-devtools": "0.1.8",
         "@tanstack/svelte-hotkeys": "0.24.1",
@@ -32,7 +31,6 @@
         "@tanstack/svelte-query": "^6.4.1",
         "svelte": "^5.57.3",
         "svelte-check": "^4.7.5",
-        "tailwindcss": "^4.3.3",
         "vite": "^8.2.1"
       },
       "testing": {

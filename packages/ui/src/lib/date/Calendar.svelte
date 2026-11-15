@@ -201,7 +201,7 @@
 	.title {
 		flex: 1;
 		text-align: center;
-		color: var(--ink, #1c1b19);
+		color: var(--ink);
 		font-size: 0.88em;
 		font-weight: 600;
 	}
@@ -213,15 +213,15 @@
 		height: 1.8em;
 		padding: 0;
 		border: none;
-		border-radius: var(--radius-sm, 6px);
+		border-radius: var(--radius-sm);
 		background: none;
-		color: var(--muted, #64625d);
+		color: var(--muted);
 		cursor: pointer;
 	}
 
 	.nav:hover {
-		background: var(--hover, #f1f0ed);
-		color: var(--ink, #1c1b19);
+		background: var(--hover);
+		color: var(--ink);
 	}
 
 	.nav svg {

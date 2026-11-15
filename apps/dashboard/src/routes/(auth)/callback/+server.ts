@@ -1,7 +1,7 @@
 import { redirect, error } from "@sveltejs/kit";
-import { exchange } from "$lib/server/auth";
-import * as session from "$lib/server/session";
-import * as next from "$lib/server/next";
+import { exchange } from "#lib/server/auth.ts";
+import * as session from "#lib/server/session.ts";
+import * as next from "#lib/server/next.ts";
 import type { RequestHandler } from "./$types";
 
 export const GET: RequestHandler = async (event) => {

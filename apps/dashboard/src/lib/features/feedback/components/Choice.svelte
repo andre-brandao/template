@@ -3,7 +3,7 @@
 	Arrow keys move the pick, as in any radio group.
 -->
 <script lang="ts" generics="T extends string">
-	import type { RemoteFormField } from '@sveltejs/kit';
+	import type { RemoteFormField } from '$app/server';
 	import { Tabs } from '@template/ui';
 
 	let {

@@ -1,5 +1,5 @@
-import { browser } from "$app/environment";
-import { call } from "$lib/query";
+import { browser } from "$app/env";
+import { call } from "#lib/query.ts";
 import { getSource } from "./sources.remote";
 
 export const label = (source?: string, sourceID?: string) => ({

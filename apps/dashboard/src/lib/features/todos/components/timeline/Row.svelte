@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { Todo } from '@template/core/todo';
-	import { fmt } from '$lib/utils/fmt';
-	import { peek } from '$lib/utils/peek';
+	import { fmt } from '#lib/utils/fmt.ts';
+	import { peek } from '#lib/utils/peek.ts';
 	import { color, label, late } from '../../status';
 
 	type Bar = { left: number; width: number };

@@ -1,8 +1,8 @@
 <script lang="ts">
-	import ProjectPage from '$lib/features/projects/pages/ProjectPage.svelte';
-	import Stages from '$lib/features/todos/components/Stages.svelte';
-	import Recent from '$lib/features/todos/components/Recent.svelte';
-	import Summary from '$lib/features/todos/components/Summary.svelte';
+	import ProjectPage from '#lib/features/projects/pages/ProjectPage.svelte';
+	import Stages from '#lib/features/todos/components/Stages.svelte';
+	import Recent from '#lib/features/todos/components/Recent.svelte';
+	import Summary from '#lib/features/todos/components/Summary.svelte';
 
 	let { params } = $props();
 </script>

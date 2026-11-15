@@ -3,8 +3,8 @@
 	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
 	import { Button, Issue, Skeleton } from '@template/ui';
 	import RotateCcw from '@lucide/svelte/icons/rotate-ccw';
-	import * as Header from '$lib/components/header';
-	import { fmt } from '$lib/utils/fmt';
+	import * as Header from '#lib/components/header/index.ts';
+	import { fmt } from '#lib/utils/fmt.ts';
 	import { panel } from '../api/panel.query';
 	import Render from '../panel/Render.svelte';
 

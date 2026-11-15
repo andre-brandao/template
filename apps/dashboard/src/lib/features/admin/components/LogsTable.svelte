@@ -5,7 +5,7 @@
 	import type { ColumnDef, ExpandedState, Row } from '@tanstack/svelte-table';
 	import { Avatar, DataTable, features } from '@template/ui';
 	import type { Event } from '@template/core/event';
-	import { fmt } from '$lib/utils/fmt';
+	import { fmt } from '#lib/utils/fmt.ts';
 	import { keys } from '../sort';
 
 	let {

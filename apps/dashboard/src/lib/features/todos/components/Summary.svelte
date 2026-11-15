@@ -1,9 +1,9 @@
 <!-- A project's todo facts for its header; the same cached queries Stages and Recent read. -->
 <script lang="ts">
 	import { createQuery } from '@tanstack/svelte-query';
-	import * as Header from '$lib/components/header';
+	import * as Header from '#lib/components/header/index.ts';
 	import { toDay, today } from '@template/ui';
-	import { fmt } from '$lib/utils/fmt';
+	import { fmt } from '#lib/utils/fmt.ts';
 	import { list, stages } from '../api/todos.query';
 
 	let { scope }: { scope: { source: string; sourceID: string } } = $props();

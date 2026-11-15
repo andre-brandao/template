@@ -1,6 +1,6 @@
 import { createMutation } from "@tanstack/svelte-query";
 import type { Webhook } from "@template/core/webhook";
-import { call, type Done } from "$lib/query";
+import { call, type Done } from "#lib/query.ts";
 import { createWebhook, getWebhooks, removeWebhook, updateWebhook } from "./webhooks.remote";
 
 // Every subscription, or one App's. Both sit under `webhooks`, so one key reaches all of them.

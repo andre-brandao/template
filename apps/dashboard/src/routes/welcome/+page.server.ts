@@ -1,5 +1,5 @@
 import { redirect } from "@sveltejs/kit";
-import * as next from "$lib/server/next";
+import * as next from "#lib/server/next.ts";
 import type { PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async (event) => {

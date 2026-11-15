@@ -20,8 +20,9 @@ function cloudflaredPg(): PluginOption {
           if (cfPath !== resolved.id) return cfPath;
         }
       }
-      // Leave cloudflare:* imports as external — resolved at CF Workers runtime.
-      if (id.startsWith("cloudflare:")) {
+      // Leave cloudflare:* imports as external — resolved at CF Workers runtime. The adapter
+      // owns `cloudflare:workers`, which it emulates in dev and the analyse step.
+      if (id.startsWith("cloudflare:") && id !== "cloudflare:workers") {
         return { id, external: true };
       }
     },
@@ -36,6 +37,15 @@ function cloudflaredPg(): PluginOption {
   };
 }
 
+// Off Cloudflare nothing provides `cloudflare:workers`; the worker handle reading it never runs there.
+function workers(): PluginOption {
+  return {
+    name: "cloudflare-workers-stub",
+    resolveId: (id) => (id === "cloudflare:workers" ? "\0cloudflare:workers" : undefined),
+    load: (id) => (id === "\0cloudflare:workers" ? "export const env = {};" : undefined),
+  };
+}
+
 const sha = child_process.spawnSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" });
 
 const adapter = await (async () => {
@@ -45,11 +55,7 @@ const adapter = await (async () => {
       return adapter();
     },
     bun: async () => {
-      const { default: adapter } = await import("svelte-adapter-bun");
-      return adapter();
-    },
-    "sst-aws": async () => {
-      const { default: adapter } = await import("svelte-kit-sst");
+      const { default: adapter } = await import("@sveltejs/adapter-bun");
       return adapter();
     },
     node: async () => {
@@ -78,21 +84,17 @@ export default defineConfig({
         runes: ({ filename }) =>
           filename.split(/[/\\]/).includes("node_modules") ? undefined : true,
       },
-      // Required for remote functions (`$app/server`'s query/form/command). This is a `kit`-level
-      // option, but since config is passed inline here (no svelte.config.js in this app), SvelteKit
-      // flattens `KitConfig` fields like `adapter` and `experimental` directly onto this object.
+      // Remote functions (`$app/server`'s query/form/command) are still experimental in kit 3.
       experimental: { remoteFunctions: true },
       adapter,
-      vitePlugin: {
-        inspector: {
-          toggleKeyCombo: "control-shift",
-          holdMode: true,
-          showToggleButton: "always",
-          toggleButtonPos: "bottom-right",
-        },
+      inspector: {
+        toggleKeyCombo: "control-shift",
+        holdMode: true,
+        showToggleButton: "always",
+        toggleButtonPos: "bottom-right",
       },
     }),
-    ...(process.env.SVELTE_ADAPTER === "cloudflare" ? [cloudflaredPg()] : []),
+    process.env.SVELTE_ADAPTER === "cloudflare" ? cloudflaredPg() : workers(),
   ],
   build: {
     rolldownOptions: {

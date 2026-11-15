@@ -1,8 +1,8 @@
 import { z } from "zod";
-import { env } from "$env/dynamic/private";
+import { API_URL } from "$app/env/private";
 import { App } from "@template/core/app";
 import { Key } from "@template/core/key";
-import { remote } from "$lib/server/remote";
+import { remote } from "#lib/server/gate.ts";
 
 // Admin configuration: no API route, so these are the only way in. Core holds the grants.
 export const getApps = remote
@@ -16,7 +16,7 @@ export const getAppKeys = remote.core(App.keys).query();
 
 /** Where the App posts in. The API's public origin is dashboard config only the server knows. */
 export const getEndpoint = remote.query(App.Info.shape.id, (id) =>
-  new URL(`/hook/${id}`, env.API_URL ?? "http://localhost:3000").toString(),
+  new URL(`/hook/${id}`, API_URL ?? "http://localhost:3000").toString(),
 );
 
 export const createApp = remote.core(App.create).command();

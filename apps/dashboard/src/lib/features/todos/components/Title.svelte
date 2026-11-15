@@ -3,7 +3,7 @@
 	import { tick } from 'svelte';
 	import type { Todo } from '@template/core/todo';
 	import { Inline, Status } from '@template/ui';
-	import { peek } from '$lib/utils/peek';
+	import { peek } from '#lib/utils/peek.ts';
 	import { update } from '../api/todos.query';
 
 	let {

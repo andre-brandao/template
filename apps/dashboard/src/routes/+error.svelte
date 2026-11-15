@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { dev } from '$app/environment';
+	import { dev } from '$app/env';
 	import { resolve } from '$app/paths';
 	import { onMount } from 'svelte';
 	import { Button } from '@template/ui';
-	import { brand } from '$lib/brand';
+	import { brand } from '#lib/brand.ts';
 	import LogIn from '@lucide/svelte/icons/log-in';
 	import SearchX from '@lucide/svelte/icons/search-x';
 	import ShieldOff from '@lucide/svelte/icons/shield-off';
@@ -68,7 +68,7 @@
 			{#if page.status === 401}
 				<Button
 					variant="secondary"
-					href="{resolve('/login')}?next={encodeURIComponent(page.url.pathname + page.url.search)}"
+					href="{resolve('login')}?next={encodeURIComponent(page.url.pathname + page.url.search)}"
 					>Log in</Button
 				>
 			{:else if back}

@@ -2,10 +2,10 @@
 	import { goto } from '$app/navigation';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { Button, Field, Inline, Issue, Section, Skeleton, Status } from '@template/ui';
-	import * as Header from '$lib/components/header';
-	import AvatarUpload from '$lib/components/AvatarUpload.svelte';
-	import Can from '$lib/components/Can.svelte';
-	import { ask } from '$lib/ask';
+	import * as Header from '#lib/components/header/index.ts';
+	import AvatarUpload from '#lib/components/AvatarUpload.svelte';
+	import Can from '#lib/components/Can.svelte';
+	import { ask } from '#lib/ask.ts';
 	import { get, refresh, remove, update } from '../api/projects.query';
 
 	let { id }: { id: string } = $props();

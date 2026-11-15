@@ -1,6 +1,5 @@
-import { command, form, query } from "$app/server";
 import { error, invalid } from "@sveltejs/kit";
-import type { RemoteForm, RemoteFormInput } from "@sveltejs/kit";
+import { command, form, query, type RemoteForm, type RemoteFormInput } from "$app/server";
 import type { z } from "zod";
 import { Identity } from "@template/core/identity";
 import { VisibleError } from "@template/core/error";
@@ -26,7 +25,7 @@ async function guard<T>(fn: () => Promise<T>, mode: Mode): Promise<T> {
     // belongs in `handleError` with its stack. Only a `VisibleError` is ours to convert.
     if (!(err instanceof VisibleError)) throw err;
     if (mode === "form" && !fatal.has(err.type)) invalid(err.message);
-    error(err.statusCode(), { message: err.message, code: err.code });
+    error(err.statusCode(), err.message, { code: err.code });
   }
 }
 

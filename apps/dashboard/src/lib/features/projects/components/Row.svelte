@@ -2,10 +2,10 @@
 	import { goto } from '$app/navigation';
 	import type { Project } from '@template/core/project';
 	import { Avatar, List, Menu, modal } from '@template/ui';
-	import LinkForm from '$lib/components/LinkForm.svelte';
-	import Rename from '$lib/components/Rename.svelte';
-	import { ask } from '$lib/ask';
-	import { fmt } from '$lib/utils/fmt';
+	import LinkForm from '#lib/components/LinkForm.svelte';
+	import Rename from '#lib/components/Rename.svelte';
+	import { ask } from '#lib/ask.ts';
+	import { fmt } from '#lib/utils/fmt.ts';
 	import LinkIcon from '@lucide/svelte/icons/link';
 	import { link, remove, update } from '../api/projects.query';
 

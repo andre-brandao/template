@@ -1,6 +1,6 @@
-import { browser } from "$app/environment";
-import { local } from "$lib/utils/fmt";
-import { queryClient } from "$lib/query";
+import { browser } from "$app/env";
+import { local } from "#lib/utils/fmt.ts";
+import { queryClient } from "#lib/query.ts";
 import type { LayoutLoad } from "./$types";
 
 // Only the browser knows where the reader is: it writes the cookie the server seeds the zone

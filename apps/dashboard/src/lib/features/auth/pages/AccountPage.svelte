@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { createQuery } from '@tanstack/svelte-query';
 	import { Issue, Section } from '@template/ui';
-	import * as Header from '$lib/components/header';
+	import * as Header from '#lib/components/header/index.ts';
 	import { providers } from '../api/profile.query';
 	import PasswordForm from '../components/PasswordForm.svelte';
 	import ProviderList from '../components/ProviderList.svelte';

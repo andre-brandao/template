@@ -1,5 +1,5 @@
-import { list } from "$lib/features/developers/api/webhooks.query";
-import { warm } from "$lib/query";
+import { list } from "#lib/features/developers/api/webhooks.query.ts";
+import { warm } from "#lib/query.ts";
 import type { PageLoad } from "./$types";
 
 export const load: PageLoad = async (event) => {

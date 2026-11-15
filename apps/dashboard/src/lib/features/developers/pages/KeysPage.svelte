@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { createQuery } from '@tanstack/svelte-query';
 	import { createHotkey } from '@tanstack/svelte-hotkeys';
-	import { hotkeys } from '$lib/hotkeys';
+	import { hotkeys } from '#lib/hotkeys.ts';
 	import { Button, Issue, Kbd, List, modal } from '@template/ui';
-	import * as Header from '$lib/components/header';
+	import * as Header from '#lib/components/header/index.ts';
 	import { list } from '../api/keys.query';
 	import KeyForm from '../components/key/KeyForm.svelte';
 	import KeyList from '../components/key/KeyList.svelte';

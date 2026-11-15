@@ -3,9 +3,9 @@
 	import { createQuery } from '@tanstack/svelte-query';
 	import type { User } from '@template/core/user';
 	import { Avatar, Badge, Empty, Issue, Section, Skeleton } from '@template/ui';
-	import * as Header from '$lib/components/header';
-	import { user } from '$lib/utils/context';
-	import { fmt } from '$lib/utils/fmt';
+	import * as Header from '#lib/components/header/index.ts';
+	import { user } from '#lib/utils/context.ts';
+	import { fmt } from '#lib/utils/fmt.ts';
 	import { get } from '../api/people.query';
 	import Activity from '../components/Activity.svelte';
 

@@ -1,4 +1,4 @@
-import { call } from "$lib/query";
+import { call } from "#lib/query.ts";
 import { getEvents } from "./events.remote";
 
 // Under `events`, so a slice's writes reach its timeline by key, without importing this.

@@ -1,7 +1,7 @@
 <!-- Horizontal HTML bars, one per row; without a numeric column it falls back to a table. -->
 <script lang="ts">
 	import { Meter } from '@template/ui';
-	import { fmt } from '$lib/utils/fmt';
+	import { fmt } from '#lib/utils/fmt.ts';
 	import { limits, type Block } from '../catalog';
 	import { bars, formatter } from '../numbers';
 	import Data from './Data.svelte';

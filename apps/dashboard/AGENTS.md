@@ -29,7 +29,7 @@ declares its own nav links — no dispatcher branching on `route.id`.
 
 ## Remote functions
 
-`$lib/server/remote` is a gate chain builder. Reach for the terminal that matches the job;
+`#lib/server/gate.ts` is a gate chain builder. Reach for the terminal that matches the job;
 auth and `VisibleError` conversion come for free.
 
 ```ts
@@ -48,7 +48,7 @@ export const saveTodo = remote.form(schema, handler); // errors land as form iss
 
 ## TanStack Query
 
-Reference: `features/projects`. `$lib/query` owns the client; the `api` hook serves `/api/*` from the Hono router in-process.
+Reference: `features/projects`. `#lib/query` owns the client; the `api` hook serves `/api/*` from the Hono router in-process.
 
 - `api/<slice>.query.ts` holds query builders without opts (`list = (q) => getXOptions(...)`) and
   mutation factories that accept only `onSuccess`: `create({ onSuccess: (x) => goto(...) })`. No cache code in components.
@@ -56,7 +56,7 @@ Reference: `features/projects`. `$lib/query` owns the client; the `api` hook ser
   `[{ tags: ["X"] }]` the whole resource. No meta invalidates everything. That cache-level pass always
   runs (and settles) before any `onSuccess`, so a component can't skip it.
 - Precise update: the factory's own `onSuccess(data, vars, result, ctx)` calls `ctx.client.setQueryData(...)`.
-- After a remote-function write, call `invalidate(key)` from `$lib/query`.
+- After a remote-function write, call `invalidate(key)` from `#lib/query.ts`.
 - Keep remote functions for internal-only data (no API route) and forms needing `enhance` or field issues.
 - Internal/admin data (no API route, e.g. `developers` apps and webhooks) still uses TanStack: `queryFn` over remote functions with plain array keys (`["apps"]`); public resources use the SDK's `getXOptions`.
 - Every list and detail route has a `+page.ts` that warms what the page renders first, with the slice's own
@@ -73,7 +73,7 @@ Reference: `features/projects`. `$lib/query` owns the client; the `api` hook ser
   `account()` from `components/layout/nav.ts`. A new section shows up once its layout returns `nav`.
 - **An app-wide action** is one entry in `actions` there. Routes may import slices, so it raises a
   slice's own form (`run: () => modal(ProjectForm)`); gate it with `me.can(...)`.
-- **A page action** is a hotkey, not a palette entry. Declare it once in `$lib/hotkeys.ts` (with
+- **A page action** is a hotkey, not a palette entry. Declare it once in `#lib/hotkeys.ts` (with
   `meta.name` and `meta.group`), then bind it where the page mounts:
   `createHotkey(hotkeys.create, add)`. The `?` sheet lists every declared key, dimming the ones
   this page doesn't bind. Reuse `create` (`C`) and `search` (`/`) before declaring a new key.

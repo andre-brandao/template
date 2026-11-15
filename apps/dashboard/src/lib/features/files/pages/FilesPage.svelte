@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { createQuery } from '@tanstack/svelte-query';
 	import { createHotkey } from '@tanstack/svelte-hotkeys';
-	import { hotkeys } from '$lib/hotkeys';
+	import { hotkeys } from '#lib/hotkeys.ts';
 	import { Button, Empty, Issue, Kbd, List } from '@template/ui';
-	import * as Header from '$lib/components/header';
-	import { size } from '$lib/utils/size';
+	import * as Header from '#lib/components/header/index.ts';
+	import { size } from '#lib/utils/size.ts';
 	import { list, upload } from '../api/files.query';
 	import Pending from '../components/Pending.svelte';
 	import Row from '../components/Row.svelte';

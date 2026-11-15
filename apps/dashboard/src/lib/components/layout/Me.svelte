@@ -8,7 +8,7 @@
 	import { resolve } from '$app/paths';
 	import type { User } from '@template/core/user';
 	import { Avatar, IconButton, Menu } from '@template/ui';
-	import { user as session } from '$lib/utils/context';
+	import { user as session } from '#lib/utils/context.ts';
 	import { account as links } from './nav';
 
 	let { user, account }: { user: User.Info | null; account?: Snippet } = $props();
@@ -31,11 +31,11 @@
 				{#if me.can(link.grants ?? {})}<Menu.Item href={link.href}>{link.label}</Menu.Item>{/if}
 			{/each}
 			{@render account?.()}
-			<Menu.Item href={resolve('/logout')}>Log out</Menu.Item>
+			<Menu.Item href={resolve('logout')}>Log out</Menu.Item>
 		</Menu.Root>
 	</div>
 {:else}
-	<a class="login" href={resolve('/login')}>Log in</a>
+	<a class="login" href={resolve('login')}>Log in</a>
 {/if}
 
 <style>

@@ -6,7 +6,7 @@
 	import { page } from '$app/state';
 	import { innerHeight, innerWidth } from 'svelte/reactivity/window';
 	import { Button, Field, FormBoundary, Issue } from '@template/ui';
-	import { invalidate } from '$lib/query';
+	import { invalidate } from '#lib/query.ts';
 	import { send } from '../api/feedback.remote';
 	import { tags, urgencies } from '../labels';
 	import Choice from './Choice.svelte';

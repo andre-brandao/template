@@ -1,5 +1,5 @@
 import type { UIElement } from "@json-render/svelte";
-import { message } from "$lib/query";
+import { message } from "#lib/query.ts";
 import { clean } from "../render/spec";
 import { catalog, data, verify } from "./catalog";
 

@@ -1,6 +1,6 @@
-import type { Handle } from "@sveltejs/kit";
+import type { Handle } from "@sveltejs/kit/hooks";
 import { Identity } from "@template/core/identity";
-import * as session from "$lib/server/session";
+import * as session from "#lib/server/session.ts";
 
 // Probes carry no cookie and get hit on an interval; resolving an actor for them would
 // only spam the logs.

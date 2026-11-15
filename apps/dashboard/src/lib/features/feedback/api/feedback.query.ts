@@ -1,4 +1,4 @@
-import { call } from "$lib/query";
+import { call } from "#lib/query.ts";
 import { getIssue, getIssues, getMine } from "./feedback.remote";
 
 // Internal only, so plain keys: `['feedback']` hits all three, `['feedback', 'mine']` the sender's.

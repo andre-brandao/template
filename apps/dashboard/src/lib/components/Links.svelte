@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { Status, modal } from '@template/ui';
 	import type { Link } from '@template/core/util/meta';
-	import { message } from '$lib/query';
-	import { label } from '$lib/utils/link';
+	import { message } from '#lib/query.ts';
+	import { label } from '#lib/utils/link.ts';
 	import LinkForm from './LinkForm.svelte';
 	import X from '@lucide/svelte/icons/x';
 	import Plus from '@lucide/svelte/icons/plus';

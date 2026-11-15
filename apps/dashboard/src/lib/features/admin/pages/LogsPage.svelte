@@ -11,9 +11,9 @@
 		Skeleton,
 		Toggle
 	} from '@template/ui';
-	import * as Header from '$lib/components/header';
-	import { debounce } from '$lib/utils/debounce';
-	import { query } from '$lib/utils/params';
+	import * as Header from '#lib/components/header/index.ts';
+	import { debounce } from '#lib/utils/debounce.ts';
+	import { query } from '#lib/utils/params.ts';
 	import { events as entries, facets } from '../api/admin.query';
 	import LogsTable from '../components/LogsTable.svelte';
 	import { filters } from '../filters';

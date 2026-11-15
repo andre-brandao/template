@@ -19,7 +19,7 @@ export const GET: RequestHandler = async ({ url }) => {
   if (!object) error(404, "Not found");
 
   const signed = await Storage.disk().temporaryUrl(key);
-  if (signed) redirect(302, signed);
+  if (signed) redirect(302, signed, { external: true });
 
   // A key is minted once per upload and never rewritten, so the bytes cache for good.
   return new Response(new Blob([new Uint8Array(object.bytes)]), {

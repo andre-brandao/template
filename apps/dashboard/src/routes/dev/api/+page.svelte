@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { createQuery } from '@tanstack/svelte-query';
-	import * as Header from '$lib/components/header';
+	import * as Header from '#lib/components/header/index.ts';
 	import { spec } from './api.query';
 
 	const q = createQuery(spec);

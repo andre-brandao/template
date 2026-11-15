@@ -2,7 +2,7 @@
 	import { page } from '$app/state';
 	import { resolve } from '$app/paths';
 	import { Button, Field, Input } from '@template/ui';
-	import { create } from '$lib/features/developers/api/keys.query';
+	import { create } from '#lib/features/developers/api/keys.query.ts';
 	import Nav from '../Nav.svelte';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { spec } from './api.query';

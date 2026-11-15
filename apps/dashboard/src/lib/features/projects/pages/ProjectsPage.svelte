@@ -3,11 +3,11 @@
 	import { z } from 'zod';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { createHotkey } from '@tanstack/svelte-hotkeys';
-	import { hotkeys } from '$lib/hotkeys';
-	import { query } from '$lib/utils/params';
-	import { debounce } from '$lib/utils/debounce';
+	import { hotkeys } from '#lib/hotkeys.ts';
+	import { query } from '#lib/utils/params.ts';
+	import { debounce } from '#lib/utils/debounce.ts';
 	import { Button, Empty, Input, Issue, Kbd, List, modal } from '@template/ui';
-	import * as Header from '$lib/components/header';
+	import * as Header from '#lib/components/header/index.ts';
 	import ProjectForm from '../components/ProjectForm.svelte';
 	import Row from '../components/Row.svelte';
 	import { list } from '../api/projects.query';

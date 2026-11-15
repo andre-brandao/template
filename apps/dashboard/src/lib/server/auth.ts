@@ -1,13 +1,13 @@
 import { createClient } from "@openauthjs/openauth/client";
 import { subjects } from "@template/functions/auth/subject";
 import { error } from "@sveltejs/kit";
-import { env } from "$env/dynamic/private";
+import { AUTH_PROVIDERS, AUTH_URL, GITHUB_CLIENT_ID, GOOGLE_CLIENT_ID } from "$app/env/private";
 import { OauthIds } from "@template/core/auth/provider.sql";
 import { Auth } from "@template/core/auth";
 
 export const client = createClient({
   clientID: "dashboard",
-  issuer: env.AUTH_URL ?? "http://localhost:3002",
+  issuer: AUTH_URL ?? "http://localhost:3002",
 });
 
 /**
@@ -35,9 +35,12 @@ export async function exchange(origin: string, code: string) {
  * dashboard's own, and need no issuer.
  */
 export function oauth() {
-  const want = env.AUTH_PROVIDERS?.trim();
-  const ids = want
-    ? want.split(",").map((s) => s.trim())
-    : OauthIds.filter((id) => env[`${id.toUpperCase()}_CLIENT_ID`]);
+  const want = AUTH_PROVIDERS?.trim();
+  // Client ids are declared one by one in src/env.ts, so the name can't be built from the id.
+  const configured = {
+    github: GITHUB_CLIENT_ID,
+    google: GOOGLE_CLIENT_ID,
+  } satisfies Record<(typeof OauthIds)[number], string | undefined>;
+  const ids = want ? want.split(",").map((s) => s.trim()) : OauthIds.filter((id) => configured[id]);
   return OauthIds.filter((id) => ids.includes(id));
 }

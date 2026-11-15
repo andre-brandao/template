@@ -3,9 +3,9 @@ import { Identity } from "@template/core/identity";
 import { Feedback } from "@template/core/feedback";
 import { User } from "@template/core/user";
 import { DEFAULTS } from "@template/core/user/prefs";
-import { Agent } from "$lib/features/agent/api/core";
-import * as theme from "$lib/server/theme";
-import * as zone from "$lib/server/zone";
+import { Agent } from "#lib/features/agent/api/core.ts";
+import * as theme from "#lib/server/theme.ts";
+import * as zone from "#lib/server/zone.ts";
 import type { LayoutServerLoad } from "./$types";
 
 /** Feeds the session context in `+layout.svelte`. Never reads the URL, so navigations skip it. */

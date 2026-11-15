@@ -1,5 +1,5 @@
 import { error } from "@sveltejs/kit";
-import { dev } from "$app/environment";
+import { dev } from "$app/env";
 import { read, safe } from "../../docs";
 import type { RequestHandler } from "./$types";
 

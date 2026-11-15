@@ -2,7 +2,7 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import type { Permission } from '@template/core/permission';
-	import { user } from '$lib/utils/context';
+	import { user } from '#lib/utils/context.ts';
 
 	let {
 		grants,

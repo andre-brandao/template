@@ -2,7 +2,7 @@
 	import { Card } from '@template/ui';
 	import { resolve } from '$app/paths';
 	import { stories } from '@template/ui/story';
-	import * as Header from '$lib/components/header';
+	import * as Header from '#lib/components/header/index.ts';
 </script>
 
 <Header.Root title="Storybook">

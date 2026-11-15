@@ -21,7 +21,7 @@
 							aria-current={data.doc === one ? 'page' : undefined}
 							href="?doc={one}"
 							data-sveltekit-replacestate
-							data-sveltekit-noscroll>{one.toLowerCase()}</Tabs.Item
+							data-sveltekit-reset={false}>{one.toLowerCase()}</Tabs.Item
 						>
 					{/each}
 				</Tabs.Root>

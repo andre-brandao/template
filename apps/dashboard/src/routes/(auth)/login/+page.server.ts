@@ -1,6 +1,6 @@
 import { redirect } from "@sveltejs/kit";
-import { oauth } from "$lib/server/auth";
-import * as next from "$lib/server/next";
+import { oauth } from "#lib/server/auth.ts";
+import * as next from "#lib/server/next.ts";
 import type { PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = (event) => {

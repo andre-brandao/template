@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { version } from '$app/environment';
-	import { brand } from '$lib/brand';
+	import { version } from '$app/env';
+	import { brand } from '#lib/brand.ts';
 </script>
 
 <!-- The content column's floor; inside the column so its left edge starts where the rail ends. -->

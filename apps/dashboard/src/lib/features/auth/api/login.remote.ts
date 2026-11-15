@@ -2,9 +2,9 @@ import { getRequestEvent } from "$app/server";
 import { redirect } from "@sveltejs/kit";
 import { z } from "zod";
 import { Auth } from "@template/core/auth";
-import { remote } from "$lib/server/remote";
-import * as session from "$lib/server/session";
-import * as next from "$lib/server/next";
+import { remote } from "#lib/server/gate.ts";
+import * as session from "#lib/server/session.ts";
+import * as next from "#lib/server/next.ts";
 
 // Core resolves a login to a `userID` and stops there, so the cookie is minted here — the
 // same call `/callback` makes after the issuer. Nothing below needs the issuer running.

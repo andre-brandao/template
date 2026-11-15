@@ -3,8 +3,8 @@
 	import { createInfiniteQuery } from '@tanstack/svelte-query';
 	import { Button, Empty, IconButton, Issue, Skeleton, Spinner, modal, toast } from '@template/ui';
 	import Trash from '@lucide/svelte/icons/trash-2';
-	import { message } from '$lib/query';
-	import { fmt } from '$lib/utils/fmt';
+	import { message } from '#lib/query.ts';
+	import { fmt } from '#lib/utils/fmt.ts';
 	import { conversations, remove } from '../api/agent.query';
 	import { agent } from '../agent.svelte';
 

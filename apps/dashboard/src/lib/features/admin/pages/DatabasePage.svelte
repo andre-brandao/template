@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { createQuery } from '@tanstack/svelte-query';
 	import { Empty, Issue, Meter, Skeleton, Stat } from '@template/ui';
-	import * as Header from '$lib/components/header';
-	import { fmt } from '$lib/utils/fmt';
-	import { size } from '$lib/utils/size';
+	import * as Header from '#lib/components/header/index.ts';
+	import { fmt } from '#lib/utils/fmt.ts';
+	import { size } from '#lib/utils/size.ts';
 	import { stats } from '../api/admin.query';
 	import Queue from '../components/Queue.svelte';
 

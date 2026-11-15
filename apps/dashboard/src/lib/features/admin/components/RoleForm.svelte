@@ -2,7 +2,7 @@
 	import { FormBoundary, Issue, Select, Status, modal } from '@template/ui';
 	import { Permission } from '@template/core/permission';
 	import type { User } from '@template/core/user';
-	import { invalidate } from '$lib/query';
+	import { invalidate } from '#lib/query.ts';
 	import { assignRole } from '../api/admin.remote';
 
 	let { row, self }: { row: User.Info; self: boolean } = $props();

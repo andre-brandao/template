@@ -25,8 +25,8 @@ import {
 } from "@template/sdk/query";
 import { zone, type Prefs } from "@template/core/user/prefs";
 import { today } from "@template/ui/day";
-import { call, type Ctx } from "$lib/query";
-import { parse } from "$lib/utils/params";
+import { call, type Ctx } from "#lib/query.ts";
+import { parse } from "#lib/utils/params.ts";
 import { period, schema, span, where } from "../filter";
 import { getLabels } from "./todos.remote";
 

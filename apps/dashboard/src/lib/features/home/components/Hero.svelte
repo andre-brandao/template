@@ -1,8 +1,8 @@
 <!-- The signed-out home: the pitch, the arc every todo travels, and the way in. -->
 <script lang="ts">
 	import { Button } from '@template/ui';
-	import { brand } from '$lib/brand';
-	import Rule from '$lib/components/Rule.svelte';
+	import { brand } from '#lib/brand.ts';
+	import Rule from '#lib/components/Rule.svelte';
 
 	// A diagram, not a measurement, in the board's stage colours. Equal thirds because
 	// none of them is bigger.

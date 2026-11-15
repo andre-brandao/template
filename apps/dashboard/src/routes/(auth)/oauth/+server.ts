@@ -1,5 +1,5 @@
 import { error, redirect } from "@sveltejs/kit";
-import { client, oauth } from "$lib/server/auth";
+import { client, oauth } from "#lib/server/auth.ts";
 import type { RequestHandler } from "./$types";
 
 export const GET: RequestHandler = async ({ locals, url }) => {
@@ -12,5 +12,5 @@ export const GET: RequestHandler = async ({ locals, url }) => {
 
   const callback = new URL("/callback", url.origin).toString();
   const { url: authUrl } = await client.authorize(callback, "code", { provider: provider! });
-  redirect(302, authUrl);
+  redirect(302, authUrl, { external: true });
 };

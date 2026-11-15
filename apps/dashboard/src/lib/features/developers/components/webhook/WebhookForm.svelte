@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { dev } from '$app/environment';
+	import { dev } from '$app/env';
 	import { Dialog, Field, Input } from '@template/ui';
 	import { Types } from '@template/core/webhook/types';
 	import { create } from '../../api/webhooks.query';

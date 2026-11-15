@@ -6,6 +6,8 @@ import { under } from "./nav";
 export function origin(root: () => string | undefined) {
   let from = $state<string>();
   afterNavigate((nav) => {
+    if (nav.shallow && nav.type === "goto") return;
+
     const prefix = root();
     const url = nav.from?.url;
     if (!prefix || !url) return;

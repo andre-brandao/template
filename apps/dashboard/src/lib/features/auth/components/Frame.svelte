@@ -1,8 +1,8 @@
 <!-- The signed-out frame: the mark and pitch on a dark panel, beside the form that is asking. -->
 <script lang="ts">
 	import type { Snippet } from 'svelte';
-	import { brand } from '$lib/brand';
-	import Brand from '$lib/components/layout/Brand.svelte';
+	import { brand } from '#lib/brand.ts';
+	import Brand from '#lib/components/layout/Brand.svelte';
 
 	let { title, lead, children }: { title: string; lead: string; children: Snippet } = $props();
 </script>

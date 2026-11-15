@@ -8,7 +8,7 @@
 	import type { Todo } from '@template/core/todo';
 	import { Menu, modal } from '@template/ui';
 	import Ellipsis from '@lucide/svelte/icons/ellipsis';
-	import LinkForm from '$lib/components/LinkForm.svelte';
+	import LinkForm from '#lib/components/LinkForm.svelte';
 	import { link } from '../api/todos.query';
 
 	let {

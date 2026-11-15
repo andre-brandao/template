@@ -9,14 +9,14 @@
      Clear, so a view setting (grouping) can sit on the same row. -->
 <script lang="ts">
 	import type { Snippet } from 'svelte';
-	import { browser } from '$app/environment';
+	import { browser } from '$app/env';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { createHotkey } from '@tanstack/svelte-hotkeys';
-	import { hotkeys } from '$lib/hotkeys';
+	import { hotkeys } from '#lib/hotkeys.ts';
 	import { Avatar, Button, Combobox, Input } from '@template/ui';
-	import * as Header from '$lib/components/header';
-	import { user } from '$lib/utils/context';
-	import { debounce } from '$lib/utils/debounce';
+	import * as Header from '#lib/components/header/index.ts';
+	import { user } from '#lib/utils/context.ts';
+	import { debounce } from '#lib/utils/debounce.ts';
 	import { stages, users } from '../api/todos.query';
 	import { STATUSES, color, label } from '../status';
 

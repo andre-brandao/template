@@ -5,7 +5,7 @@
 	import type { ColumnDef, Row } from '@tanstack/svelte-table';
 	import { Avatar, DataTable, IconButton, features } from '@template/ui';
 	import type { User } from '@template/core/user';
-	import { user } from '$lib/utils/context';
+	import { user } from '#lib/utils/context.ts';
 	import RoleForm from './RoleForm.svelte';
 	import AccessForm from './AccessForm.svelte';
 	import { keys } from '../sort';

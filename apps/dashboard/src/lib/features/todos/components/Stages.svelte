@@ -6,7 +6,7 @@
 	import { Empty, Inline, Issue, Skeleton } from '@template/ui';
 	import Pencil from '@lucide/svelte/icons/pencil';
 	import { rename, stages } from '../api/todos.query';
-	import { fmt } from '$lib/utils/fmt';
+	import { fmt } from '#lib/utils/fmt.ts';
 
 	let { scope, base }: { scope: { source: string; sourceID: string }; base: string } = $props();
 

@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { createQuery } from '@tanstack/svelte-query';
 	import { createHotkey } from '@tanstack/svelte-hotkeys';
-	import { hotkeys } from '$lib/hotkeys';
+	import { hotkeys } from '#lib/hotkeys.ts';
 	import { Button, Empty, Issue, Kbd, List, modal } from '@template/ui';
-	import * as Header from '$lib/components/header';
+	import * as Header from '#lib/components/header/index.ts';
 	import { list } from '../api/webhooks.query';
 	import WebhookForm from '../components/webhook/WebhookForm.svelte';
 	import WebhookRow from '../components/webhook/WebhookRow.svelte';

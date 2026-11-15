@@ -1,4 +1,4 @@
-import { browser } from "$app/environment";
+import { browser } from "$app/env";
 import { page } from "$app/state";
 import { createContext, type Component } from "svelte";
 import { MediaQuery } from "svelte/reactivity";
@@ -160,6 +160,7 @@ function create() {
       const parts = chat.messages.slice(start + 1).flatMap((message) => message.parts);
       const last = parts.at(-1);
       if (last?.type === "text" && last.content) return { state: "writing" };
+
       const done = new Set(
         parts.flatMap((part) => (part.type === "tool-result" ? [part.toolCallId] : [])),
       );
@@ -170,6 +171,7 @@ function create() {
           part.state !== "error" &&
           !done.has(part.id),
       );
+
       return { state: "thinking", tool: running?.name };
     },
     /** Starts over on a new thread, so the next run opens a new conversation. */

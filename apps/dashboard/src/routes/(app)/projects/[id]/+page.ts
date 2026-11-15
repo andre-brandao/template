@@ -1,5 +1,5 @@
-import { list, stages } from "$lib/features/todos/api/todos.query";
-import { warm } from "$lib/query";
+import { list, stages } from "#lib/features/todos/api/todos.query.ts";
+import { warm } from "#lib/query.ts";
 import type { PageLoad } from "./$types";
 
 // The facts and stage list sit above the fold; warmed here, SSR paints them instead of skeletons.

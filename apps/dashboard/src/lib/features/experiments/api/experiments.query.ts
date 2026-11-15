@@ -1,5 +1,5 @@
 import { createMutation } from "@tanstack/svelte-query";
-import { call, type Done } from "$lib/query";
+import { call, type Done } from "#lib/query.ts";
 import { getTally, vote as cast } from "./experiments.remote";
 
 // Internal only, so plain keys: `['experiment', key]` is one test's tally.

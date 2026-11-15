@@ -7,7 +7,7 @@
 	import { list } from '../api/todos.query';
 	import StatusPill from './StatusPill.svelte';
 	import { late } from '../status';
-	import { fmt } from '$lib/utils/fmt';
+	import { fmt } from '#lib/utils/fmt.ts';
 
 	// No scope lists every todo, for the home.
 	let { scope = {} }: { scope?: { source?: string; sourceID?: string } } = $props();

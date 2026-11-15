@@ -1,5 +1,5 @@
 import { modal } from "@template/ui";
-import { ask } from "$lib/ask";
+import { ask } from "#lib/ask.ts";
 import { rotate } from "../../api/apps.query";
 import Reveal from "../Reveal.svelte";
 

@@ -1,5 +1,5 @@
-import { list } from "$lib/features/files/api/files.query";
-import { warm } from "$lib/query";
+import { list } from "#lib/features/files/api/files.query.ts";
+import { warm } from "#lib/query.ts";
 import type { PageLoad } from "./$types";
 
 export const load: PageLoad = async (event) => {

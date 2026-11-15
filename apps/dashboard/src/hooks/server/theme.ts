@@ -1,5 +1,5 @@
-import type { Handle } from "@sveltejs/kit";
-import * as store from "$lib/server/theme";
+import type { Handle } from "@sveltejs/kit/hooks";
+import * as store from "#lib/server/theme.ts";
 
 // Read inside the callback, not before `resolve` — the root layout's load reconciles the
 // cookie against the database, and `transformPageChunk` runs late enough to see that.

@@ -7,8 +7,7 @@
 	  data-swap        the query keys a same-path navigation changed
 -->
 <script lang="ts">
-	import { onNavigate } from '$app/navigation';
-	import type { OnNavigate } from '@sveltejs/kit';
+	import { onNavigate, type OnNavigate } from '$app/navigation';
 
 	const depth = (url?: URL) => url?.pathname.split('/').filter(Boolean).length ?? 0;
 
@@ -36,6 +35,7 @@
 	// Progressive enhancement: browsers without the API (or users who opted out
 	// of motion) just get the instant swap.
 	onNavigate((nav) => {
+		if (nav.shallow && nav.type === 'goto') return;
 		if (!document.startViewTransition) return;
 		if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 

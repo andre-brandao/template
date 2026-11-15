@@ -5,7 +5,7 @@
 	import { due } from '../../api/todos.query';
 	import StatusPill from '../StatusPill.svelte';
 	import Section from './Section.svelte';
-	import { fmt } from '$lib/utils/fmt';
+	import { fmt } from '#lib/utils/fmt.ts';
 
 	let { scope = {} }: { scope?: Insights.Scope } = $props();
 

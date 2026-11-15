@@ -1,9 +1,9 @@
 <!-- The record header on the todo's own route: the way back, then its facts. -->
 <script lang="ts">
 	import type { Todo } from '@template/core/todo';
-	import * as Header from '$lib/components/header';
-	import Source from '$lib/features/events/components/Source.svelte';
-	import { fmt } from '$lib/utils/fmt';
+	import * as Header from '#lib/components/header/index.ts';
+	import Source from '#lib/features/events/components/Source.svelte';
+	import { fmt } from '#lib/utils/fmt.ts';
 	import StatusPill from '../StatusPill.svelte';
 	import { late } from '../../status';
 

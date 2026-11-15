@@ -1,14 +1,14 @@
 <script lang="ts">
 	import { untrack, type Snippet } from 'svelte';
-	import { dev } from '$app/environment';
+	import { dev } from '$app/env';
 	import { QueryClientProvider, type QueryClient } from '@tanstack/svelte-query';
 	import { HotkeysProvider, type HotkeyPlatform } from '@tanstack/svelte-hotkeys';
 	import { Permission } from '@template/core/permission';
 	import type { User } from '@template/core/user';
 	import { zone, type Prefs } from '@template/core/user/prefs';
 	import { setDates } from '@template/ui';
-	import { hotkeys } from '$lib/hotkeys';
-	import { createUser } from '$lib/utils/context';
+	import { hotkeys } from '#lib/hotkeys.ts';
+	import { createUser } from '#lib/utils/context.ts';
 	import { createRail } from './rail.svelte';
 	import DevToolsProvider from './DevToolsProvider.svelte';
 

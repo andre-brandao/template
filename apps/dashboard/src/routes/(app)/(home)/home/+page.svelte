@@ -1,13 +1,13 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
-	import { user } from '$lib/utils/context';
-	import HomePage from '$lib/features/home/pages/HomePage.svelte';
-	import { layouts } from '$lib/features/home/layouts';
-	import type { Props } from '$lib/features/home/modules';
-	import Experiment from '$lib/features/experiments/components/Experiment.svelte';
-	import Glance from '$lib/features/todos/components/Glance.svelte';
-	import Recent from '$lib/features/todos/components/Recent.svelte';
-	import Shortcuts from '$lib/components/Shortcuts.svelte';
+	import { user } from '#lib/utils/context.ts';
+	import HomePage from '#lib/features/home/pages/HomePage.svelte';
+	import { layouts } from '#lib/features/home/layouts.ts';
+	import type { Props } from '#lib/features/home/modules.ts';
+	import Experiment from '#lib/features/experiments/components/Experiment.svelte';
+	import Glance from '#lib/features/todos/components/Glance.svelte';
+	import Recent from '#lib/features/todos/components/Recent.svelte';
+	import Shortcuts from '#lib/components/Shortcuts.svelte';
 	import CalendarRange from '@lucide/svelte/icons/calendar-range';
 	import Kanban from '@lucide/svelte/icons/kanban';
 	import KeyRound from '@lucide/svelte/icons/key-round';

@@ -1,17 +1,17 @@
-import type { Handle } from "@sveltejs/kit";
-import { env } from "$env/dynamic/private";
+import type { Handle } from "@sveltejs/kit/hooks";
+import { DATABASE_URL, SVELTE_ADAPTER } from "$app/env/private";
 import { Context } from "@template/core/context";
 import { Database } from "@template/core/drizzle";
 import { Kv } from "@template/core/kv";
 import { Queue } from "@template/core/queue";
 import { Storage } from "@template/core/storage";
 import { Email } from "@template/core/email";
+import { env as cf } from "cloudflare:workers";
 
-// Bindings only exist on `event.platform`, per request. A missing one throws rather
-// than falling back to env — a working-but-wrong deploy.
+// Workers forbid reusing a socket across requests, so the pool is built per request. A
+// missing binding throws rather than falling back to env — a working-but-wrong deploy.
 const worker: Handle = ({ event, resolve }) => {
-  const cf = event.platform?.env;
-  if (!cf?.Hyperdrive || !cf.Files || !cf.Jobs)
+  if (!cf.Hyperdrive || !cf.Files || !cf.Jobs)
     throw new Error("Worker is missing a Hyperdrive/Files/Jobs binding");
 
   return Context.withProviders(
@@ -27,11 +27,12 @@ const worker: Handle = ({ event, resolve }) => {
 function fromEnv(): Handle {
   // One pool for the process, built here rather than per request — a pool per request
   // exhausts the server's connections and every query starts failing.
-  const db = Database.connect(env.DATABASE_URL ?? Database.DEFAULT_URL);
-  const disks = Storage.fromEnv(env);
-  const q = Queue.fromEnv(env, Database.use);
+  const db = Database.connect(DATABASE_URL ?? Database.DEFAULT_URL);
+  // Core's drivers read their own keys (STORAGE_*, QUEUE_*, KV_*); this branch never runs in workerd.
+  const disks = Storage.fromEnv(process.env);
+  const q = Queue.fromEnv(process.env, Database.use);
   // No redis: the server build can run under Node, which has no `"bun"`.
-  const kv = Kv.fromEnv(env, Database.use);
+  const kv = Kv.fromEnv(process.env, Database.use);
   const email = Email.Providers.queue();
 
   return ({ event, resolve }) =>
@@ -45,4 +46,4 @@ function fromEnv(): Handle {
     );
 }
 
-export const providers = env.SVELTE_ADAPTER === "cloudflare" ? worker : fromEnv();
+export const providers = SVELTE_ADAPTER === "cloudflare" ? worker : fromEnv();

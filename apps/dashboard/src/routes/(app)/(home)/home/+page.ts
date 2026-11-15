@@ -1,7 +1,7 @@
 import { zone } from "@template/core/user/prefs";
 import { last, today } from "@template/ui/day";
-import { list, statuses } from "$lib/features/todos/api/todos.query";
-import { warm } from "$lib/query";
+import { list, statuses } from "#lib/features/todos/api/todos.query.ts";
+import { warm } from "#lib/query.ts";
 import type { PageLoad } from "./$types";
 
 // The Glance and Recent widgets' queries, with their exact args.

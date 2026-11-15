@@ -1,8 +1,8 @@
 <!-- Read-only facts, laid out like `Plan` under it; the planned dates are its Start and Due. -->
 <script lang="ts">
 	import type { Todo } from '@template/core/todo';
-	import Source from '$lib/features/events/components/Source.svelte';
-	import { fmt } from '$lib/utils/fmt';
+	import Source from '#lib/features/events/components/Source.svelte';
+	import { fmt } from '#lib/utils/fmt.ts';
 
 	let { todo }: { todo: Todo.Info } = $props();
 

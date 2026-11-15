@@ -4,7 +4,7 @@
 	import Sun from '@lucide/svelte/icons/sun';
 	import Moon from '@lucide/svelte/icons/moon';
 	import { Themes } from '@template/core/user/prefs';
-	import { user } from '$lib/utils/context';
+	import { user } from '#lib/utils/context.ts';
 	import { update } from '../api/prefs.query';
 	import { swap } from '../theme';
 

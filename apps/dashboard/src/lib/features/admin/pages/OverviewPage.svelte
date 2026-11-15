@@ -2,10 +2,10 @@
 	import type { Admin } from '@template/core/admin';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { Issue, Skeleton, Stat } from '@template/ui';
-	import * as Header from '$lib/components/header';
-	import Rule from '$lib/components/Rule.svelte';
-	import { fmt } from '$lib/utils/fmt';
-	import { size } from '$lib/utils/size';
+	import * as Header from '#lib/components/header/index.ts';
+	import Rule from '#lib/components/Rule.svelte';
+	import { fmt } from '#lib/utils/fmt.ts';
+	import { size } from '#lib/utils/size.ts';
 	import { events, stats } from '../api/admin.query';
 	import Queue from '../components/Queue.svelte';
 

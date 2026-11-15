@@ -450,7 +450,7 @@ await Bun.write(
   `<script lang="ts">
 	import { createQuery } from '@tanstack/svelte-query';
 	import { Empty, Issue, Skeleton } from '@template/ui';
-	import * as Header from '$lib/components/header';
+	import * as Header from '#lib/components/header/index.ts';
 	import ${pascal}Form from '../components/${pascal}Form.svelte';
 	import Row from '../components/Row.svelte';
 	import { list } from '../api/${plural}.query';
@@ -492,7 +492,7 @@ await Bun.write(
 await Bun.write(
   targets.route,
   `<script lang="ts">
-	import ${pascal}sPage from '$lib/features/${plural}/pages/${pascal}sPage.svelte';
+	import ${pascal}sPage from '#lib/features/${plural}/pages/${pascal}sPage.svelte';
 </script>
 
 <${pascal}sPage />

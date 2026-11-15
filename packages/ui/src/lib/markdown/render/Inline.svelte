@@ -55,4 +55,6 @@
 			href="#user-content-fn-{node.id}">{node.number}</a
 		>
 	</sup>
+{:else if node.type === 'inlineComponent'}
+	{@render kids(node.children)}
 {/if}

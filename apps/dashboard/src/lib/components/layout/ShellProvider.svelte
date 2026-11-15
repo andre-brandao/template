@@ -57,12 +57,13 @@
 		{@render children()}
 		<!-- Dev only: `dev` is a build-time constant, so prod drops these imports. -->
 		{#if dev}
-			<!-- Ctrl+~ opens it. Config only seeds localStorage; clear it to pick up changes. -->
+			<!-- Bottom-left (the Svelte inspector owns bottom-right); Alt+D toggles it. Config only seeds
+			     localStorage: clear the tanstack_devtools* keys to pick up changes. -->
 			<TanStackDevtools
 				config={{
 					triggerMode: 'fixed',
-					position: 'bottom-right',
-					openHotkey: ['Control', '~'],
+					position: 'bottom-left',
+					openHotkey: ['Alt', 'D'],
 					customTrigger: trigger
 				}}
 				plugins={[

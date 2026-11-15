@@ -6,7 +6,7 @@
 	import { Avatar, DataTable, features } from '@template/ui';
 	import type { Event } from '@template/core/event';
 	import { fmt } from '$lib/utils/fmt';
-	import { events } from '../sort';
+	import { keys } from '../sort';
 
 	let {
 		rows,
@@ -15,8 +15,8 @@
 		onuser
 	}: {
 		rows: Event.Info[];
-		sorting: ReturnType<typeof events.decode>;
-		onsort: (next: ReturnType<typeof events.encode>) => void;
+		sorting: ReturnType<typeof keys.events.decode>;
+		onsort: (next: ReturnType<typeof keys.events.encode>) => void;
 		onuser: (id: string) => void;
 	} = $props();
 
@@ -67,7 +67,7 @@
 		},
 		onSortingChange: (next) => {
 			live = typeof next === 'function' ? next(live) : next;
-			onsort(events.encode(live));
+			onsort(keys.events.encode(live));
 		},
 		onExpandedChange: (next) => (expanded = typeof next === 'function' ? next(expanded) : next),
 		// Nothing here has sub-rows; every row can open to show its payload.

@@ -8,7 +8,7 @@
 	import { query } from '$lib/utils/params';
 	import { users as list } from '../api/admin.query';
 	import UsersTable from '../components/UsersTable.svelte';
-	import { users } from '../sort';
+	import { keys } from '../sort';
 
 	// In the URL, like the log: a narrowed list can be linked, reloaded and stepped back through.
 	const params = query(
@@ -16,7 +16,7 @@
 			q: z.string().default(''),
 			deleted: z.coerce.boolean().default(false),
 			page: z.coerce.number().int().min(1).default(1),
-			sort: users.schema
+			sort: keys.users.schema
 		})
 	);
 
@@ -72,7 +72,7 @@
 		<Scroll fill>
 			<UsersTable
 				rows={page.data.data}
-				sorting={users.decode(params.sort)}
+				sorting={keys.users.decode(params.sort)}
 				onsort={(sort) => pick({ sort })}
 			/>
 		</Scroll>

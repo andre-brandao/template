@@ -58,7 +58,7 @@
 >
 	{#snippet trigger(one)}
 		{@render face(one ?? nobody)}
-		<span class="name">{one?.name ?? empty}</span>
+		<span class="label">{one?.name ?? empty}</span>
 	{/snippet}
 	{#snippet item(one, row)}
 		{@render face(one)}
@@ -76,6 +76,15 @@
 		width: 18px;
 		height: 18px;
 		color: var(--dim);
+	}
+
+	/* The trigger has no email, so its label takes all the room left. */
+	.label {
+		flex: 1;
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 
 	/* The name keeps its room; a long email gives way first. */

@@ -47,22 +47,12 @@ export function lambda<E extends HonoEnv, S extends Schema, P extends string>(
   return process.env.SST_LIVE ? handle(aws) : streamHandle(aws);
 }
 
-/**
- * Bun dev server — one pool for the process, unless PG_RELEASE=true cycles it per
- * request: pglite allows a single connection and the other dev processes (dashboard,
- * auth) need it back. `scripts/dev.ts` sets it for the pglite driver.
- */
+/** Bun dev server — one pool for the process. */
 export function bun(app: App, port: number, ...extra: Context.Provider<Res>[]) {
-  const shared = process.env.PG_RELEASE === "true" ? undefined : Database.connect();
+  const db = Database.connect();
   return {
     port,
-    fetch: async (req: Request) => {
-      const db = shared ?? Database.connect();
-      try {
-        return await Context.withProviders(() => app.fetch(req), Database.provider(db), ...extra);
-      } finally {
-        if (!shared) await Database.release(db);
-      }
-    },
+    fetch: (req: Request) =>
+      Context.withProviders(() => app.fetch(req), Database.provider(db), ...extra),
   };
 }

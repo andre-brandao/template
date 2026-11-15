@@ -26,12 +26,8 @@ const worker: Handle = ({ event, resolve }) => {
 
 function fromEnv(): Handle {
   // One pool for the process, built here rather than per request — a pool per request
-  // exhausts the server's connections and every query starts failing. PG_RELEASE marks a
-  // single-connection backend (pglite), where holding it idle locks out the api/auth processes.
-  const db = Database.connect(
-    env.DATABASE_URL ?? Database.DEFAULT_URL,
-    env.PG_RELEASE === "true" ? { idle_timeout: 1 } : {},
-  );
+  // exhausts the server's connections and every query starts failing.
+  const db = Database.connect(env.DATABASE_URL ?? Database.DEFAULT_URL);
   const disks = Storage.fromEnv(env);
   const q = Queue.fromEnv(env, Database.use);
   // No redis: the server build can run under Node, which has no `"bun"`.

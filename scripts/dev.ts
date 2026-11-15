@@ -25,10 +25,6 @@ const env = {
   ...process.env,
   DATABASE_URL: url,
   PGPORT: String(pgport),
-  // pglite's socket server runs one query at a time across all connections; docker postgres
-  // pools. Bun targets still close theirs per request so an idle one never holds it.
-  PG_MAX: process.env.PG_MAX ?? (driver === "pglite" ? "1" : "10"),
-  PG_RELEASE: process.env.PG_RELEASE ?? String(driver === "pglite"),
   AUTH_URL: process.env.AUTH_URL ?? `http://localhost:${authport}`,
   // `db` so pushes land in the job table for the queue worker; `sync` would run them inline.
   QUEUE_DRIVER: process.env.QUEUE_DRIVER ?? "db",

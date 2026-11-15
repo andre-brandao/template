@@ -32,9 +32,6 @@ process.env.DATABASE_URL ??= `postgresql://postgres:password@${host}:${port}/pos
 process.env.QUEUE_DRIVER ??= "memory";
 // Same for kv: its `pg` default needs a runner, and the kv suite builds its own drivers.
 process.env.KV_DRIVER ??= "memory";
-// The socket server runs one query at a time and an open transaction stalls every other
-// connection, so a pool of one keeps a process from waiting on itself.
-process.env.PG_MAX = "1";
 
 const db = await PGlite.create({
   // dataDir: "/tmp/pglite/hono"
@@ -44,9 +41,27 @@ const server = new PGLiteSocketServer({
   db,
   port,
   host,
-  // Defaults to 1 and refuses the rest; every dev process holds its own connection.
+  // Defaults to 1 and refuses the rest; queries from all connections share one queue.
   maxConnections: 100,
 });
+
+// The queue interleaves protocol messages across connections, so another client's Parse can
+// land between a Parse and its Bind. Report a transaction until Sync so it sticks to one client.
+let open = false;
+const queue: any = Reflect.get(server, "queryQueue");
+queue.db = {
+  isInTransaction: () => open || db.isInTransaction(),
+  runExclusive: db.runExclusive.bind(db),
+  execProtocolRawStream: (msg: Uint8Array, opts: any) => {
+    open = "PBDECH".includes(String.fromCharCode(msg[0] ?? 0));
+    return db.execProtocolRawStream(msg, opts);
+  },
+  // Only the disconnect cleanup calls this, to ROLLBACK a dropped client's work.
+  exec: (query: string) => {
+    open = false;
+    return db.exec(query);
+  },
+};
 await server.start();
 
 console.log(`Running migrations...`);

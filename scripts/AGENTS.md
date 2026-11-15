@@ -22,9 +22,8 @@ Bun scripts for running and populating the stack locally. Run from the repo root
 in-process. `RESET=1` wipes first — which only matters for docker, since pglite starts
 empty anyway.
 
-pglite allows exactly **one live connection**, which is why the services cycle their pool
-(`PG_RELEASE=true`) instead of holding one. If you add a service to `dev.ts`, it inherits
-that env or it will fight the dashboard for the socket.
+pglite takes up to 100 connections but runs every query through one queue, and an open
+transaction stalls the rest until it commits, so keep transactions short.
 
 ## Rules
 

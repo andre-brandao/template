@@ -18,7 +18,7 @@ const pg = process.env.DATABASE_URL ?? "postgresql://postgres:password@127.0.0.1
 const role = (process.env.ROLE ?? "admin") as Permission.Role;
 
 // Real user in the app's db, session opened like /callback — no login UI (see e2e/util/mint.ts).
-// Released straight after: under DB=pglite the socket takes one connection and the app needs it.
+// Released straight after so the driver holds no idle pool while the browser runs.
 const db = Database.connect(pg);
 const cookie = await Database.provide(db, () =>
   Identity.internal("driver", Permission.all, async () => {

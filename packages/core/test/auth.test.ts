@@ -109,7 +109,7 @@ describe("auth password", () => {
     }
     await expect(
       Auth.Pass.login({ email: email.toUpperCase(), password: "wrong-password" }),
-    ).rejects.toBeInstanceOf(Limit.Exceeded);
+    ).rejects.toBeInstanceOf(Limit.Err.Exceeded);
   });
 });
 

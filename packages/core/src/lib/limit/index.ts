@@ -34,17 +34,19 @@ export namespace Limit {
     reset(subject: Subject): Promise<void>;
   }
 
-  export class Exceeded extends VisibleError {
-    readonly retryAfter: number;
+  export namespace Err {
+    export class Exceeded extends VisibleError {
+      readonly retryAfter: number;
 
-    constructor(result: Result) {
-      const retryAfter = result.retryAfter ?? result.resetAfter;
-      super("rate_limit", ErrorCodes.RateLimit.EXCEEDED, "Rate limit exceeded", undefined, {
-        limit: result.limit,
-        remaining: result.remaining,
-        retryAfter,
-      });
-      this.retryAfter = retryAfter;
+      constructor(result: Result) {
+        const retryAfter = result.retryAfter ?? result.resetAfter;
+        super("rate_limit", ErrorCodes.RateLimit.EXCEEDED, "Rate limit exceeded", undefined, {
+          limit: result.limit,
+          remaining: result.remaining,
+          retryAfter,
+        });
+        this.retryAfter = retryAfter;
+      }
     }
   }
 
@@ -101,7 +103,7 @@ export namespace Limit {
           policy.options,
           cost,
         );
-        if (!result.allowed) throw new Exceeded(result);
+        if (!result.allowed) throw new Err.Exceeded(result);
         return result;
       },
       async inspect(subject) {

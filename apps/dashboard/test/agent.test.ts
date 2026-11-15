@@ -175,27 +175,21 @@ describe("ask", () => {
 });
 
 describe("forwarded", () => {
-  it("keeps a known model, the browser's thread and the page as a prompt", () => {
+  it("keeps a known model and the page as a prompt", () => {
     const opts = forwarded(
-      {
-        model: "b",
-        thread: "t-1",
-        page: { url: "/todos", title: "Todos", crumbs: ["Home", "Todos"] },
-      },
-      "fallback",
+      { model: "b", page: { url: "/todos", title: "Todos", crumbs: ["Home", "Todos"] } },
       ["a", "b"],
     );
-    expect(opts.thread).toBe("t-1");
     expect(opts.model).toBe("b");
     expect(opts.prompts[0]).toContain('"Todos" (/todos), trail: Home › Todos');
   });
 
   it("falls back on anything malformed", () => {
-    const opts = forwarded({ model: "zzz", thread: "x".repeat(300), page: { url: 1 } }, "fb", [
-      "a",
-    ]);
-    expect(opts).toEqual({ thread: "fb", model: undefined, prompts: [] });
-    expect(forwarded(undefined, "fb", []).thread).toBe("fb");
+    expect(forwarded({ model: "zzz", page: { url: 1 } }, ["a"])).toEqual({
+      model: undefined,
+      prompts: [],
+    });
+    expect(forwarded(undefined, [])).toEqual({ model: undefined, prompts: [] });
   });
 });
 

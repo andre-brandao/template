@@ -6,11 +6,9 @@ import { Delegation } from "@template/core/auth/delegation";
 import { agents } from "./agents";
 import { Agent } from "./core";
 
-/** What the browser forwards with each message: model, thread and page. */
+/** What the browser forwards with each message: model and page. */
 const Props = z.object({
   model: z.string().optional().catch(undefined),
-  // Kept by the browser so a page tool's follow-up request lands in the same conversation.
-  thread: z.string().min(1).max(255).optional().catch(undefined),
   page: z
     .object({
       url: z.string().max(2000),
@@ -21,12 +19,11 @@ const Props = z.object({
     .catch(undefined),
 });
 
-/** The forwarded props as run options: a known model, the thread, the page as a prompt. */
-export function forwarded(raw: unknown, fallback: string, models: string[]) {
+/** The forwarded props as run options: a known model, the page as a prompt. */
+export function forwarded(raw: unknown, models: string[]) {
   const props = Props.catch({}).parse(raw ?? {});
   const page = props.page;
   return {
-    thread: props.thread ?? fallback,
     model: models.find((id) => id === props.model),
     prompts: page
       ? [
@@ -45,7 +42,9 @@ export async function serve(event: RequestEvent) {
   if (Identity.use().type !== "user") error(401, "Authentication required");
   const body = await event.request.json().catch(() => error(400, "Invalid JSON"));
   const params = await chatParamsFromRequestBody(body);
-  const opts = forwarded(params.forwardedProps, params.threadId, (await Agent.models()).ids);
+  // The browser's conversation id keys the recorded thread, whose column is capped.
+  if (params.threadId.length > 255) error(400, "Invalid threadId");
+  const opts = forwarded(params.forwardedProps, (await Agent.models()).ids);
   const abortController = new AbortController();
   const stream = await agents.orchestrator({
     ...opts,

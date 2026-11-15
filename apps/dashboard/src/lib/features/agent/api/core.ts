@@ -66,7 +66,12 @@ export namespace Agent {
   /** The LiteLLM proxy as a TanStack text adapter, on `model` or the default. */
   export function adapter(model?: string) {
     const cfg = config();
-    return openaiCompatibleText(model ?? cfg.model, { baseURL: cfg.url, apiKey: cfg.key });
+    // Every tool goes out non-strict on purpose (`loose`), so the per-tool warning is noise.
+    return openaiCompatibleText(model ?? cfg.model, {
+      baseURL: cfg.url,
+      apiKey: cfg.key,
+      strictFallbackWarning: false,
+    });
   }
 
   /**

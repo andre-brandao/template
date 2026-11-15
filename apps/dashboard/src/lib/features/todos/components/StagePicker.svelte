@@ -2,7 +2,7 @@
 <script lang="ts">
 	import { createQuery } from '@tanstack/svelte-query';
 	import { Combobox } from '@template/ui';
-	import { placed, projects, stages } from '../api/todos.query';
+	import { labels } from '../api/todos.query';
 
 	type Stage = { name: string; group: string; fresh?: boolean };
 
@@ -23,28 +23,23 @@
 	let query = $state('');
 	// Grouped by project only when no project is in scope; fetched once the picker opens.
 	const loose = $derived(!scope.sourceID);
-	const labels = createQuery(() => ({ ...stages(scope), enabled: open }));
-	const todos = createQuery(() => ({ ...placed(), enabled: open && loose }));
-	const names = createQuery(() => ({ ...projects(), enabled: open && loose }));
+	const options = createQuery(() => ({ ...labels(scope), enabled: open }));
 
-	// Under each project that wears the label, so a shared one shows in every project it's in.
-	const titles = $derived(Object.fromEntries((names.data?.data ?? []).map((one) => [one.id, one.name])));
-	const homes = (stage: string) => {
-		const found = (todos.data?.data ?? [])
-			.filter((one) => one.stage === stage)
-			.map((one) => (one.sourceID && titles[one.sourceID]) || 'No project')
-			.filter((one, i, all) => all.indexOf(one) === i)
-			.sort();
-		return found.length ? found : ['Other'];
-	};
+	// Under each project that wears the label; rows key on the name, so namesakes share a group.
+	const homes = (one: { projects: { name: string }[]; unplaced: boolean }) => [
+		...new Set([
+			...one.projects.map((project) => project.name),
+			...(one.unplaced ? ['No project'] : [])
+		])
+	];
 
 	const items = $derived.by(() => {
-		const known = (labels.data ?? []).map((one) => one.name);
+		const known = (options.data ?? []).map((one) => one.name);
 		const typed = query.trim();
 		const fresh = typed && !known.some((one) => one.toLowerCase() === typed.toLowerCase());
 		const kept = value && !known.includes(value) && value !== typed;
-		const rest = known
-			.flatMap((one) => (loose ? homes(one) : ['']).map((group) => ({ name: one, group })))
+		const rest = (options.data ?? [])
+			.flatMap((one) => (loose ? homes(one) : ['']).map((group) => ({ name: one.name, group })))
 			.sort((a, b) => a.group.localeCompare(b.group));
 		const list: Stage[] = [
 			...(fresh ? [{ name: typed, group: '', fresh: true }] : []),

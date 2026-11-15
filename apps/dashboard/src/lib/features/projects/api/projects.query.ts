@@ -15,7 +15,9 @@ import { invalidate, type Opts } from "$lib/query";
 // Lists and rows both carry the tag, so a write to one project refreshes everything showing it.
 // Its Logs timeline sits under `events`, so the new entry shows too.
 const project = [{ tags: ["Project"] }];
-const touched = [project, ["events"]];
+// The stage picker groups by project name, so a rename or delete reshapes its options.
+const labels = ["todos", "labels"];
+const touched = [project, ["events"], labels];
 
 // A new search keeps the old rows on screen until its results land.
 export const list = (q?: string) => ({
@@ -47,7 +49,7 @@ export const update = (opts?: Opts<typeof patchProjectByIdMutation>) =>
 export const remove = (opts?: Opts<typeof deleteProjectByIdMutation>) =>
   createMutation(() => ({
     ...deleteProjectByIdMutation(),
-    meta: { invalidates: [getProjectQueryKey()] },
+    meta: { invalidates: [getProjectQueryKey(), labels] },
     ...opts,
   }));
 

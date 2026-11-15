@@ -70,29 +70,29 @@
 		border: 1px solid transparent;
 		border-radius: 999px;
 		background: none;
-		color: var(--muted, #64625d);
+		color: var(--muted);
 		font: inherit;
 		font-size: 0.85em;
 		cursor: pointer;
 	}
 
 	.chip:hover {
-		background: var(--hover, rgb(0 0 0 / 0.06));
+		background: var(--hover);
 	}
 
 	.chip[aria-checked='true'] {
-		border-color: var(--border-bright, #d3d1cc);
-		background: var(--surface-2, #f2f1ee);
-		color: var(--ink, #1c1b19);
+		border-color: var(--border-bright);
+		background: var(--surface-2);
+		color: var(--ink);
 	}
 
 	.chip:focus-visible {
-		outline: 2px solid var(--accent, #2f7f68);
+		outline: 2px solid var(--accent);
 		outline-offset: -2px;
 	}
 
 	.count {
-		color: var(--dim, #75736d);
+		color: var(--dim);
 		font-variant-numeric: tabular-nums;
 	}
 </style>

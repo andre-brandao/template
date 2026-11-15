@@ -2,6 +2,7 @@ import { z } from "zod";
 import { and, eq, gt, isNull, lt } from "drizzle-orm";
 import { fn } from "../util/fn";
 import { Database } from "../drizzle";
+import { ErrorCodes, VisibleError } from "../error";
 import { Identity } from "../identity";
 import { Identifier } from "../identifier";
 import { Permission } from "../permission";
@@ -29,6 +30,22 @@ export namespace Delegation {
     }),
     async (input) => {
       const user = Identity.userID();
+      const info = Identity.use();
+      // The same narrowing `Identity.delegate` enforces, for a token that outlives the call.
+      if (info.type === "system")
+        throw new VisibleError(
+          "forbidden",
+          ErrorCodes.Permission.FORBIDDEN,
+          "An App can't delegate",
+        );
+      const held = info.type === "agent" ? info.properties.scope : undefined;
+      if (held && input.scope && !Permission.within(held, input.scope))
+        throw new VisibleError(
+          "forbidden",
+          ErrorCodes.Permission.INSUFFICIENT_PERMISSIONS,
+          `${input.name} can't hold more than the identity lending to it`,
+        );
+      const scope = input.scope ?? held;
       const secret = token("agt-");
       await Database.transaction(async (tx) => {
         // Expired delegations are never read again, so minting a new one sweeps them.
@@ -47,7 +64,7 @@ export namespace Delegation {
           name: input.name,
           key: encode(await digest(secret)),
           type: "agent",
-          meta: { scope: input.scope },
+          meta: { scope },
           expiresAt: new Date(Date.now() + TTL),
         });
       });

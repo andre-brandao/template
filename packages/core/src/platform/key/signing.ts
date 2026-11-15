@@ -1,11 +1,11 @@
 import { z } from "zod";
-import { and, desc, eq, gt, isNull, or } from "drizzle-orm";
+import { and, desc, eq, isNull } from "drizzle-orm";
 import { fn } from "../../util/fn";
 import { Database } from "../../drizzle";
 import { Identifier } from "../../identifier";
 import { memo } from "../../util/memo";
 import { token } from "../../util/token";
-import { KeyTable } from "./key.sql";
+import { KeyTable, live } from "./key.sql";
 
 /**
  * The secret behind a signed URL. Shares the `key` table with API keys but is a different
@@ -58,9 +58,4 @@ export namespace Signing {
         .then((rows) => rows.at(0)?.key ?? null),
     ),
   );
-
-  /** Unexpired: no expiry set, or expiry still in the future. */
-  function live() {
-    return or(isNull(KeyTable.expiresAt), gt(KeyTable.expiresAt, new Date()));
-  }
 }

@@ -15,15 +15,33 @@ const B = Bus.define(`test.b.${crypto.randomUUID()}`, z.object({}));
 describe("event", () => {
   // The log is global now, so every assertion has to pin itself to a marker no other test
   // can produce — a shared `sourceID` or tag would match another file's rows.
-  withTestUser("publish stores actor tag and userID", async ({ userID }) => {
-    // `source_id` is char(30), so the marker has to be id-shaped rather than a raw uuid.
-    const at = Identifier.create("event");
-    const event = await Thing.publish({}, { subject: at });
-    const events = (await Event.list({ source: "test", sourceID: at })).data;
-    expect(events[0]?.id).toBe(event.id);
-    expect(events[0]?.userID).toBe(userID);
-    expect(events[0]?.user?.id).toBe(userID);
-    expect(events[0]?.tags).toContain("actor:user");
+  withTestUser(
+    "publish stores actor tag and userID",
+    async ({ userID }) => {
+      // `source_id` is char(30), so the marker has to be id-shaped rather than a raw uuid.
+      const at = Identifier.create("event");
+      const event = await Thing.publish({}, { subject: at });
+      const events = (await Event.list({ source: "test", sourceID: at })).data;
+      expect(events[0]?.id).toBe(event.id);
+      expect(events[0]?.userID).toBe(userID);
+      expect(events[0]?.user?.id).toBe(userID);
+      expect(events[0]?.tags).toContain("actor:user");
+    },
+    // Pinned, but to a source no member grant covers.
+    "admin",
+  );
+
+  withTestUser("a pinned read needs the grant for what it is pinned to", async () => {
+    // An account's own trail (`user.assigned`, `app.received`) is the back office's.
+    expect(() => Event.list({ sourceID: Identifier.create("user") })).toThrow(/admin:read/);
+    expect(() => Event.list({ source: "user", sourceID: Identifier.create("user") })).toThrow(
+      /admin:read/,
+    );
+    await Identity.delegate("copilot", { project: ["read"] }, () =>
+      expect(() => Event.list({ source: "todo", sourceID: Identifier.create("todo") })).toThrow(
+        /todo:read/,
+      ),
+    );
   });
 
   withTestUser(

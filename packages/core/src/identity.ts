@@ -5,10 +5,8 @@ import { Permission } from "./permission";
 import { ErrorCodes, VisibleError } from "./error";
 
 /**
- * Who is acting. Every way in — cookie, key, issuer JWT, delegation, job replay — ends in one
- * of these; `Auth` owns turning a credential into it. People are `user`, software acting for a
- * person is `agent`, an App registered in Developers is `system`, and the app's own code is
- * `internal`. Nothing skips checks: even a seed names itself and holds `Permission.all`.
+ * Who is acting: a `user`, an `agent` for one, an App's `system` account, or the app's own
+ * `internal` code. `Auth` turns credentials into one. Nothing skips checks, not even a seed.
  */
 export namespace Identity {
   const id = z.string().meta({ description: "Who answers for the act." });
@@ -103,21 +101,12 @@ export namespace Identity {
     return ctx.provide(info, () => Log.provide({ ...info.properties }, cb));
   }
 
-  /**
-   * Runs `cb` as the app's own `name`, holding exactly `scope` whoever is calling — for acts
-   * that are the app's, not the caller's: signing someone up is not a member's doing. What a
-   * seed or migration ran as before is `internal("seed", Permission.all, …)`.
-   */
+  /** Runs `cb` as the app's own `name` holding exactly `scope`, for acts like signup. */
   export function internal<R>(name: string, scope: Permission.Grants, cb: () => R) {
     return provide("internal", { name, scope }, cb);
   }
 
-  /**
-   * Runs `cb` as `name`, holding at most `grants`, on behalf of whoever acts now: for a user,
-   * the agent `name` with their role narrowed (or whole, without `grants`); for an agent or the
-   * app's own code, the same narrowed further. An App can't — it would shed its owner's cap —
-   * and nobody at all has nothing to lend.
-   */
+  /** Runs `cb` as agent `name` for the caller, narrowed to `grants`. Apps and public can't. */
   export function delegate<R>(name: string, grants: Permission.Grants | undefined, cb: () => R) {
     const info = ctx.peek() ?? { type: "public", properties: {} };
     if (info.type === "system") throw new Error(`An App can't delegate to ${name}`);
@@ -138,12 +127,6 @@ export namespace Identity {
       },
       cb,
     );
-  }
-
-  export function assert<T extends Type>(type: T) {
-    const info = use();
-    if (info.type !== type) throw new Error(`Expected identity type ${type}, got ${info.type}`);
-    return info as Extract<Info, { type: T }>;
   }
 
   /** Someone answers for the act: a person, an agent for one, or an App. */

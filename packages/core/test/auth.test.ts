@@ -166,8 +166,8 @@ describe("auth resolve", () => {
       kind: "system",
       ownerID: human.id,
     });
-    const one = await Key.create({ userID: human.id, name: "k" });
-    const two = await Key.create({ userID: bot.id, name: "k" });
+    const one = await Key.mint({ userID: human.id, name: "k" });
+    const two = await Key.mint({ userID: bot.id, name: "k" });
 
     const mine = await Auth.resolve(one.key!);
     expect(mine.type === "user" && mine.properties.credential).toBe(one.id);
@@ -193,7 +193,7 @@ describe("auth resolve", () => {
     await Identity.internal("test", Permission.all, () =>
       User.assign({ id: bot.id, role: "admin" }),
     );
-    const key = await Key.create({ userID: bot.id, name: "k" });
+    const key = await Key.mint({ userID: bot.id, name: "k" });
 
     await Identity.enter(await Auth.resolve(key.key!), async () => {
       expect(Identity.can({ todo: ["read"] })).toBe(true);
@@ -215,6 +215,21 @@ describe("auth resolve", () => {
       expect(Identity.userID()).toBe(user.id);
       expect(Identity.can({ todo: ["read"] })).toBe(true);
       expect(Identity.can({ todo: ["create"] })).toBe(false);
+    });
+  });
+
+  it("a scoped agent can only mint a delegation as narrow as itself", async () => {
+    const user = await createUser({ name: "Ada", email: testEmail() });
+    const token = await as(user.id, () =>
+      Delegation.create({ name: "copilot", scope: { todo: ["read"] } }),
+    );
+    await Identity.enter(await Auth.resolve(token), async () => {
+      await expect(
+        Delegation.create({ name: "sub", scope: { todo: ["read", "delete"] } }),
+      ).rejects.toThrow(/can't hold more/);
+      // No scope inherits the lender's, never the whole role.
+      const sub = await Auth.resolve(await Delegation.create({ name: "sub" }));
+      expect(sub.type === "agent" && sub.properties.scope).toEqual({ todo: ["read"] });
     });
   });
 

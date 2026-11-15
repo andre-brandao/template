@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { and, eq, gt, isNull, or } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import { fn } from "../util/fn";
 import { Common } from "../common";
 import { Database } from "../drizzle";
@@ -10,13 +10,11 @@ import { decode, digest, encode, equal } from "../util/hash";
 import { token } from "../util/token";
 import { Prefs, zone } from "../user/prefs";
 import { UserTable } from "../user/user.sql";
-import { KeyTable } from "../platform/key/key.sql";
+import { KeyTable, TOUCH, live } from "../platform/key/key.sql";
 
 /**
- * Dashboard logins. Nothing is signed, so there is no secret to hold or rotate: the cookie
- * is `<id>.<secret>`, the row is what makes it true, and revoking one is a delete. Shares
- * the `key` table under `type: "session"`. Never a bearer: the API and MCP refuse it, and the
- * copilot carries a `Delegation` instead.
+ * Dashboard logins, as `<id>.<secret>` cookies backed by a `session` row in the `key` table.
+ * Never a bearer: the API and MCP refuse it, and the copilot carries a `Delegation`.
  */
 export namespace Session {
   export const Info = z
@@ -43,9 +41,6 @@ export namespace Session {
 
   /** Idle window. Every use pushes it out, so only an unused session ever expires. */
   export const TTL = 60 * 60 * 24 * 30;
-
-  /** How stale the last use has to be before a read is worth a write. */
-  const TOUCH = 60 * 60 * 1000;
 
   /** Hands back the raw token — the only moment the secret exists outside the cookie. */
   export const create = fn(Identifier.schema("user"), async (user) => {
@@ -93,7 +88,7 @@ export namespace Session {
             eq(KeyTable.type, "session"),
             isNull(KeyTable.timeDeleted),
             isNull(UserTable.timeDeleted),
-            or(isNull(KeyTable.expiresAt), gt(KeyTable.expiresAt, new Date())),
+            live(),
           ),
         )
         .then((rows) => rows.at(0)),

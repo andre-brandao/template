@@ -186,12 +186,19 @@ export namespace Auth {
       password: z.string().min(1).meta({ description: "The account's password." }),
     });
 
-    /** Adds a password to the account already signed in, or replaces the one it has. */
+    /** Adds or replaces the signed-in person's password. Agents can't: it opens a login. */
     export const set = fn(
       z.object({
         password: z.string().min(8).meta({ description: "At least 8 characters." }),
       }),
       async (input) => {
+        Identity.check({ user: ["update"] }, Identity.userID());
+        if (Identity.use().type !== "user")
+          throw new VisibleError(
+            "forbidden",
+            ErrorCodes.Permission.FORBIDDEN,
+            "Only a person can set their password",
+          );
         const me = await User.assert.exists(User.fromID(Identity.userID()));
 
         const hash = await Password.hash(input.password);
@@ -306,14 +313,6 @@ export namespace Auth {
       },
     );
   }
-
-  /**
-   * Magic links — not built. The shape when it lands: `request({ email, url })` mints a long
-   * token into the `key` table under `type: "link"` and mails `${url}?token=…`, and
-   * `verify({ token })` spends it and links. Whatever consumes it has to be a POST — mail
-   * scanners prefetch links, and a GET would burn one before its owner clicked.
-   */
-  export namespace Link {}
 
   // === UTILS ===
 

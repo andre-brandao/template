@@ -47,13 +47,12 @@ export namespace FileApi {
    */
   function key(name: string) {
     const base = name.split(/[\\/]/).at(-1)?.trim();
-    if (!base || base === "." || base === "..")
-      throw new VisibleError(
-        "validation",
-        ErrorCodes.Validation.INVALID_PARAMETER,
-        `Invalid filename: ${name}`,
-      );
+    if (!base || base === "." || base === "..") invalid(`Invalid filename: ${name}`);
     return `${Identity.userID()}/${base}`;
+  }
+
+  function invalid(message: string): never {
+    throw new VisibleError("validation", ErrorCodes.Validation.INVALID_PARAMETER, message);
   }
 
   export const route = new Hono()
@@ -79,27 +78,15 @@ export namespace FileApi {
         },
         responses: {
           200: doc.json(Meta),
-          ...doc.errors(400, 401, 500),
+          ...doc.errors(400, 401, 403, 500),
         },
       }),
       authRequired,
       async (c) => {
-        const body = await c.req.parseBody();
-        const file = body.file;
-        if (!(file instanceof globalThis.File))
-          return c.json(
-            { type: "validation", code: "invalid_parameter", message: "Missing file" },
-            400,
-          );
-        if (file.size > MAX)
-          return c.json(
-            {
-              type: "validation",
-              code: "invalid_parameter",
-              message: `File too large: max ${MAX} bytes`,
-            },
-            400,
-          );
+        Identity.check({ file: ["create"] });
+        const file = (await c.req.parseBody()).file;
+        if (!(file instanceof globalThis.File)) invalid("Missing file");
+        if (file.size > MAX) invalid(`File too large: max ${MAX} bytes`);
 
         const at = key(file.name);
         await Storage.disk().put(
@@ -119,11 +106,12 @@ export namespace FileApi {
         },
         {
           200: doc.list(Info),
-          ...doc.errors(401, 500),
+          ...doc.errors(401, 403, 500),
         },
       ),
       authRequired,
       async (c) => {
+        Identity.check({ file: ["read"] });
         const rows = await Storage.disk().list(`${Identity.userID()}/`);
         rows.sort((a, b) => (b.lastModified?.getTime() ?? 0) - (a.lastModified?.getTime() ?? 0));
         return c.json(rows, 200);
@@ -180,12 +168,13 @@ export namespace FileApi {
         {
           200: { description: "The raw file bytes." },
           302: { description: "Redirect to a presigned storage URL." },
-          ...doc.errors(400, 401, 404, 500),
+          ...doc.errors(400, 401, 403, 404, 500),
         },
       ),
       authRequired,
       validator("param", param),
       async (c) => {
+        Identity.check({ file: ["read"] });
         const at = key(c.req.valid("param").name);
         const url = await Storage.disk().temporaryUrl(at);
         if (url) return c.redirect(url, 302);
@@ -206,13 +195,14 @@ export namespace FileApi {
         },
         {
           200: doc.json(Meta),
-          ...doc.errors(400, 401, 404, 500),
+          ...doc.errors(400, 401, 403, 404, 500),
         },
       ),
       authRequired,
       validator("param", param),
       validator("json", z.object({ name: z.string().trim().min(1).max(255) })),
       async (c) => {
+        Identity.check({ file: ["update"] });
         const from = key(c.req.valid("param").name);
         const to = key(c.req.valid("json").name);
         await assert.exists(Storage.disk().head(from));
@@ -227,12 +217,13 @@ export namespace FileApi {
         { title: "Delete file" },
         {
           200: doc.ok,
-          ...doc.errors(400, 401, 500),
+          ...doc.errors(400, 401, 403, 500),
         },
       ),
       authRequired,
       validator("param", param),
       async (c) => {
+        Identity.check({ file: ["delete"] });
         await Storage.disk().delete(key(c.req.valid("param").name));
         return c.json("ok" as const, 200);
       },

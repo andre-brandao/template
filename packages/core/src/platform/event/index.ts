@@ -15,6 +15,7 @@ import {
 import { fn } from "../../util/fn";
 import { Database } from "../../drizzle";
 import { Identity } from "../../identity";
+import { Permission } from "../../permission";
 import { Common } from "../../common";
 import { Examples } from "../../examples";
 import { Tags } from "../../util/tag";
@@ -122,6 +123,11 @@ export namespace Event {
     },
   );
 
+  const pinned: Record<string, Permission.Grants | undefined> = {
+    todo: { todo: ["read"] },
+    project: { project: ["read"] },
+  };
+
   export const list = fn(
     Common.Query({
       sort: SortableColumns.schema,
@@ -133,7 +139,8 @@ export namespace Event {
       search: z.string().optional(),
     }),
     (input) => {
-      if (!input.sourceID) Identity.check({ admin: ["read"] });
+      // A reader of one todo or project may see its trail; any other read is the back office.
+      Identity.check((input.sourceID && pinned[input.source ?? ""]) || { admin: ["read"] });
 
       const { page, pageSize, limit, offset } = Common.page(input);
 

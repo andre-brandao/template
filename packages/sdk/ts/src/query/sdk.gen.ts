@@ -73,6 +73,12 @@ import type {
   GetTodoStageData,
   GetTodoStageErrors,
   GetTodoStageResponses,
+  GetUserByIdData,
+  GetUserByIdErrors,
+  GetUserByIdHistoryData,
+  GetUserByIdHistoryErrors,
+  GetUserByIdHistoryResponses,
+  GetUserByIdResponses,
   GetWebhookData,
   GetWebhookErrors,
   GetWebhookResponses,
@@ -155,6 +161,38 @@ export const getMe = <ThrowOnError extends boolean = false>(
   (options?.client ?? client).get<GetMeResponses, GetMeErrors, ThrowOnError>({
     security: [{ scheme: "bearer", type: "http" }],
     url: "/me",
+    ...options,
+  });
+
+/**
+ * Get profile
+ *
+ * Fetch an account as a teammate sees it: no prefs, and no email for an App.
+ */
+export const getUserById = <ThrowOnError extends boolean = false>(
+  options: Options<GetUserByIdData, ThrowOnError>,
+): RequestResult<GetUserByIdResponses, GetUserByIdErrors, ThrowOnError> =>
+  (options.client ?? client).get<GetUserByIdResponses, GetUserByIdErrors, ThrowOnError>({
+    security: [{ scheme: "bearer", type: "http" }],
+    url: "/user/{id}",
+    ...options,
+  });
+
+/**
+ * Get user history
+ *
+ * What one account did, newest first. Anyone but an admin sees only the public event types.
+ */
+export const getUserByIdHistory = <ThrowOnError extends boolean = false>(
+  options: Options<GetUserByIdHistoryData, ThrowOnError>,
+): RequestResult<GetUserByIdHistoryResponses, GetUserByIdHistoryErrors, ThrowOnError> =>
+  (options.client ?? client).get<
+    GetUserByIdHistoryResponses,
+    GetUserByIdHistoryErrors,
+    ThrowOnError
+  >({
+    security: [{ scheme: "bearer", type: "http" }],
+    url: "/user/{id}/history",
     ...options,
   });
 

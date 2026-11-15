@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { createQuery } from '@tanstack/svelte-query';
-	import type { Event } from '@template/core/event';
+	import type { Event } from '@template/sdk/query';
 	import { Empty, Issue, Skeleton } from '@template/ui';
 	import Pulse from '@lucide/svelte/icons/activity';
 	import Inbox from '@lucide/svelte/icons/inbox';
@@ -22,20 +22,20 @@
 		received: Inbox
 	};
 
-	const verb = (event: Event.Info) => event.type.split('.').at(-1) ?? '';
+	const verb = (event: Event) => event.type.split('.').at(-1) ?? '';
 
 	// Inbound posts carry the App's own type inside `data`; everything else is a core event.
-	const label = (event: Event.Info) =>
+	const label = (event: Event) =>
 		event.type === 'app.received'
 			? `received ${String(event.data.type)}`
 			: `${verb(event)} ${event.source ?? event.type.split('.')[0]}`;
 
-	const subject = (event: Event.Info) => {
+	const subject = (event: Event) => {
 		const value = event.data.title ?? event.data.name;
 		return typeof value === 'string' ? value : null;
 	};
 
-	const via = (event: Event.Info) =>
+	const via = (event: Event) =>
 		event.identity && 'credential' in event.identity.properties
 			? event.identity.properties.credential
 			: null;

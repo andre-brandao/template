@@ -304,7 +304,7 @@ export namespace Todo {
       if (input.search) conditions.push(ilike(TodoTable.title, `%${input.search}%`));
       const where = and(...conditions, ...window(input));
       return Database.use(async (tx) => {
-        const [rows, totalRows] = await Promise.all([
+        const [rows, total] = await Promise.all([
           tx
             .select({ todo: TodoTable, user: AssigneeColumns })
             .from(TodoTable)
@@ -313,9 +313,9 @@ export namespace Todo {
             .orderBy(...SortableColumns.orderBy(input.sort))
             .limit(limit)
             .offset(offset),
-          tx.select({ total: count() }).from(TodoTable).where(where),
+          tx.$count(TodoTable, where),
         ] as const);
-        return { data: rows.map(serialize), page, pageSize, total: totalRows[0]?.total ?? 0 };
+        return { data: rows.map(serialize), page, pageSize, total };
       });
     },
     {

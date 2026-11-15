@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { and, asc, count, eq, ilike, isNull, type SQLWrapper } from "drizzle-orm";
+import { and, asc, eq, ilike, isNull, type SQLWrapper } from "drizzle-orm";
 import { Assert } from "../util/assert";
 import { ErrorCodes, VisibleError } from "../error";
 import { fn } from "../util/fn";
@@ -91,7 +91,7 @@ export namespace Project {
       if (input.search) conditions.push(ilike(ProjectTable.name, `%${input.search}%`));
       const where = and(...conditions);
       return Database.use(async (tx) => {
-        const [rows, totalRows] = await Promise.all([
+        const [rows, total] = await Promise.all([
           tx
             .select()
             .from(ProjectTable)
@@ -99,9 +99,9 @@ export namespace Project {
             .orderBy(...SortableColumns.orderBy(input.sort))
             .limit(limit)
             .offset(offset),
-          tx.select({ total: count() }).from(ProjectTable).where(where),
+          tx.$count(ProjectTable, where),
         ] as const);
-        return { data: rows.map(serialize), page, pageSize, total: totalRows[0]?.total ?? 0 };
+        return { data: rows.map(serialize), page, pageSize, total };
       });
     },
     {

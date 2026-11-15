@@ -3,7 +3,6 @@ import {
   and,
   arrayOverlaps,
   asc,
-  count,
   desc,
   eq,
   ilike,
@@ -163,7 +162,7 @@ export namespace Event {
       const where = and(...conditions);
 
       return Database.use(async (tx) => {
-        const [rows, totalRows] = await Promise.all([
+        const [rows, total] = await Promise.all([
           tx
             .select({
               event: EventTable,
@@ -175,13 +174,13 @@ export namespace Event {
             .orderBy(...SortableColumns.orderBy(input.sort))
             .limit(limit)
             .offset(offset),
-          tx.select({ total: count() }).from(EventTable).where(where),
+          tx.$count(EventTable, where),
         ] as const);
         return {
           data: rows.map((row) => serialize(row.event, row.user)),
           page,
           pageSize,
-          total: totalRows[0]?.total ?? 0,
+          total,
         };
       });
     },

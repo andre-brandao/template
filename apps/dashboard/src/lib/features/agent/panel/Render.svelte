@@ -5,7 +5,7 @@
 <script lang="ts">
 	import { JsonUIProvider, Renderer } from '@json-render/svelte';
 	import { registry } from './registry';
-	import { clean } from './spec';
+	import { clean } from '../render/spec';
 
 	let { spec, loading = false }: { spec: unknown; loading?: boolean } = $props();
 

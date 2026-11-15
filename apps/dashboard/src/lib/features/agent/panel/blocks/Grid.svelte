@@ -1,8 +1,8 @@
 <!-- Every column of a result, scrolling sideways when wide. -->
 <script lang="ts">
-	import type { Result } from '../rows';
+	import type { Rows } from '../../api/panel.query';
 
-	let { data }: { data: Result } = $props();
+	let { data }: { data: Rows } = $props();
 
 	const cell = (value: unknown) =>
 		value === null || value === undefined
@@ -20,7 +20,7 @@
 			</tr>
 		</thead>
 		<tbody>
-			{#each data.rows.slice(0, 200) as row, i (i)}
+			{#each data.rows as row, i (i)}
 				<tr>
 					{#each data.columns as col (col.name)}<td>{cell(row[col.name])}</td>{/each}
 				</tr>

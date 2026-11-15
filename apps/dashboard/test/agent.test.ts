@@ -7,7 +7,7 @@ import { loose } from "../src/lib/features/agent/api/tools";
 import { transcript } from "../src/lib/features/agent/transcript";
 import * as ask from "../src/lib/features/agent/ask/catalog";
 import { forwarded } from "../src/lib/features/agent/api/serve";
-import { bars, formatter, metric, numeric } from "../src/lib/features/agent/panel/numbers";
+import { bars, formatter, metric } from "../src/lib/features/agent/panel/numbers";
 
 // Never reaches an LLM, the MCP or a database: the pure parts of the agent.
 const call = (name: string) => ({
@@ -202,11 +202,11 @@ describe("forwarded", () => {
 describe("panel numbers", () => {
   const data = {
     columns: [
-      { name: "status", type: "text" },
-      { name: "total", type: "bigint" },
+      { name: "status", type: "text", numeric: false },
+      { name: "total", type: "bigint", numeric: true },
     ],
     rows: [
-      { status: "done", total: "4" },
+      { status: "done", total: 4 },
       { status: "active", total: 2 },
     ],
   };
@@ -215,7 +215,6 @@ describe("panel numbers", () => {
     expect(metric(data)).toBe(4);
     expect(metric(data, "status")).toBeUndefined();
     expect(metric({ columns: [], rows: [] })).toBeUndefined();
-    expect(numeric({ type: "numeric" })).toBe(true);
   });
 
   it("sizes bars against the largest value", () => {
@@ -223,12 +222,12 @@ describe("panel numbers", () => {
       { label: "done", value: 4, width: 100 },
       { label: "active", value: 2, width: 50 },
     ]);
-    expect(bars({ columns: [{ name: "s", type: "text" }], rows: [] })).toBeUndefined();
+    expect(bars({ columns: [{ name: "s", type: "text", numeric: false }], rows: [] })).toBeUndefined();
   });
 
   it("formats numbers and percents", () => {
-    expect(formatter("percent")(12.345)).toBe("12.35%");
-    expect(formatter(null)(1234)).toBe("1,234");
+    expect(formatter("percent", "en-US")(12.345)).toBe("12.35%");
+    expect(formatter(null, "en-US")(1234)).toBe("1,234");
   });
 });
 

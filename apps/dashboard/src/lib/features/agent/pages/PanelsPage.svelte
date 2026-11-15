@@ -4,7 +4,7 @@
 	import * as Header from '$lib/components/header';
 	import { user } from '$lib/utils/context';
 	import { getPanels, removePanel } from '../api/panel.remote';
-	import { failure } from '../failure';
+	import { message } from '$lib/query';
 
 	const me = user();
 	const panels = $derived(await getPanels());
@@ -25,7 +25,7 @@
 	async function remove(row: { id: string; title: string }) {
 		const ok = await modal.confirm({ title: `Delete "${row.title}"`, action: 'Delete', body: warning });
 		if (!ok) return;
-		await removePanel(row.id).catch((err) => toast.error(failure(err)));
+		await removePanel(row.id).catch((err) => toast.error(message(err)));
 	}
 </script>
 

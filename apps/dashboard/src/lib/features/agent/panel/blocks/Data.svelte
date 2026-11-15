@@ -4,41 +4,50 @@
 -->
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	import { browser } from '$app/environment';
+	import { createQuery } from '@tanstack/svelte-query';
 	import { Button, Issue, Skeleton } from '@template/ui';
-	import { failure } from '../../failure';
-	import { fetchRows, type Result } from '../rows';
+	import { rows, type Rows } from '../../api/panel.query';
 
 	let {
 		sql,
+		limit,
 		loading = false,
+		meta = true,
 		children
-	}: { sql: string | undefined; loading?: boolean; children: Snippet<[Result]> } = $props();
+	}: {
+		sql: string | undefined;
+		/** The rows the block draws; nothing past it is fetched. */
+		limit: number;
+		loading?: boolean;
+		/** The row count and timing under the block. */
+		meta?: boolean;
+		children: Snippet<[Rows]>;
+	} = $props();
 
-	const count = new Intl.NumberFormat();
+	const query = createQuery(() => ({
+		...rows(sql ?? '', limit),
+		enabled: browser && !loading && !!sql
+	}));
 </script>
 
-{#if loading || !sql}
-	<Skeleton h="4em" />
-{:else}
-	<svelte:boundary>
-		{@const data = await fetchRows(sql)}
-		{#if data.rows.length}
-			{@render children(data)}
-		{:else}
-			<p class="empty">No data</p>
-		{/if}
+{#if query.isSuccess}
+	{#if query.data.rows.length}
+		{@render children(query.data)}
+	{:else}
+		<p class="empty">No data</p>
+	{/if}
+	{#if meta}
 		<span class="hint">
-			{count.format(data.rows.length)}{data.truncated ? '+' : ''}
-			{data.rows.length === 1 ? 'row' : 'rows'} · {count.format(data.ms)} ms
+			{query.data.rows.length}{query.data.truncated ? '+' : ''}
+			{query.data.rows.length === 1 ? 'row' : 'rows'} · {query.data.ms} ms
 		</span>
-		{#snippet pending()}
-			<Skeleton h="4em" />
-		{/snippet}
-		{#snippet failed(err, reset)}
-			<Issue>{failure(err)}</Issue>
-			<Button variant="ghost" onclick={reset}>Retry</Button>
-		{/snippet}
-	</svelte:boundary>
+	{/if}
+{:else if query.isError}
+	<Issue>{query.error.message}</Issue>
+	<Button variant="ghost" pending={query.isFetching} onclick={() => query.refetch()}>Retry</Button>
+{:else}
+	<Skeleton h="4em" />
 {/if}
 
 <style>

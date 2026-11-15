@@ -5,7 +5,7 @@
 	import Trash from '@lucide/svelte/icons/trash-2';
 	import { getConversations, removeConversation } from '../api/agent.remote';
 	import { agent } from '../agent.svelte';
-	import { failure } from '../failure';
+	import { message } from '$lib/query';
 
 	const ctx = agent();
 
@@ -16,7 +16,7 @@
 	const when = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' });
 
 	function open(id: string) {
-		ctx.resume(id).catch((err) => toast.error(failure(err)));
+		ctx.resume(id).catch((err) => toast.error(message(err)));
 	}
 
 	async function remove(row: { id: string; thread: string }) {
@@ -32,7 +32,7 @@
 				// The open chat would keep writing to a thread that no longer lists.
 				if (row.thread === ctx.thread) ctx.fresh();
 			})
-			.catch((err) => toast.error(failure(err)));
+			.catch((err) => toast.error(message(err)));
 	}
 </script>
 
@@ -74,7 +74,7 @@
 			<Skeleton h="4em" />
 		{/snippet}
 		{#snippet failed(err)}
-			<Empty>{failure(err)}</Empty>
+			<Empty>{message(err)}</Empty>
 		{/snippet}
 	</svelte:boundary>
 </div>

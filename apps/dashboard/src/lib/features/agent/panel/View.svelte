@@ -10,11 +10,11 @@
 	import Save from '@lucide/svelte/icons/save';
 	import ExternalLink from '@lucide/svelte/icons/external-link';
 	import { savePanel } from '../api/panel.remote';
-	import { failure } from '../failure';
+	import { message } from '$lib/query';
 	import { agent } from '../agent.svelte';
 	import type { ViewProps } from '../views';
 	import Render from './Render.svelte';
-	import { clean, title } from './spec';
+	import { clean, title } from '../render/spec';
 
 	let { part, result, done, output }: ViewProps = $props();
 
@@ -44,7 +44,7 @@
 	async function save(panel: Spec) {
 		saving = true;
 		const info = await savePanel({ id: saved, title: title(panel), spec: panel, thread: ctx.thread })
-			.catch((err) => void toast.error(failure(err)));
+			.catch((err) => void toast.error(message(err)));
 		saving = false;
 		if (info) saved = info.id;
 	}

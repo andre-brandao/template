@@ -9,13 +9,20 @@
 	let {
 		value,
 		components,
-		html = false
-	}: { value: string; components?: Components; html?: boolean } = $props();
+		html = false,
+		caret = false
+	}: {
+		value: string;
+		components?: Components;
+		html?: boolean;
+		/** A blinking caret after the text, for a stream; CSS draws it, so a blink never re-parses. */
+		caret?: boolean;
+	} = $props();
 
 	const doc = $derived(parseMarkdown(value, { allowHtml: html }));
 </script>
 
-<div class="markdown-body">
+<div class={['markdown-body', { caret }]}>
 	{#each doc.children as node, i (i)}
 		<Block {node} {components} />
 	{/each}

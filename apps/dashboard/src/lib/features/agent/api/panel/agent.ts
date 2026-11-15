@@ -53,7 +53,7 @@ export function panel(
           inputSchema: shape,
         }).server((spec) =>
           scope(async () => {
-            const out = await check(spec, (query) => Sql.run({ sql: query, limit: 200 }));
+            const out = await check(spec, (query, limit) => Sql.run({ sql: query, limit }));
             if (out.ok) state.spec = spec;
             return out;
           }),

@@ -36,9 +36,24 @@
 	];
 
 	const cols: ColumnDef<typeof features, Crew>[] = [
-		{ id: 'name', header: 'Name', accessorFn: (one) => one.name, cell: ({ row }) => renderSnippet(name, row) },
-		{ id: 'craft', header: 'Craft', accessorFn: (one) => one.craft, cell: ({ row }) => renderSnippet(craft, row) },
-		{ id: 'year', header: 'Year', accessorFn: (one) => one.year, cell: ({ row }) => renderSnippet(year, row) },
+		{
+			id: 'name',
+			header: 'Name',
+			accessorFn: (one) => one.name,
+			cell: ({ row }) => renderSnippet(name, row)
+		},
+		{
+			id: 'craft',
+			header: 'Craft',
+			accessorFn: (one) => one.craft,
+			cell: ({ row }) => renderSnippet(craft, row)
+		},
+		{
+			id: 'year',
+			header: 'Year',
+			accessorFn: (one) => one.year,
+			cell: ({ row }) => renderSnippet(year, row)
+		},
 		{ id: 'note', header: '', enableSorting: false, cell: ({ row }) => renderSnippet(note, row) }
 	];
 
@@ -110,8 +125,8 @@
 </DataTable>
 
 <p class="note">
-	Shift-click a second header to sort by two keys — the badges show priority. Only the first key
-	is honoured here; core applies all of them.
+	Shift-click a second header to sort by two keys — the badges show priority. Only the first key is
+	honoured here; core applies all of them.
 </p>
 
 <style>

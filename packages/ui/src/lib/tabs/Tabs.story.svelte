@@ -19,7 +19,11 @@
 
 <Tabs.Root>
 	{#each ['table', 'board', 'timeline'] as one (one)}
-		<Tabs.Item active={view === one} style="text-transform: capitalize" onclick={() => (view = one)}>
+		<Tabs.Item
+			active={view === one}
+			style="text-transform: capitalize"
+			onclick={() => (view = one)}
+		>
 			{one}
 		</Tabs.Item>
 	{/each}

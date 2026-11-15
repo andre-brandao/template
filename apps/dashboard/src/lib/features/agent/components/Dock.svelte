@@ -17,7 +17,9 @@
 	const escape = createHotkeyAttachment('Escape', ctx.close);
 
 	const min = 320;
-	const max = $derived(Math.round(Math.max(min, Math.min(900, (innerWidth.current ?? 1500) * 0.6))));
+	const max = $derived(
+		Math.round(Math.max(min, Math.min(900, (innerWidth.current ?? 1500) * 0.6)))
+	);
 	const clamp = (px: number) => Math.round(Math.min(Math.max(px, min), max));
 	// The live width mid-drag; only the release is saved.
 	let drag = $state<number>();

@@ -28,7 +28,13 @@
 			letter: letters[status],
 			reason: ''
 		})),
-		{ key: 'done', status: 'done' as const, label: 'Done', letter: 'D' as const, reason: 'completed' },
+		{
+			key: 'done',
+			status: 'done' as const,
+			label: 'Done',
+			letter: 'D' as const,
+			reason: 'completed'
+		},
 		{
 			key: 'not_planned',
 			status: 'done' as const,

@@ -38,7 +38,9 @@
 	const viewed = $derived(
 		list.data?.filter((one) => params.state === 'all' || one.state === params.state) ?? []
 	);
-	const shown = $derived(viewed.filter((one) => !params.tag.length || params.tag.includes(one.tag)));
+	const shown = $derived(
+		viewed.filter((one) => !params.tag.length || params.tag.includes(one.tag))
+	);
 	const count = (tag: string) => viewed.filter((one) => one.tag === tag).length;
 </script>
 
@@ -65,7 +67,8 @@
 				text={(one) => tags[one].label}
 				multiple
 				bind:values={
-					() => params.tag, (next) => params.update({ tag: kinds.filter((one) => next.includes(one)) })
+					() => params.tag,
+					(next) => params.update({ tag: kinds.filter((one) => next.includes(one)) })
 				}
 				label="Type"
 				placeholder="Filter types"

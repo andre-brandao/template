@@ -55,7 +55,14 @@
 	});
 	// The page and its parent, nearest first: "Todos · Internal tools · App".
 	const title = $derived(
-		[...trail.slice(1).filter((crumb) => crumb.href).slice(-2).reverse(), { label: brand.name }]
+		[
+			...trail
+				.slice(1)
+				.filter((crumb) => crumb.href)
+				.slice(-2)
+				.reverse(),
+			{ label: brand.name }
+		]
 			.map((crumb) => crumb.label)
 			.join(' · ')
 	);
@@ -249,9 +256,7 @@
 		--pad-bottom: 3em;
 		/* The viewport left once the topbar, footer and this padding are taken; a page that
 		   scrolls a list internally sets `height: var(--fill)` on its root. */
-		--fill: calc(
-			100dvh - var(--topbar) - var(--footer) - var(--pad-top) - var(--pad-bottom)
-		);
+		--fill: calc(100dvh - var(--topbar) - var(--footer) - var(--pad-top) - var(--pad-bottom));
 		flex: 1;
 		min-width: 0;
 		/* In the column, `0 auto` margins would win over stretch and shrink-wrap the

@@ -79,7 +79,9 @@
 					{t.action.label}
 				</Button>
 			{/if}
-			<button class="x" type="button" aria-label="Dismiss" onclick={() => queue.kill(t.id)}>✕</button>
+			<button class="x" type="button" aria-label="Dismiss" onclick={() => queue.kill(t.id)}
+				>✕</button
+			>
 		</li>
 	{/each}
 </ol>

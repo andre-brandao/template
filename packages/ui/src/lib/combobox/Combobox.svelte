@@ -102,9 +102,7 @@
 			.map((name) => ({ name, count: counts.get(name) ?? 0 }));
 	});
 	const scope = $derived(facets.some((one) => one.name === filter) ? filter : '');
-	const shown = $derived(
-		facet && scope ? matched.filter((one) => facet(one) === scope) : matched
-	);
+	const shown = $derived(facet && scope ? matched.filter((one) => facet(one) === scope) : matched);
 	const groups = $derived(bucket(shown, (one) => group?.(one) ?? ''));
 	// Display order, which is what the arrow keys walk.
 	const order = $derived(groups.flatMap((one) => one.items));
@@ -184,12 +182,11 @@
 		query = e.key;
 		open = true;
 	}
-
 </script>
 
 <!-- Marks whichever words hit this string; the row may have matched on another. -->
 {#snippet marked(str: string)}
-	{#each mark(str, terms.filter((word) => mark(str, [word]))) ?? [] as part, i (i)}
+	{#each mark( str, terms.filter((word) => mark(str, [word])) ) ?? [] as part, i (i)}
 		{#if part.hit}<mark>{part.text}</mark>{:else}{part.text}{/if}
 	{/each}
 {/snippet}
@@ -260,7 +257,9 @@
 		<span class="value">
 			{#if multiple && picked.length}
 				{#each picked.slice(0, limit) as one (key(one))}
-					<span class="tag">{#if chip}{@render chip(one)}{:else}{text(one)}{/if}</span>
+					<span class="tag"
+						>{#if chip}{@render chip(one)}{:else}{text(one)}{/if}</span
+					>
 				{/each}
 				{#if picked.length > limit}<span class="more">+{picked.length - limit}</span>{/if}
 			{:else if face}

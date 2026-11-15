@@ -47,7 +47,9 @@
 		<form class="alts" {...send}>
 			<input {...start.fields.email.as('hidden', sent)} />
 			<button class="alt" type="submit" disabled={!!start.pending}>Send a new code</button>
-			<button class="alt" type="button" onclick={() => (change = true)}>Use a different email</button>
+			<button class="alt" type="button" onclick={() => (change = true)}
+				>Use a different email</button
+			>
 		</form>
 	{:else}
 		<form {...send}>

@@ -49,7 +49,9 @@
 		{#if left <= 0}
 			<Tooltip tip="Expired"><span class="bad"><CircleOff size={14} /></span></Tooltip>
 		{:else if left < 7 * 86_400_000}
-			<Tooltip tip="Expires within a week"><span class="soon"><ClockAlert size={14} /></span></Tooltip>
+			<Tooltip tip="Expires within a week"
+				><span class="soon"><ClockAlert size={14} /></span></Tooltip
+			>
 		{/if}
 	{/snippet}
 	{#snippet menu()}

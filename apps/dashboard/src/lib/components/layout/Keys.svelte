@@ -24,7 +24,9 @@
 				<!-- Inactive means nothing on this page binds it, not that it is broken. -->
 				<div class={['row', { off: item.status === 'inactive' }]}>
 					<dt>{item.appHotkey.meta?.name}</dt>
-					<dd>{#if item.appHotkey.hotkey}<Kbd keys={item.appHotkey.hotkey} />{/if}</dd>
+					<dd>
+						{#if item.appHotkey.hotkey}<Kbd keys={item.appHotkey.hotkey} />{/if}
+					</dd>
 				</div>
 			{/each}
 		</dl>

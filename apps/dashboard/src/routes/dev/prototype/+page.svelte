@@ -8,8 +8,8 @@
 
 <Header.Root title="Prototypes">
 	{#snippet lead()}
-		Everything under <code>docs/prototype/</code>, with its mockups live in their iframes. Also served
-		standalone by <code>bun prototype</code> on port 4400.
+		Everything under <code>docs/prototype/</code>, with its mockups live in their iframes. Also
+		served standalone by <code>bun prototype</code> on port 4400.
 	{/snippet}
 </Header.Root>
 

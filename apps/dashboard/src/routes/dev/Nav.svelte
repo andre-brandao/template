@@ -59,7 +59,9 @@
 				{#if narrow.current}
 					<details bind:open>
 						<summary>
-							<span class="face">{#if active}{@render face(active)}{:else}{label}{/if}</span>
+							<span class="face"
+								>{#if active}{@render face(active)}{:else}{label}{/if}</span
+							>
 							<span class="chevron"><Chevron size={14} /></span>
 						</summary>
 						<div class="menu">{@render list()}</div>

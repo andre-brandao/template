@@ -16,7 +16,13 @@
 	// Arrows walk rows; a field inside a row (a rename) keeps its own arrow keys.
 	function keys(e: KeyboardEvent & { currentTarget: HTMLElement }) {
 		const from = e.target as HTMLElement;
-		if (e.altKey || e.ctrlKey || e.metaKey || from.closest('input, textarea, select, [contenteditable]')) return;
+		if (
+			e.altKey ||
+			e.ctrlKey ||
+			e.metaKey ||
+			from.closest('input, textarea, select, [contenteditable]')
+		)
+			return;
 		const rows = [...e.currentTarget.querySelectorAll<HTMLElement>(':scope > [data-row]')];
 		const at = rows.findIndex((row) => row.contains(from));
 		const to = { ArrowDown: at + 1, ArrowUp: at - 1, Home: 0, End: rows.length - 1 }[e.key];

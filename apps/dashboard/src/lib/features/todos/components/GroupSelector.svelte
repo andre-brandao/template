@@ -18,7 +18,11 @@
 <Header.Group label="Group">
 	<Pick label="Group by" text={options.find((one) => one.value === by)?.label ?? 'Status'}>
 		{#each options as one (one.value)}
-			<Menu.Item shortcut={one.letter} disabled={one.value === by} onselect={() => onchange(one.value)}>
+			<Menu.Item
+				shortcut={one.letter}
+				disabled={one.value === by}
+				onselect={() => onchange(one.value)}
+			>
 				{one.label}
 			</Menu.Item>
 		{/each}

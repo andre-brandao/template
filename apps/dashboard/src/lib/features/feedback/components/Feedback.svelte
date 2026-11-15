@@ -28,7 +28,8 @@
 
 	<Tabs.Root style="margin-bottom: 1.25em">
 		{#each tabs as one (one.value)}
-			<Tabs.Item active={tab === one.value} onclick={() => (tab = one.value)}>{one.label}</Tabs.Item>
+			<Tabs.Item active={tab === one.value} onclick={() => (tab = one.value)}>{one.label}</Tabs.Item
+			>
 		{/each}
 	</Tabs.Root>
 

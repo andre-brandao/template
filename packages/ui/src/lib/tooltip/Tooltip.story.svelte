@@ -27,8 +27,11 @@
 </div>
 
 <p class="note">
-	<Tooltip tip="Tab to the button — focus shows it too, and Escape is not needed because it never
-		takes focus itself." side="bottom">
+	<Tooltip
+		tip="Tab to the button — focus shows it too, and Escape is not needed because it never
+		takes focus itself."
+		side="bottom"
+	>
 		<Button variant="ghost">keyboard</Button>
 	</Tooltip>
 </p>

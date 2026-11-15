@@ -38,10 +38,30 @@
 	type Cell = Row<typeof features, Event.Info>;
 
 	const cols: ColumnDef<typeof features, Event.Info>[] = [
-		{ id: 'type', header: 'Type', accessorFn: (one) => one.type, cell: ({ row }) => renderSnippet(type, row) },
-		{ id: 'user', header: 'Who', accessorFn: (one) => one.user?.name, cell: ({ row }) => renderSnippet(who, row) },
-		{ id: 'tags', header: 'Tags', enableSorting: false, cell: ({ row }) => renderSnippet(tags, row) },
-		{ id: 'source', header: 'Ref', accessorFn: (one) => one.source, cell: ({ row }) => renderSnippet(ref, row) },
+		{
+			id: 'type',
+			header: 'Type',
+			accessorFn: (one) => one.type,
+			cell: ({ row }) => renderSnippet(type, row)
+		},
+		{
+			id: 'user',
+			header: 'Who',
+			accessorFn: (one) => one.user?.name,
+			cell: ({ row }) => renderSnippet(who, row)
+		},
+		{
+			id: 'tags',
+			header: 'Tags',
+			enableSorting: false,
+			cell: ({ row }) => renderSnippet(tags, row)
+		},
+		{
+			id: 'source',
+			header: 'Ref',
+			accessorFn: (one) => one.source,
+			cell: ({ row }) => renderSnippet(ref, row)
+		},
 		{
 			id: 'timeCreated',
 			header: 'When',

@@ -35,11 +35,7 @@
 	<section>
 		<h2>Instance</h2>
 		<div class="stats">
-			<Stat
-				label="Users"
-				value={f.number(s.counts.users)}
-				note="{s.counts.disabled} disabled"
-			/>
+			<Stat label="Users" value={f.number(s.counts.users)} note="{s.counts.disabled} disabled" />
 			<Stat label="Projects" value={f.number(s.counts.projects)} />
 			<Stat label="Todos" value={f.number(s.counts.todos)} note="{s.counts.done} done" />
 		</div>

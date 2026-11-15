@@ -31,7 +31,9 @@
 {#snippet shortcuts()}<Shortcuts grid label="Shortcuts" {links} />{/snippet}
 <!-- The layouts under test, for admins only; everyone else gets the default. Drop it once one wins. -->
 {#snippet frame(props: Props, heading: Snippet)}
-	<Experiment key="home" title="Home page" variants={layouts} {props}>{@render heading()}</Experiment>
+	<Experiment key="home" title="Home page" variants={layouts} {props}
+		>{@render heading()}</Experiment
+	>
 {/snippet}
 
 {#if me.current}

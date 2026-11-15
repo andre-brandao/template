@@ -50,7 +50,8 @@
 		</Header.Group>
 		{#if params.q}
 			<Header.Group end>
-				<Button variant="ghost" onclick={() => params.update({ q: undefined })}>Clear search</Button>
+				<Button variant="ghost" onclick={() => params.update({ q: undefined })}>Clear search</Button
+				>
 			</Header.Group>
 		{/if}
 	{/snippet}
@@ -65,7 +66,8 @@
 		<Empty>
 			No projects match “{params.q}”.
 			{#snippet action()}
-				<Button variant="ghost" onclick={() => params.update({ q: undefined })}>Clear search</Button>
+				<Button variant="ghost" onclick={() => params.update({ q: undefined })}>Clear search</Button
+				>
 			{/snippet}
 		</Empty>
 	{:else}

@@ -23,8 +23,10 @@
 
 	// Gateway errors lead with their status; the known ones read as what the user can do.
 	function plain(text: string) {
-		if (/^40[13]\b/.test(text)) return "The assistant isn't configured: the model gateway refused its key.";
-		if (/^(429|5\d\d)\b/.test(text)) return 'The model is busy or unavailable. Try again in a moment.';
+		if (/^40[13]\b/.test(text))
+			return "The assistant isn't configured: the model gateway refused its key.";
+		if (/^(429|5\d\d)\b/.test(text))
+			return 'The model is busy or unavailable. Try again in a moment.';
 		return text;
 	}
 

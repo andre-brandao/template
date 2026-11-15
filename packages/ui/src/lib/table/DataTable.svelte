@@ -31,7 +31,6 @@
 
 	// Priority numbers only mean something once a second key is in play.
 	const multi = $derived((table.atoms.sorting?.get()?.length ?? 0) > 1);
-
 </script>
 
 <div class="wrap">

@@ -11,12 +11,51 @@
 
 	// About 150 gateway ids over four providers, dated snapshots included.
 	const families = {
-		openai: ['gpt-6', 'gpt-6-luna', 'gpt-5.4', 'gpt-5.4-mini', 'gpt-5.4-nano', 'o5', 'o5-mini', 'gpt-4.1', 'gpt-4.1-mini', 'o4-mini'],
-		anthropic: ['claude-opus-5-5', 'claude-sonnet-5', 'claude-haiku-5', 'claude-sonnet-4-5', 'claude-opus-4-1', 'claude-3-7-sonnet'],
-		google: ['gemini-3-pro', 'gemini-3-flash', 'gemini-3-flash-lite', 'gemma-4-27b', 'gemini-2.5-pro', 'gemini-2.5-flash'],
-		mistral: ['mistral-large-3', 'mistral-medium-3', 'codestral-3', 'ministral-8b', 'pixtral-large', 'mistral-small-3']
+		openai: [
+			'gpt-6',
+			'gpt-6-luna',
+			'gpt-5.4',
+			'gpt-5.4-mini',
+			'gpt-5.4-nano',
+			'o5',
+			'o5-mini',
+			'gpt-4.1',
+			'gpt-4.1-mini',
+			'o4-mini'
+		],
+		anthropic: [
+			'claude-opus-5-5',
+			'claude-sonnet-5',
+			'claude-haiku-5',
+			'claude-sonnet-4-5',
+			'claude-opus-4-1',
+			'claude-3-7-sonnet'
+		],
+		google: [
+			'gemini-3-pro',
+			'gemini-3-flash',
+			'gemini-3-flash-lite',
+			'gemma-4-27b',
+			'gemini-2.5-pro',
+			'gemini-2.5-flash'
+		],
+		mistral: [
+			'mistral-large-3',
+			'mistral-medium-3',
+			'codestral-3',
+			'ministral-8b',
+			'pixtral-large',
+			'mistral-small-3'
+		]
 	};
-	const dates = ['2026-03-17', '2026-01-08', '2025-11-20', '2025-09-02', '2025-06-14', '2025-04-01'];
+	const dates = [
+		'2026-03-17',
+		'2026-01-08',
+		'2025-11-20',
+		'2025-09-02',
+		'2025-06-14',
+		'2025-04-01'
+	];
 	const ids = Object.entries(families).flatMap((entry) =>
 		entry[1].flatMap((name, i) => [
 			`${entry[0]}/${name}`,
@@ -43,23 +82,23 @@
 
 <div class="frame">
 	<div class="pick">
-	<Combobox
-		items={ids}
-		key={(id) => id}
-		group={vendor}
-		facet={vendor}
-		bind:value
-		bind:filter
-		label="Model"
-		placeholder="Search {ids.length} models"
-	>
-		{#snippet trigger(id)}
-			{#if id}<span class="dim">{vendor(id)} ·</span> {model(id)}{/if}
-		{/snippet}
-		{#snippet item(id, row)}
-			<span class="name">{@render row.marked(model(id))}</span>
-		{/snippet}
-	</Combobox>
+		<Combobox
+			items={ids}
+			key={(id) => id}
+			group={vendor}
+			facet={vendor}
+			bind:value
+			bind:filter
+			label="Model"
+			placeholder="Search {ids.length} models"
+		>
+			{#snippet trigger(id)}
+				{#if id}<span class="dim">{vendor(id)} ·</span> {model(id)}{/if}
+			{/snippet}
+			{#snippet item(id, row)}
+				<span class="name">{@render row.marked(model(id))}</span>
+			{/snippet}
+		</Combobox>
 	</div>
 
 	<p class="picked">selected <code>{value}</code>{filter ? ` · in ${filter}` : ''}</p>

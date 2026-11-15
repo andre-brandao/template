@@ -121,8 +121,7 @@
 			bind:value={draft}
 			onkeydown={keys}
 			onblur={() => save(false)}
-			{@attach focus}
-		></textarea>
+			{@attach focus}></textarea>
 	{:else if editing}
 		<input
 			class="box"
@@ -156,7 +155,9 @@
 			</svg>
 		</button>
 	{/if}
-	{#if pending || failed}<span class="spin"><Status state={pending ? 'pending' : 'failed'} message={failed} /></span>{/if}
+	{#if pending || failed}<span class="spin"
+			><Status state={pending ? 'pending' : 'failed'} message={failed} /></span
+		>{/if}
 </span>
 
 <style>

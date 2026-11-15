@@ -60,7 +60,9 @@
 		parts?.clock ? format(parts.day, cfg.locale, { timeStyle: 'short' }, parts.clock) : ''
 	);
 	const preview = $derived(
-		typing && text.trim() ? parse(text, { today: today(cfg.zone), locale: cfg.locale, weekStart: cfg.weekStart }) : undefined
+		typing && text.trim()
+			? parse(text, { today: today(cfg.zone), locale: cfg.locale, weekStart: cfg.weekStart })
+			: undefined
 	);
 
 	const allowed = (one: Day) => !(min && one < min) && !(max && one > max) && !disabled?.(one);
@@ -120,7 +122,12 @@
 		{#if typing && text.trim()}
 			<span class={['preview', { miss: !preview }]} aria-live="polite">
 				{preview
-					? format(preview, cfg.locale, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })
+					? format(preview, cfg.locale, {
+							weekday: 'short',
+							month: 'short',
+							day: 'numeric',
+							year: 'numeric'
+						})
 					: 'No match'}
 			</span>
 		{/if}
@@ -147,7 +154,13 @@
 					type="button"
 					class="preset"
 					onclick={() => {
-						pick(parse(one.value, { today: today(cfg.zone), locale: cfg.locale, weekStart: cfg.weekStart }));
+						pick(
+							parse(one.value, {
+								today: today(cfg.zone),
+								locale: cfg.locale,
+								weekStart: cfg.weekStart
+							})
+						);
 						close();
 					}}>{one.label}</button
 				>

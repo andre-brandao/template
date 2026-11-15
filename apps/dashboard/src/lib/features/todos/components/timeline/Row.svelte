@@ -26,7 +26,7 @@
 	<div class="track">
 		{#if plan}
 			<span
-				class={["plan", { late: late(todo, f.zone) }]}
+				class={['plan', { late: late(todo, f.zone) }]}
 				style:left="{plan.left}%"
 				style:width="{plan.width}%"
 				style:--c={color(todo.status)}

@@ -1,6 +1,16 @@
 <!-- Raised through `modal(TodoForm, { scope, due })`, which passes `close`. -->
 <script lang="ts">
-	import { Button, DatePicker, Field, Input, Issue, MarkdownEditor, Select, fromDay, toDay } from '@template/ui';
+	import {
+		Button,
+		DatePicker,
+		Field,
+		Input,
+		Issue,
+		MarkdownEditor,
+		Select,
+		fromDay,
+		toDay
+	} from '@template/ui';
 	import { upload } from '$lib/upload';
 	import { fmt } from '$lib/utils/fmt';
 	import { create } from '../../api/todos.query';
@@ -71,7 +81,14 @@
 
 	<div class="pair dates">
 		<Field label="Start" as="div">
-			<DatePicker bind:value={start} name="startDate" label="Start" placeholder="No start" time clearable />
+			<DatePicker
+				bind:value={start}
+				name="startDate"
+				label="Start"
+				placeholder="No start"
+				time
+				clearable
+			/>
 		</Field>
 
 		<Field label="Due" as="div">

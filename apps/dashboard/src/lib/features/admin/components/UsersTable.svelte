@@ -37,14 +37,23 @@
 	// The two form-heavy cells stay components: each owns a confirm snippet and its own form
 	// boundary, neither of which a snippet in this file could hold per row.
 	const cols: ColumnDef<typeof features, User.Info>[] = [
-		{ id: 'name', header: 'Name', accessorFn: (one) => one.name, cell: ({ row }) => renderSnippet(name, row) },
-		{ id: 'email', header: 'Email', accessorFn: (one) => one.email, cell: ({ row }) => renderSnippet(mail, row) },
+		{
+			id: 'name',
+			header: 'Name',
+			accessorFn: (one) => one.name,
+			cell: ({ row }) => renderSnippet(name, row)
+		},
+		{
+			id: 'email',
+			header: 'Email',
+			accessorFn: (one) => one.email,
+			cell: ({ row }) => renderSnippet(mail, row)
+		},
 		{
 			id: 'role',
 			header: 'Role',
 			accessorFn: (one) => one.role,
-			cell: ({ row }) =>
-				renderComponent(RoleForm, { row: row.original, self: self(row.original) })
+			cell: ({ row }) => renderComponent(RoleForm, { row: row.original, self: self(row.original) })
 		},
 		{
 			id: 'access',

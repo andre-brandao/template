@@ -31,7 +31,9 @@
 					autocomplete="new-password"
 					placeholder="At least 8 characters"
 				/>
-				<Button variant="primary" type="submit" pending={!!password.pending}>{set ? 'Change' : 'Set'}</Button>
+				<Button variant="primary" type="submit" pending={!!password.pending}
+					>{set ? 'Change' : 'Set'}</Button
+				>
 			</div>
 		</Field>
 	</form>

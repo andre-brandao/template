@@ -30,10 +30,15 @@
 	// CSS can't tell where a line wrapped.
 	function band(node: HTMLElement) {
 		const mark = () => {
-			const shown = [...node.children].filter((child) => child.getClientRects().length) as HTMLElement[];
+			const shown = [...node.children].filter(
+				(child) => child.getClientRects().length
+			) as HTMLElement[];
 			shown.forEach((child, i) => {
 				const prev = shown[i - 1];
-				child.toggleAttribute('data-lead', !prev || child.offsetTop >= prev.offsetTop + prev.offsetHeight);
+				child.toggleAttribute(
+					'data-lead',
+					!prev || child.offsetTop >= prev.offsetTop + prev.offsetHeight
+				);
 			});
 		};
 		const resize = new ResizeObserver(mark);

@@ -15,8 +15,9 @@
 	function submit(e: SubmitEvent & { currentTarget: HTMLFormElement }) {
 		e.preventDefault();
 		const form = e.currentTarget;
-		const title = String(new FormData(form).get("title") ?? "").trim();
-		if (title) add.mutate({ body: { title, parentID: todo.id } }, { onSuccess: () => form.reset() });
+		const title = String(new FormData(form).get('title') ?? '').trim();
+		if (title)
+			add.mutate({ body: { title, parentID: todo.id } }, { onSuccess: () => form.reset() });
 	}
 </script>
 

@@ -154,7 +154,7 @@
 		--tile: color-mix(in oklab, var(--surface-2) 55%, var(--surface));
 		background:
 			conic-gradient(var(--tile) 25%, transparent 0 50%, var(--tile) 0 75%, transparent 0) 0 0 /
-			20px 20px,
+				20px 20px,
 			var(--surface);
 	}
 

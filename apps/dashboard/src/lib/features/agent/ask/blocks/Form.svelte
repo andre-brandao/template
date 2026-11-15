@@ -30,7 +30,8 @@
 	<footer>
 		<Button variant="ghost" onclick={ctx.talk}>Discuss in chat</Button>
 		<Button variant="primary" type="submit" disabled={!ctx.ready}>
-			{props.submit ?? 'Send'} <Kbd keys="Mod+Enter" />
+			{props.submit ?? 'Send'}
+			<Kbd keys="Mod+Enter" />
 		</Button>
 	</footer>
 </form>

@@ -48,7 +48,8 @@
 <Combobox
 	{items}
 	key={(one) => one.id}
-	text={(one) => (one.id === me.current?.id ? `${one.name} ${one.email} me` : `${one.name} ${one.email}`)}
+	text={(one) =>
+		one.id === me.current?.id ? `${one.name} ${one.email} me` : `${one.name} ${one.email}`}
 	bind:value
 	bind:open
 	{name}

@@ -17,7 +17,9 @@
 	let editing = $state<string>();
 
 	const span = (stage: { start: string | null; end: string | null }) =>
-		[stage.start && f.date(stage.start), stage.end && f.date(stage.end)].filter(Boolean).join(' → ');
+		[stage.start && f.date(stage.start), stage.end && f.date(stage.end)]
+			.filter(Boolean)
+			.join(' → ');
 </script>
 
 {#if query.isPending}
@@ -31,7 +33,11 @@
 		{#each query.data as stage (stage.name)}
 			<li>
 				{#if editing === stage.name}
-					<div class="edit" onfocusout={() => (editing = undefined)} {@attach (el) => el.querySelector('button')?.focus()}>
+					<div
+						class="edit"
+						onfocusout={() => (editing = undefined)}
+						{@attach (el) => el.querySelector('button')?.focus()}
+					>
 						<Inline
 							label="Stage name"
 							value={stage.name}

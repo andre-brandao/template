@@ -33,7 +33,12 @@
 			],
 			scales: {
 				x: { scale: scaleTime, axis: { ticks: { format: short } } },
-				y: { scale: scaleLinear, nice: true, grid: true, axis: { ticks: { count: 4, format: whole } } }
+				y: {
+					scale: scaleLinear,
+					nice: true,
+					grid: true,
+					axis: { ticks: { count: 4, format: whole } }
+				}
 			},
 			color: {
 				domain: ['Created', 'Completed'],

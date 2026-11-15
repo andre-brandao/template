@@ -25,12 +25,12 @@
 {/snippet}
 
 <Header.Root title={todo.title} eyebrow={parent}>
-		<Header.Item label="Status"><StatusPill status={todo.status} reason={todo.reason} /></Header.Item>
-		<Header.Item label="Assignee">{todo.assignee?.name ?? 'Unassigned'}</Header.Item>
-		<Header.Item label="Stage">{todo.stage ?? '—'}</Header.Item>
-		<Header.Item label="Due">
-			<span class={{ late: late(todo, f.zone) }}>{todo.dueDate ? f.day(todo.dueDate) : '—'}</span>
-		</Header.Item>
+	<Header.Item label="Status"><StatusPill status={todo.status} reason={todo.reason} /></Header.Item>
+	<Header.Item label="Assignee">{todo.assignee?.name ?? 'Unassigned'}</Header.Item>
+	<Header.Item label="Stage">{todo.stage ?? '—'}</Header.Item>
+	<Header.Item label="Due">
+		<span class={{ late: late(todo, f.zone) }}>{todo.dueDate ? f.day(todo.dueDate) : '—'}</span>
+	</Header.Item>
 </Header.Root>
 
 <style>

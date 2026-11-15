@@ -34,8 +34,7 @@
 
 <p class="note">
 	Try <Kbd keys={['G', 'P']} />, <Kbd keys="Shift+/" /> or <Kbd keys="Mod+J" />, then type in the
-	box: only <Kbd keys="Mod+J" /> gets through, because the library ignores plain keys in inputs by
-	default.
+	box: only <Kbd keys="Mod+J" /> gets through, because the library ignores plain keys in inputs by default.
 </p>
 <input class="box" placeholder="typing here is ignored" />
 <div class="box" contenteditable="true" role="textbox" tabindex="0" aria-label="Editable">

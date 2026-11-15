@@ -106,7 +106,8 @@
 			<span>+</span>
 		</label>
 		<div class="tabs">
-			<button type="button" class:on={tab === 'write'} onclick={() => (tab = 'write')}>Write</button>
+			<button type="button" class:on={tab === 'write'} onclick={() => (tab = 'write')}>Write</button
+			>
 			<button type="button" class:on={tab === 'preview'} onclick={() => (tab = 'preview')}>
 				Preview
 			</button>
@@ -125,8 +126,7 @@
 				e.preventDefault();
 				over = true;
 			}}
-			ondragleave={() => (over = false)}
-		></textarea>
+			ondragleave={() => (over = false)}></textarea>
 	{:else}
 		<div class="preview"><Markdown {value} components={parts} /></div>
 	{/if}

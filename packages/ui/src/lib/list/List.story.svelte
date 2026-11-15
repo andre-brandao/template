@@ -42,7 +42,13 @@
 			{#snippet meta()}<time>1h ago</time>{/snippet}
 			{#snippet menu()}<Menu.Item>Open</Menu.Item>{/snippet}
 		</List.Row>
-		<List.Row title="Legacy importer" href="#list" muted={gone} state="failed" message="Not deleted">
+		<List.Row
+			title="Legacy importer"
+			href="#list"
+			muted={gone}
+			state="failed"
+			message="Not deleted"
+		>
 			{#snippet lead()}<Avatar name="Legacy importer" size={20} />{/snippet}
 			{#snippet meta()}<time>2d ago</time>{/snippet}
 			{#snippet menu()}<Menu.Item danger>Delete</Menu.Item>{/snippet}

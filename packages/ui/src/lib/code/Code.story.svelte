@@ -31,7 +31,10 @@
 		variants: [
 			{ label: 'typescript', props: { value: ts, lang: 'ts' } },
 			{ label: 'json', props: { value: json, lang: 'json' } },
-			{ label: 'shell', props: { value: 'curl -X POST https://x.co/api \\\n  -d \'{"a":1}\'', lang: 'shell' } },
+			{
+				label: 'shell',
+				props: { value: 'curl -X POST https://x.co/api \\\n  -d \'{"a":1}\'', lang: 'shell' }
+			},
 			{ label: 'titled', props: { value: ts, lang: 'ts', title: 'greet.ts' } }
 		]
 	};

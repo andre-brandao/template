@@ -17,36 +17,36 @@
 {#if projects.isPending}
 	<span class="ph" class:tight></span>
 {:else}
-<div class="switcher" class:tight>
-	<Combobox
-		items={projects.data?.data ?? []}
-		key={(p) => p.id}
-		text={(p) => p.name}
-		value={id}
-		label="Projects"
-		placeholder="Find a project"
-		caret={!tight}
-		onchange={(next) => goto(`/projects/${next}${sub}`)}
-	>
-		{#snippet trigger()}
-			{#if tight}
-				<Tooltip tip={label} side="right">
-					<!-- Collapsed the avatar is all that is left, and Avatar falls back to an
+	<div class="switcher" class:tight>
+		<Combobox
+			items={projects.data?.data ?? []}
+			key={(p) => p.id}
+			text={(p) => p.name}
+			value={id}
+			label="Projects"
+			placeholder="Find a project"
+			caret={!tight}
+			onchange={(next) => goto(`/projects/${next}${sub}`)}
+		>
+			{#snippet trigger()}
+				{#if tight}
+					<Tooltip tip={label} side="right">
+						<!-- Collapsed the avatar is all that is left, and Avatar falls back to an
 					     initial when there is no image. -->
+						<Avatar name={label} image={current?.image} size={16} />
+					</Tooltip>
+				{:else}
 					<Avatar name={label} image={current?.image} size={16} />
-				</Tooltip>
-			{:else}
-				<Avatar name={label} image={current?.image} size={16} />
-				<span class="name">{label}</span>
-			{/if}
-		{/snippet}
-		{#snippet item(p, row)}
-			<Avatar name={p.name} image={p.image} size={16} />
-			<span class="name">{@render row.marked(p.name)}</span>
-		{/snippet}
-		{#snippet empty()}{projects.error?.message ?? 'No project by that name.'}{/snippet}
-	</Combobox>
-</div>
+					<span class="name">{label}</span>
+				{/if}
+			{/snippet}
+			{#snippet item(p, row)}
+				<Avatar name={p.name} image={p.image} size={16} />
+				<span class="name">{@render row.marked(p.name)}</span>
+			{/snippet}
+			{#snippet empty()}{projects.error?.message ?? 'No project by that name.'}{/snippet}
+		</Combobox>
+	</div>
 {/if}
 
 <style>

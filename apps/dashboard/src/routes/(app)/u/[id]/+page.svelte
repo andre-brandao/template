@@ -37,7 +37,12 @@
 			{#if profile.self}
 				{#if account.data}<ProfileForm user={account.data} onchange={() => changed(id)} />{/if}
 			{:else}
-				<AvatarUpload name={profile.name} image={profile.image} url="/avatars/user/{id}" onchange={() => changed(id)} />
+				<AvatarUpload
+					name={profile.name}
+					image={profile.image}
+					url="/avatars/user/{id}"
+					onchange={() => changed(id)}
+				/>
 			{/if}
 		{/snippet}
 		{#snippet app()}

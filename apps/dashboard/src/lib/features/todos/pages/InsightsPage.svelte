@@ -37,7 +37,13 @@
 	{#snippet strip()}
 		<Header.Group label="Period">
 			<!-- 30d and 90d tabs cover the month and quarter; 366 is core's Insights.Range cap. -->
-			<RangePicker range={picked} presets={[7, 30, 90, 365]} max={now} maxSpan={366} onchange={commit} />
+			<RangePicker
+				range={picked}
+				presets={[7, 30, 90, 365]}
+				max={now}
+				maxSpan={366}
+				onchange={commit}
+			/>
 		</Header.Group>
 		{#if fetching.current}
 			<Header.Group end><Status state="pending" /></Header.Group>

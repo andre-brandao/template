@@ -48,10 +48,20 @@
 		{@const on = day}
 		<form class="quick" onsubmit={submit}>
 			<p>
-				New todo · {format(on, me.prefs.locale, { weekday: 'short', month: 'short', day: 'numeric' })}
+				New todo · {format(on, me.prefs.locale, {
+					weekday: 'short',
+					month: 'short',
+					day: 'numeric'
+				})}
 				<Status of={save} />
 			</p>
-			<Input name="title" aria-label="Title" placeholder="What needs doing?" autofocus bind:value={title} />
+			<Input
+				name="title"
+				aria-label="Title"
+				placeholder="What needs doing?"
+				autofocus
+				bind:value={title}
+			/>
 			<div class="foot">
 				<Button
 					variant="ghost"

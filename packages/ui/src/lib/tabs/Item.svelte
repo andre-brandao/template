@@ -17,7 +17,8 @@
 
 <!-- A segmented control, not a tablist: a link tab is the current page, a button a toggle. -->
 {#if href}
-	<a class="tab" {href} aria-current={active ? 'page' : undefined} {...rest}>{@render children()}</a>
+	<a class="tab" {href} aria-current={active ? 'page' : undefined} {...rest}>{@render children()}</a
+	>
 {:else}
 	<button type="button" class="tab" aria-pressed={active} {...rest}>{@render children()}</button>
 {/if}

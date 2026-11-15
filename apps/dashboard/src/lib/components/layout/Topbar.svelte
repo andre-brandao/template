@@ -43,7 +43,11 @@
 	{#if crumbs}<Breadcrumbs items={crumbs} />{/if}
 
 	{#if dev}
-		<a class="env" href={resolve('/dev')} title="Not production — data here is throwaway. Opens the dev tools.">dev</a>
+		<a
+			class="env"
+			href={resolve('/dev')}
+			title="Not production — data here is throwaway. Opens the dev tools.">dev</a
+		>
 	{/if}
 
 	<!-- The right cluster, Cloudflare-style: utilities first, then the account. -->

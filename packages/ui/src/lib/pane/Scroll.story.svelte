@@ -35,7 +35,10 @@
 	</Field>
 </div>
 
-<Scroll {orientation} style="max-height: 14em; border: 1px solid var(--border); border-radius: var(--radius)">
+<Scroll
+	{orientation}
+	style="max-height: 14em; border: 1px solid var(--border); border-radius: var(--radius)"
+>
 	<div class="rows" class:wide={orientation !== 'vertical'}>
 		{#each rows as row (row)}
 			<p>Row {row} — the bars fade in on hover and can be dragged or clicked past.</p>

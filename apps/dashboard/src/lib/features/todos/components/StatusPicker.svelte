@@ -1,8 +1,9 @@
 <script lang="ts">
 	import type { Todo } from '@template/core/todo';
-	import { Popover, Status } from '@template/ui';
+	import { Menu, Status } from '@template/ui';
 	import { update } from '../api/todos.query';
 	import { STATUSES, color, label } from '../status';
+	import Pick from './Pick.svelte';
 
 	// `compact` drops the label: a board card or row shows the dot alone.
 	let { todo, compact = false }: { todo: Todo.Info; compact?: boolean } = $props();
@@ -14,22 +15,36 @@
 		save.isPending ? 'pending' : save.isError ? 'failed' : save.isSuccess ? 'saved' : 'idle'
 	);
 
+	// One letter each while the menu is open; blocked takes X, since B is backlog.
+	const letters = {
+		backlog: 'B',
+		planned: 'P',
+		active: 'A',
+		blocked: 'X',
+		done: 'D'
+	} as const satisfies Record<Todo.Status, string>;
 	const items = [
 		...STATUSES.filter((status) => status !== 'done').map((status) => ({
 			key: status,
 			status,
 			label: label(status),
+			letter: letters[status],
 			reason: ''
 		})),
-		{ key: 'done', status: 'done' as const, label: 'Done', reason: 'completed' },
-		{ key: 'not_planned', status: 'done' as const, label: 'Not planned', reason: 'not_planned' }
+		{ key: 'done', status: 'done' as const, label: 'Done', letter: 'D' as const, reason: 'completed' },
+		{
+			key: 'not_planned',
+			status: 'done' as const,
+			label: 'Not planned',
+			letter: 'N' as const,
+			reason: 'not_planned'
+		}
 	];
 
 	// One shared note: it gives `blocked` its why, and overrides the default done reason.
 	let note = $state('');
 
-	function pick(item: (typeof items)[number], close: () => void) {
-		close();
+	function pick(item: (typeof items)[number]) {
 		save.mutate({
 			path: { id: todo.id },
 			body: { status: item.status, reason: (note || item.reason).trim() || null }
@@ -39,48 +54,37 @@
 </script>
 
 <span class="picker">
-	<Popover label="Set status" role="menu">
-		{#snippet trigger(attrs)}
-			<button
-				class={['current', { compact }]}
-				type="button"
-				style:--c={color(shown)}
-				aria-label={compact ? `Status: ${label(shown)}` : undefined}
-				title={compact ? label(shown) : undefined}
-				disabled={save.isPending}
-				{...attrs}
+	<Pick
+		label="Set status"
+		text={label(shown)}
+		color={color(shown)}
+		{compact}
+		disabled={save.isPending}
+	>
+		{#each items as item (item.key)}
+			<Menu.Item
+				shortcut={item.letter}
+				disabled={item.status === todo.status && !item.reason}
+				onselect={() => pick(item)}
 			>
-				<span class="dot"></span>
-				{#if !compact}{label(shown)}{/if}
-			</button>
-		{/snippet}
-		{#snippet children(close)}
-			<div class="menu">
-				{#each items as item (item.key)}
-					<button
-						class="item"
-						type="button"
-						role="menuitem"
-						disabled={item.status === todo.status && !item.reason}
-						onclick={() => pick(item, close)}
-					>
-						<span class="dot" style:--c={color(item.status)}></span>
-						{item.label}
-					</button>
-				{/each}
-				<label class="note">
-					<span>Reason</span>
-					<input
-						type="text"
-						name="reason"
-						autocomplete="off"
-						bind:value={note}
-						placeholder="waiting on design…"
-					/>
-				</label>
-			</div>
-		{/snippet}
-	</Popover>
+				<span class="dot" style:--c={color(item.status)}></span>
+				{item.label}
+			</Menu.Item>
+		{/each}
+		<Menu.Separator />
+		<label class="note">
+			<span>Reason</span>
+			<!-- Kept from the menu's arrows and type-ahead, which would pull focus off it. -->
+			<input
+				type="text"
+				name="reason"
+				autocomplete="off"
+				bind:value={note}
+				placeholder="waiting on design…"
+				onkeydown={(e) => e.key !== 'Escape' && e.key !== 'Tab' && e.stopPropagation()}
+			/>
+		</label>
+	</Pick>
 	<Status state={mark} message={save.error?.message} />
 </span>
 
@@ -93,85 +97,20 @@
 		gap: 0.35em;
 	}
 
-	.current {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.5em;
-		border: 1px solid color-mix(in srgb, var(--c) 45%, transparent);
-		border-radius: var(--radius);
-		background: color-mix(in srgb, var(--c) 12%, transparent);
-		color: var(--c);
-		font: inherit;
-		font-size: 0.86em;
-		padding: 0.35em 0.7em;
-		cursor: pointer;
-		transition: background 140ms ease;
-	}
-
-	/* A bare dot with a hit area big enough to tap. */
-	.current.compact {
-		justify-content: center;
-		width: 1.6em;
-		height: 1.6em;
-		padding: 0;
-		border-color: transparent;
-		background: none;
-	}
-
-	.current:hover,
-	.current[aria-expanded='true'] {
-		background: color-mix(in srgb, var(--c) 20%, transparent);
-	}
-
-	.current:disabled {
-		cursor: default;
-	}
-
 	.dot {
+		display: inline-block;
 		width: 8px;
 		height: 8px;
+		margin-inline-end: 0.5em;
 		border-radius: 50%;
 		background: var(--c);
-	}
-
-	.menu {
-		min-width: 13em;
-		padding: 0.25em 0;
-	}
-
-	.item {
-		display: flex;
-		align-items: center;
-		gap: 0.6em;
-		width: 100%;
-		border: none;
-		background: none;
-		padding: 0.45em 0.8em;
-		font: inherit;
-		font-size: 0.85em;
-		text-align: left;
-		color: var(--ink);
-		cursor: pointer;
-	}
-
-	.item:hover:not(:disabled),
-	.item:focus-visible {
-		background: var(--hover);
-		outline: none;
-	}
-
-	.item:disabled {
-		cursor: default;
-		opacity: 0.45;
 	}
 
 	.note {
 		display: flex;
 		flex-direction: column;
 		gap: 0.25em;
-		margin-top: 0.25em;
-		padding: 0.6em 0.8em 0.4em;
-		border-top: 1px solid var(--border);
+		padding: 0.4em 0.55em 0.3em;
 	}
 
 	.note span {
@@ -192,11 +131,5 @@
 	.note input:focus-visible {
 		border-color: var(--accent);
 		outline: none;
-	}
-
-	@media (prefers-reduced-motion: reduce) {
-		.current {
-			transition: none;
-		}
 	}
 </style>

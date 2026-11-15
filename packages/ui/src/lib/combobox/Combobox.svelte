@@ -23,6 +23,10 @@
 		group,
 		facet,
 		value = $bindable(),
+		multiple = false,
+		values = $bindable([]),
+		limit = 2,
+		name,
 		open = $bindable(false),
 		query = $bindable(''),
 		filter = $bindable(''),
@@ -33,6 +37,7 @@
 		side = 'bottom',
 		onchange,
 		trigger: face,
+		chip,
 		item,
 		filters,
 		empty,
@@ -47,6 +52,13 @@
 		/** Draws a chip row from these names, each with its count under the current query. */
 		facet?: (item: T) => string;
 		value?: string;
+		/** Rows toggle into `values` and the panel stays open; the trigger shows chips. */
+		multiple?: boolean;
+		values?: string[];
+		/** Chips on a `multiple` trigger before the rest fold into "+N". */
+		limit?: number;
+		/** Posts the value, or one field per value, with a surrounding form. */
+		name?: string;
 		open?: boolean;
 		/** Bindable so a caller can widen `items` while something is typed. */
 		query?: string;
@@ -59,6 +71,8 @@
 		side?: Place;
 		onchange?: (value: string) => void;
 		trigger?: Snippet<[T | undefined]>;
+		/** A picked item's chip on a `multiple` trigger. */
+		chip?: Snippet<[T]>;
 		item?: Snippet<[T, Row]>;
 		/** Extra controls at the end of the chip row. */
 		filters?: Snippet;
@@ -74,7 +88,10 @@
 
 	const terms = $derived(words(query));
 	const current = $derived(items.find((one) => key(one) === value));
-	const title = $derived(current ? text(current) : '');
+	const chosen = $derived(new Set(multiple ? values : []));
+	// In the order they were picked, which is the order the chips read.
+	const picked = $derived(values.flatMap((one) => items.find((row) => key(row) === one) ?? []));
+	const title = $derived(multiple ? picked.map(text).join(', ') : current ? text(current) : '');
 	const matched = $derived(items.filter((one) => mark(text(one), terms)));
 	// Every item's name, sorted, so the chips hold still while the counts and the order move.
 	const facets = $derived.by(() => {
@@ -107,7 +124,10 @@
 			query = '';
 			return;
 		}
-		active = Math.max(0, order.findIndex((one) => key(one) === value));
+		active = Math.max(
+			0,
+			order.findIndex((one) => (multiple ? chosen.has(key(one)) : key(one) === value))
+		);
 		// The rows mount after the platform placed an empty panel; place it again at full size.
 		tick().then(() => pop?.show());
 		reveal();
@@ -120,6 +140,14 @@
 		// Hide while the input still holds focus, so the platform hands it back to the trigger.
 		pop?.close();
 		open = false;
+	}
+
+	function toggle(one: T | undefined) {
+		if (!one) return;
+		values = chosen.has(key(one))
+			? values.filter((other) => other !== key(one))
+			: [...values, key(one)];
+		onchange?.(key(one));
 	}
 
 	function pick(name: string) {
@@ -136,8 +164,11 @@
 			reveal();
 			return;
 		}
-		if (e.key !== 'Enter') return;
+		// Space types once there's a query, so a search can still hold two words.
+		const space = multiple && e.key === ' ' && !query;
+		if (e.key !== 'Enter' && !space) return;
 		e.preventDefault();
+		if (multiple) return toggle(order[at]);
 		choose(order[at]);
 	}
 
@@ -169,11 +200,14 @@
 			<Chips {facets} total={matched.length} {scope} onpick={pick} />
 		{/if}
 		{@render filters?.()}
+		{#if multiple && values.length}
+			<button type="button" class="clear" onclick={() => (values = [])}>Clear</button>
+		{/if}
 	</div>
 {/snippet}
 
 {#snippet option(row: T, i: number)}
-	{@const selected = key(row) === value}
+	{@const selected = multiple ? chosen.has(key(row)) : key(row) === value}
 	<!-- Pointer only: the keyboard drives the same rows through the input. -->
 	<!-- svelte-ignore a11y_click_events_have_key_events -->
 	<div
@@ -182,10 +216,12 @@
 		role="option"
 		tabindex="-1"
 		aria-selected={i === at}
+		aria-checked={multiple ? selected : undefined}
 		data-current={selected || undefined}
 		onpointermove={() => (active = i)}
-		onclick={() => choose(row)}
+		onclick={() => (multiple ? toggle(row) : choose(row))}
 	>
+		{#if multiple}<span class="tick" aria-hidden="true">{selected ? '✓' : ''}</span>{/if}
 		<span class="body">
 			{#if item}
 				{@render item(row, { active: i === at, selected, marked })}
@@ -193,7 +229,7 @@
 				{@render marked(text(row))}
 			{/if}
 		</span>
-		{#if selected}<span class="check" aria-hidden="true">✓</span>{/if}
+		{#if selected && !multiple}<span class="check" aria-hidden="true">✓</span>{/if}
 	</div>
 {/snippet}
 
@@ -222,7 +258,16 @@
 		onkeydown={press}
 	>
 		<span class="value">
-			{#if face}{@render face(current)}{:else}{title || label}{/if}
+			{#if multiple && picked.length}
+				{#each picked.slice(0, limit) as one (key(one))}
+					<span class="tag">{#if chip}{@render chip(one)}{:else}{text(one)}{/if}</span>
+				{/each}
+				{#if picked.length > limit}<span class="more">+{picked.length - limit}</span>{/if}
+			{:else if face}
+				{@render face(current)}
+			{:else}
+				{title || label}
+			{/if}
 		</span>
 		{#if caret}<span class="caret" aria-hidden="true">▾</span>{/if}
 	</button>
@@ -260,8 +305,15 @@
 				el.setSelectionRange(el.value.length, el.value.length);
 			}}
 		/>
-		{#if facets.length > 1 || filters}{@render bar()}{/if}
-		<div class="list" id="{id}-list" role="listbox" aria-label={label} bind:this={list}>
+		{#if facets.length > 1 || filters || (multiple && values.length)}{@render bar()}{/if}
+		<div
+			class="list"
+			id="{id}-list"
+			role="listbox"
+			aria-label={label}
+			aria-multiselectable={multiple || undefined}
+			bind:this={list}
+		>
 			{#each groups as one, g (one.name)}
 				{@render section(one, g)}
 			{:else}
@@ -273,6 +325,11 @@
 {/snippet}
 
 <div class="combobox">
+	{#if name}
+		{#each multiple ? values : [value ?? ''] as one (one)}
+			<input type="hidden" {name} value={one} />
+		{/each}
+	{/if}
 	<Popover bind:this={pop} bind:open={() => open, set} {side} {label} trigger={button}>
 		<!-- Mounted only while open, so a closed picker costs one button. -->
 		{#if open}{@render panel()}{/if}
@@ -418,6 +475,65 @@
 		min-width: 0;
 		overflow: hidden;
 		white-space: nowrap;
+	}
+
+	.tick {
+		display: grid;
+		flex: none;
+		place-items: center;
+		width: 1.05em;
+		height: 1.05em;
+		border: 1px solid var(--border-bright);
+		border-radius: 4px;
+		color: var(--surface);
+		font-size: 0.75em;
+	}
+
+	.option[data-current] .tick {
+		border-color: var(--accent);
+		background: var(--accent);
+	}
+
+	.tag {
+		flex: none;
+		display: inline-flex;
+		align-items: center;
+		gap: 0.3em;
+		padding: 0 0.45em;
+		border: 1px solid var(--border);
+		border-radius: 999px;
+		background: var(--surface-2);
+		font-size: 0.85em;
+		line-height: 1.5;
+	}
+
+	.more {
+		flex: none;
+		color: var(--muted);
+		font-size: 0.85em;
+	}
+
+	.clear {
+		flex: none;
+		margin-inline-start: auto;
+		padding: 0.15em 0.4em;
+		border: none;
+		border-radius: var(--radius-sm);
+		background: none;
+		color: var(--muted);
+		font: inherit;
+		font-size: 0.85em;
+		cursor: pointer;
+	}
+
+	.clear:hover {
+		background: var(--hover);
+		color: var(--ink);
+	}
+
+	.clear:focus-visible {
+		outline: 2px solid var(--accent);
+		outline-offset: -2px;
 	}
 
 	.check {

@@ -5,7 +5,7 @@
 	export const story: Story = {
 		title: 'Combobox',
 		blurb:
-			'A picker over data on a `Popover`. Focus stays in the search box and ↑/↓/Home/End move `aria-activedescendant`, as in `Command`; Enter picks, Escape closes back to the trigger. Words match substrings or prefixes of successive letter and digit runs, so “g6 luna” finds `gpt-6-luna`, and the hit is marked. `group` gives sticky headers, `facet` a chip row counted against the query, `filters` extra controls beside it. The trigger opens on ↑/↓ or on any printable key, already searching for it. Rows mount only while open, and off-screen ones skip paint.',
+			'A picker over data on a `Popover`. Focus stays in the search box and ↑/↓/Home/End move `aria-activedescendant`, as in `Command`; Enter picks, Escape closes back to the trigger. Words match substrings or prefixes of successive letter and digit runs, so “g6 luna” finds `gpt-6-luna`, and the hit is marked. `group` gives sticky headers, `facet` a chip row counted against the query, `filters` extra controls beside it. The trigger opens on ↑/↓ or on any printable key, already searching for it. Rows mount only while open, and off-screen ones skip paint. `multiple` binds `values` instead: Enter (or Space, before anything is typed) toggles a row, the panel stays open with a Clear action, and the trigger shows `limit` chips then “+N”. `name` posts the pick with a form.',
 		of: Combobox
 	};
 
@@ -38,6 +38,7 @@
 
 	let value = $state('openai/gpt-6-luna');
 	let filter = $state('');
+	let picks = $state(['anthropic/claude-opus-5-5', 'openai/gpt-6', 'google/gemini-3-pro']);
 </script>
 
 <div class="frame">
@@ -64,9 +65,31 @@
 	<p class="picked">selected <code>{value}</code>{filter ? ` · in ${filter}` : ''}</p>
 </div>
 
+<div class="frame">
+	<div class="pick">
+		<Combobox
+			items={ids}
+			key={(id) => id}
+			group={vendor}
+			multiple
+			bind:values={picks}
+			label="Models"
+			placeholder="Search {ids.length} models"
+		>
+			{#snippet chip(id)}{model(id)}{/snippet}
+			{#snippet item(id, row)}
+				<span class="name">{@render row.marked(model(id))}</span>
+			{/snippet}
+		</Combobox>
+	</div>
+
+	<p class="picked">multiple <code>{picks.length ? picks.join(', ') : '—'}</code></p>
+</div>
+
 <style>
 	.frame {
 		display: flex;
+		margin-bottom: 1em;
 		align-items: center;
 		gap: 1em;
 	}

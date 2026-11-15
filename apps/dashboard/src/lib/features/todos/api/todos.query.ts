@@ -10,6 +10,7 @@ import {
   getInsightsLoadOptions,
   getInsightsStatsOptions,
   getInsightsStatusOptions,
+  getProjectOptions,
   getTodoOptions,
   getTodoQueryKey,
   getTodoStageOptions,
@@ -57,6 +58,11 @@ export const get = (id: string) => getTodoByIdOptions({ path: { id } });
 export const stages = (scope: Scope) => getTodoStageOptions({ query: scope });
 
 export const users = () => getUserOptions();
+
+// Unscoped, the stage picker groups labels by the project their todos sit in; a page of each.
+export const placed = () => getTodoOptions({ query: { pageSize: 100 } });
+
+export const projects = () => getProjectOptions({ query: { pageSize: 100 } });
 
 // Insights keep the last range on screen while the next one loads.
 export const stats = (range: Range) => ({

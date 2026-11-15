@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Field, Input, Select } from '@template/ui';
+	import { Combobox, Field, Input } from '@template/ui';
 	import type { doc } from './api.remote';
 
 	type Param = Awaited<ReturnType<typeof doc>>['list'][number]['params'][number];
@@ -16,15 +16,17 @@
 				{one.name}{one.required ? ' *' : ''}
 				<em>{one.type}{one.note ? ` · ${one.note}` : ''}</em>
 			{/snippet}
-			<Field label={caption}>
+			<!-- `div`, not the default label: a label wrapping the trigger would toggle it twice. -->
+			<Field label={caption} as={one.options ? 'div' : 'label'}>
 				{#if one.options}
-					<Select
-						options={[
-							{ value: '', label: '—' },
-							...one.options.map((choice) => ({ value: choice, label: choice }))
-						]}
+					<Combobox
+						items={['', ...one.options]}
+						key={(choice) => choice}
+						text={(choice) => choice || '—'}
 						value={values[one.name] ?? ''}
-						onchange={(e) => (values[one.name] = e.currentTarget.value)}
+						onchange={(choice) => (values[one.name] = choice)}
+						label={one.name}
+						placeholder="Search {one.options.length} values"
 					/>
 				{:else}
 					<Input

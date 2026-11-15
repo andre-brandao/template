@@ -1,25 +1,25 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { createQuery } from '@tanstack/svelte-query';
-	import { Button, Empty, Issue, Skeleton, Status, modal } from '@template/ui';
-	import { getEndpoint } from '../../api/apps.remote';
-	import { app, hooks, owned, remove, rotate } from '../../api/developers.query';
+	import { Button, Empty, Issue, Section, Skeleton, Status, modal } from '@template/ui';
+	import { app, endpoint, owned, rotate } from '../../api/apps.query';
+	import { hooks } from '../../api/webhooks.query';
 	import KeyForm from '../key/KeyForm.svelte';
-	import KeyList from '../key/KeyList.svelte';
+	import KeyRow from '../key/KeyRow.svelte';
 	import List from '../List.svelte';
 	import Loading from '../Loading.svelte';
 	import Reveal from '../Reveal.svelte';
 	import WebhookForm from '../webhook/WebhookForm.svelte';
 	import WebhookRow from '../webhook/WebhookRow.svelte';
+	import Delete from './Delete.svelte';
 
-	// What an admin configures on an App's profile. The profile itself is the people slice's;
-	// the route puts this panel inside it.
+	// What an admin configures on an App's profile, as sections of the people slice's page.
 	let { id }: { id: string } = $props();
 
 	const row = createQuery(() => app(id));
 	const subs = createQuery(() => hooks(id));
 	const keys = createQuery(() => owned(id));
-	const drop = remove({ onSuccess: () => goto('/developers/apps') });
+	const url = createQuery(() => endpoint(id));
 	// The panel outlives the reveal, so reset drops the secret from the mutation's data.
 	const spin = rotate({
 		onSuccess: (data) => {
@@ -31,38 +31,50 @@
 	const key = () => modal(KeyForm, { app: id });
 	const hook = () => modal(WebhookForm, { owner: id });
 
+	// Rotating breaks whatever signs with the current secret, so only a held one asks first.
 	async function cycle(held: boolean) {
 		if (held && !(await modal.confirm({ title: 'Rotate secret', action: 'Rotate', body: cut }))) return;
-		spin.mutate({ path: { id } });
-	}
-
-	async function ask(name: string) {
-		const ok = await modal.confirm({ title: 'Delete app', action: 'Delete app', body: warn, verify: name });
-		if (ok) drop.mutate({ path: { id } });
+		spin.mutate(id);
 	}
 
 	// The signing contract, spelled out where the secret lives so nobody has to go looking.
-	const example = (url: string) => `body='{"type":"invoice.paid","data":{"id":"inv_1"}}'
+	const example = (to: string) => `body='{"type":"invoice.paid","data":{"id":"inv_1"}}'
 ts=$(date +%s)
 sig=$(printf '%s' "$body.$ts" | openssl dgst -sha256 -hmac "$SECRET" -binary | basenc --base64url | tr -d =)
-curl -X POST ${url} -H "x-webhook-timestamp: $ts" -H "x-webhook-signature: $sig" -d "$body"`;
+curl -X POST ${to} -H "x-webhook-timestamp: $ts" -H "x-webhook-signature: $sig" -d "$body"`;
 </script>
 
 {#snippet cut()}
 	The current inbound secret stops working at once.
 {/snippet}
 
-{#snippet warn()}
-	Its keys, inbound secret and webhooks stop working immediately.
+{#snippet bearer()}
+	Send as <code>Authorization: Bearer &lt;key&gt;</code>. Each key acts as the App.
 {/snippet}
 
-{#snippet listed()}
+{#snippet signed()}
+	Signed posts become <code>app.received</code> events.
+{/snippet}
+
+{#snippet keyed()}
 	{#if keys.isPending}
 		<Loading rows={2} />
 	{:else if keys.isError}
 		<Issue>{keys.error.message}</Issue>
+	{:else if keys.data.length === 0}
+		<div class="none">
+			<Empty>
+				No keys yet.
+				{#snippet action()}<Button onclick={key}>New key</Button>{/snippet}
+			</Empty>
+		</div>
 	{:else}
-		<KeyList keys={keys.data} app={id} create={key} />
+		<div class="bar"><Button variant="secondary" onclick={key}>New key</Button></div>
+		<List>
+			{#each keys.data as one (one.id)}
+				<KeyRow key={one} app={id} />
+			{/each}
+		</List>
 	{/if}
 {/snippet}
 
@@ -72,13 +84,14 @@ curl -X POST ${url} -H "x-webhook-timestamp: $ts" -H "x-webhook-signature: $sig"
 	{:else if subs.isError}
 		<Issue>{subs.error.message}</Issue>
 	{:else if subs.data.length === 0}
-		<Empty>
-			No webhooks for this app.
-			{#snippet action()}
-				<Button onclick={hook}>New webhook</Button>
-			{/snippet}
-		</Empty>
+		<div class="none">
+			<Empty>
+				No webhooks for this app.
+				{#snippet action()}<Button onclick={hook}>New webhook</Button>{/snippet}
+			</Empty>
+		</div>
 	{:else}
+		<div class="bar"><Button variant="secondary" onclick={hook}>New webhook</Button></div>
 		<List>
 			{#each subs.data as one (one.id)}
 				<WebhookRow row={one} />
@@ -89,79 +102,63 @@ curl -X POST ${url} -H "x-webhook-timestamp: $ts" -H "x-webhook-signature: $sig"
 
 {#if row.isPending}
 	<Skeleton h="12em" />
-{:else if row.isError}
-	<Empty>That app doesn't exist, or was removed.</Empty>
+{:else if row.isError || !row.data}
+	<Issue>{row.error?.message ?? "That app doesn't exist, or was removed."}</Issue>
 {:else}
-	<section>
-		<header>
-			<h2>API keys</h2>
-			<Button variant="secondary" onclick={key}>New key</Button>
-		</header>
-		<p class="hint">Send as <code>Authorization: Bearer &lt;key&gt;</code>; each key acts as the App.</p>
-		{@render listed()}
-	</section>
+	{@const held = row.data.inbound}
+	<Section divider title="API keys" description={bearer}>
+		{@render keyed()}
+	</Section>
 
-	<section>
-		<header>
-			<h2>
-				Inbound
-				{#if spin.isPending || spin.error}
-					<Status state={spin.isPending ? 'pending' : 'failed'} message={spin.error?.message} />
-				{/if}
-			</h2>
-			<Button variant="secondary" pending={spin.isPending} onclick={() => cycle(row.data.inbound)}>
-				{row.data.inbound ? 'Rotate secret' : 'Generate secret'}
+	<Section divider title="Inbound" description={signed}>
+		<div class="bar">
+			{#if spin.isPending || spin.error}
+				<Status state={spin.isPending ? 'pending' : 'failed'} message={spin.error?.message} />
+			{/if}
+			<Button variant="secondary" pending={spin.isPending} onclick={() => cycle(held)}>
+				{held ? 'Rotate secret' : 'Generate secret'}
 			</Button>
-		</header>
-		<p class="hint">Signed posts become <code>app.received</code> events.</p>
-		<pre>{example(await getEndpoint(id))}</pre>
-	</section>
-
-	<section>
-		<header>
-			<h2>Webhooks</h2>
-			<Button variant="secondary" onclick={hook}>New webhook</Button>
-		</header>
-		{@render subscribed()}
-	</section>
-
-	<section class="danger">
-		<header>
-			<h2>Delete app</h2>
-			<Button variant="danger" pending={drop.isPending} onclick={() => ask(row.data.name)}>Delete</Button>
-		</header>
-		{#if drop.error}
-			<Issue>{drop.error.message}</Issue>
+		</div>
+		{#if url.data}
+			<pre>{example(url.data)}</pre>
+		{:else if url.isError}
+			<Issue>{url.error.message}</Issue>
+		{:else}
+			<Skeleton h="6em" />
 		{/if}
-	</section>
+	</Section>
+
+	<Section divider title="Webhooks" description="Events delivered to this app's endpoints.">
+		{@render subscribed()}
+	</Section>
+
+	<Section
+		danger
+		divider
+		title="Delete app"
+		description="Its keys, inbound secret and webhooks stop working immediately."
+	>
+		<Delete {id} name={row.data.name} ondone={() => goto('/developers/apps')}>
+			{#snippet children(ask, pending)}
+				<!-- A block wrapper so the button keeps its own width in the stretched column. -->
+				<div><Button variant="danger" {pending} onclick={ask}>Delete app</Button></div>
+			{/snippet}
+		</Delete>
+	</Section>
 {/if}
 
 <style>
-	section {
-		margin-top: 2em;
-	}
-
-	header {
+	.bar {
 		display: flex;
 		align-items: center;
-		justify-content: space-between;
-		gap: 1em;
-		margin-bottom: 0.5em;
+		justify-content: flex-end;
+		gap: 0.6em;
 	}
 
-	h2 {
-		display: flex;
-		align-items: center;
-		gap: 0.5em;
-		margin: 0;
-		font-size: 0.95em;
-		font-weight: 600;
-	}
-
-	.hint {
-		margin: 0 0 0.7em;
-		font-size: 0.8em;
-		color: var(--muted);
+	/* The empty state sits in the box its list will fill, so it lines up with the section. */
+	.none {
+		border: 1px dashed var(--border);
+		border-radius: var(--radius);
 	}
 
 	pre {
@@ -174,10 +171,5 @@ curl -X POST ${url} -H "x-webhook-timestamp: $ts" -H "x-webhook-signature: $sig"
 		font-size: 0.78em;
 		white-space: pre-wrap;
 		overflow-wrap: anywhere;
-	}
-
-	.danger {
-		padding-top: 1.2em;
-		border-top: 1px solid var(--border);
 	}
 </style>

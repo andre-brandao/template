@@ -2,7 +2,7 @@
 	import { page } from '$app/state';
 	import { resolve } from '$app/paths';
 	import { Button, Field, Input } from '@template/ui';
-	import { mint } from '$lib/features/developers/api/developers.query';
+	import { mint } from '$lib/features/developers/api/keys.query';
 	import Nav from '../Nav.svelte';
 	import { doc } from './api.remote';
 	import { createToken } from './token.svelte';

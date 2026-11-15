@@ -9,8 +9,6 @@ import { TodoApi } from "./handler/todo";
 import { ProjectApi } from "./handler/project";
 import { FileApi } from "./handler/file";
 import { HookApi } from "./handler/hook";
-import { AppApi } from "./handler/app";
-import { WebhookApi } from "./handler/webhook";
 import { auth } from "./middleware";
 import { health } from "../health";
 
@@ -55,8 +53,6 @@ export const routes = new Hono()
   .route("/project", ProjectApi.route)
   .route("/file", FileApi.route)
   .route("/hook", HookApi.route)
-  .route("/app", AppApi.route)
-  .route("/webhook", WebhookApi.route)
   .onError(fail);
 
 export const app = new Hono()

@@ -3,7 +3,7 @@
 	import { createHotkey } from '@tanstack/svelte-hotkeys';
 	import { Button, Empty, Issue, Kbd, modal } from '@template/ui';
 	import * as Header from '$lib/components/header';
-	import { hooks } from '../api/developers.query';
+	import { hooks } from '../api/webhooks.query';
 	import List from '../components/List.svelte';
 	import Loading from '../components/Loading.svelte';
 	import WebhookForm from '../components/webhook/WebhookForm.svelte';

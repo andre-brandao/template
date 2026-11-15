@@ -6,7 +6,7 @@
 	import { Inline, Menu, Status, Tooltip, modal } from '@template/ui';
 	import type { Webhook } from '@template/core/webhook';
 	import { fmt } from '$lib/utils/fmt';
-	import { unsubscribe, update } from '../../api/developers.query';
+	import { unsubscribe, update } from '../../api/webhooks.query';
 	import Row from '../Row.svelte';
 
 	let { row }: { row: Webhook.Info } = $props();
@@ -25,7 +25,7 @@
 	function power() {
 		on = !on;
 		flip.mutate(
-			{ path: { id: row.id }, body: { enabled: on } },
+			{ id: row.id, enabled: on },
 			{ onError: () => (on = row.enabled) }
 		);
 	}
@@ -41,7 +41,7 @@
 
 	async function ask() {
 		const ok = await modal.confirm({ title: 'Delete webhook', action: 'Delete webhook', body: warn });
-		if (ok) drop.mutate({ path: { id: row.id } });
+		if (ok) drop.mutate(row.id);
 	}
 </script>
 
@@ -66,7 +66,7 @@
 		<Inline
 			label="Endpoint URL"
 			value={row.url}
-			onsave={(url) => edit.mutateAsync({ path: { id: row.id }, body: { url } })}
+			onsave={(url) => edit.mutateAsync({ id: row.id, url })}
 		/>
 	</span>
 	<span class="meta">{row.types.length ? `${row.types.length} events` : 'all events'}</span>

@@ -429,9 +429,6 @@
 		background: none;
 		color: var(--ink, #1c1b19);
 		font-weight: 600;
-		text-decoration: underline;
-		text-decoration-color: color-mix(in oklab, var(--accent, #2f7f68) 55%, transparent);
-		text-underline-offset: 0.18em;
 	}
 
 	.empty {

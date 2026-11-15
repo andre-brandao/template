@@ -1,19 +1,17 @@
 <script lang="ts">
 	import { Button, Drawer, Empty, FormBoundary, Issue, modal } from '@template/ui';
-	import * as Header from '$lib/components/header';
-	import { fmt } from '$lib/utils/fmt';
-	import { getActivity, getApp, getAppKeys, getEndpoint, removeApp } from '../api/apps.remote';
-	import { getWebhooks } from '../api/webhooks.remote';
-	import Activity from '../components/app/Activity.svelte';
-	import SecretForm from '../components/app/SecretForm.svelte';
-	import KeyForm from '../components/form/KeyForm.svelte';
-	import KeyList from '../components/list/KeyList.svelte';
-	import WebhookForm from '../components/webhook/WebhookForm.svelte';
-	import WebhookRow from '../components/webhook/WebhookRow.svelte';
+	import { getApp, getAppKeys, getEndpoint, removeApp } from '../../api/apps.remote';
+	import { getWebhooks } from '../../api/webhooks.remote';
+	import SecretForm from './SecretForm.svelte';
+	import KeyForm from '../form/KeyForm.svelte';
+	import KeyList from '../list/KeyList.svelte';
+	import WebhookForm from '../webhook/WebhookForm.svelte';
+	import WebhookRow from '../webhook/WebhookRow.svelte';
 
+	// What an admin configures on a bot's profile. The profile itself — header, edit, activity —
+	// is the people slice's; the route puts this panel inside it.
 	let { id }: { id: string } = $props();
 
-	const f = fmt();
 	const app = $derived(await getApp(id));
 	const hooks = $derived(await getWebhooks(id));
 	const drop = $derived(removeApp.for(id));
@@ -35,10 +33,9 @@ curl -X POST ${url} -H "x-webhook-timestamp: $ts" -H "x-webhook-signature: $sig"
 {#if !app}
 	<Empty>That app doesn't exist, or was removed.</Empty>
 {:else}
-	<Header.Root title={app.name}>
-		{#snippet eyebrow()}<a href="/developers/apps">Apps</a>{/snippet}
-		{#snippet lead()}A bot account. It never acts above its owner's role.{/snippet}
-		{#snippet actions()}
+	<section>
+		<header>
+			<h2>App</h2>
 			<FormBoundary>
 				{#each drop.fields.allIssues() ?? [] as issue (issue)}
 					<Issue>{issue.message}</Issue>
@@ -54,13 +51,12 @@ curl -X POST ${url} -H "x-webhook-timestamp: $ts" -H "x-webhook-signature: $sig"
 					})}
 				>
 					<input {...drop.fields.id.as('hidden', id)} />
-					<Button variant="danger" type="submit" pending={!!drop.pending}>Remove</Button>
+					<Button variant="danger" type="submit" pending={!!drop.pending}>Remove app</Button>
 				</form>
 			</FormBoundary>
-		{/snippet}
-		<Header.Item label="Owner">{app.owner?.name ?? 'none'}</Header.Item>
-		<Header.Item label="Created">{f.date(app.timeCreated)}</Header.Item>
-	</Header.Root>
+		</header>
+		<p class="hint">A bot account. It never acts above its owner's role.</p>
+	</section>
 
 	<section>
 		<header>
@@ -96,11 +92,6 @@ curl -X POST ${url} -H "x-webhook-timestamp: $ts" -H "x-webhook-signature: $sig"
 				{/each}
 			</ul>
 		{/if}
-	</section>
-
-	<section>
-		<header><h2>Activity</h2></header>
-		<Activity events={(await getActivity(id)).data} />
 	</section>
 
 	<Drawer bind:open={keying}>

@@ -169,6 +169,42 @@ export namespace User {
     ),
   );
 
+  /**
+   * Another account as a teammate sees it: no prefs, and no address for a bot — its email is a
+   * placeholder. Any signed-in reader holds `user:read`, the same grant the assignee picker uses.
+   */
+  export const Profile = Info.pick({
+    id: true,
+    name: true,
+    image: true,
+    kind: true,
+    role: true,
+    timeCreated: true,
+  })
+    .extend({
+      email: Info.shape.email.nullable(),
+      owner: z.object({ id: z.string(), name: z.string() }).nullable(),
+    })
+    .meta({ ref: "Profile", description: "An account as other signed-in users see it." });
+  export type Profile = z.infer<typeof Profile>;
+
+  export const profile = fn(Info.shape.id, async (id): Promise<Profile | null> => {
+    Identity.check({ user: ["read"] });
+    const row = await fromID(id);
+    if (!row) return null;
+    const owner = row.ownerID ? await fromID(row.ownerID) : null;
+    return {
+      id: row.id,
+      name: row.name,
+      image: row.image,
+      kind: row.kind,
+      role: row.role,
+      timeCreated: row.timeCreated,
+      email: row.kind === "bot" ? null : row.email,
+      owner: owner ? { id: owner.id, name: owner.name } : null,
+    };
+  });
+
   export const fromEmail = fn(Info.shape.email, (email) =>
     Database.use((tx) =>
       tx

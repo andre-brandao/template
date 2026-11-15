@@ -14,20 +14,19 @@ const saved = (page: Page) =>
     (res) => res.url().includes("/_app/remote/") && res.request().method() === "POST",
   );
 
-test("settings redirects to the profile page", async ({ page, as }) => {
+test("settings redirects to the account page", async ({ page, as }) => {
   await as();
   await page.goto("/settings");
-  await expect(page).toHaveURL(/\/settings\/profile$/);
-  await expect(page.getByRole("heading", { name: "Profile" })).toBeVisible();
+  await expect(page).toHaveURL(/\/settings\/account$/);
+  await expect(page.getByRole("heading", { name: "Account" })).toBeVisible();
 });
 
-test("the settings nav links the user and workspace sections", async ({ page, as }) => {
+test("the settings nav links the user section", async ({ page, as }) => {
   await as();
   await page.goto("/settings/experience");
 
   const nav = page.locator("aside nav");
-  await expect(nav.getByRole("link", { name: "Profile" })).toBeVisible();
-  await expect(nav.getByRole("link", { name: "API keys" })).toBeVisible();
+  await expect(nav.getByRole("link", { name: "Account" })).toBeVisible();
   await expect(nav.getByRole("link", { name: "Experience" })).toHaveAttribute(
     "aria-current",
     "page",

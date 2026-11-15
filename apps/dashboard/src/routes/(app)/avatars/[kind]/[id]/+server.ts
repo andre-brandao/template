@@ -2,6 +2,7 @@ import { error, json, redirect } from "@sveltejs/kit";
 import { Identity } from "@template/core/identity";
 import { Storage } from "@template/core/storage";
 import { Project } from "@template/core/project";
+import { App } from "@template/core/app";
 import { User } from "@template/core/user";
 import type { RequestHandler } from "./$types";
 
@@ -17,16 +18,22 @@ function at(kind: string, id: string) {
   return { kind, key: `avatar/${kind}/${id}` } as const;
 }
 
-/** Uploading and clearing mutate the subject, so only its owner may. Viewing is open to any user. */
+/**
+ * Uploading and clearing mutate the subject, so only its owner may — or, for a bot, an admin
+ * managing its App. Viewing is open to any user.
+ */
 async function owned(kind: "user" | "project", id: string) {
   if (Identity.use().type !== "user") error(401, "Authentication required");
-  if (kind === "user" && id !== Identity.userID()) error(403, "Not your avatar");
   if (kind === "project" && !(await Project.fromID(id))) error(404, "Project not found");
+  if (kind !== "user" || id === Identity.userID()) return;
+  const bot = (await User.fromID(id))?.kind === "bot";
+  if (!bot || !Identity.can({ app: ["update"] })) error(403, "Not your avatar");
 }
 
 async function save(kind: "user" | "project", id: string, image: string | null) {
-  if (kind === "user") return User.update({ image });
-  await Project.update({ id, image });
+  if (kind === "project") return Project.update({ id, image });
+  if (id === Identity.userID()) return User.update({ image });
+  await App.update({ id, image });
 }
 
 export const GET: RequestHandler = async ({ params }) => {

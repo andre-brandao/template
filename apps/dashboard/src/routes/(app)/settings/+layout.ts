@@ -19,7 +19,7 @@ export const load: LayoutLoad = ({ data }) => ({
         {
           title: "User",
           items: [
-            { href: "/settings/profile", label: "Profile", icon: UserRound },
+            { href: "/settings/account", label: "Account", icon: UserRound },
             { href: "/settings/experience", label: "Experience", icon: Sparkles },
           ],
         },

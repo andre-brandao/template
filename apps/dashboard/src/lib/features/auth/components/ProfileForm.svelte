@@ -4,7 +4,8 @@
 	import AvatarUpload from '$lib/components/AvatarUpload.svelte';
 	import { getMe, rename } from '../api/profile.remote';
 
-	let { user }: { user: User.Info } = $props();
+	// `onchange` is for the page around the form, which shows the avatar too.
+	let { user, onchange }: { user: User.Info; onchange?: () => void } = $props();
 
 	const issues = $derived(rename.fields.allIssues() ?? []);
 	const pending = $derived(!!rename.pending);
@@ -17,7 +18,10 @@
 		image={user.image}
 		url="/avatars/user/{user.id}"
 		size={56}
-		onchange={() => getMe().refresh()}
+		onchange={() => {
+			getMe().refresh();
+			onchange?.();
+		}}
 	/>
 	<div class="who">
 		<span class="email">{user.email}</span>

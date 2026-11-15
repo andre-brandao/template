@@ -9,7 +9,7 @@
 </script>
 
 <li>
-	<Card href={`/developers/apps/${app.id}`} accent={app.inbound ? 'var(--accent)' : 'var(--dim)'} interactive dense>
+	<Card href={`/u/${app.id}`} accent={app.inbound ? 'var(--accent)' : 'var(--dim)'} interactive dense>
 		<div class="row">
 			<span class="name">{app.name}</span>
 			<span class="meta">

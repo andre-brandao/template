@@ -15,8 +15,9 @@ export const getProviders = remote.core(User.providers).query();
 
 // `User.update.schema` has `name` optional; a rename form must require it.
 export const rename = remote.form(z.object({ name: User.Info.shape.name }), async (input) => {
+  // No targeted refresh: the profile page shows the name in its header as well, so every
+  // query on the page reloads.
   await User.update({ name: input.name });
-  await getMe().refresh();
 });
 
 /**

@@ -1,3 +1,3 @@
 import { redirect } from "@sveltejs/kit";
 
-export const GET = () => redirect(308, "/settings/profile");
+export const GET = () => redirect(308, "/settings/account");

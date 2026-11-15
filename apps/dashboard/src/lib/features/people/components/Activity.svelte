@@ -13,7 +13,7 @@
 </script>
 
 {#if events.length === 0}
-	<Empty>Nothing yet. Writes through its keys and signed posts show up here.</Empty>
+	<Empty>Nothing yet.</Empty>
 {:else}
 	<ol>
 		{#each events as event (event.id)}

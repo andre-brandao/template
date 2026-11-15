@@ -82,6 +82,25 @@ export namespace App {
     return query(id).then((rows) => (rows[0] ? serialize(rows[0]) : null));
   });
 
+  /** Renames the App or swaps its avatar — the bot's own profile fields, which only admins edit. */
+  export const update = fn(
+    z.object({
+      id: Info.shape.id,
+      name: Info.shape.name.optional(),
+      image: z.string().nullable().optional(),
+    }),
+    async (input) => {
+      Identity.check({ app: ["update"] });
+      await assert.exists(fromID(input.id));
+      await Database.use((tx) =>
+        tx
+          .update(UserTable)
+          .set({ name: input.name, image: input.image, timeUpdated: new Date() })
+          .where(eq(UserTable.id, input.id)),
+      );
+    },
+  );
+
   /** Disables the bot. Its keys stop resolving at once, and its webhooks stop with them. */
   export const remove = fn(Info.shape.id, async (id) => {
     Identity.check({ app: ["delete"] });

@@ -2,7 +2,6 @@ import { redirect } from "@sveltejs/kit";
 import { z } from "zod";
 import { env } from "$env/dynamic/private";
 import { App } from "@template/core/app";
-import { Event } from "@template/core/event";
 import { remote } from "$lib/server/remote";
 
 export const getApps = remote
@@ -19,15 +18,17 @@ export const getEndpoint = remote.query(App.Info.shape.id, (id) =>
   new URL(`/hook/${id}`, env.API_URL ?? "http://localhost:3000").toString(),
 );
 
-/** What the App did: every event its bot caused, newest first. */
-export const getActivity = remote.query(App.Info.shape.id, (id) =>
-  Event.list({ userID: id, page: 1, pageSize: 25 }),
+/** The bot's profile fields. A separate form from the user's own rename: different grant. */
+export const renameApp = remote.form(
+  z.object({ id: App.Info.shape.id, name: App.Info.shape.name }),
+  (input) => App.update(input),
 );
 
 export const createApp = remote.form(App.Info.pick({ name: true }), async (input) => {
   const app = await App.create(input);
   await getApps().refresh();
-  redirect(303, `/developers/apps/${app.id}`);
+  // An App is its bot's profile: that page is where it is configured.
+  redirect(303, `/u/${app.id}`);
 });
 
 export const removeApp = remote.form(z.object({ id: App.Info.shape.id }), async (input) => {

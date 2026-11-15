@@ -7,6 +7,7 @@ import {
   desc,
   eq,
   ilike,
+  inArray,
   or,
   type SQL,
   type SQLWrapper,
@@ -20,6 +21,7 @@ import { Tags } from "../../util/tag";
 import { UserTable } from "../../user/user.sql";
 import { sortable } from "../../drizzle/order";
 import { EventTable } from "./event.sql";
+import { Types } from "../webhook/types";
 
 export namespace Event {
   export const Info = z
@@ -80,6 +82,39 @@ export namespace Event {
     } satisfies Partial<Record<keyof Info, SQLWrapper>>,
     EventTable.id,
     desc(EventTable.timeCreated),
+  );
+
+  /**
+   * What one account did, for its profile. Admins see everything; anyone else only the public
+   * types — the same line webhooks draw, so role changes and inbound posts stay back-office.
+   */
+  export const by = fn(
+    z.object({
+      userID: Info.shape.userID.unwrap(),
+      page: z.number().int().min(1).optional(),
+      pageSize: z.number().int().min(1).max(100).optional(),
+    }),
+    (input) => {
+      Identity.check({ user: ["read"] });
+      const where = and(
+        eq(EventTable.userID, input.userID),
+        Identity.can({ admin: ["read"] }) ? undefined : inArray(EventTable.type, [...Types]),
+      );
+      return Database.use((tx) =>
+        tx
+          .select({
+            event: EventTable,
+            user: { id: UserTable.id, name: UserTable.name, image: UserTable.image },
+          })
+          .from(EventTable)
+          .leftJoin(UserTable, eq(UserTable.id, EventTable.userID))
+          .where(where)
+          .orderBy(desc(EventTable.timeCreated))
+          .limit(input.pageSize ?? 25)
+          .offset(((input.page ?? 1) - 1) * (input.pageSize ?? 25))
+          .then((rows) => rows.map((row) => serialize(row.event, row.user))),
+      );
+    },
   );
 
   export const list = fn(

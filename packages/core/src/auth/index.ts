@@ -108,20 +108,20 @@ export namespace Auth {
 
   /**
    * Any bearer to whoever is acting, or a thrown 401: `agt-` delegations, `sk-` keys, then
-   * issuer JWTs. Dashboard sessions are cookies only — an agent gets a delegation instead. `audience` is who is asking: a token minted for an MCP client only works
-   * on the MCP, so a client registered for tools can't drive the API.
+   * issuer JWTs. Dashboard sessions are cookies only — an agent gets a delegation instead.
+   * `audience` is who is asking: a token minted for an MCP client only works on the MCP.
    */
   export async function resolve(token: string, audience: "api" | "mcp" = "api") {
     if (token.startsWith("agt-")) {
       const lent = await Delegation.verify(token);
       if (!lent) invalid("Invalid or expired delegation");
-      return identify(lent.userID, { name: lent.name, scope: lent.scope });
+      return identify(lent.userID, { name: lent.name, scope: lent.scope, credential: lent.id });
     }
 
     if (token.startsWith("sk-")) {
-      const userID = await Key.verify(token);
-      if (!userID) invalid("Invalid or expired API key");
-      return identify(userID);
+      const key = await Key.verify(token);
+      if (!key) invalid("Invalid or expired API key");
+      return identify(key.userID, { credential: key.id });
     }
 
     const claims = await Issuer.use()?.verify(token);
@@ -139,18 +139,30 @@ export namespace Auth {
 
   /**
    * The identity a `userID` acts as. The role always comes from the row, so no credential can
-   * outlive the permissions of the user behind it. `agent` narrows it to software acting for them.
+   * outlive the permissions of the user behind it. A `name` makes it an agent acting for them;
+   * a bot carries its owner, and stops resolving once they are disabled.
    */
   export async function identify(
     userID: string,
-    agent?: { name: string; scope?: Permission.Grants },
+    opts: { name?: string; scope?: Permission.Grants; credential?: string } = {},
   ): Promise<Identity.Info> {
     const row = await User.fromID(userID);
     if (!row) invalid("Token belongs to a user that no longer exists");
-    const base = { userID, role: row.role };
-    if (row.kind === "bot") return { type: "bot", properties: base };
+    const base = { userID, role: row.role, credential: opts.credential };
+    if (row.kind === "bot") {
+      const owner = row.ownerID ? await User.fromID(row.ownerID) : null;
+      if (!owner) invalid("This bot's owner is no longer active");
+      return {
+        type: "bot",
+        properties: { ...base, owner: { userID: owner.id, role: owner.role } },
+      };
+    }
     const timezone = zone(row.prefs);
-    if (agent) return { type: "agent", properties: { ...base, ...agent, timezone } };
+    if (opts.name)
+      return {
+        type: "agent",
+        properties: { ...base, name: opts.name, scope: opts.scope, timezone },
+      };
     return { type: "user", properties: { ...base, timezone } };
   }
 

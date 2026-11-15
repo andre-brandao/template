@@ -1,4 +1,3 @@
-import KeyRound from "@lucide/svelte/icons/key-round";
 import Sparkles from "@lucide/svelte/icons/sparkles";
 import UserRound from "@lucide/svelte/icons/user-round";
 import type { LayoutLoad } from "./$types";
@@ -23,10 +22,6 @@ export const load: LayoutLoad = ({ data }) => ({
             { href: "/settings/profile", label: "Profile", icon: UserRound },
             { href: "/settings/experience", label: "Experience", icon: Sparkles },
           ],
-        },
-        {
-          title: "Workspace",
-          items: [{ href: "/settings/keys", label: "API keys", icon: KeyRound }],
         },
       ],
     },

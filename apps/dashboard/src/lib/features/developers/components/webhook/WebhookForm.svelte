@@ -2,9 +2,10 @@
 	import { dev } from '$app/environment';
 	import { Button, Field, FormBoundary, Input, Issue } from '@template/ui';
 	import { Types } from '@template/core/webhook/types';
-	import { createWebhook } from '../api/admin.remote';
+	import { createWebhook } from '../../api/webhooks.remote';
 
-	let { onsuccess }: { onsuccess?: () => void } = $props();
+	// `owner` files the subscription under that App.
+	let { owner, onsuccess }: { owner?: string; onsuccess?: () => void } = $props();
 
 	// What `scripts/testing/webhook.ts` listens on, so a local endpoint is one click away.
 	const local = 'http://localhost:4000/';
@@ -42,6 +43,9 @@
 			onsuccess?.();
 		})}
 	>
+		{#if owner}
+			<input {...createWebhook.fields.userID.as('hidden', owner)} />
+		{/if}
 		<Field label="Endpoint URL">
 			<Input
 				placeholder="https://example.com/hooks"

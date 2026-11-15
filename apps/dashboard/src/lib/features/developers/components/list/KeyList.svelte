@@ -3,7 +3,7 @@
 	import { Empty } from '@template/ui';
 	import KeyCard from '../card/KeyCard.svelte';
 
-	let { keys }: { keys: Key.Info[] } = $props();
+	let { keys, app }: { keys: Key.Info[]; app?: string } = $props();
 </script>
 
 {#if keys.length === 0}
@@ -11,7 +11,7 @@
 {:else}
 	<ul>
 		{#each keys as key (key.id)}
-			<KeyCard {key} />
+			<KeyCard {key} {app} />
 		{/each}
 	</ul>
 {/if}

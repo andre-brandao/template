@@ -13,6 +13,8 @@ export namespace Permission {
     todo: ["read", "create", "update", "delete"],
     key: ["read", "create", "update", "delete"],
     webhook: ["read", "create", "update", "delete"],
+    // External systems registered in Developers: a bot account, its keys and its inbound secret.
+    app: ["read", "create", "update", "delete"],
   } as const;
 
   type Res = keyof typeof Statement;
@@ -33,6 +35,7 @@ export namespace Permission {
       todo: ["read", "create", "update", "delete"],
       key: ["read", "create", "update", "delete"],
       webhook: ["read", "create", "update", "delete"],
+      app: ["read", "create", "update", "delete"],
     },
     member: {
       user: ["read", "update:own"],

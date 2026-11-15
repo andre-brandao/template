@@ -13,7 +13,7 @@
 <Header.Root title="API keys">
 	<Header.Item label="Keys">{keys.length}</Header.Item>
 	<Header.Item label="Used">{keys.filter((one) => one.timeUsed).length}</Header.Item>
-	{#snippet lead()}Send as <code>Authorization: Bearer &lt;key&gt;</code> to the API, CLI or MCP.{/snippet}
+	{#snippet lead()}Your personal keys. Send as <code>Authorization: Bearer &lt;key&gt;</code> to the API, CLI or MCP.{/snippet}
 	{#snippet actions()}
 		<Button onclick={() => (creating = true)}>New key</Button>
 	{/snippet}

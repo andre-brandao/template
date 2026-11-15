@@ -41,6 +41,9 @@
 						aria-current={active ? 'page' : undefined}
 						onclick={close}>Settings</a
 					>
+					<a class="item" role="menuitem" href={resolve('/developers')} onclick={close}
+						>Developers</a
+					>
 					<Can grants={{ admin: ['read'] }}>
 						<a class="item" role="menuitem" href={resolve('/admin')} onclick={close}>Admin</a>
 					</Can>

@@ -2,7 +2,8 @@
 	import { Button, Field, FormBoundary, Input, Issue } from '@template/ui';
 	import { createKey } from '../../api/keys.remote';
 
-	let { onsuccess }: { onsuccess?: () => void } = $props();
+	// `app` mints the key for that App's bot instead of for the signed-in user.
+	let { app, onsuccess }: { app?: string; onsuccess?: () => void } = $props();
 
 	// The row keeps a hash, so this is the only render the secret exists in. Local, not
 	// `createKey.result`: reopening the drawer must not show the last key again.
@@ -33,6 +34,9 @@
 				secret = (await createKey.result)?.key ?? '';
 			})}
 		>
+			{#if app}
+				<input {...createKey.fields.app.as('hidden', app)} />
+			{/if}
 			<Field label="Name" style="flex: 1 1 14em">
 				<Input placeholder="e.g. laptop" {...createKey.fields.name.as('text')} />
 			</Field>

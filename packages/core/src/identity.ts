@@ -13,6 +13,10 @@ export namespace Identity {
   const id = z.string().meta({ description: "Who answers for the act." });
   const role = z.enum(Permission.roles).meta({ description: "The role held at the time." });
   const zone = z.string().optional().meta({ description: "IANA zone, when known." });
+  const credential = z
+    .string()
+    .optional()
+    .meta({ description: "The key or delegation that acted, so an audit can name it." });
   const scope = z
     .custom<Permission.Grants>((v) => typeof v === "object" && v !== null)
     .optional()
@@ -26,10 +30,21 @@ export namespace Identity {
       z.object({ type: z.literal("system"), properties: z.object({}) }),
       z.object({
         type: z.literal("user"),
-        properties: z.object({ userID: id, role, timezone: zone }),
+        properties: z.object({ userID: id, role, timezone: zone, credential }),
       }),
       // A non-human account: an external system, CI, an integration. A user row of `kind: "bot"`.
-      z.object({ type: z.literal("bot"), properties: z.object({ userID: id, role }) }),
+      // Never more than its owner: `can` checks both roles.
+      z.object({
+        type: z.literal("bot"),
+        properties: z.object({
+          userID: id,
+          role,
+          owner: z
+            .object({ userID: id, role })
+            .meta({ description: "The person answerable for the bot." }),
+          credential,
+        }),
+      }),
       // Software acting for a person: their role, narrowed to `scope` when one is set.
       z.object({
         type: z.literal("agent"),
@@ -41,6 +56,7 @@ export namespace Identity {
           role,
           scope,
           timezone: zone,
+          credential,
         }),
       }),
     ])
@@ -60,6 +76,7 @@ export namespace Identity {
     userID: z.string(),
     name: z.string().optional(),
     scope,
+    credential: z.string().optional(),
   });
   export type Stamp = z.infer<typeof Stamp>;
 
@@ -103,13 +120,18 @@ export namespace Identity {
   export function stamp(): Stamp | null {
     const info = use();
     if (info.type === "user" || info.type === "bot")
-      return { type: info.type, userID: info.properties.userID };
+      return {
+        type: info.type,
+        userID: info.properties.userID,
+        credential: info.properties.credential,
+      };
     if (info.type === "agent")
       return {
         type: "agent",
         userID: info.properties.userID,
         name: info.properties.name,
         scope: info.properties.scope,
+        credential: info.properties.credential,
       };
     return null;
   }
@@ -132,7 +154,10 @@ export namespace Identity {
     const info = use();
     if (info.type === "system") return true;
     if (info.type === "public") return false;
-    const held = Permission.can(info.properties.role, grants, owner === info.properties.userID);
+    const owned = owner === info.properties.userID;
+    const held = Permission.can(info.properties.role, grants, owned);
+    if (info.type === "bot")
+      return held && Permission.can(info.properties.owner.role, grants, owned);
     if (info.type !== "agent" || !info.properties.scope) return held;
     return held && Permission.within(info.properties.scope, grants);
   }

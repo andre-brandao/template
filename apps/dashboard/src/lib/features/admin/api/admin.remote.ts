@@ -2,7 +2,6 @@ import { z } from "zod";
 import { Admin } from "@template/core/admin";
 import { Event } from "@template/core/event";
 import { User } from "@template/core/user";
-import { Webhook } from "@template/core/webhook";
 import { remote } from "$lib/server/remote";
 
 export const getUsers = remote.core(Admin.users).query();
@@ -42,36 +41,3 @@ export const disableUser = remote.form(z.object({ id: User.Info.shape.id }), (in
 export const enableUser = remote.form(z.object({ id: User.Info.shape.id }), (input) =>
   User.restore(input.id),
 );
-
-export const getWebhooks = remote
-  .core(Webhook.list)
-  .with(z.void().transform(() => undefined))
-  .query();
-
-export const createWebhook = remote.form(
-  z.object({ url: Webhook.Info.shape.url, types: z.enum(Webhook.types).array().optional() }),
-  async (input) => {
-    await Webhook.create(input);
-    await getWebhooks().refresh();
-  },
-);
-
-// Enable and disable stay separate forms, like the user rows above — a hidden boolean
-// would arrive as a string, and `Webhook.update` takes a real one.
-export const enableWebhook = remote.form(z.object({ id: Webhook.Info.shape.id }), async (input) => {
-  await Webhook.update({ id: input.id, enabled: true });
-  await getWebhooks().refresh();
-});
-
-export const disableWebhook = remote.form(
-  z.object({ id: Webhook.Info.shape.id }),
-  async (input) => {
-    await Webhook.update({ id: input.id, enabled: false });
-    await getWebhooks().refresh();
-  },
-);
-
-export const removeWebhook = remote.form(z.object({ id: Webhook.Info.shape.id }), async (input) => {
-  await Webhook.remove(input.id);
-  await getWebhooks().refresh();
-});

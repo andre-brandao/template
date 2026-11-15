@@ -13,6 +13,7 @@ export namespace Examples {
     image: null,
     role: "member",
     kind: "human",
+    ownerID: null,
     prefs: DEFAULTS,
     timeDeleted: null,
     timeCreated: "2026-06-07T00:00:00.000Z",
@@ -76,6 +77,7 @@ export namespace Examples {
   export const Webhook = {
     id: Id("webhook"),
     url: "https://example.com/hooks/template",
+    userID: Id("user"),
     secret: "whsec_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
     display: "whsec_XXXX...XXXX",
     types: ["todo.created"],

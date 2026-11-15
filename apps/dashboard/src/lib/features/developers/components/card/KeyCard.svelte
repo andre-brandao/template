@@ -4,7 +4,7 @@
 	import RevokeForm from '../RevokeForm.svelte';
 	import { fmt } from '$lib/utils/fmt';
 
-	let { key }: { key: Key.Info } = $props();
+	let { key, app }: { key: Key.Info; app?: string } = $props();
 
 	const f = fmt();
 
@@ -30,7 +30,7 @@
 		</div>
 
 		<div class="actions">
-			<RevokeForm id={key.id} />
+			<RevokeForm id={key.id} {app} />
 		</div>
 	</div>
 </Card>

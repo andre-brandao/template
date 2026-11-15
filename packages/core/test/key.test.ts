@@ -13,7 +13,7 @@ describe("key", () => {
     const key = await Key.create({ userID, name: "laptop" });
 
     expect(key.key).toStartWith("sk-");
-    expect(await Key.verify(key.key)).toBe(userID);
+    expect((await Key.verify(key.key))?.userID).toBe(userID);
 
     const keys = await Key.list(undefined);
     expect(keys.map((k) => k.id)).toContain(key.id);
@@ -62,7 +62,7 @@ describe("key", () => {
     await Key.remove(other.id);
 
     expect(await Key.verify(other.key)).toBeNull();
-    expect(await Key.verify(mine.key)).toBe(userID);
+    expect((await Key.verify(mine.key))?.userID).toBe(userID);
     expect(await Key.list(mine.key)).toMatchObject([{ id: mine.id, current: true }]);
   });
 
@@ -74,7 +74,7 @@ describe("key", () => {
       expiresAt: new Date(Date.now() - 1000),
     });
 
-    expect(await Key.verify(live.key)).toBe(userID);
+    expect((await Key.verify(live.key))?.userID).toBe(userID);
     expect(await Key.verify(dead.key)).toBeNull();
 
     const ids = (await Key.list(undefined)).map((k) => k.id);
@@ -87,7 +87,7 @@ describe("key", () => {
     const key = await Key.create({ userID, name: "temp", expiresAt: at });
 
     expect(key.expiresAt).toBe(at.toISOString());
-    expect(await Key.verify(key.key)).toBe(userID);
+    expect((await Key.verify(key.key))?.userID).toBe(userID);
   });
 
   withTestUser("verify stamps time_used", async ({ userID }) => {
@@ -147,6 +147,6 @@ describe("key", () => {
     expect(await Key.list(undefined)).toBeEmpty();
     await expect(Key.remove(key.id)).rejects.toThrow();
     // still valid for its own owner
-    expect(await Key.verify(key.key)).toBe(otherID);
+    expect((await Key.verify(key.key))?.userID).toBe(otherID);
   });
 });

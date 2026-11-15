@@ -7,7 +7,7 @@
 	import { Card, FormBoundary, Issue, modal } from '@template/ui';
 	import type { Webhook } from '@template/core/webhook';
 	import { fmt } from '$lib/utils/fmt';
-	import { disableWebhook, enableWebhook, removeWebhook } from '../api/admin.remote';
+	import { disableWebhook, enableWebhook, removeWebhook } from '../../api/webhooks.remote';
 
 	let { row }: { row: Webhook.Info } = $props();
 

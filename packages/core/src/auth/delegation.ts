@@ -60,7 +60,12 @@ export namespace Delegation {
     const hash = encode(await digest(secret));
     const row = await Database.use((tx) =>
       tx
-        .select({ userID: KeyTable.userID, name: KeyTable.name, meta: KeyTable.meta })
+        .select({
+          id: KeyTable.id,
+          userID: KeyTable.userID,
+          name: KeyTable.name,
+          meta: KeyTable.meta,
+        })
         .from(KeyTable)
         .where(
           and(
@@ -73,6 +78,6 @@ export namespace Delegation {
         .then((rows) => rows.at(0)),
     );
     if (!row?.userID) return null;
-    return { userID: row.userID, name: row.name, scope: Meta.parse(row.meta).scope };
+    return { id: row.id, userID: row.userID, name: row.name, scope: Meta.parse(row.meta).scope };
   });
 }

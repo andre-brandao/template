@@ -38,6 +38,10 @@ export namespace User {
         description:
           "A `bot` is an account nobody logs in as — an external system or CI acting through API keys.",
       }),
+      ownerID: z
+        .string()
+        .nullable()
+        .meta({ description: "For a bot, the person answerable for it. Null for people." }),
       prefs: Prefs.meta({
         description: "Display preferences. Every key has a default, so this is always complete.",
       }),
@@ -113,6 +117,7 @@ export namespace User {
       emailVerified: Info.shape.emailVerified,
       image: Info.shape.image.optional(),
       kind: Info.shape.kind.optional(),
+      ownerID: z.string().optional(),
     }),
     async (input) => {
       return Database.use((tx) =>
@@ -125,6 +130,7 @@ export namespace User {
             emailVerified: input.emailVerified ?? false,
             image: input.image ?? null,
             kind: input.kind ?? "human",
+            ownerID: input.ownerID ?? null,
           })
           .returning()
           .then((rows) => serialize(rows[0]!)),
@@ -271,6 +277,7 @@ export namespace User {
       image: row.image,
       role: row.role,
       kind: row.kind,
+      ownerID: row.ownerID,
       // Parsed, not passed through: a row written before a preference existed is missing
       // that key, and the column's `$type` would claim otherwise.
       prefs: Prefs.parse(row.prefs),

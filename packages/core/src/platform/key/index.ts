@@ -114,7 +114,7 @@ export namespace Key {
         tx.update(KeyTable).set({ timeUsed: new Date() }).where(eq(KeyTable.id, row.id)),
       );
 
-    return row.userID;
+    return row.userID ? { id: row.id, userID: row.userID } : null;
   });
 
   /** Every live key the user has. Pass the caller's secret to flag its key `current`. */
@@ -143,6 +143,46 @@ export namespace Key {
       description:
         "List the current user's API keys. Secrets are stored hashed, so `key` is null here — only `create` ever returns one. The key authenticating this request is flagged `current`.",
     },
+  );
+
+  /** Someone else's live keys — an App's. Not routed: the caller checks it may manage them. */
+  export const owned = fn(Identifier.schema("user"), (user) =>
+    Database.use((tx) =>
+      tx
+        .select()
+        .from(KeyTable)
+        .where(
+          and(
+            eq(KeyTable.userID, user),
+            eq(KeyTable.type, "api"),
+            isNull(KeyTable.timeDeleted),
+            live(),
+          ),
+        )
+        .orderBy(desc(KeyTable.timeCreated))
+        .then((rows) => rows.map((row) => serialize(row))),
+    ),
+  );
+
+  /** Revokes one of `user`'s keys. Not routed, like `owned`. */
+  export const revoke = fn(z.object({ id: Info.shape.id, user: z.string() }), (input) =>
+    assert.exists(
+      Database.use((tx) =>
+        tx
+          .update(KeyTable)
+          .set({ timeDeleted: new Date() })
+          .where(
+            and(
+              eq(KeyTable.id, input.id),
+              eq(KeyTable.type, "api"),
+              eq(KeyTable.userID, input.user),
+              isNull(KeyTable.timeDeleted),
+            ),
+          )
+          .returning({ id: KeyTable.id })
+          .then((rows) => rows.at(0)),
+      ),
+    ),
   );
 
   /** Revokes an API key — the secret stops authenticating immediately. */

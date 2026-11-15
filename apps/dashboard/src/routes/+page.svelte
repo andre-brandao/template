@@ -18,7 +18,7 @@
 	// Static links into the screens you reach for that have no module tile.
 	const links = [
 		{ href: '/settings/profile', label: 'Profile', icon: UserRound },
-		{ href: '/settings/keys', label: 'API keys', icon: KeyRound },
+		{ href: '/developers/keys', label: 'API keys', icon: KeyRound },
 		{ href: '/settings/experience', label: 'Experience', icon: Palette },
 		{ href: '/todos?view=board', label: 'Board', icon: Kanban },
 		{ href: '/todos?view=timeline', label: 'Timeline', icon: CalendarRange }

@@ -58,6 +58,8 @@ describe("event", () => {
     const events = (await Event.list({ source: "todo", sourceID: id })).data;
     expect(events.map((e) => e.userID)).toContain(mate.id);
     expect(events.map((e) => e.userID)).toContain(userID);
+    // A teammate sees who, not their role, zone or credential.
+    expect(events.every((e) => e.identity === null)).toBe(true);
   });
 
   withTestUser("todo mutations emit the expected event trail", async ({ userID }) => {

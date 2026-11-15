@@ -1,8 +1,7 @@
 import { Identity } from "./identity";
 import { Email } from "./lib/email";
 import { Queue } from "./lib/queue";
-import { User } from "./user";
-import { zone } from "./user/prefs";
+import { Auth } from "./auth";
 import { Bus } from "./platform/bus";
 import { Webhook } from "./platform/webhook";
 
@@ -20,15 +19,5 @@ export { subscribers } from "./subscribers";
 export async function run(job: Queue.Job) {
   const stamp = Identity.Stamp.nullable().catch(null).parse(job.identity);
   if (!stamp) return Identity.provide("system", {}, () => Queue.run(job));
-  const row = await User.assert.exists(User.fromID(stamp.userID));
-  const base = { userID: stamp.userID, role: row.role };
-  if (stamp.type === "bot") return Identity.provide("bot", base, () => Queue.run(job));
-  const timezone = zone(row.prefs);
-  if (stamp.type === "agent")
-    return Identity.provide(
-      "agent",
-      { ...base, timezone, name: stamp.name ?? "agent", scope: stamp.scope },
-      () => Queue.run(job),
-    );
-  return Identity.provide("user", { ...base, timezone }, () => Queue.run(job));
+  return Identity.enter(await Auth.identify(stamp.userID, stamp), () => Queue.run(job));
 }

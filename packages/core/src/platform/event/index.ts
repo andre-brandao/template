@@ -37,7 +37,12 @@ export namespace Event {
         })
         .nullable()
         .meta({ description: "That user, joined in so a log row can name them." }),
-      identity: Identity.Info,
+      // Role, zone, scope and credential are an admin's business, not a teammate's reading a
+      // todo's history — so everyone else gets null and the `user` above.
+      identity: Identity.Info.nullable().meta({
+        description:
+          "Who acted, in full: agent name, scope, credential. Null unless you are an admin.",
+      }),
       type: z.string().min(1).max(128).meta({
         description: "What happened, like `todo.created`.",
         example: Examples.Event.type,
@@ -159,7 +164,7 @@ export namespace Event {
       userID: row.userID,
       // The left join yields a row of nulls for system and public actors.
       user: user?.id ? user : null,
-      identity: row.identity,
+      identity: Identity.can({ admin: ["read"] }) ? row.identity : null,
       type: row.type,
       source: row.source,
       sourceID: row.sourceID,

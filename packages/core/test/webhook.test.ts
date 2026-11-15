@@ -152,7 +152,7 @@ describe("webhook", () => {
       expect(queue.rows).toHaveLength(1);
       expect((queue.rows[0]!.payload as { ids: string[] }).ids).toEqual([broken.id]);
 
-      const after = (await Webhook.list()).find((row) => row.id === broken.id)!;
+      const after = (await Webhook.list(undefined)).find((row) => row.id === broken.id)!;
       expect(after.failures).toBe(1);
       expect(after.lastStatus).toBe(500);
       good.stop();
@@ -177,7 +177,7 @@ describe("webhook", () => {
         await Queue.drain();
       });
 
-      const after = (await Webhook.list()).find((row) => row.id === hook.id)!;
+      const after = (await Webhook.list(undefined)).find((row) => row.id === hook.id)!;
       expect(after.failures).toBe(20);
       expect(after.enabled).toBe(false);
       bad.stop();
@@ -217,7 +217,7 @@ describe("webhook", () => {
 
       await Webhook.update({ id: hook.id, enabled: true });
 
-      const after = (await Webhook.list()).find((row) => row.id === hook.id)!;
+      const after = (await Webhook.list(undefined)).find((row) => row.id === hook.id)!;
       expect(after.failures).toBe(0);
       expect(after.enabled).toBe(true);
     },
@@ -226,7 +226,7 @@ describe("webhook", () => {
 
   withTestUser("a member cannot manage subscriptions", async () => {
     // `Identity.check` runs before the query, so these throw rather than reject.
-    expect(() => Webhook.list()).toThrow("Requires webhook:read");
+    expect(() => Webhook.list(undefined)).toThrow("Requires webhook:read");
     expect(() => Webhook.create({ url: "https://example.com/hook" })).toThrow(
       "Requires webhook:create",
     );

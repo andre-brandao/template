@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { Button, Drawer, Empty } from '@template/ui';
 	import * as Header from '$lib/components/header';
-	import { getWebhooks } from '../api/admin.remote';
-	import WebhookForm from '../components/WebhookForm.svelte';
-	import WebhookRow from '../components/WebhookRow.svelte';
+	import { getWebhooks } from '../api/webhooks.remote';
+	import WebhookForm from '../components/webhook/WebhookForm.svelte';
+	import WebhookRow from '../components/webhook/WebhookRow.svelte';
 
-	const hooks = $derived(await getWebhooks());
+	const hooks = $derived(await getWebhooks(undefined));
 
 	let creating = $state(false);
 </script>

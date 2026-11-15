@@ -157,15 +157,48 @@ describe("auth resolve", () => {
   const as = <T>(userID: string, fn: () => Promise<T>) =>
     Identity.provide("user", { userID, role: "member" }, fn);
 
-  it("an api key resolves to its user, a bot's key to a bot", async () => {
+  it("an api key resolves to its user, a bot's key to a bot carrying its owner", async () => {
     const human = await User.create({ name: "Ada", email: testEmail() });
-    const bot = await User.create({ name: "CI", email: testEmail(), kind: "bot" });
+    const bot = await User.create({
+      name: "CI",
+      email: testEmail(),
+      kind: "bot",
+      ownerID: human.id,
+    });
     const one = await Key.create({ userID: human.id, name: "k" });
     const two = await Key.create({ userID: bot.id, name: "k" });
 
-    expect((await Auth.resolve(one.key!)).type).toBe("user");
-    const info = await Auth.resolve(two.key!);
-    expect(info).toEqual({ type: "bot", properties: { userID: bot.id, role: "member" } });
+    const mine = await Auth.resolve(one.key!);
+    expect(mine.type === "user" && mine.properties.credential).toBe(one.id);
+    expect(await Auth.resolve(two.key!)).toEqual({
+      type: "bot",
+      properties: {
+        userID: bot.id,
+        role: "member",
+        owner: { userID: human.id, role: "member" },
+        credential: two.id,
+      },
+    });
+  });
+
+  it("a bot never outranks its owner, and dies with them", async () => {
+    const human = await User.create({ name: "Ada", email: testEmail() });
+    const bot = await User.create({
+      name: "CI",
+      email: testEmail(),
+      kind: "bot",
+      ownerID: human.id,
+    });
+    await Identity.provide("system", {}, () => User.assign({ id: bot.id, role: "admin" }));
+    const key = await Key.create({ userID: bot.id, name: "k" });
+
+    await Identity.enter(await Auth.resolve(key.key!), async () => {
+      expect(Identity.can({ todo: ["read"] })).toBe(true);
+      expect(Identity.can({ admin: ["read"] })).toBe(false);
+    });
+
+    await Identity.provide("system", {}, () => User.remove(human.id));
+    await expect(Auth.resolve(key.key!)).rejects.toThrow("owner is no longer active");
   });
 
   it("a delegation resolves to an agent acting for its user, narrowed to its scope", async () => {

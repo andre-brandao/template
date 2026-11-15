@@ -10,7 +10,7 @@ export const load: LayoutLoad = ({ data }) => ({
   nav: section("/developers", "Developers", [
     {
       title: "You",
-      items: [{ href: "/developers/keys", label: "Personal access tokens", icon: KeyRound }],
+      items: [{ href: "/developers/keys", label: "API keys", icon: KeyRound }],
     },
     // Admin-only for now: an App's account and a webhook both see the whole workspace.
     ...(data.admin

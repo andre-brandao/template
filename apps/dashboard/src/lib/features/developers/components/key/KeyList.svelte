@@ -1,23 +1,18 @@
 <script lang="ts">
 	import type { Key } from '@template/core/key';
-	import { Button, Empty } from '@template/ui';
-	import List from '../List.svelte';
+	import { Empty, List } from '@template/ui';
 	import KeyRow from './KeyRow.svelte';
 
-	let { keys, app, create }: { keys: Key.Info[]; app?: string; create: () => void } = $props();
+	// An App's keys sit in a section of its profile, so they take the boxed list.
+	let { keys, app }: { keys: Key.Info[]; app?: string } = $props();
 </script>
 
 {#if keys.length === 0}
-	<Empty>
-		No keys yet.
-		{#snippet action()}
-			<Button onclick={create}>New key</Button>
-		{/snippet}
-	</Empty>
+	<Empty>No API keys yet.</Empty>
 {:else}
-	<List>
+	<List.Root label="API keys" boxed={!!app}>
 		{#each keys as key (key.id)}
 			<KeyRow {key} {app} />
 		{/each}
-	</List>
+	</List.Root>
 {/if}

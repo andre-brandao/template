@@ -5,11 +5,12 @@ import {
   getKeyQueryKey,
   postKeyMutation,
 } from "@template/sdk/query";
+import type { Opts } from "$lib/query";
 
 // The caller's own keys are public API. A minted secret lives only in mutation data; `gcTime: 0` drops it on unmount.
-export const keys = () => getKeyOptions();
+export const list = () => getKeyOptions();
 
-export const mint = (opts?: Pick<ReturnType<typeof postKeyMutation>, "onSuccess">) =>
+export const create = (opts?: Opts<typeof postKeyMutation>) =>
   createMutation(() => ({
     ...postKeyMutation(),
     gcTime: 0,
@@ -17,7 +18,7 @@ export const mint = (opts?: Pick<ReturnType<typeof postKeyMutation>, "onSuccess"
     ...opts,
   }));
 
-export const revoke = (opts?: Pick<ReturnType<typeof deleteKeyByIdMutation>, "onSuccess">) =>
+export const remove = (opts?: Opts<typeof deleteKeyByIdMutation>) =>
   createMutation(() => ({
     ...deleteKeyByIdMutation(),
     meta: { invalidates: [getKeyQueryKey()] },

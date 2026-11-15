@@ -1,6 +1,6 @@
 <!-- Free text, prefilled with the suggestion. -->
 <script lang="ts">
-	import { Input } from '@template/ui';
+	import { Input, Textarea } from '@template/ui';
 	import type { Block } from '../catalog';
 	import { form } from '../state.svelte';
 	import Question from './Question.svelte';
@@ -16,13 +16,13 @@
 
 <Question label={props.label} hint={props.hint} reason={props.reason} id={uid}>
 	{#if props.multiline}
-		<textarea
+		<Textarea
 			id={uid}
 			rows={4}
 			bind:value={() => text, write}
 			placeholder={props.placeholder ?? undefined}
 			required={props.required}
-		></textarea>
+		/>
 	{:else}
 		<Input
 			id={uid}
@@ -33,16 +33,3 @@
 		/>
 	{/if}
 </Question>
-
-<style>
-	textarea {
-		min-width: 0;
-		padding: 0.5em 0.7em;
-		border: 1px solid var(--border);
-		border-radius: var(--radius);
-		background: var(--surface);
-		color: var(--ink);
-		font: inherit;
-		resize: vertical;
-	}
-</style>

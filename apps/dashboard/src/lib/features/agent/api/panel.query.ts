@@ -1,5 +1,5 @@
 import { createMutation } from "@tanstack/svelte-query";
-import { call, type Done } from "#lib/query.ts";
+import { call, read, type Done } from "#lib/query.ts";
 import {
   createPanel,
   getPanel,
@@ -9,17 +9,17 @@ import {
   updatePanel,
 } from "./panel.remote";
 
-export const panels = () => ({ queryKey: ["panels"], queryFn: call(() => getPanels()) });
+export const panels = () => ({ queryKey: ["panels"], queryFn: read(() => getPanels()) });
 
 export const panel = (id: string) => ({
   queryKey: ["panel", id],
-  queryFn: call(() => getPanel(id)),
+  queryFn: read(() => getPanel(id)),
 });
 
 // One block's rows, shared by the `show` tool's check and the block that draws them.
 export const rows = (sql: string, limit: number) => ({
   queryKey: ["rows", sql, limit],
-  queryFn: call(() => getRows({ sql, limit })),
+  queryFn: read(() => getRows({ sql, limit })),
   staleTime: 60_000,
 });
 

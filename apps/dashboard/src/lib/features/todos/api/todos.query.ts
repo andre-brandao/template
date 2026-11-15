@@ -25,7 +25,7 @@ import {
 } from "@template/sdk/query";
 import { zone, type Prefs } from "@template/core/user/prefs";
 import { today } from "@template/ui/day";
-import { call, type Ctx } from "#lib/query.ts";
+import { read, type Ctx } from "#lib/query.ts";
 import { parse } from "#lib/utils/params.ts";
 import { period, schema, span, where } from "../filter";
 import { getLabels } from "./todos.remote";
@@ -69,7 +69,7 @@ export const users = () => getUserOptions();
 // The stage picker's labels, each with the projects its todos sit in, grouped in SQL.
 export const labels = (scope: Scope) => ({
   queryKey: ["todos", "labels", scope],
-  queryFn: call(() => getLabels(scope)),
+  queryFn: read(() => getLabels(scope)),
 });
 
 // Insights keep the last range on screen while the next one loads.

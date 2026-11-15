@@ -49,10 +49,11 @@ export const warm = (cache: QueryClient, ...opts: EnsureQueryDataOptions<any, an
 // For remote-function writes: refresh the TanStack queries they touched.
 export const invalidate = (key: QueryKey) => shared?.invalidateQueries({ queryKey: key });
 
-/** An error's text. A remote function rejects with an `HttpError`, whose text is `body.message`. */
-export const message = (err: unknown) =>
-  (err as { body?: { message?: string } } | undefined)?.body?.message ??
-  (err instanceof Error ? err.message : String(err));
+/** The text of any rejected write: an SDK error body, a remote `HttpError` or an `Error`. */
+export const message = (err: unknown) => {
+  const one = err as { message?: string; body?: { message?: string } } | undefined;
+  return one?.body?.message ?? one?.message ?? String(err);
+};
 
 // A remote query read inside an effect stays cached, so a refetch would replay it: `refresh`
 // makes every call hit the server, once (the proxy's `then` reuses that request).
@@ -63,6 +64,10 @@ export const call =
     if ("refresh" in out && typeof out.refresh === "function") out.refresh();
     return Promise.resolve(out).catch((err) => Promise.reject(new Error(message(err))));
   };
+
+
+/** What an SDK mutation factory accepts: `Opts<typeof postProjectMutation>`. */
+export type Opts<T extends () => { onSuccess?: unknown }> = Pick<ReturnType<T>, "onSuccess">;
 
 /** What a mutation factory accepts, typed from the remote command behind it. */
 export type Done<T extends (input: never) => PromiseLike<unknown>> = Pick<

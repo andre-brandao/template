@@ -57,11 +57,12 @@ export { default as Full } from "./full/Full.svelte";
 export { default as Inline } from "./inline/Inline.svelte";
 export { default as Issue } from "./issue/Issue.svelte";
 export { default as Kbd } from "./kbd/Kbd.svelte";
-// Root and Row: `<List.Root>` holds dense `<List.Row>`s.
+// Root, Row and Loading: `<List.Root>` holds dense `<List.Row>`s; `<List.Loading>` stands in for them.
 export * as List from "./list";
 // Root, Item, Label and Separator: `<Menu.Root>`.
 export * as Menu from "./menu";
 export { default as Meter } from "./meter/Meter.svelte";
+export { default as Dialog } from "./modal/Dialog.svelte";
 export { default as Modals } from "./modal/Modals.svelte";
 export { modal, type Ask } from "./modal/modal.svelte";
 export { default as Pagination } from "./pagination/Pagination.svelte";

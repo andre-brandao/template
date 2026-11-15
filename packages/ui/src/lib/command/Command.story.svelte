@@ -7,7 +7,7 @@
 	export const story: Story = {
 		title: 'Command',
 		blurb:
-			'The ⌘K palette shell: a modal dialog with a search box and grouped `commands` (`{ group, label, hint?, run }`). Every word you type has to match the group or label. Arrows, Home/End and Enter work from the input, and Escape or a backdrop click closes it. While open it holds an exclusive hotkey scope. It knows nothing about the app, so the caller binds the key with `createHotkey`; `preventDefault: "always"` keeps the browser from taking ⌘K while the scope pauses it.',
+			'The ⌘K palette shell: a modal dialog with a search box and grouped `commands` (`{ group, label, hint?, run }`). Every word you type has to match the group or label. Arrows, Home/End and Enter work from the input, and Escape or a backdrop click closes it. While open it holds an exclusive hotkey scope. It knows nothing about the app, so the caller binds the key with `createHotkey`; `preventDefault: "always"` keeps the browser from taking ⌘K while the scope pauses it. `foot` is an optional strip under the list, for key hints.',
 		of: Command
 	};
 </script>

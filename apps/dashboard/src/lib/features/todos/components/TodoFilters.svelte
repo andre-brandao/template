@@ -16,6 +16,7 @@
 	import { browser } from '$app/environment';
 	import { useQueryClient } from '@tanstack/svelte-query';
 	import { createHotkey } from '@tanstack/svelte-hotkeys';
+	import { hotkeys } from '$lib/hotkeys';
 	import { Button, Input, LazySelect, Select } from '@template/ui';
 	import * as Header from '$lib/components/header';
 	import { debounce } from '$lib/utils/debounce';
@@ -43,7 +44,7 @@
 	const pick = (next: Partial<Filters>) => onchange({ ...filters, ...next });
 
 	let field: HTMLInputElement | undefined;
-	createHotkey("/", () => field?.focus());
+	createHotkey(hotkeys.search, () => field?.focus());
 
 	const filtered = $derived(
 		!!(filters.search || filters.assignee || filters.stage) || filters.status !== 'all'

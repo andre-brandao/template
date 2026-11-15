@@ -2,7 +2,7 @@
 	import type { Snippet } from 'svelte';
 	import { createQuery } from '@tanstack/svelte-query';
 	import type { User } from '@template/core/user';
-	import { Avatar, Badge, Empty, Section, Skeleton } from '@template/ui';
+	import { Avatar, Badge, Empty, Issue, Section, Skeleton } from '@template/ui';
 	import * as Header from '$lib/components/header';
 	import { user } from '$lib/utils/context';
 	import { fmt } from '$lib/utils/fmt';
@@ -77,6 +77,8 @@
 
 {#if profile.isPending}
 	{@render loading()}
+{:else if profile.isError && profile.error.type !== 'not_found'}
+	<Issue retry={() => profile.refetch()}>{profile.error.message}</Issue>
 {:else if profile.isError}
 	<Empty>
 		No such account, or it was disabled.

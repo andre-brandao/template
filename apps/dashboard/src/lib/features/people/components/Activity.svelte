@@ -48,7 +48,7 @@
 		{/each}
 	</div>
 {:else if events.isError}
-	<Issue>{events.error.message}</Issue>
+	<Issue retry={() => events.refetch()}>{events.error.message}</Issue>
 {:else if events.data.length === 0}
 	<Empty>Nothing yet. Changes this account makes show up here.</Empty>
 {:else}

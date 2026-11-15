@@ -1,11 +1,4 @@
-<!--
-	Renders its children only when the signed-in user holds every listed grant.
-
-	Cosmetic only — core runs the same check again on the way through the mutation, so a
-	missing `<Can>` is a UI papercut, never a hole. Pass `owner` (a row's `createdBy`) to
-	let the role's `:own` grants apply; the comparison against the current user happens
-	here so call sites stay declarative.
--->
+<!-- Cosmetic; core re-checks every grant. `owner` (a row's `createdBy`) enables `:own` grants. -->
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import type { Permission } from '@template/core/permission';

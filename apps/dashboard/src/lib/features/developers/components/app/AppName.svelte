@@ -8,22 +8,10 @@
 	const save = rename({ onSuccess: () => onchange?.() });
 </script>
 
-<span class="name">
-	<Inline
+<Inline
 	label="App name"
+	required
+	flush
 	value={name}
-	onsave={(next) => {
-		if (!next) throw new Error('An app needs a name');
-		return save.mutateAsync({ id, name: next });
-	}}
-	/>
-</span>
-
-<style>
-	/* The face's padding lines its text up with the avatar gap. */
-	.name {
-		display: inline-block;
-		min-width: 0;
-		margin: -0.2em -0.4em;
-	}
-</style>
+	onsave={(next) => save.mutateAsync({ id, name: next })}
+/>

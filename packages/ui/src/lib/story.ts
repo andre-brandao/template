@@ -20,6 +20,7 @@ import * as card from "./card/Card.story.svelte";
 import * as code from "./code/Code.story.svelte";
 import * as command from "./command/Command.story.svelte";
 import * as combobox from "./combobox/Combobox.story.svelte";
+import * as dialog from "./modal/Dialog.story.svelte";
 import * as drawer from "./drawer/Drawer.story.svelte";
 import * as empty from "./empty/Empty.story.svelte";
 import * as field from "./field/Field.story.svelte";
@@ -105,6 +106,7 @@ export const stories = [
   { slug: "code", story: code.story, demo: code.default },
   { slug: "command", story: command.story, demo: command.default },
   { slug: "combobox", story: combobox.story, demo: combobox.default },
+  { slug: "dialog", story: dialog.story, demo: dialog.default },
   { slug: "drawer", story: drawer.story, demo: drawer.default },
   { slug: "empty", story: empty.story, demo: empty.default },
   { slug: "field", story: field.story, demo: field.default },

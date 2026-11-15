@@ -6,24 +6,25 @@ import {
   patchFileByNameMutation,
   postFileMutation,
 } from "@template/sdk/query";
+import type { Opts } from "$lib/query";
 
 export const list = () => getFileOptions();
 
-export const upload = (opts?: Pick<ReturnType<typeof postFileMutation>, "onSuccess">) =>
+export const upload = (opts?: Opts<typeof postFileMutation>) =>
   createMutation(() => ({
     ...postFileMutation(),
     meta: { invalidates: [getFileQueryKey()] },
     ...opts,
   }));
 
-export const rename = (opts?: Pick<ReturnType<typeof patchFileByNameMutation>, "onSuccess">) =>
+export const rename = (opts?: Opts<typeof patchFileByNameMutation>) =>
   createMutation(() => ({
     ...patchFileByNameMutation(),
     meta: { invalidates: [getFileQueryKey()] },
     ...opts,
   }));
 
-export const remove = (opts?: Pick<ReturnType<typeof deleteFileByNameMutation>, "onSuccess">) =>
+export const remove = (opts?: Opts<typeof deleteFileByNameMutation>) =>
   createMutation(() => ({
     ...deleteFileByNameMutation(),
     meta: { invalidates: [getFileQueryKey()] },

@@ -1,9 +1,4 @@
 # envs/cloudflare/mcp.tf — ports infra/sst/cf/mcp.ts
-#
-# NOTE: packages/functions/src/mcp/target/worker.ts reads env.Jobs, but
-# infra/sst/cf/mcp.ts links only [database, hyperdrive] — on the SST path that
-# queue provider is constructed over undefined. This binds it (var.mcp_bind_queue);
-# infra/sst/cf/mcp.ts should be fixed to match, separately.
 
 module "build_mcp" {
   source = "../../modules/bun-build"
@@ -35,7 +30,7 @@ module "mcp" {
   bindings = concat(
     local.environment_bindings,
     [local.binding_hyperdrive],
-    var.mcp_bind_queue ? [local.binding_jobs] : [],
+    [local.binding_jobs],
   )
 
   observability_sampling_rate = module.environment.is_ephemeral ? 1 : var.observability_sampling_rate

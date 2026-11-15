@@ -8,6 +8,8 @@ import Head from "./Head.svelte";
 import type { LayoutLoad } from "./$types";
 
 export const load: LayoutLoad = async (event) => {
+  // A rename reruns this through `update`, so the crumbs follow the new name.
+  event.depends(`project:${event.params.id}`);
   const data = await event.parent();
   // Seeded from any cached list, and a cached row returns at once (the page refreshes it),
   // so only a cold open waits. Same origin as the browser client, so the keys match.

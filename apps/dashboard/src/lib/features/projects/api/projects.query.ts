@@ -1,3 +1,4 @@
+import { invalidate as rerun } from "$app/navigation";
 import { createMutation, keepPreviousData } from "@tanstack/svelte-query";
 import {
   deleteProjectByIdLinkMutation,
@@ -9,9 +10,12 @@ import {
   postProjectByIdLinkMutation,
   postProjectMutation,
 } from "@template/sdk/query";
+import { invalidate, type Opts } from "$lib/query";
 
 // Lists and rows both carry the tag, so a write to one project refreshes everything showing it.
+// Its Logs timeline sits under `events`, so the new entry shows too.
 const project = [{ tags: ["Project"] }];
+const touched = [project, ["events"]];
 
 // A new search keeps the old rows on screen until its results land.
 export const list = (q?: string) => ({
@@ -21,39 +25,42 @@ export const list = (q?: string) => ({
 
 export const get = (id: string) => getProjectByIdOptions({ path: { id } });
 
-export const create = (opts?: Pick<ReturnType<typeof postProjectMutation>, "onSuccess">) =>
+/** For a write outside the SDK, like the avatar upload. */
+export const refresh = () => invalidate(project);
+
+export const create = (opts?: Opts<typeof postProjectMutation>) =>
   createMutation(() => ({
     ...postProjectMutation(),
     meta: { invalidates: [getProjectQueryKey()] },
     ...opts,
   }));
 
-export const update = (opts?: Pick<ReturnType<typeof patchProjectByIdMutation>, "onSuccess">) =>
+// The layout's crumbs carry the name, so its load reruns after the cache has the new one.
+export const update = (opts?: Opts<typeof patchProjectByIdMutation>) =>
   createMutation(() => ({
     ...patchProjectByIdMutation(),
-    meta: { invalidates: [project] },
-    ...opts,
+    meta: { invalidates: touched },
+    onSuccess: (data, vars, result, ctx) =>
+      Promise.all([rerun(`project:${vars.path.id}`), opts?.onSuccess?.(data, vars, result, ctx)]),
   }));
 
-export const remove = (opts?: Pick<ReturnType<typeof deleteProjectByIdMutation>, "onSuccess">) =>
+export const remove = (opts?: Opts<typeof deleteProjectByIdMutation>) =>
   createMutation(() => ({
     ...deleteProjectByIdMutation(),
     meta: { invalidates: [getProjectQueryKey()] },
     ...opts,
   }));
 
-export const link = (opts?: Pick<ReturnType<typeof postProjectByIdLinkMutation>, "onSuccess">) =>
+export const link = (opts?: Opts<typeof postProjectByIdLinkMutation>) =>
   createMutation(() => ({
     ...postProjectByIdLinkMutation(),
-    meta: { invalidates: [project] },
+    meta: { invalidates: touched },
     ...opts,
   }));
 
-export const unlink = (
-  opts?: Pick<ReturnType<typeof deleteProjectByIdLinkMutation>, "onSuccess">,
-) =>
+export const unlink = (opts?: Opts<typeof deleteProjectByIdLinkMutation>) =>
   createMutation(() => ({
     ...deleteProjectByIdLinkMutation(),
-    meta: { invalidates: [project] },
+    meta: { invalidates: touched },
     ...opts,
   }));

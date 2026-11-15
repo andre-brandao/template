@@ -6,6 +6,7 @@
 	import * as Header from '$lib/components/header';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { createHotkey } from '@tanstack/svelte-hotkeys';
+	import { hotkeys } from '$lib/hotkeys';
 	import { Button, Drawer, Empty, Issue, Kbd, Skeleton, Status, modal } from '@template/ui';
 	import { list } from '../api/todos.query';
 	import Source from '$lib/features/events/components/Source.svelte';
@@ -48,7 +49,7 @@
 	const todos = createQuery(() => ({ ...list(filters), enabled: params.view !== 'calendar' }));
 
 	const add = () => modal(TodoForm, { scope });
-	createHotkey('C', add);
+	createHotkey(hotkeys.create, add);
 
 	const filtered = $derived(
 		!!(params.q || params.assignee || params.stage) || params.status !== 'all'

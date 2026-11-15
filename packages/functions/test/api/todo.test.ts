@@ -1,6 +1,7 @@
 import { describe, expect } from "bun:test";
 import { setupApiTest } from "./util";
 import { Todo } from "@template/core/todo";
+import { Identifier } from "@template/core/identifier";
 import { Examples } from "@template/core/examples";
 
 const { test, validateOpenAPIRoute, del } = setupApiTest();
@@ -12,7 +13,7 @@ describe("todo", () => {
   });
 
   test("GET /todo?from&to", async () => {
-    const scope = { source: "project", sourceID: `window-${crypto.randomUUID()}` };
+    const scope = { source: "project", sourceID: Identifier.create("project") };
     const span = await Todo.create({
       title: "Spans the window",
       startDate: "2026-05-20T00:00:00.000Z",
@@ -44,7 +45,7 @@ describe("todo", () => {
   });
 
   test("PATCH /todo/stage", async () => {
-    const scope = { source: "project", sourceID: `stage-${crypto.randomUUID()}` };
+    const scope = { source: "project", sourceID: Identifier.create("project") };
     const { id } = await Todo.create({ title: "Staged", stage: "Draft", ...scope });
     await validateOpenAPIRoute("patch", "/todo/stage", undefined, {
       from: "Draft",

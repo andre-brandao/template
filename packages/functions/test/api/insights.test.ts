@@ -1,6 +1,7 @@
 import { describe, expect } from "bun:test";
 import { setupApiTest } from "./util";
 import { Todo } from "@template/core/todo";
+import { Identifier } from "@template/core/identifier";
 
 const { test, validateOpenAPIRoute, get } = setupApiTest();
 
@@ -9,7 +10,7 @@ const day = (offset: number) =>
 
 describe("insights", () => {
   // Scoped to a project of their own, so other tests' todos don't shift the counts.
-  const scope = { source: "project", sourceID: `insights-${crypto.randomUUID()}` };
+  const scope = { source: "project", sourceID: Identifier.create("project") };
   const range = { start: day(-30), end: day(1), ...scope };
 
   test("GET /insights/stats", async () => {

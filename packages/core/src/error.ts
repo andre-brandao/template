@@ -77,6 +77,11 @@ export const ErrorCodes = {
     RESOURCE_NOT_FOUND: "resource_not_found",
   },
 
+  // Rate limit errors (429)
+  RateLimit: {
+    EXCEEDED: "rate_limit_exceeded",
+  },
+
   // Server errors (500)
   Server: {
     INTERNAL_ERROR: "internal_error",

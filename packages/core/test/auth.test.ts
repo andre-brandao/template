@@ -6,6 +6,7 @@ import { Permission } from "../src/permission";
 import { Email } from "../src/lib/email";
 import { Key } from "../src/platform/key";
 import { Delegation } from "../src/auth/delegation";
+import { Limit } from "../src/lib/limit";
 import { createUser, testEmail } from "./util";
 
 describe("auth", () => {
@@ -96,6 +97,19 @@ describe("auth password", () => {
     await expect(Auth.Pass.login({ email, password: "password123" })).rejects.toThrow(
       "Invalid email or password",
     );
+  });
+
+  it("limits password attempts by normalized email", async () => {
+    const email = testEmail();
+
+    for (const _ of Array.from({ length: 10 })) {
+      await expect(Auth.Pass.login({ email, password: "wrong-password" })).rejects.toThrow(
+        "Invalid email or password",
+      );
+    }
+    await expect(
+      Auth.Pass.login({ email: email.toUpperCase(), password: "wrong-password" }),
+    ).rejects.toBeInstanceOf(Limit.Err.Exceeded);
   });
 });
 

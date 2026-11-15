@@ -11,10 +11,13 @@
 	// Editing is the route's to supply: it composes the forms from the slices that own them.
 	let {
 		id,
+		name,
 		edit,
 		app
 	}: {
 		id: string;
+		/** Stands in for the name in the header, e.g. an Inline rename when the reader manages it. */
+		name?: Snippet<[Profile]>;
 		/** Rendered when the reader may change this account: their own, or an App they manage. */
 		edit?: Snippet<[Profile]>;
 		/** Rendered on an App's profile for an admin: its keys, inbound endpoint and webhooks. */
@@ -32,7 +35,7 @@
 		{#snippet title()}
 			<span class="title">
 				<Avatar name={profile.name} image={profile.image} size={40} />
-				{profile.name}
+				{#if name}{@render name(profile)}{:else}{profile.name}{/if}
 			</span>
 		{/snippet}
 		{#snippet eyebrow()}{profile.kind === 'system' ? 'App' : 'Person'}{/snippet}

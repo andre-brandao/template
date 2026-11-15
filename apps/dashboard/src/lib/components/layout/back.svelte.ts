@@ -13,7 +13,7 @@ export function origin(root: () => string | undefined) {
   });
   return {
     get href() {
-      return from ?? "/";
+      return from ?? "/home";
     },
   };
 }

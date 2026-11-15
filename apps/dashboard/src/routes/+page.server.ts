@@ -1,8 +1,7 @@
-import * as next from "$lib/server/next";
+import { redirect } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
 
-// Signed out sees the pitch; signed in still has to be named first.
+// Health checks hit `/` without a cookie, so only a signed-in reader is sent on.
 export const load: PageServerLoad = async (event) => {
-  const data = await event.parent();
-  if (data.user) next.gate(event, data.user);
+  if ((await event.parent()).user) redirect(303, "/home");
 };

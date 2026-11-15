@@ -47,7 +47,7 @@
 			.sort((a, b) => b.href.length - a.href.length)[0]
 	);
 	const trail = $derived.by(() => {
-		const crumbs = (nav.crumbs ?? [{ href: '/', label: 'Home' }]).slice();
+		const crumbs = (nav.crumbs ?? [{ href: '/home', label: 'Home' }]).slice();
 		if (current && crumbs.at(-1)?.href !== current.href)
 			crumbs.push({ href: current.href, label: current.label });
 		if (current && current.href !== page.url.pathname) crumbs.push({ label: 'Details' });

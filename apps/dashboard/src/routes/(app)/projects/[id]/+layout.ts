@@ -36,7 +36,7 @@ export const load: LayoutLoad = async (event) => {
       back: { href: "/projects", label: "Projects" },
       head: Head,
       crumbs: [
-        { href: "/", label: "Home" },
+        { href: "/home", label: "Home" },
         { href: "/projects", label: "Projects" },
         { href: base, label: project.name },
       ],

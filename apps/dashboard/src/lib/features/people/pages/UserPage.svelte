@@ -82,7 +82,7 @@
 {:else if profile.isError}
 	<Empty>
 		No such account, or it was disabled.
-		{#snippet action()}<a href="/">Back home</a>{/snippet}
+		{#snippet action()}<a href="/home">Back home</a>{/snippet}
 	</Empty>
 {:else}
 	{@render header(profile.data)}

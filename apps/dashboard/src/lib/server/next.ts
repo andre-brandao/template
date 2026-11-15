@@ -33,5 +33,5 @@ export function keep(event: RequestEvent, path: string | null) {
 export function take(event: RequestEvent) {
   const value = safe(event.cookies.get(COOKIE));
   if (value) event.cookies.delete(COOKIE, { path: "/" });
-  return value ?? "/";
+  return value ?? "/home";
 }

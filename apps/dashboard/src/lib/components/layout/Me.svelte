@@ -5,15 +5,15 @@
 	guards.
 -->
 <script lang="ts">
+	import type { Snippet } from 'svelte';
 	import { page } from '$app/state';
 	import { resolve } from '$app/paths';
 	import type { User } from '@template/core/user';
 	import { Avatar } from '@template/ui';
-	import ThemeToggle from './ThemeToggle.svelte';
 	import Can from '../Can.svelte';
 	import Menu from '../Menu.svelte';
 
-	let { user }: { user: User.Info | null } = $props();
+	let { user, account }: { user: User.Info | null; account?: Snippet } = $props();
 
 	// A shortcut into settings; the sidebar's "Settings" link lands on the same page.
 	const active = $derived(page.url.pathname.startsWith('/settings'));
@@ -48,7 +48,7 @@
 					<Can grants={{ admin: ['read'] }}>
 						<a class="item" role="menuitem" href={resolve('/admin')} onclick={close}>Admin</a>
 					</Can>
-					<ThemeToggle />
+					{@render account?.()}
 					<a class="item leave" role="menuitem" href={resolve('/logout')} onclick={close}
 						>Log out</a
 					>

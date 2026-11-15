@@ -1,12 +1,12 @@
-<!--
-	The topbar's feedback affordance: a quiet trigger and the drawer it opens. Files an
-	issue in the tracker configured by env; the page the user was on rides along hidden.
--->
+<!-- A quiet trigger and the drawer it opens. Files an issue in the tracker configured by env;
+     the page the user was on rides along hidden. `slim` is the collapsed rail: icon only. -->
 <script lang="ts">
 	import { page } from '$app/state';
 	import MessageSquare from '@lucide/svelte/icons/message-square';
 	import { Button, Drawer, Field, FormBoundary, Issue } from '@template/ui';
 	import { send } from '../api/feedback.remote';
+
+	let { slim = false }: { slim?: boolean } = $props();
 
 	let open = $state(false);
 	let body = $state('');
@@ -16,9 +16,15 @@
 	const result = $derived(send.result as any);
 </script>
 
-<button class="trigger" type="button" onclick={() => (open = true)}>
+<button
+	class="trigger"
+	type="button"
+	aria-label={slim ? 'Feedback' : undefined}
+	title={slim ? 'Feedback' : undefined}
+	onclick={() => (open = true)}
+>
 	<MessageSquare size={15} strokeWidth={1.75} />
-	Feedback
+	{#if !slim}Feedback{/if}
 </button>
 
 <Drawer bind:open onclose={() => (body = '')}>

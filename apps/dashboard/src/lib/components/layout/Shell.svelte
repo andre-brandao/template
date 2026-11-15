@@ -4,8 +4,8 @@
 	import { afterNavigate } from '$app/navigation';
 	import { Drawer } from '@template/ui';
 	import PanelLeft from '@lucide/svelte/icons/panel-left';
+	import { brand } from '$lib/brand';
 	import { user } from '$lib/utils/context';
-	import Feedback from '$lib/features/feedback/components/Feedback.svelte';
 	import Footer from './Footer.svelte';
 	import Nav from './Nav.svelte';
 	import Rail from './Rail.svelte';
@@ -17,19 +17,27 @@
 	let {
 		nav,
 		tools,
+		account,
+		foot,
 		side,
 		children
-	}: { nav: Config; tools?: Snippet; side?: Snippet; children: Snippet } = $props();
+	}: {
+		nav: Config;
+		tools?: Snippet;
+		/** Extra rows in the account menu. */
+		account?: Snippet;
+		/** The rail's foot, above the collapse toggle; gets the collapsed flag. */
+		foot?: Snippet<[boolean]>;
+		side?: Snippet;
+		children: Snippet;
+	} = $props();
 
 	const me = user();
 	const rail = sidebar();
 	let open = $state(false);
 
 	// One tracker for the whole app: the section moves under it as `nav` changes.
-	const from = origin(
-		() => nav.root,
-		() => nav.fallback
-	);
+	const from = origin(() => nav.root);
 	const back = $derived(
 		nav.back ? { label: nav.back.label, href: nav.back.href ?? from.href } : undefined
 	);
@@ -48,21 +56,27 @@
 		if (current && current.href !== page.url.pathname) crumbs.push({ label: 'Details' });
 		return crumbs;
 	});
+	// The page and its parent, nearest first: "Todos · Internal tools · App".
+	const title = $derived(
+		[...trail.slice(1).filter((crumb) => crumb.href).slice(-2).reverse(), { label: brand.name }]
+			.map((crumb) => crumb.label)
+			.join(' · ')
+	);
 
 	afterNavigate(() => (open = false));
 </script>
 
+<svelte:head><title>{title}</title></svelte:head>
 
 {#snippet crest(tight: boolean)}
 	{#if nav.head}<nav.head {tight} />{/if}
 {/snippet}
 
-<!-- The rail's quiet footer: feedback, out of the topbar. -->
-{#snippet foot(slim: boolean)}
-	{#if me.current && page.data.feedback}
-		<div class={['foot', { slim }]}><Feedback /></div>
-	{/if}
+{#snippet base(slim: boolean)}
+	{#if foot}<div class={['foot', { slim }]}>{@render foot(slim)}</div>{/if}
 {/snippet}
+
+<a class="skip" href="#main">Skip to content</a>
 
 <div class="body">
 	<!-- Collapsed, pointing at the rail peeks it open again and it shuts on the way out. Focus
@@ -72,7 +86,7 @@
 		     decide whether the brand carries the wordmark. -->
 		<Rail head={nav.head && crest} slim={rail.shut} />
 		<div class="menu"><Nav {back} sections={nav.sections} slim={rail.shut} /></div>
-		{@render foot(rail.shut)}
+		{@render base(rail.shut)}
 		<!-- Below the line, like the content footer across the divider — the two strips
 		     share --footer so their top borders draw one continuous rule. -->
 		<div class="strip">
@@ -95,9 +109,10 @@
 			head={nav.head && crest}
 			crumbs={trail}
 			{tools}
+			{account}
 			onmenu={() => (open = true)}
 		/>
-		<main>{@render children()}</main>
+		<main id="main" tabindex="-1">{@render children()}</main>
 		<Footer />
 	</div>
 	<!-- A column beside the content that a route composes in, e.g. the assistant. -->
@@ -108,7 +123,7 @@
 <Drawer bind:open side="left">
 	<div class="sheet">
 		<Nav {back} sections={nav.sections} />
-		{@render foot(false)}
+		{@render base(false)}
 	</div>
 </Drawer>
 
@@ -223,6 +238,28 @@
 		color: var(--ink);
 	}
 
+	/* Off screen until focused: the first Tab lands here, ahead of the rail. */
+	.skip {
+		position: fixed;
+		top: 0.5em;
+		left: 0.5em;
+		z-index: 50;
+		padding: 0.4em 0.8em;
+		border-radius: var(--radius-sm);
+		background: var(--primary);
+		color: var(--primary-ink);
+		text-decoration: none;
+		transform: translateY(-200%);
+	}
+
+	.skip:focus-visible {
+		transform: none;
+	}
+
+	main:focus {
+		outline: none;
+	}
+
 	.content {
 		display: flex;
 		flex-direction: column;
@@ -237,10 +274,11 @@
 	main {
 		--pad-top: 2em;
 		--pad-bottom: 3em;
-		/* What's left of the viewport once the topbar and this padding are taken. A page
-		   that scrolls a list internally sets `height: var(--fill)` on its root; keeping the
-		   sum here means the arithmetic can't drift from the padding it depends on. */
-		--fill: calc(100dvh - var(--topbar) - var(--pad-top) - var(--pad-bottom));
+		/* The viewport left once the topbar, footer and this padding are taken; a page that
+		   scrolls a list internally sets `height: var(--fill)` on its root. */
+		--fill: calc(
+			100dvh - var(--topbar) - var(--footer) - var(--pad-top) - var(--pad-bottom)
+		);
 		flex: 1;
 		min-width: 0;
 		/* In the column, `0 auto` margins would win over stretch and shrink-wrap the

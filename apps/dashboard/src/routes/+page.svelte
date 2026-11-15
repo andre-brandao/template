@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { page } from '$app/state';
 	import { user } from '$lib/utils/context';
 	import Topbar from '$lib/components/layout/Topbar.svelte';
 	import Hero from '$lib/features/home/components/Hero.svelte';
@@ -6,6 +7,9 @@
 	import Glance from '$lib/features/todos/components/Glance.svelte';
 	import Recent from '$lib/features/todos/components/Recent.svelte';
 	import Shortcuts from '$lib/components/Shortcuts.svelte';
+	import { brand } from '$lib/brand';
+	import Feedback from '$lib/features/feedback/components/Feedback.svelte';
+	import ThemeToggle from '$lib/features/settings/components/ThemeToggle.svelte';
 	import CalendarRange from '@lucide/svelte/icons/calendar-range';
 	import Kanban from '@lucide/svelte/icons/kanban';
 	import KeyRound from '@lucide/svelte/icons/key-round';
@@ -25,8 +29,15 @@
 	];
 </script>
 
+<svelte:head><title>{brand.name}</title></svelte:head>
+
 <!-- The only page outside the app shell, so it carries its own header. -->
-<Topbar user={current} />
+<Topbar user={current}>
+	{#snippet tools()}
+		{#if current && page.data.feedback}<Feedback />{/if}
+	{/snippet}
+	{#snippet account()}<ThemeToggle />{/snippet}
+</Topbar>
 
 <main class={{ home: !!current }}>
 	{#if current}
@@ -35,16 +46,15 @@
 		{#snippet shortcuts()}<Shortcuts grid label="Shortcuts" links={links} />{/snippet}
 		<HomePage
 			name={current.name}
-			role={current.role}
-			widgets={{
-				status: {
+			widgets={[
+				{
 					title: 'Last 90 days',
 					hint: 'Everything opened, by where it stands now.',
 					body: status
 				},
-				recent: { title: 'Recent todos', body: recent },
-				shortcuts: { title: 'Shortcuts', body: shortcuts }
-			}}
+				{ title: 'Recent todos', body: recent },
+				{ title: 'Shortcuts', body: shortcuts }
+			]}
 		/>
 	{:else}
 		<Hero />
@@ -52,8 +62,7 @@
 </main>
 
 <style>
-	/* Left-aligned, unlike the centred column this replaced: the rule's left edge is the
-	   page's spine, and every other screen in the app hangs off that same edge. */
+	/* Left-aligned: the rule's left edge is the page's spine, as on every other screen. */
 	main {
 		width: 100%;
 		max-width: 46em;

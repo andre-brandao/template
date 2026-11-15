@@ -30,7 +30,7 @@
 			<p class="done">
 				Thanks — <a href={result.url} target="_blank" rel="noreferrer">view the issue</a>.
 			</p>
-			<Button onclick={() => (open = false)}>Done</Button>
+			<Button variant="primary" onclick={() => (open = false)}>Done</Button>
 		{:else}
 			{#each send.fields.allIssues() ?? [] as issue, i (i)}
 				<Issue>{issue.message}</Issue>
@@ -71,7 +71,7 @@
 				<input {...send.fields.page.as('hidden', page.url.pathname + page.url.search)} />
 
 				<div class="foot">
-					<Button type="submit" pending={!!send.pending}>Send</Button>
+					<Button variant="primary" type="submit" pending={!!send.pending}>Send</Button>
 				</div>
 			</form>
 		{/if}

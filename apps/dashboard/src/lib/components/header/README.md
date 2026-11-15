@@ -45,7 +45,7 @@ The reference is `features/admin/pages/LogsPage.svelte`.
 <Fill>
 	<Header.Root title="Logs" lead="Every audit entry, newest first.">
 		<Header.Item label="Entries">{log.total.toLocaleString()}</Header.Item>
-		{#snippet actions()}<Button onclick={add}>New thing</Button>{/snippet}
+		{#snippet actions()}<Button variant="primary" onclick={add}>New thing</Button>{/snippet}
 		{#snippet strip()}
 			<Header.Group>
 				<Input type="search" aria-label="Search" placeholder="Search…" oninput={...} />

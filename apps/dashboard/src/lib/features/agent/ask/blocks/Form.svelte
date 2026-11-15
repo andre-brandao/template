@@ -26,7 +26,7 @@
 	<div class="body">{@render children?.()}</div>
 	<footer>
 		<Button variant="ghost" onclick={ctx.talk}>Discuss in chat</Button>
-		<Button type="submit" disabled={!ctx.ready}>{props.submit ?? 'Send'}</Button>
+		<Button variant="primary" type="submit" disabled={!ctx.ready}>{props.submit ?? 'Send'}</Button>
 	</footer>
 </form>
 

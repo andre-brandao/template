@@ -47,7 +47,7 @@
 
 	<div class="foot">
 		<Button variant="ghost" onclick={close}>Cancel</Button>
-		<Button type="submit" pending={save.isPending}>Create project</Button>
+		<Button variant="primary" type="submit" pending={save.isPending}>Create project</Button>
 	</div>
 </form>
 

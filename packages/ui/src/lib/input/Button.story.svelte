@@ -4,13 +4,14 @@
 
 	export const story: Story = {
 		title: 'Button',
-		blurb: 'The only button in the library. `pending` disables it and shows a Spinner.',
+		blurb:
+			'A text button. `secondary` is the default; give `variant="primary"` to the one main action on a screen (a form submit, the header\'s create). `pending` disables it and shows a Spinner. Icon-only controls are `IconButton`.',
 		of: Button,
 		slot: 'Save changes',
 		props: {
 			variant: {
 				type: 'select',
-				value: 'primary',
+				value: 'secondary',
 				options: ['primary', 'secondary', 'danger', 'ghost']
 			},
 			type: { type: 'select', value: 'button', options: ['button', 'submit', 'reset'] },

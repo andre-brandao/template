@@ -18,7 +18,7 @@
 <Header.Root title="Webhooks">
 	{#snippet lead()}POSTed by the queue worker, signed with <code>x-webhook-signature</code>.{/snippet}
 	{#snippet actions()}
-		<Button onclick={create}>New webhook <Kbd keys="C" /></Button>
+		<Button variant="primary" onclick={create}>New webhook <Kbd keys="C" /></Button>
 	{/snippet}
 	<Header.Item label="Registered">{list.data?.length ?? '–'}</Header.Item>
 	<Header.Item label="Enabled">{list.data?.filter((one) => one.enabled).length ?? '–'}</Header.Item>

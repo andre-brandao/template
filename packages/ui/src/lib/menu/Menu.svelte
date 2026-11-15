@@ -37,16 +37,28 @@
 	 */
 	export function at(e: MouseEvent) {
 		const el = e.target instanceof Element ? e.target : undefined;
-		const nest = el?.closest('[popover]');
-		const sel = getSelection();
-		if (e.shiftKey || el?.closest('input, textarea, select, [contenteditable]')) return;
-		if (nest && e.currentTarget instanceof Node && e.currentTarget.contains(nest)) return;
-		if (el && sel && !sel.isCollapsed && sel.containsNode(el, true)) return;
+		if (!el || e.shiftKey || el.closest('input, textarea, select, [contenteditable]')) return;
+		if (nested(e, el) || selected(el)) return;
 		e.preventDefault();
-		// Shift+F10 or the menu key: no pointer, so the menu opens under the focused element.
+		pop?.show(spot(e, el));
+	}
+
+	function nested(e: MouseEvent, el: Element) {
+		const nest = el.closest('[popover]');
+		return !!nest && e.currentTarget instanceof Node && e.currentTarget.contains(nest);
+	}
+
+	function selected(el: Element) {
+		const sel = getSelection();
+		return !!sel && !sel.isCollapsed && sel.containsNode(el, true);
+	}
+
+	// Shift+F10 or the menu key: no pointer, so the menu opens under the focused element.
+	function spot(e: MouseEvent, el: Element) {
 		const key = (e instanceof PointerEvent && !e.pointerType) || (!e.clientX && !e.clientY);
-		const rect = el?.getBoundingClientRect();
-		pop?.show(key && rect ? { x: rect.left, y: rect.bottom } : { x: e.clientX, y: e.clientY });
+		if (!key) return { x: e.clientX, y: e.clientY };
+		const rect = el.getBoundingClientRect();
+		return { x: rect.left, y: rect.bottom };
 	}
 
 	function keys(e: KeyboardEvent & { currentTarget: HTMLElement }) {

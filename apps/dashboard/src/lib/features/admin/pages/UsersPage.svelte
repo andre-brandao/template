@@ -7,14 +7,14 @@
 	import { query } from '$lib/utils/params';
 	import { users as list } from '../api/admin.query';
 	import UsersTable from '../components/UsersTable.svelte';
-	import { users } from '../filters';
+	import { filters } from '../filters';
 	import { keys } from '../sort';
 
 	// In the URL, like the log: a narrowed list can be linked, reloaded and stepped back through.
-	const params = query(users.schema);
+	const params = query(filters.users.schema);
 
 	const f = fmt();
-	const page = createQuery(() => list(users.args(params)));
+	const page = createQuery(() => list(filters.users.args(params)));
 
 	// `undefined` drops the key, so every narrowing lands back on page one.
 	const pick = (next: Partial<typeof params>) => params.update({ ...next, page: undefined });

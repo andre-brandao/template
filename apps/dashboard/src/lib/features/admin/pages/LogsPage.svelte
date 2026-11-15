@@ -7,15 +7,15 @@
 	import { query } from '$lib/utils/params';
 	import { events as entries, facets } from '../api/admin.query';
 	import LogsTable from '../components/LogsTable.svelte';
-	import { events } from '../filters';
+	import { filters } from '../filters';
 	import { keys } from '../sort';
 
 	// In the URL so a narrowed log can be linked, reloaded and stepped back through.
-	const params = query(events.schema);
+	const params = query(filters.events.schema);
 
 	const f = fmt();
 	const client = useQueryClient();
-	const log = createQuery(() => entries(events.args(params)));
+	const log = createQuery(() => entries(filters.events.args(params)));
 	const filtered = $derived(!!(params.q || params.type || params.source || params.user));
 
 	// Read only by the two selects, when opened; both share the one cached query.

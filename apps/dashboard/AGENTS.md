@@ -47,7 +47,7 @@ export const saveTodo = remote.form(schema, handler); // errors land as form iss
 
 ## TanStack Query
 
-Reference: `features/projects`. `$lib/query` owns the client; `/api/*` proxies the Hono router in-process.
+Reference: `features/projects`. `$lib/query` owns the client; the `api` hook serves `/api/*` from the Hono router in-process.
 
 - `api/<slice>.query.ts` holds query builders without opts (`list = (q) => getXOptions(...)`) and
   mutation factories that accept only `onSuccess`: `create({ onSuccess: (x) => goto(...) })`. No cache code in components.
@@ -58,8 +58,8 @@ Reference: `features/projects`. `$lib/query` owns the client; `/api/*` proxies t
 - After a remote-function write, call `invalidate(key)` from `$lib/query`.
 - Keep remote functions for internal-only data (no API route) and forms needing `enhance` or field issues.
 - SSR is opt-in per page with an inline `+page.ts` (let `content-type` through `filterSerializedResponseHeaders`):
-  ``const data = await event.parent(); await data.queries.prefetchQuery(getXOptions({ baseUrl: `${event.url.origin}/api`, fetch: event.fetch, ... }))``
-- App-wide providers (query client, contexts) live in `components/layout/ShellProvider.svelte`.
+  ``const data = await event.parent(); await data.queryClient.prefetchQuery(getXOptions({ baseUrl: `${event.url.origin}/api`, fetch: event.fetch, ... }))``
+- App-wide providers (query client, shared contexts) live in `components/layout/ShellProvider.svelte`; a slice's context (`createAgent`) stays in the root layout.
 
 ## Rules
 

@@ -5,7 +5,6 @@
 	import type { User } from '@template/core/user';
 	import type { Prefs } from '@template/core/user/prefs';
 	import { createUser } from '$lib/utils/context';
-	import { createAgent } from '$lib/features/agent/agent.svelte';
 	import { createRail } from './rail.svelte';
 
 	let {
@@ -28,9 +27,6 @@
 		},
 		can: (grants, owned) => Permission.can(data.user?.role, grants, owned)
 	});
-
-	// Here rather than in the Shell, so the conversation survives a move between sections.
-	createAgent();
 </script>
 
 <QueryClientProvider client={data.queryClient}>

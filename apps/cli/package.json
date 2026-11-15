@@ -10,7 +10,7 @@
   "scripts": {
     "typecheck": "tsc --noEmit",
     "test": "bun test",
-    "build": "bun build --compile --outfile bin/template-cli src/index.ts"
+    "build": "bun build --compile --external zod-to-json-schema --outfile bin/template-cli src/index.ts"
   },
   "dependencies": {
     "@openauthjs/openauth": "catalog:",

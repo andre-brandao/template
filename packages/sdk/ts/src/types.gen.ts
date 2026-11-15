@@ -129,6 +129,40 @@ export type Key = {
 };
 
 /**
+ * A plain reference to an outside resource.
+ */
+export type Link = {
+  /**
+   * Where it points.
+   */
+  url: string;
+  /**
+   * Label shown in place of the url.
+   */
+  title?: string;
+  /**
+   * Free kind hint, like `doc` or `design`.
+   */
+  type?: string;
+};
+
+/**
+ * Backstage-style annotations and links.
+ */
+export type Metadata = {
+  /**
+   * Namespaced keys an integration owns, like `github.com/issue`. String values.
+   */
+  annotations: {
+    [key: string]: string;
+  };
+  /**
+   * Outside references.
+   */
+  links: Array<Link>;
+};
+
+/**
  * A unit of work, owned by whatever entity created it.
  */
 export type Todo = {
@@ -157,6 +191,14 @@ export type Todo = {
    * Id of the owning entity, paired with `source`.
    */
   sourceID: string | null;
+  /**
+   * The todo this is a sub-issue of. Null at the top level.
+   */
+  parentID: string | null;
+  /**
+   * Order among its siblings, from 0.
+   */
+  position: number;
   /**
    * Pipeline stage, a free-text label. Null when unstaged.
    */
@@ -197,6 +239,7 @@ export type Todo = {
    * When it went `done`. Null while it is unfinished.
    */
   timeDone: string | null;
+  metadata: Metadata;
   /**
    * When it was created.
    */
@@ -239,6 +282,7 @@ export type Project = {
    * Cover image URL, or null for none.
    */
   image: string | null;
+  metadata: Metadata;
   /**
    * When it was created.
    */
@@ -417,7 +461,7 @@ export type GetTodoData = {
      */
     pageSize?: number;
     /**
-     * Sort keys in priority order, one of: title, status, stage, assignee, startDate, dueDate, timeCreated. Prefix with `-` for descending.
+     * Sort keys in priority order, one of: title, status, stage, assignee, startDate, dueDate, timeCreated, position. Prefix with `-` for descending.
      */
     sort?: Array<
       | "title"
@@ -434,6 +478,8 @@ export type GetTodoData = {
       | "-dueDate"
       | "timeCreated"
       | "-timeCreated"
+      | "position"
+      | "-position"
     >;
     status?: "backlog" | "planned" | "active" | "blocked" | "done";
     /**
@@ -453,6 +499,10 @@ export type GetTodoData = {
      * Id of the user who created it.
      */
     createdBy?: string;
+    /**
+     * A todo id for its sub-issues, or "none" for top-level todos.
+     */
+    parentID?: string;
     search?: string;
   };
   url: "/todo";
@@ -520,6 +570,7 @@ export type PostTodoData = {
      * Pipeline stage, a free-text label. Null when unstaged.
      */
     stage?: string | null;
+    links?: Array<Link>;
     assignee?: string | null;
     /**
      * Kind of entity that owns it, like `project`.
@@ -529,6 +580,10 @@ export type PostTodoData = {
      * Id of the owning entity, paired with `source`.
      */
     sourceID?: string | null;
+    /**
+     * The todo this is a sub-issue of. Null at the top level.
+     */
+    parentID?: string | null;
     status?: "backlog" | "planned" | "active" | "blocked" | "done";
     /**
      * When work is meant to start.
@@ -743,6 +798,7 @@ export type PatchTodoByIdData = {
      */
     dueDate?: string | null;
     assignee?: string | null;
+    links?: Array<Link>;
   };
   path: {
     /**
@@ -788,6 +844,62 @@ export type PatchTodoByIdResponses = {
 };
 
 export type PatchTodoByIdResponse = PatchTodoByIdResponses[keyof PatchTodoByIdResponses];
+
+export type PostTodoByIdMoveData = {
+  body: {
+    /**
+     * The todo this is a sub-issue of. Null at the top level.
+     */
+    parentID: string | null;
+    /**
+     * Slot among the new siblings, from 0. Last when omitted.
+     */
+    position?: number;
+  };
+  path: {
+    /**
+     * Unique object identifier.
+     * The format and length of IDs may change over time.
+     */
+    id: string;
+  };
+  query?: never;
+  url: "/todo/{id}/move";
+};
+
+export type PostTodoByIdMoveErrors = {
+  /**
+   * Bad Request
+   */
+  400: ErrorResponse;
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
+   * Not Found
+   */
+  404: ErrorResponse;
+  /**
+   * Internal Server Error
+   */
+  500: ErrorResponse;
+};
+
+export type PostTodoByIdMoveError = PostTodoByIdMoveErrors[keyof PostTodoByIdMoveErrors];
+
+export type PostTodoByIdMoveResponses = {
+  /**
+   * A unit of work, owned by whatever entity created it.
+   */
+  200: Todo;
+};
+
+export type PostTodoByIdMoveResponse = PostTodoByIdMoveResponses[keyof PostTodoByIdMoveResponses];
 
 export type GetProjectData = {
   body?: never;
@@ -1009,6 +1121,7 @@ export type PatchProjectByIdData = {
      * Cover image URL, or null for none.
      */
     image?: string | null;
+    links?: Array<Link>;
   };
   path: {
     /**

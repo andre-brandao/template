@@ -22,7 +22,6 @@
 		<Button variant="primary" onclick={create}>New app <Kbd keys="C" /></Button>
 	{/snippet}
 	{#if apps.data?.length}
-		<Header.Item label="Registered">{apps.data.length}</Header.Item>
 		<Header.Item label="Inbound">{apps.data.filter((one) => one.inbound).length}</Header.Item>
 	{/if}
 </Header.Root>

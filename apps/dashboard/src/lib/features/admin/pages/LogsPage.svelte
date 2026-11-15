@@ -3,7 +3,6 @@
 	import { Button, Fill, Input, Issue, LazySelect, Pagination, Scroll, Skeleton, Toggle } from '@template/ui';
 	import * as Header from '$lib/components/header';
 	import { debounce } from '$lib/utils/debounce';
-	import { fmt } from '$lib/utils/fmt';
 	import { query } from '$lib/utils/params';
 	import { events as entries, facets } from '../api/admin.query';
 	import LogsTable from '../components/LogsTable.svelte';
@@ -13,7 +12,6 @@
 	// In the URL so a narrowed log can be linked, reloaded and stepped back through.
 	const params = query(filters.events.schema);
 
-	const f = fmt();
 	const client = useQueryClient();
 	const log = createQuery(() => entries(filters.events.args(params)));
 	const filtered = $derived(!!(params.q || params.type || params.source || params.user));
@@ -30,7 +28,6 @@
 <!-- Header, filters and pagination hold still; only the list scrolls. -->
 <Fill>
 	<Header.Root title="Logs" lead="Every audit entry, newest first. Written by core; read-only here.">
-		<Header.Item label="Entries">{log.data ? f.number(log.data.total) : '–'}</Header.Item>
 		{#snippet strip()}
 			<Header.Group>
 				<Input

@@ -36,7 +36,6 @@
 {#snippet warning()}The panel's spec is deleted; its data stays where it is.{/snippet}
 
 <Header.Root title="Panels" lead="Saved from the assistant; each reruns its queries as the viewer.">
-	<Header.Item label="Saved">{list.data?.length ?? '–'}</Header.Item>
 	{#snippet strip()}
 		<Header.Group>
 			<Input

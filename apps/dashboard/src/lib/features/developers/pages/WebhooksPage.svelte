@@ -23,7 +23,6 @@
 		<Button variant="primary" onclick={create}>New webhook <Kbd keys="C" /></Button>
 	{/snippet}
 	{#if hooks.data?.length}
-		<Header.Item label="Registered">{hooks.data.length}</Header.Item>
 		<Header.Item label="Enabled">{hooks.data.filter((one) => one.enabled).length}</Header.Item>
 	{/if}
 </Header.Root>

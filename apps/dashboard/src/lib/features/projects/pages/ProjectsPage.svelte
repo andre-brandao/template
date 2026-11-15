@@ -28,7 +28,6 @@
 </script>
 
 <Header.Root title="Projects" lead="Each project files its own todos, stages and insights.">
-	<Header.Item label={params.q ? 'Matches' : 'Projects'}>{projects.data?.total ?? '–'}</Header.Item>
 	{#snippet actions()}
 		{@render extra?.()}
 		<Button variant="primary" onclick={add}>New project <Kbd keys="C" /></Button>

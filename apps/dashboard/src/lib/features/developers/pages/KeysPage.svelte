@@ -16,7 +16,6 @@
 
 <Header.Root title="API keys">
 	{#if keys.data?.length}
-		<Header.Item label="Keys">{keys.data.length}</Header.Item>
 		<Header.Item label="Used">{keys.data.filter((one) => one.timeUsed).length}</Header.Item>
 	{/if}
 	{#snippet lead()}Keys that act as you. Send as <code>Authorization: Bearer &lt;key&gt;</code>.{/snippet}

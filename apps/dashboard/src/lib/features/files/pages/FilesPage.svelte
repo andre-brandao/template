@@ -60,7 +60,6 @@
 >
 	<Header.Root title="Files" lead="Your uploads. Drop files anywhere on the page to add more.">
 		{#if files.data?.length}
-			<Header.Item label="Files">{files.data.length}</Header.Item>
 			<Header.Item label="Total size">
 				{size(files.data.reduce((sum, file) => sum + file.size, 0))}
 			</Header.Item>

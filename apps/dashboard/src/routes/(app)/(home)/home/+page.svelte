@@ -29,7 +29,7 @@
 {#snippet status()}<Glance />{/snippet}
 {#snippet recent()}<Recent />{/snippet}
 {#snippet shortcuts()}<Shortcuts grid label="Shortcuts" {links} />{/snippet}
-<!-- The layouts under test; drop the frame once one wins. -->
+<!-- The layouts under test, for admins only; everyone else gets the default. Drop it once one wins. -->
 {#snippet frame(props: Props, heading: Snippet)}
 	<Experiment key="home" title="Home page" variants={layouts} {props}>{@render heading()}</Experiment>
 {/snippet}
@@ -38,7 +38,7 @@
 	<HomePage
 		name={me.current.name}
 		role={me.current.role}
-		{frame}
+		frame={me.can({ admin: ['read'] }) ? frame : undefined}
 		widgets={{
 			status: {
 				title: 'Last 90 days',

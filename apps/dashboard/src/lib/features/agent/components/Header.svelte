@@ -1,4 +1,4 @@
-<!-- The drawer's bar: history, new conversation, full screen, close. Its mark is the one activity cue. -->
+<!-- The drawer's bar: history, tools, new conversation, full screen, close. Its mark is the one activity cue. -->
 <script lang="ts">
 	import { IconButton } from '@template/ui';
 	import SquarePen from '@lucide/svelte/icons/square-pen';
@@ -6,6 +6,7 @@
 	import Maximize from '@lucide/svelte/icons/maximize-2';
 	import Minimize from '@lucide/svelte/icons/minimize-2';
 	import History from '@lucide/svelte/icons/history';
+	import Wrench from '@lucide/svelte/icons/wrench';
 	import { agent } from '../agent.svelte';
 	import Avatar from './Avatar.svelte';
 
@@ -22,6 +23,13 @@
 			onclick={() => (ctx.tab = ctx.tab === 'history' ? 'chat' : 'history')}
 		>
 			<History size={17} strokeWidth={1.75} />
+		</IconButton>
+		<IconButton
+			label="Tools"
+			pressed={ctx.tab === 'tools'}
+			onclick={() => (ctx.tab = ctx.tab === 'tools' ? 'chat' : 'tools')}
+		>
+			<Wrench size={17} strokeWidth={1.75} />
 		</IconButton>
 		<IconButton label="New conversation" onclick={ctx.fresh}>
 			<SquarePen size={17} strokeWidth={1.75} />

@@ -50,7 +50,7 @@ function create() {
   // Desktop dock width in px, undefined for the default. The dock clamps it to the viewport.
   let width = $state<number>();
   let model = $state<string>();
-  let tab = $state<"chat" | "history">("chat");
+  let tab = $state<"chat" | "history" | "tools">("chat");
   // The page tools and their views, set once by the dock.
   let tools = $state.raw<AnyClientTool[]>([]);
   let views = $state.raw<Record<string, Component<ViewProps>>>({});
@@ -118,6 +118,9 @@ function create() {
     set width(value: number | undefined) {
       width = value && Math.round(value);
       save(width);
+    },
+    get tools() {
+      return tools;
     },
     get views() {
       return views;

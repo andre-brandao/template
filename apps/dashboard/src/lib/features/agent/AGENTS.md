@@ -24,14 +24,20 @@ the DDL (`conversation`, `conversation_message`) lives in core, at
   sample for the model) and `panel.ts` (`Panel`, saved json-render specs in Storage under
   `panels/`). Its `draft` tool checks a spec server-side; the last ok one is its result.
 - `api/serve.ts` — the SSE endpoint behind `routes/(app)/agent/+server.ts`. Reads
-  `forwardedProps` (`page`, `thread`, `model`) and forwards the session cookie as the MCP
-  bearer, so every MCP call runs as the signed-in user.
-- `agent.svelte.ts` — `createAgent` (root layout context), `agent()`, and
-  `pageTools(list, views)`: client tools a mounted component declares for as long as it lives.
-- `components/Dock.svelte` — the drawer and its open button. `routes/+layout.svelte` composes it
-  into the Shell through its `side` snippet; shared layout never imports a feature.
+  `forwardedProps` (`page`, `thread`, `model`) and mints a short-lived `orchestrator`
+  delegation (`agt-`) per request as the MCP bearer, so every MCP call runs as
+  orchestrator-for-the-user. The session never leaves the dashboard.
+- `api/<slice>.query.ts` — TanStack factories over the remote functions (`agent`: models and
+  history; `panel`: saved panels and a block's rows), with plain array keys.
+- `agent.svelte.ts` — `createAgent` (root layout context) and `agent()`. `Agent.svelte` equips
+  the chat once with its page tools (`page.ts`, `ask/`, `panel/`) and their views.
+- `components/Dock.svelte` — the drawer, Mod+J to toggle and Escape to close.
+  `routes/+layout.svelte` composes it into the Shell through its `side` snippet; shared layout
+  never imports a feature.
 - `components/Message.svelte` — a subagent part renders as its steps (a recursive snippet)
   under the tool call that started it; a reloaded transcript keeps only the call's chip.
+- `render/` — what `ask` and `panel` share: the Card, Row and Text blocks, `clean`, and the
+  catalog helpers (`shape`, `describe`, `verify`). Neither imports the other.
 - `ask/` — the `ask` page tool: a json-render form catalog, answered in the chat.
 - `panel/` — the `show` page tool (admins): draws the spec `panel` returned, blocks running
   their own SQL in the browser. `check.ts` is shared with `draft`, over another row source.

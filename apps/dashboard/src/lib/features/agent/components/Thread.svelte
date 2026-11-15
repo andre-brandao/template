@@ -82,7 +82,7 @@
 	ol {
 		display: flex;
 		flex-direction: column;
-		gap: 1em;
+		gap: 0.85em;
 		min-width: 0;
 		margin: 0;
 		padding: 1em var(--gutter, 1em);

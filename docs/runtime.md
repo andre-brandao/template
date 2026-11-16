@@ -33,11 +33,15 @@ a `target/` directory that picks one:
 | Target   | Database                          | Used by                                            |
 | -------- | --------------------------------- | -------------------------------------------------- |
 | `bun`    | One pool per process              | `bun dev`                                          |
-| `lambda` | Pool from env, streamed responses | `infra/sst/aws`                                    |
+| `lambda` | Pool from env, streamed responses | `infra/sst/aws` (not the queue)                    |
 | `worker` | Fresh pool per request            | `infra/sst/cf`, `infra/terraform` (via Hyperdrive) |
 
-Docker runs neither: its services go through `template-cli serve <api|mcp|auth|dashboard>`
-(`apps/cli/src/serve.ts`), which wires the same providers as the `bun` targets.
+A `bun` pool holds 10 connections. Docker runs none of these: its services go through
+`template-cli serve <api|mcp|auth|dashboard>` (`apps/cli/src/serve.ts`), which wires the
+same providers as the `bun` targets.
+
+The dashboard is not a functions target. `SVELTE_ADAPTER` picks its build: `node` (default,
+Docker and e2e), `bun`, or `cloudflare` (the Workers paths, bindings via `cloudflare:workers`).
 
 The worker's per-request pool isn't an oversight — Workers forbid reusing a socket across
 requests, so `worker()` closes it once the response body is sent.
@@ -55,8 +59,7 @@ graph LR
 ```
 
 `sst.config.ts` imports `infra/sst/cf`; `infra/sst/aws` is the alternate wiring. Its dashboard
-has no adapter yet: `svelte-kit-sst` has no SvelteKit 3 release (sst/sst#6993), so the
-`sst-aws` adapter target was dropped and can come back once SST ships one.
+has no adapter: `svelte-kit-sst` has no SvelteKit 3 release (sst/sst#6993).
 `infra/terraform` deploys the same Cloudflare stack as `infra/sst/cf` without SST — it has
 its own state and its own `tf.` domain, so the two can coexist. `infra/alchemy` is a
 third, alternate wiring. `infra/docker` runs one app image under Compose: every service
@@ -68,4 +71,5 @@ prepare the change and hand the command to the user.
 
 ## Local stack
 
-`bun dev` runs everything. `DB=pglite` keeps Postgres in-process, `RESET=1` wipes it.
+`bun dev` runs everything. `DB=pglite` keeps Postgres in-process, `RESET=1` wipes it. Names,
+ports and flags: [`scripts/AGENTS.md`](../scripts/AGENTS.md).

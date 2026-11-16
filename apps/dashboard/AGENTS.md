@@ -1,8 +1,8 @@
 # dashboard
 
-SvelteKit 5 on :5173. Calls `@template/core` **directly** from remote functions — same
-process, no HTTP hop. From the one generated SDK it uses only the TanStack Query helpers, via
-`@template/sdk/query` (an alias of the SDK barrel; below).
+SvelteKit 3 (Svelte 5, runes) on :5173. Calls `@template/core` **directly** from remote
+functions — same process, no HTTP hop. From the one generated SDK it uses only the TanStack
+Query helpers, via `@template/sdk/query` (an alias of the SDK barrel; below).
 
 TypeScript, plain scoped CSS (no Tailwind), bun. Svelte components: use the Svelte MCP server
 (`list-sections` → `get-documentation` → `svelte-autofixer`) before writing, and keep
@@ -17,10 +17,15 @@ src/lib/
     api/<slice>.query.ts   TanStack query builders + mutation factories
     components/            slice-local components
     pages/                 whole-page components, rendered by a route
-  components/layout/       shell, nav
-  server/                  remote builder, auth, session, theme
+  components/              shared: layout/ (shell, nav), header/, Widgets, Steps
+  server/                  gate (remote builder), auth, session, theme, zone, next
+  query.ts  hotkeys.ts     the TanStack client and helpers; every declared hotkey
+src/hooks/server/          sequence(providers, auth, api, theme), plus handleError
+src/env.ts                 the env vars kit reads (`defineEnvVars`)
 src/routes/
   (app)/ (auth)/           route groups, each owning its own layout + nav links
+  (app)/(home)/            home, projects, todos, files, insights under the home rail
+  (app)/projects/[id]/ (app)/u/[id]/   record pages with their own layout
   (app)/settings/          every account, developer and admin page, one grouped rail
     account experience keys      You: anyone signed in
     (workspace)/apps webhooks    gated on `app:read`
@@ -32,8 +37,23 @@ Routes stay thin: a `+page.svelte` renders a page component from a slice. Each l
 declares its own nav links — no dispatcher branching on `route.id`.
 
 Settings: `+layout.server.ts` reports which groups the role sees and `+layout.ts` builds the
-rail from it, which only hides. The `(workspace)` and `(admin)` group layouts are what refuse
-(403). A new settings page goes in the group matching its grant, plus one rail item.
+rail from it (You, Workspace, Other), which only hides. The `(workspace)` and `(admin)` group
+layouts are what refuse (403). A new settings page goes in the route group matching its grant,
+plus one rail item; both groups list under Workspace.
+
+## SvelteKit 3
+
+- Imports go through `#lib/...` with the real extension: `#lib/query.ts`,
+  `#lib/components/Can.svelte`.
+- `resolve()` takes a static path without the leading slash (`resolve('login')`); a route id
+  with params keeps it (`resolve('/dev/api/[op]', { op })`). `resolve('/')` is the root.
+- Form inputs spread a field: `{...form.fields.name.as('text', value)}`, `.as('hidden', id)`.
+- Kit-read env vars are declared in `src/env.ts` and read from `$app/env/private` or
+  `$app/env/public`. Core's `fromEnv` providers and the agent read `process.env`.
+- On Cloudflare, bindings come from `cloudflare:workers` (`Hyperdrive`, `Files`, `Jobs`, typed
+  in `src/cloudflare.d.ts`); `vite.config.ts` stubs the module everywhere else.
+- `SVELTE_ADAPTER` picks `node` (default), `bun` or `cloudflare` at build. The bun build must
+  run under Bun: `bun run --bun build`.
 
 ## Remote functions
 
@@ -56,7 +76,8 @@ export const saveTodo = remote.form(schema, handler); // errors land as form iss
 
 ## TanStack Query
 
-Reference: `features/projects`. `#lib/query` owns the client; the `api` hook serves `/api/*` from the Hono router in-process.
+Reference: `features/projects`. `#lib/query.ts` owns the client; the `api` hook serves `/api/*`
+from the Hono router in-process.
 
 - `api/<slice>.query.ts` holds query builders without opts (`list = (q) => getXOptions(...)`) and
   mutation factories that accept only `onSuccess`: `create({ onSuccess: (x) => goto(...) })`. No cache code in components.
@@ -64,14 +85,26 @@ Reference: `features/projects`. `#lib/query` owns the client; the `api` hook ser
   `[{ tags: ["X"] }]` the whole resource. No meta invalidates everything. That cache-level pass always
   runs (and settles) before any `onSuccess`, so a component can't skip it.
 - Precise update: the factory's own `onSuccess(data, vars, result, ctx)` calls `ctx.client.setQueryData(...)`.
-- After a remote-function write, call `invalidate(key)` from `#lib/query.ts`.
+- Over remote functions, a query's `queryFn` is `read(() => getX(args))` and a mutation's
+  `mutationFn` is `call(removeX)`. `read` reuses the SSR result on hydration and `refresh`es
+  after; both reject with a plain `Error`. Type the factory's opts as `Done<typeof removeX>`
+  (SDK factories: `Opts<typeof postXMutation>`).
+- After a remote-function write outside a factory, call `invalidate(key)` from `#lib/query.ts`.
 - Keep remote functions for internal-only data (no API route) and forms needing `enhance` or field issues.
-- Internal/admin data (no API route, e.g. `developers` apps and webhooks) still uses TanStack: `queryFn` over remote functions with plain array keys (`["apps"]`); public resources use the SDK's `getXOptions`.
+- Internal/admin data (no API route, e.g. `developers` apps and webhooks) still uses TanStack,
+  with plain array keys (`["apps"]`); public resources use the SDK's `getXOptions`.
 - Every list and detail route has a `+page.ts` that warms what the page renders first, with the slice's own
   factories so the keys match: `await warm((await event.parent()).queryClient, list({ fetch: event.fetch }))`.
   SDK factories take that trailing `ctx` (the load's `fetch`, so SSR reads replay on hydration); remote-function
   ones need none. URL-driven args come from a schema shared with the page: `parse(schema, event.url)`.
 - App-wide providers (query client, shared contexts) live in `components/layout/ShellProvider.svelte`; a slice's context (`createAgent`) stays in the root layout.
+
+## Record pages
+
+A record page (`ProjectPage`, `TodoEditor`) is `Header.Root` plus `Widgets`. Header facts edit
+in place (`Inline`, pickers) and `Steps` draws a status flow inside a `Header.Item`. `Widgets`
+takes `main`, `side` and `rest` stacks of `{ title, body, fill? }`; the route passes in widgets
+from other slices as snippets. Header and filter-row rules: `components/header/README.md`.
 
 ## Palette and hotkeys
 
@@ -90,12 +123,13 @@ Reference: `features/projects`. `#lib/query` owns the client; the `api` hook ser
 ## Rules
 
 - **No cross-slice imports.** Routes compose slices via snippets; anything genuinely shared
-  moves to a feature-wide slice (`events`, `sources`) or `lib/components`.
+  moves to a feature-wide slice (`events`, `sources`) or `lib/components`. `.fallowrc.jsonc`
+  declares a boundary zone per slice to back this.
 - **No context plumbing.** Join a foreign name into the query, or fetch it at the leaf —
   don't hand shared data down through Svelte context.
 - **Reads are TanStack queries.** Svelte's experimental async mode is off, so there is no
   `await` in markup or `$derived(await …)`: wrap a remote query in a `*.query.ts` builder
-  with `call(...)` and read it with `createQuery`. Form results are read bare (`form.result`).
+  with `read(...)` and read it with `createQuery`. Form results are read bare (`form.result`).
 - **Guard `[id]` pages** with `{#if params.id}` — params are empty mid-navigation and will
   fire a query with `undefined`.
 - **No global CSS.** `routes/layout.css` imports `@template/ui/tokens.css` and holds
@@ -103,12 +137,14 @@ Reference: `features/projects`. `#lib/query` owns the client; the `api` hook ser
   `@template/ui` (`Field`, `Issue`, `Tabs`); a look used once stays scoped in the file
   that uses it. Scoped styles can't cross into a child, so pass a one-off layout tweak to
   a component as `style="..."` rather than reaching in with `:global`.
-- `resolve()` breaks past ~30 routes; nav components cast untyped rather than fight it.
+- `resolve()` typing breaks past ~30 routes; nav components cast untyped rather than fight it.
 
 ## Commands
 
 - `bun typecheck` — svelte-check, from this directory. `e2e/` sits outside it by design.
 - `bun test` — unit. `e2e/` needs a real Postgres and a running stack.
+- `DEVTOOLS=1 bun dev` turns the TanStack devtools on; they're off by default because they
+  block the main thread on every load.
 
 Edits to `packages/ui` need a `bun dev` restart; that package has no HMR, and a stale
 scope hash is the tell.

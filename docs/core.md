@@ -6,8 +6,8 @@ visible as directories.
 ```mermaid
 graph TD
   domain["<b>the product</b><br/>project · todo · user"]
-  platform["<b>platform/</b><br/>admin · key · webhook · event · bus · file · conversation · panel"]
-  lib["<b>lib/</b><br/>queue · storage · email · kv"]
+  platform["<b>platform/</b><br/>admin · app · bus · connection · conversation · event<br/>feedback · file · health · key · panel · webhook"]
+  lib["<b>lib/</b><br/>queue · storage · email · kv · limit"]
   kernel["<b>kernel</b><br/>identity · context · error · permission · drizzle · util"]
 
   domain --> platform
@@ -53,6 +53,8 @@ Slices declare and publish typed events through `platform/bus`. See [events.md](
   port itself takes the key as an option, so nothing in the port layer knows about it.
 - `lib/kv`'s redis adapter imports `"bun"`, so it stays out of `Kv.Providers` and the Worker
   bundle; Bun targets import it as `@template/core/kv/adapter/redis`.
+- `lib/limit` has a `port.ts` (the algorithm contract) but no `adapter/`: it counts in
+  `lib/kv`, so its backend is whichever Kv the process provides.
 - `platform/event` joins `user/user.sql` to name the actor on a log row. Platform may reach
   `user`, the identity anchor; nothing else in the product.
 - `platform/admin` reads `project` and `todo` tables for its counts — the one arrow that

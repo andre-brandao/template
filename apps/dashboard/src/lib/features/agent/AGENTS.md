@@ -1,19 +1,20 @@
 # features/agent
 
 The dashboard's AI agents, self-contained in this slice. Each agent is plain TanStack AI code:
-one `chat()` call built from the shared blocks in `api/core.ts`, returning the stream. Only
-the DDL (`conversation`, `conversation_message`) lives in core, at
-`@template/core/conversation/conversation.sql`, because `drizzle.config.ts` globs core alone.
+one `chat()` call built from the shared blocks in `api/core.ts`, returning the stream. What
+persists lives in core: `Conversation` (`@template/core/conversation`) and `Panel`
+(`@template/core/panel`).
 
 ## Layout
 
 - `api/core.ts` — `Agent`, the building blocks: `config`, `models`, `adapter` (the LiteLLM
-  proxy through `@tanstack/ai-openai/compatible`), `mcp` (the app's MCP as a token's owner),
-  the shared `prompt` and `offline` prompts, the `recorder` middleware, and the `Run` ids.
+  proxy through `@tanstack/ai-openai/compatible`), `mcp` (the app's MCP as a token's owner)
+  and `attach` (its run option, or the offline prompt), the shared `prompt` and `offline`
+  prompts, the `recorder` middleware (`tail` + `entry`), and the `Run` ids.
 - `api/tools.ts` — `loose()` and the `relax` middleware. The gateway rejects strict-mode tool
   schemas; every tool of a run (MCP and browser included) goes out with an open root.
-- `api/conversation.ts` — `Conversation`: `record`, `list`, `fromID`, `remove`, always the
-  actor's own threads. `agent` is free text, so a new agent needs no migration.
+- Core's `Conversation`: `record`, `list`, `fromID`, `remove`, always the actor's own threads.
+  `agent` is free text, so a new agent needs no migration.
 - `api/agents.ts` — the registry: `export const agents = { orchestrator, panel }`.
 - `api/<name>/agent.ts` — one folder per agent, a function that calls `chat()` directly with
   its own persona, tools, MCP access and `Agent.recorder({ agent: "<name>", thread })`.
@@ -43,6 +44,7 @@ the DDL (`conversation`, `conversation_message`) lives in core, at
 - `ask/` — the `ask` page tool: a json-render form catalog, answered in the chat.
 - `panel/` — the `show` page tool (admins): draws the spec `panel` returned, blocks running
   their own SQL in the browser. `check.ts` is shared with `draft`, over another row source.
+- `pages/` — `PanelsPage` and `PanelPage`, the saved panels, rendered at `/settings/panels`.
 
 ## Add an agent
 

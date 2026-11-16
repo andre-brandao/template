@@ -16,10 +16,15 @@
 - **Naming**: PascalCase for modules/namespaces, camelCase for functions/variables
 - **Error Handling**: Use explicit error throwing, wrap DB operations in transactions
 - **Module Pattern**: Export functions through namespaces (e.g., `export namespace User`)
-- **Testing**: Use `bun:test` with `describe`/`it` pattern and `withTestUser` helper
+- **Testing**: Use `bun:test` with `describe`/`it` pattern and the `withTestUser` /
+  `createUser` helpers in `test/util.ts`. `bunfig.toml` preloads `scripts/pglite.ts`, so each
+  run gets its own in-process Postgres on a free port
 - **Documentation**: Annotate every Zod schema with `.meta({ description, example })`. These
   schemas are where the OpenAPI spec starts, so a missing description ships all the way to the SDK
 - **Database**: Use Drizzle ORM via `Database.use()` for shared db/tx access and `Database.transaction()` when you need an explicit transaction
+- **Pools**: `Database.connect()` builds a pool (`max: 10`). A long-lived process connects once
+  and `Database.provide`s it per request; a script or test setup `Database.release`s it when
+  done, since an idle pool holds the process open for 20s
 - **Validation**: Use `fn()` utility for input validation and schema definition. Pass a third
   `{ title, description }` when the op backs an HTTP route or an MCP tool — that prose is what the
   route's `summary`/`description` and the tool's registration both read, so it is written once

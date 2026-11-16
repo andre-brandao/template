@@ -25,8 +25,8 @@ Every component is re-exported from `src/lib/index.ts`, and every story is regis
 ## Rules
 
 - **Encapsulate the library, inject the IO.** A component owns its third-party internals
-  (Carta, mermaid, TanStack) so callers never import them. App concerns — uploading a file,
-  fetching a row — arrive as props.
+  (`@tanstack/markdown` and `highlight`, `beautiful-mermaid`, TanStack Table) so callers never
+  import them. App concerns — uploading a file, fetching a row — arrive as props.
 - **No core imports.** If a component needs a domain type, it takes a structural prop.
 - Split a collection by destination (`{ top, bottom }`) rather than tagging items with a
   `bottom: true` modifier.
@@ -36,22 +36,25 @@ Every component is re-exported from `src/lib/index.ts`, and every story is regis
 
 ## Components
 
-| Group    | Parts                                                                                             |
-| -------- | ------------------------------------------------------------------------------------------------- |
-| Controls | `Button`, `IconButton`, `Input`, `Textarea`, `Select`, `LazySelect`, `Toggle`                     |
-| Choosers | `Combobox` (single or `multiple`), `Menu.*` (Root, Item, Label, Separator), `Tabs.*`, `Command`   |
-| Dates    | `Calendar`, `MonthGrid`, `DatePicker`, `RangePicker`                                              |
-| Layers   | `Popover`, `Tooltip`, `Drawer`, `Modals` + `modal()` + `Dialog`, `Toaster` + `toast`              |
-| Content  | `List.*` (Root, Row, Loading), `Card`, `Stat`, `Meter`, `Section`, `Field`, `Inline`, `DataTable` |
-| States   | `Status`, `Spinner`, `Skeleton`, `Empty`, `Issue`, `FormBoundary`                                 |
-| Text     | `Markdown`, `MarkdownEditor`, `Mermaid`, `Code`, `Kbd`, `Avatar`, `Badge`                         |
-| Panes    | `Scroll`, `Fill`, `Full`                                                                          |
+| Group    | Parts                                                                                                             |
+| -------- | ----------------------------------------------------------------------------------------------------------------- |
+| Controls | `Button`, `IconButton`, `Input`, `Textarea`, `Select`, `LazySelect`, `Toggle`                                     |
+| Choosers | `Combobox` (single or `multiple`), `Menu.*` (Root, Item, Label, Separator), `Tabs.*`, `Command`                   |
+| Dates    | `Calendar`, `MonthGrid`, `DatePicker`, `RangePicker`                                                              |
+| Layers   | `Popover`, `Tooltip`, `Drawer` (`side="bottom"` is a sheet), `Modals` + `modal()` + `Dialog`, `Toaster` + `toast` |
+| Content  | `List.*` (Root, Row, Loading), `Card`, `Stat`, `Meter`, `Section`, `Field`, `Inline`, `DataTable`, `Pagination`   |
+| States   | `Status`, `Spinner`, `Skeleton`, `Empty`, `Issue`, `FormBoundary`                                                 |
+| Text     | `Markdown`, `MarkdownEditor`, `Mermaid`, `Code`, `Kbd`, `Avatar`, `Badge`                                         |
+| Panes    | `Scroll`, `Fill`, `Full`                                                                                          |
 
 ## Conventions
 
 - **Tokens.** Every token has its light/dark default in `src/lib/tokens.css`
   (`@layer ui.tokens`, `:where(:root)`), which the app imports once and may override from
   its own `:root`. Components read `var(--x)` bare. Add a token there before using it.
+- **Feedback colours.** State reads from `--pending`, `--progress`, `--done`, `--danger` and
+  `--info` (ideas, notices), plus `--accent`. `Badge`'s `tone` takes the same names (and
+  `muted`), its text pulled toward `--ink` so every tone passes AA on its own wash.
 - **One control height.** Buttons, inputs, selects, toggles and tabs read
   `var(--control)`; a toolbar lowers it by setting `--control` on its container.
 - **One focus ring.** Boxed controls take `box-shadow: var(--ring)` with an accent border;
@@ -65,6 +68,12 @@ Every component is re-exported from `src/lib/index.ts`, and every story is regis
   assertive region `Toaster` mounts (`toast/Announcer.svelte`); never add `aria-live` per row.
 - **Inline cue.** An `Inline` face shows a faint pencil on hover or focus and a dotted underline
   on hover. Headers edit in place; rows open on click and rename from their menu.
+- **Inline focus.** The face stays mounted until the input holds focus. A wrapper that closes
+  on `focusout` must ignore focus moving inside it (`relatedTarget` within), or it closes as
+  the editor opens.
+- **DatePicker.** `presets` (`{ label, value }[]`, values in `date/parse.ts` syntax) render as
+  a column beside the month and widen the popover. With `time`, the time input shows inline
+  only once a time is set.
 - **Saves return promises.** `Inline.onsave` gets `mutateAsync`, not `mutate`, so a rejection
   can revert and mark the field failed.
 - **Dialogs** share `modal/dialog.ts`: an unlabelled one is named after its first heading.

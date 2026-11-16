@@ -49,8 +49,7 @@ points at its `/api` proxy (`lib/query.ts`). Import `sdk.gen` rather than the ba
 peer is optional.
 
 The dashboard imports `@template/sdk/query` (`getXOptions`, `postXMutation`) from its
-`api/<slice>.query.ts` files. `./query` is an alias of the barrel, kept so those imports
-didn't churn.
+`api/<slice>.query.ts` files. `./query` is an alias of the barrel.
 
 `apps/cli` reflects the functions exported by `sdk.gen`, so a new endpoint appears there
 automatically once this package regenerates. Nothing needs listing by hand.

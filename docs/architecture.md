@@ -8,6 +8,8 @@ graph TD
   sdk -. HTTP .-> api
   dash["apps/dashboard<br/>:5173"] --> ui["packages/ui"]
   dash --> core
+  dash -- "/api in-process" --> api
+  dash -. "TanStack helpers" .-> sdk
   api["api :3000"] --> core
   mcp["mcp :3001"] --> core
   auth["auth :3002"] --> core
@@ -25,23 +27,23 @@ graph TD
 Two things that surprise people:
 
 - **The dashboard skips HTTP.** It imports `@template/core` directly from its remote
-  functions — same process, no network hop. The SDK exists for the CLI and outside
-  callers, not for the dashboard.
+  functions — same process, no network hop. Its TanStack queries use the SDK's helpers
+  against `/api`, which a server hook answers from the Hono `api` router in-process.
 - **Core is a leaf.** It imports nothing from the workspace. Everything else may depend
   on it; it depends on no one. A cycle here is always a bug.
 
 ## Who owns what
 
-| Path                 | Owns                                                                                       |
-| -------------------- | ------------------------------------------------------------------------------------------ |
-| `packages/core`      | Domain logic, Drizzle schema, migrations. All business rules.                              |
-| `packages/functions` | Hono services: `api`, `mcp`, `auth`, `queue`. Transport only.                              |
-| `apps/dashboard`     | SvelteKit UI, remote functions, routes.                                                    |
-| `apps/cli`           | The one entrypoint that runs and talks to the stack.                                       |
-| `packages/ui`        | Presentational Svelte components. No app imports, no IO.                                   |
-| `packages/sdk/ts`    | Generated from `openapi.json`. Never hand-edited.                                          |
-| `scripts`            | `dev`, `seed`, `reset`, feature scaffold.                                                  |
-| `infra`              | SST 4 (`infra/sst/cf` live, `infra/sst/aws` alternate), `infra/terraform`, `infra/docker`. |
+| Path                 | Owns                                                                                                        |
+| -------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `packages/core`      | Domain logic, Drizzle schema, migrations. All business rules.                                               |
+| `packages/functions` | Hono services: `api`, `mcp`, `auth`, `queue`. Transport only.                                               |
+| `apps/dashboard`     | SvelteKit UI, remote functions, routes.                                                                     |
+| `apps/cli`           | The one entrypoint that runs and talks to the stack.                                                        |
+| `packages/ui`        | Presentational Svelte components. No app imports, no IO.                                                    |
+| `packages/sdk/ts`    | Generated from `openapi.json`. Never hand-edited.                                                           |
+| `scripts`            | `dev`, `seed`, `reset`, feature scaffold.                                                                   |
+| `infra`              | SST 4 (`infra/sst/cf` live, `infra/sst/aws` alternate), `infra/terraform`, `infra/alchemy`, `infra/docker`. |
 
 ## Generation chain
 
@@ -64,5 +66,5 @@ missing everywhere. Change a schema or a route and both steps must be re-run, in
 ## Adding a feature
 
 `bun run scripts/feature.ts <name>` scaffolds the whole vertical: core module + test, API
-handler, MCP tool, dashboard remote/components/page, and the route. Prefer it over hand-wiring — it
+handler, MCP tool, dashboard query/components/page, and the route. Prefer it over hand-wiring — it
 keeps the identifier prefix and the OpenAPI example registry in sync.

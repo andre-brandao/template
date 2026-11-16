@@ -21,18 +21,28 @@ Bun workspaces monorepo. Postgres via Drizzle, Hono services, SvelteKit dashboar
 Each package has its own `AGENTS.md` (symlinked as `CLAUDE.md`) with the rules for editing
 it. `docs/` holds the cross-cutting picture: [architecture](docs/architecture.md),
 [core layering](docs/core.md), [runtime and deploy](docs/runtime.md).
+[`.agents/audits/`](.agents/audits/README.md) holds the audit lenses (performance, experience,
+structure, correctness, platform); use one when asked to audit or sweep the codebase.
 
 ## Commands
 
-| Command             | What                                                       |
-| ------------------- | ---------------------------------------------------------- |
-| `bun dev`           | Whole stack. `DB=pglite` for in-process, `RESET=1` to wipe |
-| `bun run test`      | All packages. A bare `bun test` at the root is guarded     |
-| `bun run typecheck` | All packages                                               |
-| `bun run fmt`       | `oxfmt`, not Prettier                                      |
-| `bun run lint`      | `oxlint`, not ESLint                                       |
+| Command             | What                                                                 |
+| ------------------- | -------------------------------------------------------------------- |
+| `bun dev`           | Whole stack. `DB=pglite` for in-process, `RESET=1` to wipe           |
+| `bun run test`      | Every package's `test` script, each from its own dir                 |
+| `bun run typecheck` | Every package's `typecheck` script; a package without one is skipped |
+| `bun run fmt`       | `oxfmt`, not Prettier. `fmt:check` is the CI gate                    |
+| `bun run lint`      | `oxlint`, not ESLint                                                 |
+| `bun run fallow`    | fallow health, dead-code and dupes; config in `.fallowrc.jsonc`      |
 
-DO NOT RUN commands like `bun run gen`, `bun run scripts/testing/webhook.ts` and `bun run db:generate` from `packages/core` agent, they should only be run mannually by the user.
+DO NOT RUN commands like `bun run gen`, `bun run scripts/testing/webhook.ts` and `bun run db:generate` from `packages/core` agent, they should only be run manually by the user.
+
+- `oxfmt` formats `.ts`, `.md`, `.json` and `.svelte`; `.svelte` gets tabs, single quotes and
+  width 100 (`.oxfmtrc.json`). `infra/**` is not formatted.
+- A formatting-only commit goes in `.git-blame-ignore-revs`.
+- Beyond the audit below, keep `fallow health --format json --quiet` clean in touched files
+  (CRAP and size limits per path in `.fallowrc.jsonc`) and `fallow dead-code`'s
+  `duplicate_exports` empty. CI posts fallow's findings on the PR.
 
 ## Style Guide
 
@@ -160,7 +170,8 @@ const SessionTable = pgTable("session", {
 
 - Avoid mocks as much as possible
 - Test actual implementation, do not duplicate logic into tests
-- Tests cannot run from repo root (guard: `do-not-run-tests-from-root`); run from package dirs like `packages/core`.
+- Run tests from package dirs like `packages/core`, never a bare `bun test` at the root: each
+  package's `bunfig.toml` carries its own preload (pglite, the svelte loader, cleanup).
 
 ## Type Checking
 

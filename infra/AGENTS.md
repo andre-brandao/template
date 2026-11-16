@@ -6,8 +6,8 @@ supported; [`README.md`](README.md) marks the rest experimental.
 | Path             | What                                                                        |
 | ---------------- | --------------------------------------------------------------------------- |
 | `sst/cf/`        | **Live.** SST 4: Cloudflare Workers + Hyperdrive. `sst.config.ts` imports this. |
-| `sst/aws/`       | Alternate SST wiring: Lambda + VPC + RDS.                                   |
-| `terraform/`     | OpenTofu. Same Cloudflare stack as `sst/cf`, independently. See its `README.md`. |
+| `sst/aws/`       | Alternate SST wiring: Lambda + VPC + RDS. Its dashboard has no SvelteKit 3 adapter yet. |
+| `terraform/`     | OpenTofu. `envs/cloudflare/` is the same stack as `sst/cf`, independently; `envs/aws/` a stub. See its `README.md`. |
 | `alchemy/`       | Alchemy v2 (beta): `cf/` mirrors `sst/cf`, `docker/` mirrors `docker/`. See its `README.md`. |
 | `docker/`        | Self-contained Compose stack, no SST. See its `README.md`.                  |
 
@@ -15,11 +15,14 @@ Each SST module exports its resources plus an `outputs` object, which `sst.confi
 collects by iterating the barrel. A new module is picked up by exporting it from
 `index.ts` — there is no registration list.
 
-`terraform/` mirrors `sst/cf/` file-for-file (`api.tf` ↔ `api.ts`, and so on) so the two
-stay legible side by side. It reaches parity without any application change, because the
-workers read their bindings by name — `Hyperdrive`, `Files`, `Jobs`, `AuthKv`,
-`SEND_EMAIL`, declared in `packages/functions/src/cf.ts` — and never import SST's
-`Resource`.
+`terraform/envs/cloudflare/` mirrors `sst/cf/` file-for-file (`api.tf` ↔ `api.ts`, and so on)
+so the two stay legible side by side. It reaches parity without any application change, because
+the workers read their bindings by name — `Hyperdrive`, `Files`, `Jobs`, `AuthKv`,
+`SEND_EMAIL`, declared in `packages/functions/src/cf.ts` (the dashboard reads them from
+`cloudflare:workers`) — and never import SST's `Resource`.
+
+Worker bundles keep `cloudflare:*` imports external (postgres.js 4's workerd entry needs
+`cloudflare:sockets`); `sst.config.ts` does it with a `$transform` on `sst.cloudflare.Worker`.
 
 Services map to `packages/functions/src/*/target/` — `sst/cf/`, `terraform/` and `alchemy/cf/` deploy the
 `worker` targets, `sst/aws/` the `lambda` ones. `docker/` and `alchemy/docker/` run

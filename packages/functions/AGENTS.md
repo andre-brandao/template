@@ -22,7 +22,8 @@ src/
     spec.ts             — the OpenAPI document, read by gen:spec and the dev api inspector
     handler/            — one file per domain (file, hook, insights, key, project, todo, user)
     target/             — bun.ts | lambda.ts | worker.ts, the entry points
-  auth/ mcp/ queue/     — same shape: the service, plus its target/ (mcp/tool/ per domain)
+  auth/ mcp/            — same shape: the service, plus its target/ (mcp/tool/ per domain)
+  queue/target/         — the worker alone (bun, worker), draining core's Queue
 ```
 
 Each service is a plain Hono app; its `target/` wraps it with a database connection for the

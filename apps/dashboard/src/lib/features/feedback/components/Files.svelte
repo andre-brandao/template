@@ -1,12 +1,18 @@
 <!--
-	The files a `send` form attaches: picked, pasted as a screenshot, or removed one by one. The
-	list is the truth; the attachment mirrors it into the input, which is what the form posts.
+	The files a `send` form attaches: picked, dropped or pasted anywhere on the form, removed one
+	by one. The list is the truth; the attachment mirrors it into the input the form posts.
 -->
 <script lang="ts">
+	import type { RemoteFormField } from '$app/server';
+	import { on } from 'svelte/events';
 	import FileText from '@lucide/svelte/icons/file-text';
-	import Paperclip from '@lucide/svelte/icons/paperclip';
-	import { Field } from '@template/ui';
+	import ImagePlus from '@lucide/svelte/icons/image-plus';
+	import X from '@lucide/svelte/icons/x';
+	import { Field, Kbd } from '@template/ui';
 	import { size } from '#lib/utils/size.ts';
+
+	let { field, issues = [] }: { field: RemoteFormField<File[]>; issues?: { message: string }[] } =
+		$props();
 
 	const MAX = 3;
 	let files = $state.raw<{ file: File; url?: string }[]>([]);
@@ -29,77 +35,85 @@
 		}));
 	}
 
-	// A pick adds to what is there, so a cancelled dialog (empty `files`) changes nothing.
-	function pick(e: Event & { currentTarget: HTMLInputElement }) {
-		set([...files.map((row) => row.file), ...Array.from(e.currentTarget.files ?? [])]);
-	}
-
-	// A drop takes the same kinds the picker accepts; anything else is ignored.
-	function drop(e: DragEvent) {
-		e.preventDefault();
-		dragging = false;
-		const dropped = Array.from(e.dataTransfer?.files ?? []).filter(
-			(file) => file.type.startsWith('image/') || file.type === 'application/pdf'
-		);
-		if (dropped.length) set([...files.map((row) => row.file), ...dropped]);
+	function add(list: File[]) {
+		if (list.length) set([...files.map((row) => row.file), ...list]);
 	}
 
 	// The clipboard names a screenshot `image.png`; a counter tells them apart in the issue.
-	function paste(e: ClipboardEvent) {
-		const shots = Array.from(e.clipboardData?.files ?? []).filter((file) =>
-			file.type.startsWith('image/')
-		);
-		if (!shots.length) return;
-		set([
-			...files.map((row) => row.file),
-			...shots.map((file) =>
-				file.name && file.name !== 'image.png'
-					? file
-					: new File([file], `screenshot-${++pasted}.png`, { type: file.type })
-			)
-		]);
+	const name = (file: File) =>
+		file.name && file.name !== 'image.png'
+			? file
+			: new File([file], `screenshot-${++pasted}.png`, { type: file.type });
+
+	// The whole form takes drops and pastes, so a screenshot can land on Details too. Only file
+	// drags are claimed: text still drags into the textarea as usual.
+	function listen(node: HTMLElement) {
+		const form = node.closest('form');
+		if (!form) return;
+		const carries = (e: DragEvent) => !!e.dataTransfer?.types.includes('Files');
+		const stops = [
+			on(form, 'dragover', (e) => {
+				if (!carries(e)) return;
+				e.preventDefault();
+				dragging = true;
+			}),
+			on(form, 'dragleave', (e) => {
+				if (!form.contains(e.relatedTarget as Node | null)) dragging = false;
+			}),
+			on(form, 'drop', (e) => {
+				if (!carries(e)) return;
+				e.preventDefault();
+				dragging = false;
+				add(
+					Array.from(e.dataTransfer?.files ?? []).filter(
+						(file) => file.type.startsWith('image/') || file.type === 'application/pdf'
+					)
+				);
+			}),
+			on(form, 'paste', (e) => {
+				const shots = Array.from(e.clipboardData?.files ?? []).filter((file) =>
+					file.type.startsWith('image/')
+				);
+				if (!shots.length) return;
+				e.preventDefault();
+				add(shots.map(name));
+			})
+		];
+		return () => stops.forEach((stop) => stop());
 	}
 </script>
 
-<svelte:window onpaste={paste} />
-
-<div class="files">
+<div class="files" {@attach listen}>
 	<Field label="Attachments" as="div">
 		<!-- The native input stays in the form, visually hidden; the zone is its label. -->
-		<label
-			class={['zone', { dragging }]}
-			ondragover={(e) => {
-				e.preventDefault();
-				dragging = true;
-			}}
-			ondragleave={() => (dragging = false)}
-			ondrop={drop}
-		>
+		<label class={['zone', { dragging }]}>
 			<input
 				{@attach (node) => {
 					const list = new DataTransfer();
 					files.forEach((row) => list.items.add(row.file));
 					node.files = list.files;
 				}}
-				type="file"
-				name="files[]"
-				multiple
+				{...field.as('file multiple')}
 				accept="image/*,application/pdf"
-				onchange={pick}
+				onchange={(e) => add(Array.from(e.currentTarget.files ?? []))}
 			/>
-			<Paperclip size={16} strokeWidth={1.75} />
-			<span>
-				<strong>Choose files</strong> or drop them here
+			<span class="badge"><ImagePlus size={18} strokeWidth={1.75} /></span>
+			<span class="text">
+				<strong>{dragging ? 'Drop to attach' : 'Drop, paste or choose files'}</strong>
 				<span class="hint">
-					Up to 3, 10 MB each: screenshots or PDFs. Or paste a screenshot with Ctrl+V.
+					Screenshots or PDFs, up to {MAX} at 10 MB each. Paste one with <Kbd keys="Mod+V" />
 				</span>
 			</span>
+			<span class="count" aria-label="{files.length} of {MAX} attached">{files.length}/{MAX}</span>
 		</label>
 	</Field>
 
 	{#if over}
-		<p class="note">At most 3 attachments</p>
+		<p class="note" role="alert">Only {MAX} fit, so the rest were left out.</p>
 	{/if}
+	{#each issues as issue, i (i)}
+		<p class="note" role="alert">{issue.message}</p>
+	{/each}
 
 	{#if files.length}
 		<ul>
@@ -108,16 +122,20 @@
 					{#if row.url}
 						<img src={row.url} alt="" />
 					{:else}
-						<span class="pdf"><FileText size={16} strokeWidth={1.75} /></span>
+						<span class="pdf"><FileText size={20} strokeWidth={1.5} /></span>
 					{/if}
-					<span class="name">{row.file.name}</span>
+					<span class="name" title={row.file.name}>{row.file.name}</span>
 					<span class="size">{size(row.file.size)}</span>
 					<button
 						type="button"
 						aria-label="Remove {row.file.name}"
-						onclick={() => set(files.filter((one) => one !== row).map((one) => one.file))}
+						onclick={(e) => {
+							// Focus goes back to the picker rather than falling out of the form.
+							e.currentTarget.closest('.files')?.querySelector('input')?.focus();
+							set(files.filter((one) => one !== row).map((one) => one.file));
+						}}
 					>
-						remove
+						<X size={14} strokeWidth={2} />
 					</button>
 				</li>
 			{/each}
@@ -136,20 +154,23 @@
 		position: relative;
 		display: flex;
 		align-items: center;
-		gap: 0.75em;
-		padding: 0.85em 1em;
-		border: 1px dashed var(--border);
+		gap: 0.8em;
+		padding: 0.8em 0.9em;
+		border: 1.5px dashed var(--border-bright);
 		border-radius: var(--radius);
 		background: var(--surface-2);
 		color: var(--muted);
 		font-size: 0.88em;
 		cursor: pointer;
+		transition:
+			background 0.12s ease,
+			border-color 0.12s ease;
 	}
 
 	.zone:hover,
 	.zone.dragging {
 		border-color: var(--accent);
-		color: var(--ink);
+		background: color-mix(in oklab, var(--accent) 8%, var(--surface));
 	}
 
 	.zone:focus-within {
@@ -157,8 +178,25 @@
 		outline-offset: 1px;
 	}
 
-	.zone strong {
+	.badge {
+		flex: none;
+		display: grid;
+		place-items: center;
+		width: 2.4em;
+		height: 2.4em;
+		border-radius: 50%;
+		background: color-mix(in oklab, var(--accent) 14%, var(--surface));
 		color: var(--accent);
+	}
+
+	.text {
+		flex: 1;
+		min-width: 0;
+	}
+
+	strong {
+		display: block;
+		color: var(--ink);
 		font-weight: 600;
 	}
 
@@ -174,8 +212,16 @@
 	.hint {
 		display: block;
 		margin-top: 0.2em;
-		font-size: 0.88em;
-		color: var(--muted);
+		font-size: 0.9em;
+		color: var(--dim);
+	}
+
+	.count {
+		flex: none;
+		align-self: flex-start;
+		font-size: 0.85em;
+		font-variant-numeric: tabular-nums;
+		color: var(--dim);
 	}
 
 	.note {
@@ -184,33 +230,34 @@
 		color: var(--danger);
 	}
 
+	/* At most three, so three columns: a row of tiles never wraps to a lone straggler. */
 	ul {
 		display: grid;
-		gap: 0.35em;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 0.5em;
 		margin: 0;
 		padding: 0;
 		list-style: none;
 	}
 
 	li {
+		position: relative;
 		display: flex;
-		align-items: center;
-		gap: 0.6em;
-		padding: 0.35em 0.5em;
+		flex-direction: column;
+		gap: 0.15em;
+		padding: 0.3em;
 		border: 1px solid var(--border);
 		border-radius: var(--radius);
-		background: var(--surface-2);
-		font-size: 0.85em;
+		background: var(--surface);
+		font-size: 0.8em;
 	}
 
 	img,
 	.pdf {
-		flex: none;
-		width: 2.6em;
-		height: 2em;
-		border: 1px solid var(--border);
+		width: 100%;
+		aspect-ratio: 4 / 3;
 		border-radius: var(--radius-sm);
-		background: var(--surface);
+		background: var(--surface-2);
 	}
 
 	img {
@@ -218,39 +265,44 @@
 	}
 
 	.pdf {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
+		display: grid;
+		place-items: center;
 		color: var(--muted);
 	}
 
-	/* Long names wrap rather than clip: the drawer is narrow and the name is the point. */
 	.name {
-		flex: 1;
-		min-width: 0;
-		overflow-wrap: anywhere;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		padding: 0 0.15em;
 	}
 
 	.size {
-		flex: none;
-		color: var(--muted);
+		padding: 0 0.15em;
+		color: var(--dim);
 		font-variant-numeric: tabular-nums;
 	}
 
+	/* Always shown, not on hover: a phone has no hover to reveal it. */
 	button {
-		flex: none;
-		border: none;
-		background: none;
-		padding: 0.2em 0.4em;
-		border-radius: var(--radius-sm);
-		font: inherit;
+		position: absolute;
+		top: 0.5em;
+		right: 0.5em;
+		display: grid;
+		place-items: center;
+		width: 1.9em;
+		height: 1.9em;
+		border: 1px solid var(--border);
+		border-radius: 50%;
+		background: var(--surface);
 		color: var(--muted);
+		box-shadow: var(--shadow-1);
 		cursor: pointer;
 	}
 
 	button:hover {
 		color: var(--danger);
-		background: var(--hover);
+		border-color: var(--danger);
 	}
 
 	button:focus-visible {

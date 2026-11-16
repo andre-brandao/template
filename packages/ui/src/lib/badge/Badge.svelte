@@ -1,6 +1,6 @@
 <script module lang="ts">
 	/** Named after the state it reports, not the colour it uses. */
-	export type Tone = 'muted' | 'pending' | 'progress' | 'done' | 'danger' | 'accent';
+	export type Tone = 'muted' | 'pending' | 'progress' | 'done' | 'danger' | 'accent' | 'info';
 </script>
 
 <script lang="ts">
@@ -12,8 +12,8 @@
 <span class="badge {tone}">{@render children()}</span>
 
 <style>
-	/* A soft tinted pill: the text takes the tone and the fill a wash of it, so a row of
-	   mixed badges keeps one weight. */
+	/* A soft tinted pill: the fill is a wash of the tone and the text the tone pulled a
+	   quarter toward ink, which keeps every tone at AA on its own wash in both themes. */
 	.badge {
 		display: inline-flex;
 		align-items: center;
@@ -24,32 +24,36 @@
 		font-weight: 500;
 		line-height: 1.5;
 		white-space: nowrap;
+		color: color-mix(in oklab, var(--tone) 75%, var(--ink));
+		background: color-mix(in oklab, var(--tone) 11%, transparent);
+	}
+
+	.muted {
 		color: var(--muted);
 		background: var(--surface-2);
 	}
 
 	.pending {
-		color: var(--pending);
-		background: color-mix(in oklab, var(--pending) 11%, transparent);
+		--tone: var(--pending);
 	}
 
 	.progress {
-		color: var(--progress);
-		background: color-mix(in oklab, var(--progress) 11%, transparent);
+		--tone: var(--progress);
 	}
 
 	.done {
-		color: var(--done);
-		background: color-mix(in oklab, var(--done) 11%, transparent);
+		--tone: var(--done);
 	}
 
 	.danger {
-		color: var(--danger);
-		background: color-mix(in oklab, var(--danger) 11%, transparent);
+		--tone: var(--danger);
 	}
 
 	.accent {
-		color: var(--accent);
-		background: color-mix(in oklab, var(--accent) 12%, transparent);
+		--tone: var(--accent);
+	}
+
+	.info {
+		--tone: var(--info);
 	}
 </style>

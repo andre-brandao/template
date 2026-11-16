@@ -6,12 +6,13 @@
 	import { z } from 'zod';
 	import { createQuery } from '@tanstack/svelte-query';
 	import type { Feedback } from '@template/core/feedback';
-	import { Badge, Combobox, Empty, Issue, Skeleton, Tabs } from '@template/ui';
+	import { Combobox, Empty, Issue, Skeleton, Tabs } from '@template/ui';
 	import * as Header from '#lib/components/header/index.ts';
 	import { query } from '#lib/utils/params.ts';
 	import { issues } from '../api/feedback.query';
 	import Line from '../components/Line.svelte';
 	import Lines from '../components/Lines.svelte';
+	import Mark from '../components/Mark.svelte';
 	import { tags, urgencies } from '../labels';
 
 	const kinds = ['bug', 'feature', 'support'] as const satisfies readonly Feedback.Row['tag'][];
@@ -78,7 +79,11 @@
 					{tags[one].label}<span class="count">{count(one)}</span>
 				{/snippet}
 				{#snippet item(one, row)}
-					<span class="name">{@render row.marked(tags[one].label)}</span>
+					{@const tag = tags[one]}
+					<span class="tone" style:--tone="var(--{tag.tone})"
+						><tag.icon size={13} strokeWidth={2} aria-hidden="true" /></span
+					>
+					<span class="name">{@render row.marked(tag.label)}</span>
 					<span class="count">{count(one)}</span>
 				{/snippet}
 			</Combobox>
@@ -96,7 +101,7 @@
 	<Lines>
 		{#each shown as row (row.id)}
 			<Line {row} href="/settings/feedback/{row.id}">
-				<Badge tone={urgencies[row.urgency].tone}>{urgencies[row.urgency].label}</Badge>
+				<Mark label={urgencies[row.urgency]} />
 				<span class="from">{row.from ?? 'No sender'}</span>
 			</Line>
 		{/each}
@@ -106,6 +111,11 @@
 <style>
 	.any {
 		color: var(--muted);
+	}
+
+	.tone {
+		display: grid;
+		color: var(--tone);
 	}
 
 	.name {

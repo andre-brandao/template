@@ -10,7 +10,9 @@
 </ul>
 
 <style>
+	/* A container, so each `Line` lays itself out by the list's width, not the window's. */
 	ul {
+		container-type: inline-size;
 		max-width: 64em;
 		margin: 0;
 		padding: 0;

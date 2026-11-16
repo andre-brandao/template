@@ -52,7 +52,7 @@
 	{#if done && spec}
 		<div class="actions">
 			{#if saved}
-				<a class="saved" href="/admin/panels/{saved}">
+				<a class="saved" href="/settings/panels/{saved}">
 					<ExternalLink size={14} strokeWidth={1.75} />
 					Saved · open
 				</a>

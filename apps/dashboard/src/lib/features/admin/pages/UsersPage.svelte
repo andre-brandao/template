@@ -21,7 +21,7 @@
 
 <!-- Same shape as the log: header and filters hold still, only the list scrolls. -->
 <Fill>
-	<Header.Root title="Users">
+	<Header.Root title="Members">
 		{#snippet strip()}
 			<Header.Group>
 				<Input

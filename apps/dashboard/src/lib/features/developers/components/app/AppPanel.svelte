@@ -17,7 +17,7 @@
 	const row = createQuery(() => get(id));
 	const subs = createQuery(() => list(id));
 	const owned = createQuery(() => keys(id));
-	const drop = remove({ onSuccess: () => goto('/developers/apps') });
+	const drop = remove({ onSuccess: () => goto('/settings/apps') });
 
 	const key = () => modal(KeyForm, { app: id });
 	const hook = () => modal(WebhookForm, { owner: id });

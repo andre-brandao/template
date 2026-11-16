@@ -20,12 +20,20 @@ src/lib/
   components/layout/       shell, nav
   server/                  remote builder, auth, session, theme
 src/routes/
-  (app)/ (auth)/ admin/    route groups, each owning its own layout + nav links
+  (app)/ (auth)/           route groups, each owning its own layout + nav links
+  (app)/settings/          every account, developer and admin page, one grouped rail
+    account experience keys      You: anyone signed in
+    (workspace)/apps webhooks    gated on `app:read`
+    (admin)/members panels feedback logs instance   gated on `admin:read`
   dev/                     story + prototype harnesses
 ```
 
 Routes stay thin: a `+page.svelte` renders a page component from a slice. Each layout
 declares its own nav links — no dispatcher branching on `route.id`.
+
+Settings: `+layout.server.ts` reports which groups the role sees and `+layout.ts` builds the
+rail from it, which only hides. The `(workspace)` and `(admin)` group layouts are what refuse
+(403). A new settings page goes in the group matching its grant, plus one rail item.
 
 ## Remote functions
 

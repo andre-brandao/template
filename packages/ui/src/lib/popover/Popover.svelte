@@ -10,6 +10,7 @@
 
 <script lang="ts">
 	import { createAttachmentKey } from 'svelte/attachments';
+	import { MediaQuery } from 'svelte/reactivity';
 	import type { Snippet } from 'svelte';
 	import { HotkeysProvider } from '@tanstack/svelte-hotkeys';
 	import { place, type Align, type Place } from './place';
@@ -21,6 +22,7 @@
 		role = 'dialog',
 		label,
 		wide = false,
+		sheet = false,
 		trigger,
 		children
 	}: {
@@ -32,6 +34,8 @@
 		label?: string;
 		/** Room for wide content, like a two-month calendar. */
 		wide?: boolean;
+		/** On a phone, dock to the bottom as a sheet instead of hanging off the trigger. */
+		sheet?: boolean;
 		trigger?: Snippet<[Trigger]>;
 		children: Snippet<[close: () => void]>;
 	} = $props();
@@ -43,6 +47,8 @@
 	let panel: HTMLDivElement | undefined = $state();
 	// Set by `show(point)` for a context menu; cleared by a trigger-driven open.
 	let point: { x: number; y: number } | undefined;
+	const phone = new MediaQuery('max-width: 30em');
+	let docked = $state(false);
 
 	const attrs = $derived({
 		popovertarget: id,
@@ -68,6 +74,12 @@
 	// Measured, because the top layer means no ancestor clips it and nothing positions it.
 	function move() {
 		if (!panel) return;
+		// A sheet is docked by CSS, so it drops whatever a wider viewport placed.
+		docked = sheet && !point && phone.current;
+		if (docked) {
+			panel.style.left = panel.style.top = '';
+			return;
+		}
 		const at = point
 			? new DOMRect(point.x, point.y, 0, 0)
 			: (anchor?.getBoundingClientRect() ?? new DOMRect());
@@ -114,6 +126,7 @@
 	aria-label={label}
 	tabindex="-1"
 	data-side={side}
+	data-sheet={docked || undefined}
 	onbeforetoggle={(e) => e.newState === 'open' && requestAnimationFrame(move)}
 	ontoggle={toggle}
 >
@@ -167,6 +180,44 @@
 		.popover:popover-open {
 			opacity: 0;
 			translate: 0 -2px;
+		}
+	}
+
+	/* A bottom sheet on a phone: full width, within thumb reach, over a dimmed page. */
+	.popover[data-sheet] {
+		inset: auto 0 0 0;
+		width: auto;
+		max-width: none;
+		max-height: 85dvh;
+		padding: 1.1em 0.6em calc(0.6em + env(safe-area-inset-bottom));
+		border-width: 1px 0 0;
+		border-radius: var(--radius) var(--radius) 0 0;
+		translate: 0 100%;
+	}
+
+	.popover[data-sheet]::before {
+		content: '';
+		position: absolute;
+		top: 0.4em;
+		left: 50%;
+		width: 2.5em;
+		height: 4px;
+		translate: -50% 0;
+		border-radius: 2px;
+		background: var(--border);
+	}
+
+	.popover[data-sheet]::backdrop {
+		background: var(--scrim);
+	}
+
+	.popover[data-sheet]:popover-open {
+		translate: 0 0;
+	}
+
+	@starting-style {
+		.popover[data-sheet]:popover-open {
+			translate: 0 100%;
 		}
 	}
 

@@ -72,7 +72,7 @@
 </script>
 
 {#snippet slug(row: Cell)}
-	<a href={`/admin/workspaces/${row.original.slug}`}>{row.original.slug}</a>
+	<a href={`/settings/workspaces/${row.original.slug}`}>{row.original.slug}</a>
 {/snippet}
 
 {#snippet status(row: Cell)}

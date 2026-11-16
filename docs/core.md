@@ -56,6 +56,8 @@ Central modules read through `Central.use`/`transaction` (`drizzle/central`), te
 `Database`. `central.access` says who can see a workspace; its tenant `member` table holds the
 role and is what tenant rows join. `Workspaces.create` writes a `pending` row and queues
 `workspace.setup` (migrate, seat the owner, mark `ready`); `resolve` 409s until then.
+Single mode refuses `create` and `resolve` (no switching); `current` seats its one `default`
+row and the caller (first one in owns it) on first read, so `update`, `members` and `role` work.
 
 Database per workspace, when an app needs it: add a `database` column to `WorkspaceTable`
 naming an env binding; `Workspaces.connect.provide((row) => clients[row.database], fn)` in the

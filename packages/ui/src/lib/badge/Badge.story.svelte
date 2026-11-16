@@ -12,7 +12,7 @@
 			tone: {
 				type: 'select',
 				value: 'done',
-				options: ['muted', 'pending', 'progress', 'done', 'danger', 'accent']
+				options: ['muted', 'pending', 'progress', 'done', 'danger', 'accent', 'info']
 			}
 		},
 		variants: [
@@ -21,7 +21,8 @@
 			{ label: 'progress', props: { tone: 'progress' } },
 			{ label: 'done', props: { tone: 'done' } },
 			{ label: 'danger', props: { tone: 'danger' } },
-			{ label: 'accent', props: { tone: 'accent' } }
+			{ label: 'accent', props: { tone: 'accent' } },
+			{ label: 'info', props: { tone: 'info' } }
 		]
 	};
 </script>

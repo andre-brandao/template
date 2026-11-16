@@ -127,7 +127,7 @@ function status(due: number) {
 /** Writes the fixtures and returns the dev account's API key. Assumes its providers are set. */
 async function seed() {
   const userID = await Auth.link({ provider: "email", accountId: email, email, name });
-  // The dev account owns the instance: `/admin` is otherwise unreachable without hand-writing
+  // The dev account owns the instance: admin settings are otherwise unreachable without hand-writing
   // the promotion SQL. The team below stay members, so both roles are represented locally.
   await Identity.internal("seed", Permission.all, () => User.assign({ id: userID, role: "admin" }));
   // The login screen prefills these credentials in dev, so the dev account needs a real

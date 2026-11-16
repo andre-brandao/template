@@ -1,21 +1,19 @@
 <script lang="ts">
 	import { createQuery } from '@tanstack/svelte-query';
-	import { Button, Card, Inline, Issue, Section, Skeleton } from '@template/ui';
+	import { Inline, Issue, Skeleton } from '@template/ui';
 	import type { Event } from '@template/core/event';
 	import { get, link, unlink, update } from '../api/todos.query';
 	import Timeline from '#lib/features/events/components/Timeline.svelte';
-	import StatusPill from './StatusPill.svelte';
+	import Widgets, { type Widget } from '#lib/components/Widgets.svelte';
+	import Links from '#lib/components/Links.svelte';
+	import Annotations from '#lib/components/Annotations.svelte';
 	import StatusPicker from './StatusPicker.svelte';
 	import TagList from './TagList.svelte';
 	import Head from './editor/Head.svelte';
-	import Facts from './editor/Facts.svelte';
 	import Description from './editor/Description.svelte';
-	import Delete from './Delete.svelte';
+	import More from './editor/More.svelte';
 	import Plan from './editor/Plan.svelte';
 	import SubIssues from './editor/SubIssues.svelte';
-	import Links from '#lib/components/Links.svelte';
-	import Annotations from '#lib/components/Annotations.svelte';
-	import { color } from '../status';
 
 	let {
 		id,
@@ -23,7 +21,7 @@
 		onremove
 	}: {
 		id: string;
-		/** On its own route: the record header with facts, instead of the drawer's compact head. */
+		/** On its own route: the record header carries every fact, so the body only adds to it. */
 		page?: boolean;
 		onremove: () => void;
 	} = $props();
@@ -47,7 +45,63 @@
 			return `${base} → ${event.data.to}${event.data.reason ? ` (${event.data.reason})` : ''}`;
 		return base;
 	}
+
+	// The drawer has no header, so its facts come back as a Details card.
+	const side = $derived.by(() => {
+		const notes = Object.keys(query.data?.metadata.annotations ?? {}).length > 0;
+		return [
+			...(page ? [] : [{ title: 'Details', body: details }]),
+			{ title: 'Sub-issues', body: subs },
+			{ title: 'Links', body: links },
+			...(notes ? [{ title: 'Annotations', body: annotations }] : []),
+			{ title: 'History', body: history, fill: true }
+		] satisfies Widget[];
+	});
 </script>
+
+{#snippet description()}
+	{#if query.data}
+		{#if query.data.tags.length}
+			<div class="tags"><TagList tags={query.data.tags} /></div>
+		{/if}
+		{#if save.error}<Issue>{save.error.message}</Issue>{/if}
+		<Description
+			todo={query.data}
+			pending={save.isPending}
+			onsave={(body) => save.mutateAsync({ path: { id }, body: { body: body || null } })}
+		/>
+	{/if}
+{/snippet}
+
+{#snippet details()}
+	{#if query.data}<Plan todo={query.data} />{/if}
+{/snippet}
+
+{#snippet subs()}
+	{#if query.data}<SubIssues todo={query.data} />{/if}
+{/snippet}
+
+{#snippet links()}
+	{#if query.data}
+		<Links
+			links={query.data.metadata.links}
+			add={(next) => attach.mutateAsync({ path: { id }, body: next })}
+			drop={(url) => detach.mutateAsync({ path: { id }, query: { url } })}
+		/>
+	{/if}
+{/snippet}
+
+{#snippet annotations()}
+	{#if query.data}<Annotations annotations={query.data.metadata.annotations} />{/if}
+{/snippet}
+
+{#snippet history()}
+	<Timeline source="todo" sourceID={id}>
+		{#snippet label(event)}
+			{describe(event)}
+		{/snippet}
+	</Timeline>
+{/snippet}
 
 {#if query.isPending}
 	<Skeleton h="320px" />
@@ -55,160 +109,59 @@
 	<Issue>{query.error.message}</Issue>
 {:else}
 	{@const todo = query.data}
-	{#if page}<Head {todo} />{/if}
-
-	<div class="editor">
-		<div class="grid">
-			<div class="main">
-				{#if !page}
-					<!-- Flat, like a page header: the title is the hierarchy, a hairline closes it. -->
-					<header class="head">
-						<h1>
-							<Inline
-								label="Title"
-								value={todo.title}
-								onsave={(next) => save.mutateAsync({ path: { id }, body: { title: next } })}
-							/>
-						</h1>
-						<div class="pills">
-							<StatusPill status={todo.status} reason={todo.reason} />
-						</div>
-					</header>
-				{/if}
-
-				<!-- fallow-ignore-next-line code-duplication -->
-				<Card accent={color(todo.status)}>
-					<TagList tags={todo.tags} />
-
-					{#if save.error}
-						<Issue>{save.error.message}</Issue>
-					{/if}
-
-					<Description
-						{todo}
-						pending={save.isPending}
-						onsave={(body) => save.mutateAsync({ path: { id }, body: { body: body || null } })}
-					/>
-				</Card>
-
-				<SubIssues {todo} />
+	{#if page}
+		<Head {todo} {onremove} />
+	{:else}
+		<!-- Flat, like a page header: the title is the hierarchy, a hairline closes it. -->
+		<header class="head">
+			<h1>
+				<Inline
+					label="Todo title"
+					required
+					value={todo.title}
+					onsave={(next) => save.mutateAsync({ path: { id }, body: { title: next } })}
+				/>
+			</h1>
+			<div class="actions">
+				<StatusPicker {todo} />
+				<More {todo} {onremove} />
 			</div>
+		</header>
+	{/if}
 
-			<aside class="side">
-				<Card>
-					<Facts {todo} />
-					<Plan {todo} />
-
-					<div class="actions">
-						<StatusPicker {todo} />
-						<Delete {id} title={todo.title} ondone={onremove}>
-							{#snippet children(ask, deleting)}
-								<Button variant="danger" pending={deleting} onclick={ask}>Delete</Button>
-							{/snippet}
-						</Delete>
-					</div>
-				</Card>
-
-				<Card>
-					<Section wide title="Links">
-						<Links
-							links={todo.metadata.links}
-							add={(next) => attach.mutateAsync({ path: { id }, body: next })}
-							drop={(url) => detach.mutateAsync({ path: { id }, query: { url } })}
-						/>
-					</Section>
-					{#if Object.keys(todo.metadata.annotations).length}
-						<Section wide divider title="Annotations">
-							<Annotations annotations={todo.metadata.annotations} />
-						</Section>
-					{/if}
-				</Card>
-			</aside>
-
-			<div class="logs">
-				<Timeline source="todo" sourceID={todo.id} title="Logs">
-					{#snippet label(event)}
-						{describe(event)}
-					{/snippet}
-				</Timeline>
-			</div>
-		</div>
-	</div>
+	<Widgets main={{ title: 'Description', body: description }} {side} />
 {/if}
 
 <style>
-	/* The editor sizes its columns off its own box, not the viewport, so the same
-	   component reads two-column on the detail page and single-column in the drawer. */
-	.editor {
-		container-type: inline-size;
-	}
-
-	.grid {
-		display: grid;
-		grid-template-areas: 'main' 'side' 'logs';
-		gap: 1.25em;
-	}
-
-	.main {
-		grid-area: main;
-		min-width: 0;
-		display: flex;
-		flex-direction: column;
-		gap: 1.25em;
-	}
-
-	.side {
-		grid-area: side;
-		min-width: 0;
-		display: flex;
-		flex-direction: column;
-		gap: 1.25em;
-	}
-
-	.logs {
-		grid-area: logs;
-		min-width: 0;
-	}
-
-	/* Golden ratio: prose column to meta rail at φ : 1. */
-	@container (min-width: 46rem) {
-		.grid {
-			grid-template-columns: 1.618fr 1fr;
-			grid-template-areas: 'main side' 'logs side';
-			align-items: start;
-		}
-	}
-
 	.head {
 		display: flex;
+		flex-wrap: wrap;
 		align-items: center;
 		justify-content: space-between;
-		gap: 0.9em;
+		gap: 0.6em 0.9em;
+		margin-bottom: 1em;
 		padding-bottom: 1em;
 		border-bottom: 1px solid var(--border);
 	}
 
-	.pills {
+	.actions {
 		display: flex;
 		align-items: center;
 		gap: 0.5em;
 		flex: none;
 	}
 
+	/* The drawer is narrow: the title takes its own line, status and ⋯ sit under it. */
 	h1 {
+		flex: 1 1 100%;
+		min-width: 0;
 		margin: 0;
 		font-size: 1.4em;
 		line-height: 1.25;
 		overflow-wrap: anywhere;
 	}
 
-	.actions {
-		display: flex;
-		align-items: center;
-		flex-wrap: wrap;
-		gap: 0.5em;
-		margin-top: 1em;
-		padding-top: 1em;
-		border-top: 1px solid var(--border);
+	.tags {
+		margin-bottom: 0.75em;
 	}
 </style>

@@ -16,6 +16,21 @@ export const label = (status: Todo.Status) => meta[status].label;
 
 export const color = (status: Todo.Status) => meta[status].color;
 
+/** The lifecycle the record header steps through; blocked stalls on Active's step. */
+export const FLOW = ["backlog", "planned", "active", "done"] as const;
+
+export const step = (status: Todo.Status) => (status === "blocked" ? 2 : FLOW.indexOf(status));
+
+const moves: Partial<Record<Todo.Status, { to: Todo.Status; label: string }>> = {
+  backlog: { to: "planned", label: "Plan" },
+  planned: { to: "active", label: "Start" },
+  active: { to: "done", label: "Mark done" },
+  blocked: { to: "active", label: "Unblock" },
+};
+
+/** The header's one primary action, a single step along `FLOW`; done has none. */
+export const next = (status: Todo.Status) => moves[status];
+
 /** Past its due day in the zone with work outstanding; due today isn't late until the day ends. */
 export const late = (todo: Todo.Info, zone: string) =>
   todo.status !== "done" && !!todo.dueDate && toDay(todo.dueDate, zone) < today(zone);

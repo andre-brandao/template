@@ -5,11 +5,12 @@
 <script lang="ts">
 	import { createQuery } from '@tanstack/svelte-query';
 	import ExternalLink from '@lucide/svelte/icons/external-link';
-	import { Badge, Empty, Markdown, Skeleton } from '@template/ui';
+	import { Empty, Markdown, Skeleton } from '@template/ui';
 	import * as Header from '#lib/components/header/index.ts';
 	import { fmt } from '#lib/utils/fmt.ts';
 	import { issue } from '../api/feedback.query';
 	import Image from '../components/Image.svelte';
+	import Mark from '../components/Mark.svelte';
 	import { states, tags, urgencies } from '../labels';
 
 	let { id }: { id: number } = $props();
@@ -18,7 +19,7 @@
 	const f = fmt();
 </script>
 
-{#snippet back()}<a href="/admin/feedback">Feedback</a>{/snippet}
+{#snippet back()}<a href="/settings/feedback">Feedback</a>{/snippet}
 
 {#if one.isPending}
 	<Header.Root title="Feedback" eyebrow={back} />
@@ -27,7 +28,7 @@
 	<Header.Root title="Feedback" eyebrow={back} />
 	<Empty>
 		{one.error.message}
-		{#snippet action()}<a class="return" href="/admin/feedback">Back to feedback</a>{/snippet}
+		{#snippet action()}<a class="return" href="/settings/feedback">Back to feedback</a>{/snippet}
 	</Empty>
 {:else}
 	{@const row = one.data}
@@ -40,13 +41,13 @@
 			{/if}
 		{/snippet}
 		<Header.Item label="Type">
-			<Badge tone={tags[row.tag].tone}>{tags[row.tag].label}</Badge>
+			<Mark label={tags[row.tag]} />
 		</Header.Item>
 		<Header.Item label="Urgency">
-			<Badge tone={urgencies[row.urgency].tone}>{urgencies[row.urgency].label}</Badge>
+			<Mark label={urgencies[row.urgency]} />
 		</Header.Item>
 		<Header.Item label="State">
-			<Badge tone={states[row.state].tone}>{states[row.state].label}</Badge>
+			<Mark label={states[row.state]} />
 		</Header.Item>
 		<Header.Item label="From">{row.from ?? 'No sender'}</Header.Item>
 		<Header.Item label="Opened">

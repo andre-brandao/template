@@ -45,7 +45,7 @@
 	}
 </script>
 
-<Header.Root title="Admin">
+<Header.Root title="Instance">
 	{#if all.isSuccess}
 		{@const s = all.data}
 		<Header.Item label="Tables">
@@ -75,8 +75,8 @@
 <div class="places">
 	{#if all.isSuccess}
 		<Stat
-			href="/admin/users"
-			label="Users"
+			href="/settings/members"
+			label="Members"
 			value={f.number(all.data.counts.users)}
 			note="{all.data.counts.disabled} disabled"
 		/>
@@ -85,7 +85,7 @@
 	{/if}
 	{#if log.isSuccess}
 		<Stat
-			href="/admin/logs"
+			href="/settings/logs"
 			label="Logs"
 			value={f.number(log.data.total)}
 			note={log.data.data[0] ? `last ${f.ago(log.data.data[0].timeCreated)}` : 'nothing recorded'}

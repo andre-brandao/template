@@ -1,28 +1,31 @@
-<!-- The scheduling fields, each saved on its own: stage inline, the rest through pickers. -->
+<!-- The drawer's facts, since a peek has no header: each field saves on its own through a picker. -->
 <script lang="ts">
 	import type { Todo } from '@template/core/todo';
-	import { Inline } from '@template/ui';
-	import { update } from '../../api/todos.query';
+	import Source from '#lib/features/events/components/Source.svelte';
+	import { fmt } from '#lib/utils/fmt.ts';
 	import Assignee from '../Assignee.svelte';
 	import Day from '../Day.svelte';
+	import Stage from './Stage.svelte';
 
 	let { todo }: { todo: Todo.Info } = $props();
 
-	const save = update();
+	const f = fmt();
 </script>
 
 <dl class="plan">
+	{#if todo.source === 'project' && todo.sourceID}
+		<div>
+			<dt>Project</dt>
+			<dd>
+				<a href="/projects/{todo.sourceID}">
+					<Source source={todo.source} sourceID={todo.sourceID} fallback="Project" />
+				</a>
+			</dd>
+		</div>
+	{/if}
 	<div>
 		<dt>Stage</dt>
-		<dd>
-			<Inline
-				label="Stage"
-				placeholder="No stage"
-				value={todo.stage ?? ''}
-				onsave={(next) =>
-					save.mutateAsync({ path: { id: todo.id }, body: { stage: next.trim() || null } })}
-			/>
-		</dd>
+		<dd><Stage {todo} /></dd>
 	</div>
 	<div>
 		<dt>Assignee</dt>
@@ -36,15 +39,22 @@
 		<dt>Due</dt>
 		<dd><Day {todo} /></dd>
 	</div>
+	{#if todo.timeStarted}
+		<div>
+			<dt>Worked</dt>
+			<dd>
+				{f.date(todo.timeStarted)}
+				{#if todo.timeDone}&rarr; {f.date(todo.timeDone)}{/if}
+			</dd>
+		</div>
+	{/if}
 </dl>
 
 <style>
 	.plan {
 		display: grid;
 		gap: 0.35em;
-		margin: 1em 0 0;
-		padding-top: 1em;
-		border-top: 1px solid var(--border);
+		margin: 0;
 	}
 
 	.plan div {
@@ -61,5 +71,14 @@
 
 	dd {
 		margin: 0;
+		color: var(--ink);
+	}
+
+	a {
+		color: inherit;
+	}
+
+	a:hover {
+		color: var(--accent);
 	}
 </style>

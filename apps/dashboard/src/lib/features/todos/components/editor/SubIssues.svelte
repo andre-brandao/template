@@ -88,15 +88,11 @@
 		display: flex;
 		align-items: center;
 		gap: 0.4em;
-		min-width: 0;
 	}
 
 	li a {
-		overflow: hidden;
 		color: var(--ink);
 		text-decoration: none;
-		text-overflow: ellipsis;
-		white-space: nowrap;
 	}
 
 	li a:hover {

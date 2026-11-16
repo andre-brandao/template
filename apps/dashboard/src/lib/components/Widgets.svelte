@@ -71,7 +71,7 @@
 
 	h2 {
 		margin: 0 0 0.75em;
-		font-size: 0.92em;
+		font-size: 0.93em;
 		font-weight: 600;
 		color: var(--muted);
 	}

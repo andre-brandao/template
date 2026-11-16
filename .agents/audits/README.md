@@ -4,13 +4,13 @@ An audit is a **lens** (performance, experience, structure, correctness, platfor
 known bugs. It runs in rounds, for as long as it keeps finding things. Each round sweeps the whole
 codebase and the running app through that lens, proves what it finds, fixes it, and looks again.
 
-| Audit | Asks |
-|---|---|
-| [performance](performance.md) | Where does the user wait, and where do we do work nobody needs? |
-| [experience](experience.md) | Where is the product confusing, inconsistent, inaccessible, or awkward on a phone? |
-| [structure](structure.md) | Where is the code harder to read, change, or extend than it should be? |
-| [correctness](correctness.md) | Where does it do the wrong thing, lose data, or fail badly? |
-| [platform](platform.md) | Where do the build, dependencies, targets, CI, or tooling hold us back? |
+| Audit                         | Asks                                                                               |
+| ----------------------------- | ---------------------------------------------------------------------------------- |
+| [performance](performance.md) | Where does the user wait, and where do we do work nobody needs?                    |
+| [experience](experience.md)   | Where is the product confusing, inconsistent, inaccessible, or awkward on a phone? |
+| [structure](structure.md)     | Where is the code harder to read, change, or extend than it should be?             |
+| [correctness](correctness.md) | Where does it do the wrong thing, lose data, or fail badly?                        |
+| [platform](platform.md)       | Where do the build, dependencies, targets, CI, or tooling hold us back?            |
 
 ## The loop
 

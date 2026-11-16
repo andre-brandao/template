@@ -12,8 +12,9 @@ export { default as Textarea } from "./input/Textarea.svelte";
 // date
 export { default as Calendar, type Mode } from "./date/Calendar.svelte";
 export { default as DatePicker } from "./date/DatePicker.svelte";
+export { default as DateSpanPicker, type Span } from "./date/DateSpanPicker.svelte";
 export { default as MonthGrid, type Cell, type Look } from "./date/MonthGrid.svelte";
-export { default as RangePicker } from "./date/RangePicker.svelte";
+export { default as RangePicker, type Footer } from "./date/RangePicker.svelte";
 export { dates, setDates, type Dates } from "./date/ctx";
 export {
   at,

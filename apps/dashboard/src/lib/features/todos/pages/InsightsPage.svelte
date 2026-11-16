@@ -36,7 +36,7 @@
 <Header.Root title="Insights" eyebrow={source && sourceID ? parent : undefined}>
 	{#snippet strip()}
 		<Header.Group label="Period">
-			<!-- 30d and 90d tabs cover the month and quarter; 366 is core's Insights.Range cap. -->
+			<!-- The picker drafts locally; 366 is core's Insights.Range cap. -->
 			<RangePicker
 				range={picked}
 				presets={[7, 30, 90, 365]}

@@ -10,8 +10,7 @@
 
 <script lang="ts">
 	import { createAttachmentKey } from 'svelte/attachments';
-	import { MediaQuery } from 'svelte/reactivity';
-	import type { Snippet } from 'svelte';
+	import { onMount, type Snippet } from 'svelte';
 	import { HotkeysProvider } from '@tanstack/svelte-hotkeys';
 	import { place, type Align, type Place } from './place';
 
@@ -45,10 +44,20 @@
 
 	let anchor: HTMLElement | undefined = $state();
 	let panel: HTMLDivElement | undefined = $state();
+	let mounted = $state(false);
 	// Set by `show(point)` for a context menu; cleared by a trigger-driven open.
 	let point: { x: number; y: number } | undefined;
-	const phone = new MediaQuery('max-width: 30em');
 	let docked = $state(false);
+
+	// Native popovers are interactive-only. Delaying their contents also keeps responsive
+	// calendar branches out of SSR, where the viewport cannot be known.
+	onMount(() => {
+		if (panel?.matches(':popover-open')) {
+			open = true;
+			requestAnimationFrame(move);
+		}
+		mounted = true;
+	});
 
 	const attrs = $derived({
 		popovertarget: id,
@@ -73,9 +82,9 @@
 
 	// Measured, because the top layer means no ancestor clips it and nothing positions it.
 	function move() {
-		if (!panel) return;
+		if (!panel?.matches(':popover-open')) return;
 		// A sheet is docked by CSS, so it drops whatever a wider viewport placed.
-		docked = sheet && !point && phone.current;
+		docked = sheet && !point && matchMedia('(max-width: 30em)').matches;
 		if (docked) {
 			panel.style.left = panel.style.top = '';
 			return;
@@ -106,12 +115,14 @@
 
 	// `bind:open` from outside: the platform owns the real state, this only asks it.
 	$effect(() => {
-		if (!panel) return;
+		if (!mounted || !panel) return;
 		const shown = panel.matches(':popover-open');
 		if (open && !shown) show(point);
 		if (!open && shown) panel.hidePopover();
 	});
 </script>
+
+<svelte:window onresize={move} />
 
 {@render trigger?.(attrs)}
 
@@ -131,9 +142,11 @@
 	ontoggle={toggle}
 >
 	<!-- Its own exclusive scope while open: page hotkeys pause, ones registered inside fire. -->
-	<HotkeysProvider scope="popover-{id}" exclusive enabled={open}>
-		{@render children(close)}
-	</HotkeysProvider>
+	{#if mounted}
+		<HotkeysProvider scope="popover-{id}" exclusive enabled={open}>
+			{@render children(close)}
+		</HotkeysProvider>
+	{/if}
 </div>
 
 <style>

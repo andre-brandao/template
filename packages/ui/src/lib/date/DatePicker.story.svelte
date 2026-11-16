@@ -5,7 +5,7 @@
 	export const story: Story = {
 		title: 'DatePicker',
 		blurb:
-			'Type or pick. The field reads `today`/`tod`, `tomorrow`/`tmr`, `yesterday`, `+3d -2w +1m`, `in 3 days`, `fri`, `next fri`, `eow`, `eom`, ISO, or numbers in the locale order, and previews the match as you type; Enter or blur commits. `value` is a day, or with `time` an ISO instant in the zone (a day without a time stores the start of that day). In the popover `T` picks today and Backspace clears. The `trigger` snippet swaps the field for a quiet button and moves the field into the popover. `name` submits through a hidden input.',
+			'Type or pick. The field reads `today`/`tod`, `tomorrow`/`tmr`, `yesterday`, `+3d -2w +1m`, `in 3 days`, `fri`, `next fri`, `eow`, `eom`, ISO, or numbers in the locale order, and previews the match as you type; Enter or blur commits. `value` is a day, or with `time` an ISO instant in the zone. Presets and footer actions are tappable, with keyboard hints on larger screens. The `trigger` snippet swaps the field for a quiet button and moves the field into the popover. `name` submits through a hidden input.',
 		of: DatePicker,
 		props: {
 			clearable: { type: 'bool', value: true },

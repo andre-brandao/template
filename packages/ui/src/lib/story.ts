@@ -6,6 +6,7 @@ import * as input from "./input/Input.story.svelte";
 import * as lazyselect from "./input/LazySelect.story.svelte";
 import * as calendar from "./date/Calendar.story.svelte";
 import * as datepicker from "./date/DatePicker.story.svelte";
+import * as datespanpicker from "./date/DateSpanPicker.story.svelte";
 import * as monthgrid from "./date/MonthGrid.story.svelte";
 import * as rangepicker from "./date/RangePicker.story.svelte";
 import * as select from "./input/Select.story.svelte";
@@ -92,6 +93,7 @@ export const stories = [
   { slug: "lazyselect", story: lazyselect.story, demo: lazyselect.default },
   { slug: "calendar", story: calendar.story, demo: calendar.default },
   { slug: "datepicker", story: datepicker.story, demo: datepicker.default },
+  { slug: "datespanpicker", story: datespanpicker.story, demo: datespanpicker.default },
   { slug: "monthgrid", story: monthgrid.story, demo: monthgrid.default },
   { slug: "rangepicker", story: rangepicker.story, demo: rangepicker.default },
   { slug: "select", story: select.story, demo: select.default },

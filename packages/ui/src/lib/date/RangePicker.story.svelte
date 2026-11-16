@@ -6,7 +6,7 @@
 	export const story: Story = {
 		title: 'RangePicker',
 		blurb:
-			'Trailing presets inline, and "Custom" opens a two-month range calendar with the same presets plus this and last month. `range` is bindable; `onchange` fires after the control has repainted. `max` (default today in the zone) caps the end, `maxSpan` the length. In the popover `T` jumps to today and Backspace drops a half-picked range.',
+			'A compact period trigger opens a preset rail, two-month range calendar and typed From/To fields. Changes stay in a draft until Apply; Cancel, Escape and outside clicks discard them. `max` (default today in the zone) caps the end and `maxSpan` the length. An optional `footer` snippet receives only the primary draft range for future composition.',
 		of: RangePicker
 	};
 </script>

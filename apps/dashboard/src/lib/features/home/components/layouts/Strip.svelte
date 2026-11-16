@@ -20,7 +20,7 @@
 	{#if widgets.length}
 		<div class="grid">
 			{#each widgets as widget (widget.key)}
-				<Card {widget} />
+				<div class={{ wide: widget.wide }}><Card {widget} /></div>
 			{/each}
 		</div>
 	{/if}
@@ -80,6 +80,10 @@
 		display: grid;
 		grid-template-columns: minmax(0, 1fr);
 		gap: 1em;
+	}
+
+	.wide {
+		grid-column: 1 / -1;
 	}
 
 	@media (min-width: 640px) {

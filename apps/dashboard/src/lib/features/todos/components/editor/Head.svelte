@@ -10,7 +10,7 @@
 	import { update } from '../../api/todos.query';
 	import { FLOW, next, step } from '../../status';
 	import Assignee from '../Assignee.svelte';
-	import Day from '../Day.svelte';
+	import Dates from '../Dates.svelte';
 	import StatusPicker from '../StatusPicker.svelte';
 	import More from './More.svelte';
 	import Stage from './Stage.svelte';
@@ -70,8 +70,7 @@
 	</Header.Item>
 	<Header.Item label="Assignee"><Assignee {todo} full /></Header.Item>
 	<Header.Item label="Stage"><Stage {todo} /></Header.Item>
-	<Header.Item label="Start"><Day {todo} field="startDate" /></Header.Item>
-	<Header.Item label="Due"><Day {todo} /></Header.Item>
+	<Header.Item label="Dates"><Dates {todo} /></Header.Item>
 	{#if todo.timeStarted}
 		<!-- Stamped by the status flow, so it reads rather than edits. -->
 		<Header.Item label="Worked">

@@ -53,6 +53,9 @@ export const period = (now: string) => {
   return z.object({
     start: z.iso.date().default(fallback.start),
     end: z.iso.date().default(fallback.end),
+    compare: z.enum(["previous", "weekdays", "year", "custom"]).optional(),
+    compareStart: z.iso.date().optional(),
+    compareEnd: z.iso.date().optional(),
   });
 };
 

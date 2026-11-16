@@ -1,12 +1,15 @@
 <script module lang="ts">
 	import type { Story } from '../story';
+	import RangeCompare from './RangeCompare.svelte';
 	import RangePicker from './RangePicker.svelte';
-	import { last, valid } from './day';
+	import { last, valid, type Range } from './day';
+	import { preset, trailing } from './preset';
+	import type { CompareMode } from './compare';
 
 	export const story: Story = {
 		title: 'RangePicker',
 		blurb:
-			'A compact period trigger opens a preset rail, two-month range calendar and typed From/To fields. Changes stay in a draft until Apply; Cancel, Escape and outside clicks discard them. `max` (default today in the zone) caps the end and `maxSpan` the length. An optional `footer` snippet receives only the primary draft range for future composition.',
+			'A compact period trigger opens composable presets, a two-month range calendar and typed bounds. Changes stay in a draft until Apply; Cancel, Escape and outside clicks discard them. Numeric presets remain shorthand for trailing days. `footer` composes optional state such as `RangeCompare` without putting it in the primary picker.',
 		of: RangePicker
 	};
 </script>
@@ -16,9 +19,15 @@
 
 	let range = $state(last(30));
 	let fired = $state(0);
+	let mode = $state<CompareMode>();
+	let custom = $state<Range>();
 </script>
 
-<RangePicker bind:range onchange={() => fired++} />
+<RangePicker bind:range onchange={() => fired++}>
+	{#snippet footer(ctx)}
+		<RangeCompare range={ctx.range} bind:mode bind:custom />
+	{/snippet}
+</RangePicker>
 
 <dl>
 	<dt>range</dt>
@@ -30,7 +39,11 @@
 </dl>
 
 <p class="note">Custom presets, capped at 31 days:</p>
-<RangePicker range={last(1)} presets={[1, 14]} maxSpan={31} />
+<RangePicker
+	range={last(1)}
+	presets={[preset.today, preset.yesterday, trailing(14), preset.month]}
+	maxSpan={31}
+/>
 
 <style>
 	dl {

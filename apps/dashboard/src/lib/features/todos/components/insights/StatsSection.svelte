@@ -5,20 +5,41 @@
 	import { stats } from '../../api/todos.query';
 	import StatTile from './StatTile.svelte';
 
-	let { range }: { range: Insights.Range } = $props();
+	let { range, compare }: { range: Insights.Range; compare?: Insights.Range } = $props();
 
 	const query = createQuery(() => stats(range));
+	const prior = createQuery(() => ({ ...stats(compare ?? range), enabled: !!compare }));
+	const delta = (value: number, before: number) =>
+		before === 0 ? (value === 0 ? 0 : 100) : Math.round(((value - before) / before) * 100);
 </script>
 
 {#if query.data}
 	{@const data = query.data}
+	{@const old = prior.data}
 	<div class={['tiles', { stale: query.isPlaceholderData }]}>
-		<StatTile label="Created" value={String(data.total)} hint="in range" />
-		<StatTile label="Completion" value="{data.rate}%" hint="{data.done} done" />
-		<StatTile label="Active" value={String(data.active)} hint="in flight" />
+		<StatTile
+			label="Created"
+			value={String(data.total)}
+			hint="in range"
+			delta={old ? delta(data.total, old.total) : undefined}
+		/>
+		<StatTile
+			label="Completion"
+			value="{data.rate}%"
+			hint="{data.done} done"
+			delta={old ? data.rate - old.rate : undefined}
+			unit=" pts"
+		/>
+		<StatTile
+			label="Active"
+			value={String(data.active)}
+			hint="in flight"
+			delta={old ? delta(data.active, old.active) : undefined}
+		/>
 		<StatTile
 			label="Blocked"
 			value={String(data.blocked)}
+			delta={old ? delta(data.blocked, old.blocked) : undefined}
 			tone={data.blocked > 0 ? 'danger' : 'default'}
 		/>
 		<StatTile

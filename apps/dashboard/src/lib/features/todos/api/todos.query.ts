@@ -24,6 +24,7 @@ import {
   type Todo,
 } from "@template/sdk/query";
 import { zone, type Prefs } from "@template/core/user/prefs";
+import { comparison } from "@template/ui";
 import { today } from "@template/ui/day";
 import { read, type Ctx } from "#lib/query.ts";
 import { parse } from "#lib/utils/params.ts";
@@ -114,9 +115,19 @@ export const board = (url: URL, scope: Scope, ctx?: Ctx) => {
 /** Every insights section, for the range in `url`, defaulting to the month to today in the reader's zone. */
 export const insights = (url: URL, prefs: Prefs, scope: Scope, ctx?: Ctx) => {
   const now = today(zone(prefs));
-  const range = { ...span(parse(period(now), url), now), ...scope };
+  const params = parse(period(now), url);
+  const picked = span(params, now);
+  const range = { ...picked, ...scope };
+  const custom =
+    params.compareStart && params.compareEnd
+      ? { start: params.compareStart, end: params.compareEnd }
+      : undefined;
+  const compare = params.compare
+    ? [stats({ ...comparison(picked, params.compare, custom).range, ...scope }, ctx)]
+    : [];
   return [
     stats(range, ctx),
+    ...compare,
     activity(range, ctx),
     statuses(range, ctx),
     calendar(range, ctx),

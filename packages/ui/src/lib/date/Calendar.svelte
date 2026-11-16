@@ -124,6 +124,14 @@
 		}
 		return raw as Range | undefined;
 	});
+	const day = (value: Day) => format(value, cfg.locale, { dateStyle: 'full' });
+	const notice = $derived.by(() => {
+		if (mode !== 'range') return '';
+		if (draft) return `Start date ${day(draft)}. Choose an end date.`;
+		const range = raw as Range | undefined;
+		if (range) return `Selected range ${day(range.start)} through ${day(range.end)}.`;
+		return 'Choose a start date, then an end date.';
+	});
 
 	function look(day: Day): Look {
 		const off = blocked(day);
@@ -145,6 +153,9 @@
 </script>
 
 <div class="calendar" data-dates bind:this={root}>
+	{#if notice}<p class="notice" role="status" aria-live="polite" aria-atomic="true">
+			{notice}
+		</p>{/if}
 	<div class="months">
 		{#each pages as month, i (month)}
 			<div class="month">
@@ -235,5 +246,17 @@
 		stroke-width: 1.6;
 		stroke-linecap: round;
 		stroke-linejoin: round;
+	}
+
+	.notice {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		padding: 0;
+		margin: -1px;
+		overflow: hidden;
+		clip: rect(0, 0, 0, 0);
+		white-space: nowrap;
+		border: 0;
 	}
 </style>

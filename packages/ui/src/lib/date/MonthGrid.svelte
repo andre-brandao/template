@@ -83,7 +83,16 @@
 		root?.querySelector<HTMLElement>(`[data-day="${focus}"]`)?.focus();
 	}
 
-	const label = (day: Day) => format(day, cfg.locale, { dateStyle: 'full' });
+	const label = (info: Cell) =>
+		[
+			format(info.day, cfg.locale, { dateStyle: 'full' }),
+			info.start && 'start date',
+			info.end && 'end date',
+			info.within && 'in selected range',
+			info.disabled && 'unavailable'
+		]
+			.filter(Boolean)
+			.join(', ');
 
 	const read = (day: Day): Cell => ({
 		...look?.(day),
@@ -113,7 +122,7 @@
 		data-day={info.day}
 		tabindex={info.day === stop ? 0 : -1}
 		autofocus={autofocus && info.day === stop}
-		aria-label={label(info.day)}
+		aria-label={label(info)}
 		aria-current={info.today ? 'date' : undefined}
 		aria-disabled={info.disabled}
 		onclick={(e) => {

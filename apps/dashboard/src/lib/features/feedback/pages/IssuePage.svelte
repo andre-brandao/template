@@ -19,7 +19,7 @@
 	const f = fmt();
 </script>
 
-{#snippet back()}<a href="/admin/feedback">Feedback</a>{/snippet}
+{#snippet back()}<a href="/settings/feedback">Feedback</a>{/snippet}
 
 {#if one.isPending}
 	<Header.Root title="Feedback" eyebrow={back} />
@@ -28,7 +28,7 @@
 	<Header.Root title="Feedback" eyebrow={back} />
 	<Empty>
 		{one.error.message}
-		{#snippet action()}<a class="return" href="/admin/feedback">Back to feedback</a>{/snippet}
+		{#snippet action()}<a class="return" href="/settings/feedback">Back to feedback</a>{/snippet}
 	</Empty>
 {:else}
 	{@const row = one.data}

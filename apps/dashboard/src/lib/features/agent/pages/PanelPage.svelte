@@ -17,7 +17,7 @@
 	const rerun = () => client.invalidateQueries({ queryKey: ['rows'] });
 </script>
 
-{#snippet back()}<a href="/admin/panels">Panels</a>{/snippet}
+{#snippet back()}<a href="/settings/panels">Panels</a>{/snippet}
 
 {#snippet actions()}
 	<Button onclick={rerun}>

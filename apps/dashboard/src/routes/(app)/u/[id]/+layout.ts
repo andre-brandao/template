@@ -6,7 +6,7 @@ import { getUserByIdOptions } from "@template/sdk/query";
 import { section } from "#lib/components/layout/nav.ts";
 import type { LayoutLoad } from "./$types";
 
-// An App sits under Developers → Apps; a person has no section, so back goes where they came from.
+// An App sits under Settings → Apps; a person has no section, so back goes where they came from.
 export const load: LayoutLoad = async (event) => {
   const data = await event.parent();
   // Same origin as the browser client, so this lands under the key the page reads. A 404 is the page's to show.
@@ -24,11 +24,11 @@ export const load: LayoutLoad = async (event) => {
   if (profile?.kind === "system")
     return {
       nav: {
-        back: { href: "/developers/apps", label: "Apps" },
+        back: { href: "/settings/apps", label: "Apps" },
         crumbs: [
           { href: "/home", label: "Home" },
-          { href: "/developers", label: "Developers" },
-          { href: "/developers/apps", label: "Apps" },
+          { href: "/settings", label: "Settings" },
+          { href: "/settings/apps", label: "Apps" },
           { href: base, label },
         ],
         sections: {
@@ -39,8 +39,8 @@ export const load: LayoutLoad = async (event) => {
                   {
                     title: "Workspace",
                     items: [
-                      { href: "/developers/apps", label: "Apps", icon: AppWindow },
-                      { href: "/developers/webhooks", label: "Webhooks", icon: Webhook },
+                      { href: "/settings/apps", label: "Apps", icon: AppWindow },
+                      { href: "/settings/webhooks", label: "Webhooks", icon: Webhook },
                     ],
                   },
                 ]

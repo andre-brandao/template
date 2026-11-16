@@ -8,7 +8,7 @@ const port = Number(process.env.HOOK_PORT ?? 4000);
 // Reply with this to exercise the retry path and the auto-disable counter.
 const status = Number(process.env.STATUS ?? 200);
 
-// The URL goes out before the prompt so it can be pasted into /admin/webhooks first —
+// The URL goes out before the prompt so it can be pasted into /settings/webhooks first —
 // the secret only exists once that endpoint has been created.
 console.log(
   boxed([

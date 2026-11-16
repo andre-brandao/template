@@ -100,7 +100,7 @@
 {:else}
 	<Lines>
 		{#each shown as row (row.id)}
-			<Line {row} href="/admin/feedback/{row.id}">
+			<Line {row} href="/settings/feedback/{row.id}">
 				<Mark label={urgencies[row.urgency]} />
 				<span class="from">{row.from ?? 'No sender'}</span>
 			</Line>

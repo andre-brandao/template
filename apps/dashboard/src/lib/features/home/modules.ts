@@ -23,7 +23,12 @@ const modules = {
     hint: "Charts of todo activity",
     icon: ChartLine,
   },
-  admin: { href: "/admin", label: "Admin", hint: "Users, logs and settings", icon: Gauge },
+  admin: {
+    href: "/settings/instance",
+    label: "Admin",
+    hint: "Users, logs and settings",
+    icon: Gauge,
+  },
 } satisfies Record<string, { href: string; label: string; hint: string; icon: Component }>;
 
 /** Widget slots. The route fills each with a snippet, so this slice imports no other. */

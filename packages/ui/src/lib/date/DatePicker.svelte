@@ -150,42 +150,47 @@
 	{#if trigger}
 		<div class="field inner">{@render field(true)}</div>
 	{/if}
-	{#if presets.length}
-		<div class="presets">
-			{#each presets as one (one.label)}
-				<button
-					type="button"
-					class="preset"
-					onclick={() => {
-						pick(
-							parse(one.value, {
-								today: today(cfg.zone),
-								locale: cfg.locale,
-								weekStart: cfg.weekStart
-							})
-						);
-						close();
-					}}>{one.label}</button
-				>
-			{/each}
+	<!-- Presets sit beside the month as a column, so the panel grows sideways, not taller. -->
+	<div class="body">
+		{#if presets.length}
+			<div class="presets">
+				{#each presets as one (one.label)}
+					<button
+						type="button"
+						class="preset"
+						onclick={() => {
+							pick(
+								parse(one.value, {
+									today: today(cfg.zone),
+									locale: cfg.locale,
+									weekStart: cfg.weekStart
+								})
+							);
+							close();
+						}}>{one.label}</button
+					>
+				{/each}
+			</div>
+		{/if}
+		<div class="month">
+			<Calendar
+				value={parts?.day}
+				{min}
+				{max}
+				{disabled}
+				{marks}
+				autofocus={!trigger}
+				onchange={(next) => {
+					pick(next);
+					// With the time field in here too, stay open so it can be set next.
+					if (!time) close();
+				}}
+			/>
+			{#if time && !trigger}
+				<label class="row">Time {@render clock()}</label>
+			{/if}
 		</div>
-	{/if}
-	<Calendar
-		value={parts?.day}
-		{min}
-		{max}
-		{disabled}
-		{marks}
-		autofocus={!trigger}
-		onchange={(next) => {
-			pick(next);
-			// With the time field in here too, stay open so it can be set next.
-			if (!time) close();
-		}}
-	/>
-	{#if time && !trigger}
-		<label class="row">Time {@render clock()}</label>
-	{/if}
+	</div>
 	<Keys
 		today={() => {
 			pick(today(cfg.zone));
@@ -214,7 +219,7 @@
 {/snippet}
 
 {#if trigger}
-	<Popover bind:open label={label ?? placeholder} trigger={quiet}>
+	<Popover bind:open wide={presets.length > 0} label={label ?? placeholder} trigger={quiet}>
 		{#snippet children(close)}{@render panel(close)}{/snippet}
 	</Popover>
 {:else}
@@ -225,7 +230,13 @@
 				<svg viewBox="0 0 16 16" aria-hidden="true"><path d="m4.5 4.5 7 7m0-7-7 7" /></svg>
 			</button>
 		{/if}
-		<Popover bind:open align="end" label={label ?? placeholder} trigger={icon}>
+		<Popover
+			bind:open
+			wide={presets.length > 0}
+			align="end"
+			label={label ?? placeholder}
+			trigger={icon}
+		>
 			{#snippet children(close)}{@render panel(close)}{/snippet}
 		</Popover>
 	</span>
@@ -352,25 +363,62 @@
 		stroke-linecap: round;
 	}
 
+	.body {
+		display: flex;
+	}
+
+	/* The month grid has no width of its own, so the shrink-to-fit panel would squeeze it. */
+	.month {
+		flex: 1 0 15.5em;
+	}
+
 	.presets {
 		display: flex;
-		flex-wrap: wrap;
-		gap: 0.3em;
-		padding: 0.2em 0.3em 0.3em;
+		flex-direction: column;
+		gap: 0.1em;
+		padding: 0.2em 0.3em 0.2em 0.2em;
+		margin-right: 0.3em;
+		border-right: 1px solid var(--border);
 	}
 
 	.preset {
-		padding: 0.2em 0.55em;
-		border: 1px solid var(--border);
+		padding: 0.35em 0.6em;
+		border: none;
 		border-radius: var(--radius-sm);
 		background: none;
 		color: var(--ink);
 		font: inherit;
-		font-size: 0.8em;
+		font-size: 0.85em;
+		text-align: left;
+		white-space: nowrap;
 		cursor: pointer;
 	}
 
-	.preset:hover {
+	.preset:hover,
+	.preset:focus-visible {
 		background: var(--hover);
+	}
+
+	/* No room beside the month on a phone: back to a row of chips above it. */
+	@media (max-width: 30em) {
+		.body {
+			flex-direction: column;
+		}
+
+		.presets {
+			flex-direction: row;
+			flex-wrap: wrap;
+			gap: 0.3em;
+			margin: 0 0 0.3em;
+			padding: 0.2em 0.3em 0.3em;
+			border-right: none;
+			border-bottom: 1px solid var(--border);
+		}
+
+		.preset {
+			padding: 0.2em 0.55em;
+			border: 1px solid var(--border);
+			font-size: 0.8em;
+		}
 	}
 </style>

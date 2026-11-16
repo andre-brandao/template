@@ -219,7 +219,7 @@
 {/snippet}
 
 {#if trigger}
-	<Popover bind:open wide={presets.length > 0} label={label ?? placeholder} trigger={quiet}>
+	<Popover bind:open sheet wide={presets.length > 0} label={label ?? placeholder} trigger={quiet}>
 		{#snippet children(close)}{@render panel(close)}{/snippet}
 	</Popover>
 {:else}
@@ -232,6 +232,7 @@
 		{/if}
 		<Popover
 			bind:open
+			sheet
 			wide={presets.length > 0}
 			align="end"
 			label={label ?? placeholder}
@@ -403,6 +404,14 @@
 	@media (max-width: 30em) {
 		.body {
 			flex-direction: column;
+		}
+
+		.month {
+			--calendar-width: 100%;
+			--calendar-month-width: 100%;
+			--grid-width: 100%;
+			--day-width: 100%;
+			flex-basis: auto;
 		}
 
 		.presets {

@@ -179,6 +179,7 @@
 <style>
 	.calendar {
 		display: inline-block;
+		width: var(--calendar-width, auto);
 		padding: 0.3em;
 	}
 
@@ -186,6 +187,10 @@
 		display: flex;
 		flex-wrap: wrap;
 		gap: 1.2em;
+	}
+
+	.month {
+		width: var(--calendar-month-width, auto);
 	}
 
 	.head {

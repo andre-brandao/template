@@ -2,6 +2,7 @@
 <script lang="ts">
 	import { createQuery } from '@tanstack/svelte-query';
 	import * as Header from '#lib/components/header/index.ts';
+	import Steps from '#lib/components/Steps.svelte';
 	import { toDay, today } from '@template/ui';
 	import { fmt } from '#lib/utils/fmt.ts';
 	import { list, stages } from '../api/todos.query';
@@ -28,10 +29,10 @@
 		<span class="muted">{rows.filter((one) => one.status !== 'done').length} open</span>
 	</Header.Item>
 {/if}
-{#if stage}
+{#if stage && spans.data}
+	<!-- Where the project stands; each stage's own progress is in the Stages widget. -->
 	<Header.Item label="Stage">
-		{stage.name}
-		<span class="muted">{stage.done}/{stage.total} done</span>
+		<Steps steps={spans.data.length} current={spans.data.indexOf(stage)}>{stage.name}</Steps>
 	</Header.Item>
 {/if}
 

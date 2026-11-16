@@ -60,6 +60,8 @@
 		filters,
 		mode: initial = 'month',
 		at,
+		compact = false,
+		href,
 		keep = () => true,
 		onchange
 	}: {
@@ -68,6 +70,9 @@
 		keep?: (todo: Todo.Info) => boolean;
 		mode?: Mode;
 		at?: Day;
+		/** A month-only card: no undated tray or mode controls. */
+		compact?: boolean;
+		href?: string;
 		onchange: (next: Change) => void;
 	} = $props();
 
@@ -76,7 +81,7 @@
 	setHotkeysContext({ scope: 'calendar' });
 
 	// Local state leads: the URL lands after the fetch, and the grid must move on the keypress.
-	let mode = $state(untrack(() => initial));
+	let mode = $state(untrack(() => (compact ? 'month' : initial)));
 	let focus = $state(untrack(() => at ?? today(f.zone)));
 	let shown = $state(untrack(() => focus));
 
@@ -94,7 +99,7 @@
 			to: new Date(Date.parse(fromDay(shift(last, { days: 2 }), f.zone)) - 1).toISOString()
 		})
 	);
-	const loose = createQuery(() => undated(filters));
+	const loose = createQuery(() => ({ ...undated(filters), enabled: !compact }));
 
 	const items = $derived(
 		(dated.data?.data ?? [])
@@ -178,6 +183,7 @@
 		go(shift(mode === 'month' ? shown : focus, mode === 'month' ? { months: n } : { weeks: n }));
 
 	function swap(next: Mode) {
+		if (compact) return;
 		if (next === mode) return;
 		mode = next;
 		shown = focus;
@@ -234,22 +240,26 @@
 			<span class="note">{dated.data.data.length} of {dated.data.total} shown</span>
 		{/if}
 		<!-- One hint for every key: the `?` sheet lists the calendar's with the rest. -->
-		<span class="keys">
-			<Tooltip tip="Keyboard shortcuts">
-				<button type="button" aria-label="Keyboard shortcuts" onclick={() => modal(Keys)}>
-					<Kbd keys="?" />
-				</button>
-			</Tooltip>
-		</span>
-		<Tabs.Root>
-			<Tabs.Item active={mode === 'month'} onclick={() => swap('month')}>Month</Tabs.Item>
-			<Tabs.Item active={mode === 'week'} onclick={() => swap('week')}>Week</Tabs.Item>
-		</Tabs.Root>
+		{#if compact}
+			{#if href}<a class="all" {href}>Open calendar</a>{/if}
+		{:else}
+			<span class="keys">
+				<Tooltip tip="Keyboard shortcuts">
+					<button type="button" aria-label="Keyboard shortcuts" onclick={() => modal(Keys)}>
+						<Kbd keys="?" />
+					</button>
+				</Tooltip>
+			</span>
+			<Tabs.Root>
+				<Tabs.Item active={mode === 'month'} onclick={() => swap('month')}>Month</Tabs.Item>
+				<Tabs.Item active={mode === 'week'} onclick={() => swap('week')}>Week</Tabs.Item>
+			</Tabs.Root>
+		{/if}
 	</div>
 
 	{#if dated.isError}<Issue>{dated.error.message}</Issue>{/if}
 
-	<div class={['body', { dragging: !!drag.active }]}>
+	<div class={['body', { compact, dragging: !!drag.active }]}>
 		{#if mode === 'month'}
 			<Month
 				month={shown}
@@ -258,6 +268,7 @@
 				{items}
 				{hit}
 				{chips}
+				{compact}
 				onpick={add}
 				onmore={list}
 			/>
@@ -274,12 +285,14 @@
 				onpick={add}
 			/>
 		{/if}
-		<Tray
-			todos={(loose.data?.data ?? []).filter(keep)}
-			total={loose.data?.total}
-			loading={loose.isPending}
-			{chips}
-		/>
+		{#if !compact}
+			<Tray
+				todos={(loose.data?.data ?? []).filter(keep)}
+				total={loose.data?.total}
+				loading={loose.isPending}
+				{chips}
+			/>
+		{/if}
 	</div>
 </div>
 
@@ -391,11 +404,26 @@
 		background: var(--hover);
 	}
 
+	.all {
+		margin-left: auto;
+		color: var(--muted);
+		font-size: 0.78rem;
+		text-decoration: none;
+	}
+
+	.all:hover {
+		color: var(--accent);
+	}
+
 	.body {
 		display: grid;
 		grid-template-columns: minmax(0, 1fr) 14rem;
 		align-items: start;
 		gap: 0.6rem;
+	}
+
+	.body.compact {
+		grid-template-columns: minmax(0, 1fr);
 	}
 
 	.dragging {

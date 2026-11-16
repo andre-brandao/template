@@ -32,14 +32,14 @@ const modules = {
 } satisfies Record<string, { href: string; label: string; hint: string; icon: Component }>;
 
 /** Widget slots. The route fills each with a snippet, so this slice imports no other. */
-export type Key = "status" | "recent" | "shortcuts";
+export type Key = "status" | "calendar" | "recent" | "shortcuts";
 
 type Config = { modules: (keyof typeof modules)[]; widgets: Key[] };
 
 /** What a role gets when `pages` says nothing about it, field by field. */
 const base: Config = {
   modules: ["todos", "projects", "files", "insights"],
-  widgets: ["status", "recent", "shortcuts"],
+  widgets: ["status", "calendar", "recent", "shortcuts"],
 };
 
 /** Per-role overrides of `base`. Leave a field out to inherit it. */
@@ -48,7 +48,7 @@ const pages: { [R in Permission.Role]?: Partial<Config> } = {
 };
 
 export type Module = (typeof modules)[keyof typeof modules] & { key: keyof typeof modules };
-export type Widget = { key: Key; title: string; hint?: string; body: Snippet };
+export type Widget = { key: Key; title: string; hint?: string; body: Snippet; wide?: boolean };
 /** What every home layout takes. */
 export type Props = { modules: Module[]; widgets: Widget[] };
 

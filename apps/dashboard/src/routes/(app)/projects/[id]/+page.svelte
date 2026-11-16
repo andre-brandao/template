@@ -1,5 +1,6 @@
 <script lang="ts">
 	import ProjectPage from '#lib/features/projects/pages/ProjectPage.svelte';
+	import MonthWidget from '#lib/features/todos/components/MonthWidget.svelte';
 	import Stages from '#lib/features/todos/components/Stages.svelte';
 	import Recent from '#lib/features/todos/components/Recent.svelte';
 	import Summary from '#lib/features/todos/components/Summary.svelte';
@@ -19,12 +20,18 @@
 	{#snippet todos()}
 		<Recent {scope} />
 	{/snippet}
+	{#snippet calendar()}
+		<MonthWidget {scope} href="/projects/{params.id}/todos?view=calendar" />
+	{/snippet}
 	<ProjectPage
 		id={params.id}
 		{facts}
 		widgets={{
-			main: { title: 'Stages', body: stages },
-			side: [{ title: 'Recent todos', body: todos }]
+			main: { title: 'Todos this month', body: calendar },
+			side: [
+				{ title: 'Stages', body: stages },
+				{ title: 'Recent todos', body: todos }
+			]
 		}}
 	/>
 {/if}

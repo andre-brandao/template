@@ -6,6 +6,7 @@
 	import type { Props } from '#lib/features/home/modules.ts';
 	import Experiment from '#lib/features/experiments/components/Experiment.svelte';
 	import Glance from '#lib/features/todos/components/Glance.svelte';
+	import MonthWidget from '#lib/features/todos/components/MonthWidget.svelte';
 	import Recent from '#lib/features/todos/components/Recent.svelte';
 	import Shortcuts from '#lib/components/Shortcuts.svelte';
 	import CalendarRange from '@lucide/svelte/icons/calendar-range';
@@ -27,6 +28,7 @@
 </script>
 
 {#snippet status()}<Glance />{/snippet}
+{#snippet calendar()}<MonthWidget />{/snippet}
 {#snippet recent()}<Recent />{/snippet}
 {#snippet shortcuts()}<Shortcuts grid label="Shortcuts" {links} />{/snippet}
 <!-- The layouts under test, for admins only; everyone else gets the default. Drop it once one wins. -->
@@ -47,6 +49,7 @@
 				hint: 'Everything opened, by where it stands now.',
 				body: status
 			},
+			calendar: { title: 'Todos this month', body: calendar, wide: true },
 			recent: { title: 'Recent todos', body: recent },
 			shortcuts: { title: 'Shortcuts', body: shortcuts }
 		}}

@@ -2,14 +2,13 @@
 <script lang="ts">
 	import {
 		Button,
-		DatePicker,
+		DateSpanPicker,
 		Field,
 		Input,
 		Issue,
 		MarkdownEditor,
 		Select,
-		fromDay,
-		toDay
+		fromDay
 	} from '@template/ui';
 	import { upload } from '#lib/upload.ts';
 	import { fmt } from '#lib/utils/fmt.ts';
@@ -31,10 +30,11 @@
 		due?: string;
 	} = $props();
 
+	const f = fmt();
 	let body = $state('');
 	let tags = $state<string[]>([]);
 	let start = $state<string>();
-	const f = fmt();
+	let finish = $derived(due && fromDay(due, f.zone));
 	const save = create({ onSuccess: () => close() });
 
 	function submit(e: SubmitEvent & { currentTarget: HTMLFormElement }) {
@@ -79,30 +79,16 @@
 		</Field>
 	</div>
 
-	<div class="pair dates">
-		<Field label="Start" as="div">
-			<DatePicker
-				bind:value={start}
-				name="startDate"
-				label="Start"
-				placeholder="No start"
-				time
-				clearable
-			/>
-		</Field>
-
-		<Field label="Due" as="div">
-			<DatePicker
-				name="dueDate"
-				label="Due"
-				placeholder="No due date"
-				value={due && fromDay(due, f.zone)}
-				min={start && toDay(start, f.zone)}
-				time
-				clearable
-			/>
-		</Field>
-	</div>
+	<Field label="Dates" as="div">
+		<DateSpanPicker
+			bind:start
+			bind:finish
+			startName="startDate"
+			finishName="dueDate"
+			label="Todo dates"
+			time
+		/>
+	</Field>
 
 	<Field label="Status">
 		<Select name="status" options={STATUSES.map((one) => ({ value: one, label: label(one) }))} />
@@ -133,11 +119,6 @@
 		display: grid;
 		grid-template-columns: repeat(auto-fit, minmax(11em, 1fr));
 		gap: 1em;
-	}
-
-	/* Text, time and two buttons: below ~18em the typed entry collapses to nothing. */
-	.dates {
-		grid-template-columns: repeat(auto-fit, minmax(18em, 1fr));
 	}
 
 	h2 {

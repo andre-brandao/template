@@ -4,7 +4,7 @@
 	import Source from '#lib/features/events/components/Source.svelte';
 	import { fmt } from '#lib/utils/fmt.ts';
 	import Assignee from '../Assignee.svelte';
-	import Day from '../Day.svelte';
+	import Dates from '../Dates.svelte';
 	import Stage from './Stage.svelte';
 
 	let { todo }: { todo: Todo.Info } = $props();
@@ -32,12 +32,8 @@
 		<dd><Assignee {todo} full /></dd>
 	</div>
 	<div>
-		<dt>Start</dt>
-		<dd><Day {todo} field="startDate" /></dd>
-	</div>
-	<div>
-		<dt>Due</dt>
-		<dd><Day {todo} /></dd>
+		<dt>Dates</dt>
+		<dd><Dates {todo} /></dd>
 	</div>
 	{#if todo.timeStarted}
 		<div>

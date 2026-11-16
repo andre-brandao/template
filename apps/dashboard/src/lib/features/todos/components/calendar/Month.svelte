@@ -12,6 +12,7 @@
 		items,
 		hit,
 		chips,
+		compact = false,
 		onpick,
 		onmore
 	}: {
@@ -22,12 +23,13 @@
 		/** Days a drag in flight would cover. */
 		hit: (day: Day) => boolean;
 		chips: Chips;
+		compact?: boolean;
 		onpick: (day: Day, e: MouseEvent) => void;
 		onmore: (day: Day, e: MouseEvent) => void;
 	} = $props();
 
-	// Three lanes show; the rest of a day folds into "+N more".
-	const MAX = 3;
+	// A compact widget shows two lanes; the full calendar shows three.
+	const max = $derived(compact ? 2 : 3);
 
 	const days = $derived.by(() => {
 		const first = week(month.slice(0, 8) + '01', start);
@@ -38,8 +40,8 @@
 				return Array.from({ length: 7 }, (_, c): [Day, { bars: Bar[]; more: number }] => [
 					shift(row, { days: c }),
 					{
-						bars: bars.filter((bar) => bar.col === c && bar.lane < MAX),
-						more: bars.filter((bar) => bar.lane >= MAX && bar.col <= c && c < bar.col + bar.span)
+						bars: bars.filter((bar) => bar.col === c && bar.lane < max),
+						more: bars.filter((bar) => bar.lane >= max && bar.col <= c && c < bar.col + bar.span)
 							.length
 					}
 				]);
@@ -48,7 +50,7 @@
 	});
 </script>
 
-<div class="month">
+<div class={['month', { compact }]}>
 	<MonthGrid {month} bind:focus {onpick}>
 		{#snippet cell(info)}
 			{@const day = days.get(info.day)}
@@ -106,6 +108,10 @@
 		text-align: left;
 	}
 
+	.compact .cell {
+		height: 5rem;
+	}
+
 	.date {
 		position: absolute;
 		top: 0.35rem;
@@ -150,6 +156,10 @@
 
 	/* A phone's day cell fits "+12" but not the word, which wrapped up into the chips. */
 	@media (max-width: 700px) {
+		.compact .cell {
+			height: 4rem;
+		}
+
 		.word {
 			display: none;
 		}

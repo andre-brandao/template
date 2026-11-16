@@ -202,6 +202,7 @@
 					close();
 				}
 			: undefined}
+		{close}
 	/>
 {/snippet}
 
@@ -411,12 +412,13 @@
 			--calendar-month-width: 100%;
 			--grid-width: 100%;
 			--day-width: 100%;
+			--day-height: 2.75rem;
 			flex-basis: auto;
 		}
 
 		.presets {
 			flex-direction: row;
-			flex-wrap: wrap;
+			overflow-x: auto;
 			gap: 0.3em;
 			margin: 0 0 0.3em;
 			padding: 0.2em 0.3em 0.3em;
@@ -425,9 +427,11 @@
 		}
 
 		.preset {
-			padding: 0.2em 0.55em;
+			flex: none;
+			min-height: 2.75rem;
+			padding: 0 0.7em;
 			border: 1px solid var(--border);
-			font-size: 0.8em;
+			font-size: 0.85em;
 		}
 	}
 </style>

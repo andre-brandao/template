@@ -44,6 +44,13 @@ const multi = <R>(fn: () => Promise<R>) => {
   return fn().finally(() => delete process.env.WORKSPACES);
 };
 
+// The rejection's message, or "" when it resolved. `.rejects` stalls on these nested contexts under bun.
+const fail = (p: Promise<unknown>) =>
+  p.then(
+    () => "",
+    (err: Error) => err.message,
+  );
+
 beforeAll(async () => {
   await Queue.provide(queue, async () => {
     for (const slug of Object.values(slugs)) {
@@ -178,29 +185,25 @@ describe("workspace roles", () => {
     multi(() => as(id, () => Workspaces.enter(slugs.a, fn)));
 
   it("keeps a member from editing or reassigning", async () => {
-    const t = Date.now();
-    const L = (m: string) => console.error("STEP", m, Date.now() - t);
     const row = await inA(stranger.id, () => Workspaces.current());
-    L("a");
-    const p = inA(stranger.id, () => Workspaces.update({ id: row?.id ?? "", name: "nope" }));
-    L("b");
-    await expect(p).rejects.toThrow(/owner or admin/);
-    L("c");
     expect(row?.role).toBe("member");
-    await expect(
-      inA(stranger.id, () => Workspaces.update({ id: row?.id ?? "", name: "nope" })),
-    ).rejects.toThrow(/owner or admin/);
-    await expect(
-      inA(stranger.id, () => Workspaces.role({ userID: stranger.id, role: "owner" })),
-    ).rejects.toThrow(/owner or admin/);
+    expect(
+      await fail(inA(stranger.id, () => Workspaces.update({ id: row?.id ?? "", name: "nope" }))),
+    ).toMatch(/owner or admin/);
+    expect(
+      await fail(inA(stranger.id, () => Workspaces.role({ userID: stranger.id, role: "owner" }))),
+    ).toMatch(/owner or admin/);
   });
 
-  it("never demotes the last owner", async () => {
-    await expect(
-      inA(owner.id, () => Workspaces.role({ userID: owner.id, role: "member" })),
-    ).rejects.toThrow(/at least one owner/);
+  it("never changes your own role, nor demotes the last owner", async () => {
+    expect(
+      await fail(inA(owner.id, () => Workspaces.role({ userID: owner.id, role: "member" }))),
+    ).toMatch(/your own role/);
     await inA(owner.id, () => Workspaces.role({ userID: stranger.id, role: "owner" }));
-    await inA(owner.id, () => Workspaces.role({ userID: owner.id, role: "admin" }));
+    await inA(stranger.id, () => Workspaces.role({ userID: owner.id, role: "admin" }));
+    expect(
+      await fail(inA(owner.id, () => Workspaces.role({ userID: stranger.id, role: "member" }))),
+    ).toMatch(/at least one owner/);
     const roles = await inA(owner.id, () => Workspaces.members());
     expect(roles.map((one) => [one.userID, one.role])).toEqual(
       expect.arrayContaining([
@@ -233,7 +236,6 @@ describe("workspace admin", () => {
       expect.arrayContaining([owner.id, stranger.id]),
     );
     expect(found.members.map((one) => one.userID)).toContain(owner.id);
-    expect(found.tables.map((one) => one.name)).toContain("member");
     await expect(admin(() => Workspaces.retry({ slug: slugs.a }))).rejects.toThrow(
       /already set up/,
     );
@@ -243,6 +245,20 @@ describe("workspace admin", () => {
     const rows = await admin(() => Workspaces.registry());
     expect(rows.find((one) => one.slug === slugs.a)?.members).toBe(2);
     expect(rows.find((one) => one.slug === slugs.b)?.members).toBe(1);
+  });
+
+  it("measures every workspace schema, central included", async () => {
+    const all = await admin(() => Workspaces.usage({}));
+    const schemas = all.map((one) => one.schema);
+    expect(schemas).toEqual(expect.arrayContaining([`ws_${slugs.a}`, `ws_${slugs.b}`, "central"]));
+    const ours = all.filter(
+      (one) => one.schema === `ws_${slugs.a}` || one.schema === `ws_${slugs.b}`,
+    );
+    expect(ours.every((one) => one.bytes > 0)).toBe(true);
+    const [a] = await admin(() => Workspaces.usage({ slug: slugs.a }));
+    expect(a?.schema).toBe(`ws_${slugs.a}`);
+    expect(a?.breakdown.map((one) => one.name)).toContain("member");
+    expect(a?.tables).toBe(a?.breakdown.length);
   });
 
   it("is closed to a member", () => {

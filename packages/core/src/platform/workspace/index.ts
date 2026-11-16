@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { and, count, eq, isNull } from "drizzle-orm";
+import { and, count, eq, isNull, sql } from "drizzle-orm";
 import { fn } from "../../util/fn";
 import { Context } from "../../context";
 import { Database } from "../../drizzle";
@@ -9,7 +9,6 @@ import { ErrorCodes, VisibleError } from "../../error";
 import { Identifier } from "../../identifier";
 import { Identity } from "../../identity";
 import { Queue } from "../../lib/queue";
-import { Admin } from "../admin";
 import { UserTable } from "../../user/user.central";
 import { Workspace } from "../../workspace";
 import { MemberTable } from "./member.sql";
@@ -205,6 +204,12 @@ export namespace Workspaces {
       const row = await here();
       if (!row) throw forbidden();
       await manage(row);
+      if (input.userID === Identity.userID())
+        throw new VisibleError(
+          "forbidden",
+          ErrorCodes.Permission.FORBIDDEN,
+          "You can't change your own role",
+        );
       await Database.transaction(async (tx) => {
         const owners = await tx
           .select({ userID: MemberTable.userID })
@@ -237,11 +242,12 @@ export namespace Workspaces {
     if (Workspace.mode() === "single") await fallback();
     return Central.use((tx) =>
       tx
-        .select({ row: WorkspaceTable, members: count(AccessTable.userID) })
+        .select({
+          row: WorkspaceTable,
+          members: tx.$count(AccessTable, eq(AccessTable.workspaceID, WorkspaceTable.id)),
+        })
         .from(WorkspaceTable)
-        .leftJoin(AccessTable, eq(AccessTable.workspaceID, WorkspaceTable.id))
         .where(isNull(WorkspaceTable.timeDeleted))
-        .groupBy(WorkspaceTable.id)
         .orderBy(WorkspaceTable.slug)
         .then((rows) =>
           rows.map((item) => ({
@@ -253,7 +259,7 @@ export namespace Workspaces {
     );
   });
 
-  /** One workspace opened up for an operator: who can see it, its members and its tables. */
+  /** One workspace opened up for an operator: who can see it and its members. */
   export const inspect = fn(z.object({ slug: Info.shape.slug }), async (input) => {
     Identity.check({ admin: ["read"] });
     const row = await find(input.slug);
@@ -273,17 +279,13 @@ export namespace Workspaces {
           rows.map((one) => ({ ...one, timeCreated: one.timeCreated.toISOString() })),
         ),
     );
-    // A pending schema may not exist yet; sequential, since pglite holds one client per transaction.
+    // A pending schema may not exist yet. Disk use is `usage`, which reads the catalogs in one go.
     const open = row.status === "ready";
     const members = open ? await inside(row, { schema: row.schema }, roster) : [];
-    const tables = open
-      ? await inside(row, { schema: row.schema }, () => Admin.schema({ schema: row.schema }))
-      : undefined;
     return {
       workspace: { ...serialize(row), schema: row.schema },
       access,
       members,
-      tables: tables?.tables ?? [],
     };
   });
 
@@ -308,6 +310,68 @@ export namespace Workspaces {
         .then((rows) => rows.at(0)?.userID),
     );
     await job.push({ id: row.id, owner });
+  });
+
+  /**
+   * Disk use per workspace schema, plus `central` for comparison, from the catalogs in one
+   * query. `slug` narrows it to that workspace. With a database per workspace this would run
+   * once per client `connect` picks; here every schema shares the one pool.
+   */
+  export const usage = fn(z.object({ slug: Info.shape.slug.optional() }), async (input) => {
+    Identity.check({ admin: ["read"] });
+    const only = input.slug ? (await find(input.slug)).schema : undefined;
+    const rows = await Central.use((tx) =>
+      tx.execute<{
+        schema: string;
+        name: string;
+        rows: string;
+        data: string;
+        indexes: string;
+        total: string;
+      }>(
+        sql`
+            SELECT n.nspname AS schema,
+                   c.relname AS name,
+                   -- reltuples is -1 until the first analyze; the live count covers that gap.
+                   coalesce(s.n_live_tup, greatest(c.reltuples, 0))::bigint AS rows,
+                   pg_relation_size(c.oid) AS data,
+                   pg_indexes_size(c.oid) AS indexes,
+                   pg_total_relation_size(c.oid) AS total
+            FROM pg_class c
+            JOIN pg_namespace n ON n.oid = c.relnamespace
+            LEFT JOIN pg_stat_user_tables s ON s.relid = c.oid
+            WHERE c.relkind IN ('r', 'p')
+              AND ${
+                only
+                  ? sql`n.nspname = ${only}`
+                  : sql`(n.nspname = 'central' OR n.nspname IN (
+                      SELECT ${WorkspaceTable.schema} FROM ${WorkspaceTable}
+                      WHERE ${WorkspaceTable.timeDeleted} IS NULL))`
+              }
+            ORDER BY pg_total_relation_size(c.oid) DESC
+          `,
+        "objects",
+      ),
+    );
+    // Postgres hands bigints back as strings; group the one result per schema.
+    const tables = [...rows].map((row) => ({
+      schema: row.schema,
+      name: row.name,
+      rows: Number(row.rows),
+      data: Number(row.data),
+      indexes: Number(row.indexes),
+      total: Number(row.total),
+    }));
+    return [...new Set(tables.map((one) => one.schema))].map((schema) => {
+      const own = tables.filter((one) => one.schema === schema);
+      return {
+        schema,
+        bytes: own.reduce((sum, one) => sum + one.total, 0),
+        tables: own.length,
+        rows: own.reduce((sum, one) => sum + one.rows, 0),
+        breakdown: own,
+      };
+    });
   });
 
   /** Every workspace, for operators (the CLI); no identity needed, so never route it. */

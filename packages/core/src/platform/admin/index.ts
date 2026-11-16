@@ -66,14 +66,16 @@ export namespace Admin {
   });
   export type Table = z.infer<typeof Table>;
 
-  async function measure(where: SQL) {
+  /** Per-table size and row estimate (planner's `n_live_tup` — cheap), plus the db total. */
+  export const tables = fn(z.void(), async () => {
+    Identity.check({ admin: ["read"] });
     const [rows, size] = await Promise.all([
       raw(sql`
         SELECT relname AS name,
                n_live_tup AS rows,
                pg_total_relation_size(relid) AS bytes
         FROM pg_stat_user_tables
-        WHERE ${where}
+        WHERE schemaname IN (${Workspace.peek()?.schema ?? "public"}, 'central')
         ORDER BY pg_total_relation_size(relid) DESC
       `),
       raw(sql`SELECT pg_database_size(current_database()) AS bytes`),
@@ -87,24 +89,7 @@ export namespace Admin {
       })),
       bytes: Number([...size][0]?.bytes ?? 0),
     };
-  }
-
-  /** Per-table size and row estimate (planner's `n_live_tup` — cheap), plus the db total. */
-  export const tables = fn(z.void(), () => {
-    Identity.check({ admin: ["read"] });
-    return measure(sql`schemaname IN (${Workspace.peek()?.schema ?? "public"}, 'central')`);
   });
-
-  /** The same, narrowed to one workspace schema's own tables. */
-  export const schema = fn(
-    z.object({
-      schema: z.string().meta({ description: "The workspace schema.", example: "ws_acme" }),
-    }),
-    (input) => {
-      Identity.check({ admin: ["read"] });
-      return measure(sql`schemaname = ${input.schema}`);
-    },
-  );
 
   /** Queue depth and the age of the oldest thing still waiting — the "is it stuck" number. */
   export const queue = fn(z.void(), () => {

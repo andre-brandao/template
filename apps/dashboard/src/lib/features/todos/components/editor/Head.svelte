@@ -1,15 +1,26 @@
-<!-- The record header on the todo's own route: the way back, then its facts. -->
+<!-- The record header on the todo's own route: every fact edits in place, the status rides a
+     stepper, and one primary action moves it a step along the flow. -->
 <script lang="ts">
 	import type { Todo } from '@template/core/todo';
+	import { Button, Inline } from '@template/ui';
 	import * as Header from '#lib/components/header/index.ts';
+	import Steps from '#lib/components/Steps.svelte';
 	import Source from '#lib/features/events/components/Source.svelte';
 	import { fmt } from '#lib/utils/fmt.ts';
-	import StatusPill from '../StatusPill.svelte';
-	import { late } from '../../status';
+	import { update } from '../../api/todos.query';
+	import { FLOW, next, step } from '../../status';
+	import Assignee from '../Assignee.svelte';
+	import Day from '../Day.svelte';
+	import StatusPicker from '../StatusPicker.svelte';
+	import More from './More.svelte';
+	import Stage from './Stage.svelte';
 
-	let { todo }: { todo: Todo.Info } = $props();
+	let { todo, onremove }: { todo: Todo.Info; onremove: () => void } = $props();
 
 	const f = fmt();
+	const save = update();
+	const move = update();
+	const ahead = $derived(next(todo.status));
 </script>
 
 {#snippet parent()}
@@ -24,17 +35,48 @@
 	{/if}
 {/snippet}
 
-<Header.Root title={todo.title} eyebrow={parent}>
-	<Header.Item label="Status"><StatusPill status={todo.status} reason={todo.reason} /></Header.Item>
-	<Header.Item label="Assignee">{todo.assignee?.name ?? 'Unassigned'}</Header.Item>
-	<Header.Item label="Stage">{todo.stage ?? '—'}</Header.Item>
-	<Header.Item label="Due">
-		<span class={{ late: late(todo, f.zone) }}>{todo.dueDate ? f.day(todo.dueDate) : '—'}</span>
-	</Header.Item>
-</Header.Root>
+{#snippet title()}
+	<Inline
+		label="Todo title"
+		required
+		flush
+		value={todo.title}
+		onsave={(text) => save.mutateAsync({ path: { id: todo.id }, body: { title: text } })}
+	/>
+{/snippet}
 
-<style>
-	.late {
-		color: var(--danger);
-	}
-</style>
+{#snippet actions()}
+	{#if ahead}
+		<Button
+			variant="primary"
+			pending={move.isPending}
+			onclick={() =>
+				move.mutate({
+					path: { id: todo.id },
+					body: { status: ahead.to, reason: ahead.to === 'done' ? 'completed' : null }
+				})}
+		>
+			{ahead.label}
+		</Button>
+	{/if}
+	<More {todo} {onremove} />
+{/snippet}
+
+<Header.Root {title} eyebrow={parent} {actions}>
+	<Header.Item label="Status">
+		<Steps steps={FLOW.length} current={step(todo.status)} danger={todo.status === 'blocked'}>
+			<StatusPicker {todo} />
+		</Steps>
+	</Header.Item>
+	<Header.Item label="Assignee"><Assignee {todo} full /></Header.Item>
+	<Header.Item label="Stage"><Stage {todo} /></Header.Item>
+	<Header.Item label="Start"><Day {todo} field="startDate" /></Header.Item>
+	<Header.Item label="Due"><Day {todo} /></Header.Item>
+	{#if todo.timeStarted}
+		<!-- Stamped by the status flow, so it reads rather than edits. -->
+		<Header.Item label="Worked">
+			{f.date(todo.timeStarted)}
+			{#if todo.timeDone}&rarr; {f.date(todo.timeDone)}{/if}
+		</Header.Item>
+	{/if}
+</Header.Root>

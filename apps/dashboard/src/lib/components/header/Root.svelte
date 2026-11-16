@@ -112,8 +112,9 @@
 		border-bottom: 1px solid var(--border);
 	}
 
+	/* Keeps room for a title: past this the actions drop to their own line instead. */
 	.body {
-		flex: 1;
+		flex: 1 1 24em;
 		min-width: 0;
 	}
 

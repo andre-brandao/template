@@ -32,7 +32,7 @@
 </script>
 
 {#if editing}
-	<form class="edit" onsubmit={submit}>
+	<form onsubmit={submit}>
 		<MarkdownEditor bind:value={body} {upload} />
 		<div class="row">
 			<Button variant="primary" type="submit" {pending}>Save</Button>
@@ -54,18 +54,14 @@
 
 <style>
 	.body {
-		margin-top: 1em;
+		margin-bottom: 0.5em;
 	}
 
 	.blank {
 		color: var(--dim);
 		font-size: 0.9em;
 		font-style: italic;
-		margin: 1em 0 0;
-	}
-
-	.edit {
-		margin-top: 1em;
+		margin: 0 0 0.5em;
 	}
 
 	.row {

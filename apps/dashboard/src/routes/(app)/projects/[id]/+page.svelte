@@ -10,15 +10,21 @@
 <!-- `params` is empty mid-navigation, and the page would query with an undefined id. -->
 {#if params.id}
 	{@const scope = { source: 'project', sourceID: params.id }}
-	<ProjectPage id={params.id}>
-		{#snippet facts()}
-			<Summary {scope} />
-		{/snippet}
-		{#snippet stages()}
-			<Stages {scope} base="/projects/{params.id}/todos" />
-		{/snippet}
-		{#snippet todos()}
-			<Recent {scope} />
-		{/snippet}
-	</ProjectPage>
+	{#snippet facts()}
+		<Summary {scope} />
+	{/snippet}
+	{#snippet stages()}
+		<Stages {scope} base="/projects/{params.id}/todos" />
+	{/snippet}
+	{#snippet todos()}
+		<Recent {scope} />
+	{/snippet}
+	<ProjectPage
+		id={params.id}
+		{facts}
+		widgets={{
+			main: { title: 'Stages', body: stages },
+			side: [{ title: 'Recent todos', body: todos }]
+		}}
+	/>
 {/if}

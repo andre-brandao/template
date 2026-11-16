@@ -406,6 +406,14 @@
 			flex-direction: column;
 		}
 
+		.month {
+			--calendar-width: 100%;
+			--calendar-month-width: 100%;
+			--grid-width: 100%;
+			--day-width: 100%;
+			flex-basis: auto;
+		}
+
 		.presets {
 			flex-direction: row;
 			flex-wrap: wrap;

@@ -1,4 +1,5 @@
 import AppWindow from "@lucide/svelte/icons/app-window";
+import Building from "@lucide/svelte/icons/building-2";
 import Gauge from "@lucide/svelte/icons/gauge";
 import KeyRound from "@lucide/svelte/icons/key-round";
 import LayoutDashboard from "@lucide/svelte/icons/layout-dashboard";
@@ -15,7 +16,13 @@ import type { LayoutLoad } from "./$types";
 // `data` is the server load's output: this load shadows it, so it only reaches `page.data` through the spread.
 export const load: LayoutLoad = ({ data }) => {
   const workspace = [
-    ...(data.admin ? [{ href: "/settings/members", label: "Members", icon: UsersRound }] : []),
+    { href: "/settings/workspace", label: "Workspace", icon: Building },
+    ...(data.admin
+      ? [
+          { href: "/settings/members", label: "Members", icon: UsersRound },
+          { href: "/settings/workspaces", label: "Workspaces", icon: Building },
+        ]
+      : []),
     ...(data.apps
       ? [
           { href: "/settings/apps", label: "Apps", icon: AppWindow },

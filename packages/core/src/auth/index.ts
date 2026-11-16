@@ -6,19 +6,19 @@ import { Password } from "../util/password";
 import { Context } from "../context";
 import { Identity } from "../identity";
 import { Permission } from "../permission";
-import { Database } from "../drizzle";
+import { Central } from "../drizzle/central";
 import { ErrorCodes, VisibleError } from "../error";
 import { Examples } from "../examples";
 import { Identifier } from "../identifier";
 import { Template } from "../lib/email/template";
 import { Limit, Limits } from "../lib/limit";
 import { Key } from "../platform/key";
-import { KeyTable } from "../platform/key/key.sql";
+import { KeyTable } from "../platform/key/key.central";
 import { User } from "../user";
 import { zone } from "../user/prefs";
-import { UserTable } from "../user/user.sql";
+import { UserTable } from "../user/user.central";
 import { Delegation } from "./delegation";
-import { ProviderIds, ProviderTable } from "./provider.sql";
+import { ProviderIds, ProviderTable } from "./provider.central";
 
 /**
  * Credentials in, `Identity` out. `link` ties a login to a local user; `resolve` turns any
@@ -67,7 +67,7 @@ export namespace Auth {
     }),
     (input) =>
       Identity.internal("auth", { user: ["create"] }, () =>
-        Database.transaction(async (tx) => {
+        Central.transaction(async (tx) => {
           const linked = await tx
             .select({
               userID: ProviderTable.userID,
@@ -203,7 +203,7 @@ export namespace Auth {
         const me = await User.assert.exists(User.fromID(Identity.userID()));
 
         const hash = await Password.hash(input.password);
-        await Database.use((tx) =>
+        await Central.use((tx) =>
           tx
             .insert(ProviderTable)
             .values({
@@ -265,7 +265,7 @@ export namespace Auth {
         "",
       );
 
-      await Database.transaction(async (tx) => {
+      await Central.transaction(async (tx) => {
         // One live code per address, so asking again retires the last one.
         await tx
           .delete(KeyTable)
@@ -292,7 +292,7 @@ export namespace Auth {
         // Spent on the attempt, not on the match: six digits fall to a million tries, and
         // deleting first is what a retry counter would otherwise have to buy. A typo costs
         // a new code. Racing requests both delete, only one gets the row back.
-        const spent = await Database.use((tx) =>
+        const spent = await Central.use((tx) =>
           tx
             .delete(KeyTable)
             .where(
@@ -342,7 +342,7 @@ export namespace Auth {
 
   /** The password row for an address. */
   function account(email: string) {
-    return Database.use((tx) =>
+    return Central.use((tx) =>
       tx
         .select({
           userID: ProviderTable.userID,

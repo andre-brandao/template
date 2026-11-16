@@ -18,7 +18,7 @@ import { Permission } from "../../permission";
 import { Common } from "../../common";
 import { Examples } from "../../examples";
 import { Tags } from "../../util/tag";
-import { UserTable } from "../../user/user.sql";
+import { UserTable } from "../../user/user.central";
 import { sortable } from "../../drizzle/order";
 import { EventTable } from "./event.sql";
 import { Types } from "../webhook/types";

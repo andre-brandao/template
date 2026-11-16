@@ -9,7 +9,7 @@ import { cloudflare, type Producer } from "../src/lib/queue/adapter/cloudflare";
 import { db } from "../src/lib/queue/adapter/db";
 import { memory } from "../src/lib/queue/adapter/memory";
 import type { Job } from "../src/lib/queue/port";
-import { JobTable } from "../src/lib/queue/queue.sql";
+import { JobTable } from "../src/lib/queue/queue.central";
 import { withTestUser } from "./util";
 
 const seen: string[] = [];

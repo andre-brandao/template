@@ -5,12 +5,12 @@ import { iso } from "../../util/fmt";
 import { Assert } from "../../util/assert";
 import { Identity } from "../../identity";
 import { Common } from "../../common";
-import { Database } from "../../drizzle";
+import { Central } from "../../drizzle/central";
 import { Examples } from "../../examples";
 import { Identifier } from "../../identifier";
 import { digest, encode } from "../../util/hash";
 import { token } from "../../util/token";
-import { KeyTable, TOUCH, live } from "./key.sql";
+import { KeyTable, TOUCH, live } from "./key.central";
 
 export namespace Key {
   const assert = Assert.create("Key");
@@ -62,7 +62,7 @@ export namespace Key {
     async (input) => {
       const secret = token("sk-");
       const hash = encode(await digest(secret));
-      const row = await Database.use((tx) =>
+      const row = await Central.use((tx) =>
         tx
           .insert(KeyTable)
           .values({
@@ -89,7 +89,7 @@ export namespace Key {
   /** Resolves a secret to its user, `api` keys only. The hash is indexed: a single lookup. */
   export const verify = fn(z.string(), async (secret) => {
     const hash = encode(await digest(secret));
-    const row = await Database.use((tx) =>
+    const row = await Central.use((tx) =>
       tx
         .select({ id: KeyTable.id, userID: KeyTable.userID, used: KeyTable.timeUsed })
         .from(KeyTable)
@@ -107,7 +107,7 @@ export namespace Key {
 
     // Stamps last use at most hourly, so a busy key isn't a write per request.
     if (!row.used || Date.now() - row.used.getTime() >= TOUCH)
-      await Database.use((tx) =>
+      await Central.use((tx) =>
         tx.update(KeyTable).set({ timeUsed: new Date() }).where(eq(KeyTable.id, row.id)),
       );
 
@@ -172,7 +172,7 @@ export namespace Key {
   // === UTILS ===
 
   function rows(user: string) {
-    return Database.use((tx) =>
+    return Central.use((tx) =>
       tx
         .select()
         .from(KeyTable)
@@ -190,7 +190,7 @@ export namespace Key {
 
   function drop(id: string, user: string) {
     return assert.exists(
-      Database.use((tx) =>
+      Central.use((tx) =>
         tx
           .update(KeyTable)
           .set({ timeDeleted: new Date() })

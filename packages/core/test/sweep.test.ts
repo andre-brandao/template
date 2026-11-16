@@ -14,6 +14,7 @@ import { Event } from "../src/platform/event";
 import { Feedback } from "../src/platform/feedback";
 import { Conversation } from "../src/platform/conversation";
 import { Panel } from "../src/platform/panel";
+import { Workspaces } from "../src/platform/workspace";
 import { createUser, testEmail } from "./util";
 
 type Res = keyof typeof Permission.Statement;
@@ -50,6 +51,10 @@ const ops = [
   entry("admin", "read", Admin.queue, () => undefined),
   entry("admin", "read", Admin.counts, () => undefined),
   entry("admin", "read", Admin.server, () => undefined),
+  entry("admin", "read", Workspaces.registry, () => undefined),
+  entry("admin", "read", Workspaces.inspect, () => ({ slug: "sweep" })),
+  entry("admin", "read", Workspaces.retry, () => ({ slug: "sweep" })),
+  entry("admin", "read", Workspaces.usage, () => ({})),
   entry("admin", "read", Event.list, () => ({})),
   entry("admin", "read", Event.facets, () => undefined),
 

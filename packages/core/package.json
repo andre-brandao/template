@@ -13,6 +13,7 @@
     "./context": "./src/context.ts",
     "./error": "./src/error.ts",
     "./examples": "./src/examples.ts",
+    "./workspace": "./src/workspace.ts",
     "./identifier": "./src/identifier.ts",
     "./jobs": "./src/jobs.ts",
     "./permission": "./src/permission.ts",
@@ -38,6 +39,7 @@
     "./feedback": "./src/platform/feedback/index.ts",
     "./file": "./src/platform/file/index.ts",
     "./webhook": "./src/platform/webhook/index.ts",
+    "./workspaces": "./src/platform/workspace/index.ts",
     "./webhook/*": "./src/platform/webhook/*.ts",
     "./conversation": "./src/platform/conversation/index.ts",
     "./conversation/*": "./src/platform/conversation/*.ts",
@@ -48,8 +50,8 @@
     "typecheck": "tsc --noEmit",
     "test": "bun test",
     "db:push": "drizzle-kit push",
-    "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate"
+    "db:generate": "drizzle-kit generate --config drizzle.central.config.ts && drizzle-kit generate --config drizzle.tenant.config.ts && bun src/drizzle/bundle.ts",
+    "db:migrate": "bun src/drizzle/migrate.ts"
   },
   "dependencies": {
     "aws4fetch": "^1.0.20",

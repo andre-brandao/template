@@ -6,6 +6,7 @@ import { Database, sql, type SQL } from "@template/core/drizzle";
 import { ErrorCodes, VisibleError } from "@template/core/error";
 import type { Permission } from "@template/core/permission";
 import { fn } from "@template/core/util/fn";
+import { Workspace } from "@template/core/workspace";
 
 /**
  * The `panel` agent's read-only SQL, for admins and never on the MCP. The model only explores,
@@ -22,6 +23,9 @@ export namespace Sql {
   } as const satisfies Record<string, keyof typeof Permission.Statement>;
 
   export type Table = keyof typeof Tables;
+
+  /** Shared tables in the `central` schema; the rest live in the workspace's own. */
+  const Central = new Set<string>(["user"]);
 
   /** Who may run SQL at all. */
   export const Grant = { admin: ["read"] } as const satisfies Permission.Grants;
@@ -47,7 +51,7 @@ export namespace Sql {
 
   /** How the agent uses the tools; only for whoever gets them. */
   export const guide = `You can explore the database with read-only SQL.
-- Start with \`sql_tables\` for the tables and columns this user may read. Never invent columns.
+- Start with \`sql_tables\` for the tables and columns this user may read. Name tables exactly as it lists them (\`central.user\`). Never invent columns.
 - Query with \`sql\`: one PostgreSQL SELECT. Aggregate in SQL (group by, date_trunc, count) rather than pulling raw rows, and give columns short snake_case aliases.
 - Skip removed rows with \`time_deleted is null\`.
 - \`sql\` returns a sample of at most 20 rows: use it to learn the data and test the SQL.
@@ -63,17 +67,17 @@ export namespace Sql {
         select table_name as table, column_name as name, data_type as type,
                is_nullable = 'YES' as nullable
         from information_schema.columns
-        where table_schema = 'public' and table_name in ${names}
+        where table_schema in (${home()}, 'central') and table_name in ${names}
         order by table_name, ordinal_position
       `),
       raw(sql`
         select conrelid::regclass::text as table, pg_get_constraintdef(oid) as def
         from pg_constraint
-        where contype = 'f' and connamespace = 'public'::regnamespace
+        where contype = 'f' and connamespace in (${home()}::regnamespace, 'central'::regnamespace)
       `),
     ]);
     return names.map((table) => ({
-      table,
+      table: label(table),
       columns: columns
         .filter((row) => row.table === table)
         .map((row) => ({
@@ -82,7 +86,7 @@ export namespace Sql {
           nullable: !!row.nullable,
         })),
       refs: refs
-        .filter((row) => unquote(String(row.table)) === table)
+        .filter((row) => unquote(String(row.table)) === label(table))
         .flatMap((row) => {
           const hit = String(row.def).match(/FOREIGN KEY \((.+?)\) REFERENCES (.+?)\((.+?)\)/);
           if (!hit) return [];
@@ -240,8 +244,8 @@ export namespace Sql {
     const blocked = [
       ...new Set(
         names
-          .filter((rel) => rel.schema !== "public" || !allowed.has(rel.name))
-          .map((rel) => (rel.schema === "public" ? rel.name : `${rel.schema}.${rel.name}`)),
+          .filter((rel) => rel.schema !== place(rel.name) || !allowed.has(rel.name))
+          .map((rel) => (rel.schema === home() ? rel.name : `${rel.schema}.${rel.name}`)),
       ),
     ];
     if (!blocked.length) return;
@@ -250,6 +254,19 @@ export namespace Sql {
       ErrorCodes.Permission.INSUFFICIENT_PERMISSIONS,
       `Not allowed to query: ${blocked.join(", ")}`,
     );
+  }
+
+  /** The schema unqualified names resolve to: the workspace's, else `public`. */
+  function home() {
+    return Workspace.peek()?.schema ?? "public";
+  }
+
+  function place(name: string) {
+    return Central.has(name) ? "central" : home();
+  }
+
+  function label(name: string) {
+    return Central.has(name) ? `central.${name}` : name;
   }
 
   function refuse(): never {
@@ -261,7 +278,7 @@ export namespace Sql {
   }
 
   function unquote(name: string) {
-    return name.replace(/"/g, "").replace(/^public\./, "");
+    return name.replace(/"/g, "").replace(new RegExp(`^${home()}\\.`), "");
   }
 
   /** Catalog query the builder can't express. */

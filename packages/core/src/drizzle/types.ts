@@ -1,4 +1,7 @@
-import { char, timestamp as rawTs } from "drizzle-orm/pg-core";
+import { char, snakeCase, timestamp as rawTs } from "drizzle-orm/pg-core";
+
+// Tables every workspace shares; tenant tables stay unqualified and follow search_path.
+export const central = snakeCase.schema("central");
 
 // Unnamed: `casing: "snake_case"` derives the column from the key.
 export const ulid = () => char({ length: 26 + 4 });

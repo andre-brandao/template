@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Button } from '@template/ui';
-	import type { ProviderId } from '@template/core/auth/provider.sql';
+	import type { ProviderId } from '@template/core/auth/provider.central';
 
 	let { providers }: { providers: ProviderId[] } = $props();
 

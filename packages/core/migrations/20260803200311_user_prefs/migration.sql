@@ -1,1 +1,0 @@
-ALTER TABLE "user" ADD COLUMN "prefs" jsonb DEFAULT '{"theme":"system","locale":"en","zone":null,"date":"system","time":"system"}' NOT NULL;

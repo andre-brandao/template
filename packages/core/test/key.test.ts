@@ -4,7 +4,7 @@ import { Database } from "../src/drizzle";
 import { Identity } from "../src/identity";
 import { digest, encode } from "../src/util/hash";
 import { Key } from "../src/platform/key";
-import { KeyTable } from "../src/platform/key/key.sql";
+import { KeyTable } from "../src/platform/key/key.central";
 import { Signing } from "../src/platform/key/signing";
 import { createUser, testEmail, withTestUser } from "./util";
 

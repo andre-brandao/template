@@ -1,11 +1,11 @@
 import { z } from "zod";
 import { and, desc, eq, isNull } from "drizzle-orm";
 import { fn } from "../../util/fn";
-import { Database } from "../../drizzle";
+import { Central } from "../../drizzle/central";
 import { Identifier } from "../../identifier";
 import { memo } from "../../util/memo";
 import { token } from "../../util/token";
-import { KeyTable, live } from "./key.sql";
+import { KeyTable, live } from "./key.central";
 
 /**
  * The secret behind a signed URL. Shares the `key` table with API keys but is a different
@@ -14,7 +14,7 @@ import { KeyTable, live } from "./key.sql";
 export namespace Signing {
   /** Minted on first use, cached per process. A racing first mint just leaves two usable keys. */
   export const current = memo(async () => {
-    const row = await Database.use((tx) =>
+    const row = await Central.use((tx) =>
       tx
         .select()
         .from(KeyTable)
@@ -25,7 +25,7 @@ export namespace Signing {
     );
     if (row) return { id: row.id, secret: row.key };
 
-    const made = await Database.use((tx) =>
+    const made = await Central.use((tx) =>
       tx
         .insert(KeyTable)
         .values({
@@ -43,7 +43,7 @@ export namespace Signing {
 
   /** The verifying half: the secret behind a key id, for a route checking a URL. */
   export const secret = fn(z.string(), (id) =>
-    Database.use((tx) =>
+    Central.use((tx) =>
       tx
         .select({ key: KeyTable.key })
         .from(KeyTable)

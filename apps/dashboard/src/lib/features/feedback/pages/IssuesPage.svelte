@@ -95,7 +95,7 @@
 {:else}
 	<Lines>
 		{#each shown as row (row.id)}
-			<Line {row} href="/admin/feedback/{row.id}">
+			<Line {row} href="/settings/feedback/{row.id}">
 				<Badge tone={urgencies[row.urgency].tone}>{urgencies[row.urgency].label}</Badge>
 				<span class="from">{row.from ?? 'No sender'}</span>
 			</Line>

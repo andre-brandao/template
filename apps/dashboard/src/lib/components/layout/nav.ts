@@ -24,7 +24,7 @@ export type Nav = {
   head?: Component<{ tight: boolean }>;
 };
 
-/** `path` is `href` or below it, on a segment boundary: `/dev` never lights `/developers`. */
+/** `path` is `href` or below it, on a segment boundary: `/dev` never lights `/devtools`. */
 export const under = (path: string, href: string) => path === href || path.startsWith(`${href}/`);
 
 /** Whether a nav item is the current page; `exact` keeps an index from lighting its children. */
@@ -49,17 +49,17 @@ export const home: Section[] = [
 export const account = (id: string): (Item & { grants?: Permission.Grants })[] => [
   { href: `/u/${id}`, label: "Profile" },
   { href: "/settings/account", label: "Settings" },
-  { href: "/developers", label: "Developers" },
-  { href: "/admin", label: "Admin", grants: { admin: ["read"] } },
+  { href: "/settings/keys", label: "API keys" },
+  { href: "/settings/instance", label: "Admin", grants: { admin: ["read"] } },
 ];
 
 /** A section with its own rail; back leads to wherever the reader came from. */
-export const section = (root: string, label: string, top: Section[]): Nav => ({
+export const section = (root: string, label: string, top: Section[], bottom?: Section[]): Nav => ({
   root,
   back: { label: "Back" },
   crumbs: [
     { href: "/home", label: "Home" },
     { href: root, label },
   ],
-  sections: { top },
+  sections: { top, bottom },
 });

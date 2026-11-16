@@ -90,7 +90,7 @@
 	<ul>
 		{#each shown as row (row.id)}
 			<li>
-				<a href="/admin/panels/{row.id}">{row.title}</a>
+				<a href="/settings/panels/{row.id}">{row.title}</a>
 				<small>{row.author || 'Unknown'} · {f.stamp(row.timeUpdated)}</small>
 				{#if row.createdBy === me.current?.id}
 					<IconButton size="sm" label="Delete {row.title}" onclick={() => erase(row)}>

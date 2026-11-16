@@ -45,7 +45,7 @@
 			</Button>
 			<p class="hint">
 				Expires in a day. Any other token has to be pasted — one is only readable when minted, in
-				<a href="/developers/keys">API keys</a>.
+				<a href="/settings/keys">API keys</a>.
 			</p>
 		</div>
 	{/snippet}

@@ -11,25 +11,28 @@
 	import Popover from '../popover/Popover.svelte';
 	import Calendar from './Calendar.svelte';
 	import { dates } from './ctx';
-	import { format, last, shift, today, valid, type Day, type Range } from './day';
+	import { format, last, today, valid, type Day, type Range } from './day';
+	import { defaultPresets, resolve, type PeriodOption } from './preset';
 
 	let {
 		range = $bindable(last(30, today(dates().zone))),
-		presets = [7, 30, 90, 365],
+		presets = defaultPresets,
 		max,
 		maxSpan = 366,
 		label = 'Period',
 		onchange,
+		ontoggle,
 		footer
 	}: {
 		range?: Range;
-		/** Trailing spans in days, ending on `max`. */
-		presets?: number[];
+		/** Numbers are trailing days; preset objects can resolve any calendar range. */
+		presets?: PeriodOption[];
 		/** The last pickable day; defaults to today in the zone. */
 		max?: Day;
 		maxSpan?: number;
 		label?: string;
 		onchange?: (range: Range) => void;
+		ontoggle?: (open: boolean) => void;
 		/** Extra content before the actions. It receives only the primary draft range. */
 		footer?: Snippet<[Footer]>;
 	} = $props();
@@ -37,20 +40,9 @@
 	const cfg = dates();
 	const phone = new MediaQuery('max-width: 30em');
 	const end = $derived(max ?? today(cfg.zone));
-	const month = $derived(end.slice(0, 8) + '01');
-	const opts = $derived([
-		...presets.map((days) => ({
-			label: days === 365 ? 'Last year' : `Last ${days} days`,
-			short: days === 365 ? '1y' : `${days}d`,
-			range: last(days, end)
-		})),
-		{ label: 'This month', short: 'This month', range: { start: month, end } },
-		{
-			label: 'Last month',
-			short: 'Last month',
-			range: { start: shift(month, { months: -1 }), end: shift(month, { days: -1 }) }
-		}
-	]);
+	const opts = $derived(
+		presets.map((option) => resolve(option, { end, weekStart: cfg.weekStart }))
+	);
 
 	let open = $state(false);
 	let draft = $state.raw<Range>({ ...range });
@@ -74,6 +66,7 @@
 		open = next;
 		draft = { ...range };
 		calendar?.reset();
+		ontoggle?.(next);
 	}
 
 	function apply() {
@@ -99,10 +92,11 @@
 	{#snippet children(close)}
 		<div class="content">
 			<nav class="presets" aria-label="Preset periods">
-				{#each opts as one (one.label)}
+				{#each opts as one (one.key)}
 					<button
 						type="button"
 						class={['preset', { on: same(draft, one.range) }]}
+						aria-pressed={same(draft, one.range)}
 						onclick={() => {
 							draft = { ...one.range };
 							calendar?.reset();
@@ -116,6 +110,9 @@
 
 			<div class="main">
 				<div class="calendar">
+					<p class="sr" id="{label.toLowerCase().replaceAll(' ', '-')}-help">
+						Choose a start and end date. Use arrow keys to move, then Enter or Space to select.
+					</p>
 					<Calendar
 						bind:this={calendar}
 						mode="range"
@@ -133,6 +130,7 @@
 						<span>From</span>
 						<input
 							type="date"
+							aria-invalid={!ok}
 							value={draft.start}
 							max={draft.end}
 							onchange={(e) => (draft = { ...draft, start: e.currentTarget.value })}
@@ -142,6 +140,7 @@
 						<span>To</span>
 						<input
 							type="date"
+							aria-invalid={!ok}
 							value={draft.end}
 							min={draft.start}
 							max={end}
@@ -310,6 +309,18 @@
 		min-width: 0;
 	}
 
+	.sr {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		padding: 0;
+		margin: -1px;
+		overflow: hidden;
+		clip: rect(0, 0, 0, 0);
+		white-space: nowrap;
+		border: 0;
+	}
+
 	.actions {
 		display: flex;
 		gap: 0.35em;
@@ -357,7 +368,12 @@
 		.footer {
 			position: sticky;
 			bottom: 0;
+			flex-wrap: wrap;
 			background: var(--surface);
+		}
+
+		.extra {
+			flex: 1 1 100%;
 		}
 	}
 </style>

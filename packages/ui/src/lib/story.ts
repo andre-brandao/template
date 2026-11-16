@@ -8,6 +8,7 @@ import * as calendar from "./date/Calendar.story.svelte";
 import * as datepicker from "./date/DatePicker.story.svelte";
 import * as datespanpicker from "./date/DateSpanPicker.story.svelte";
 import * as monthgrid from "./date/MonthGrid.story.svelte";
+import * as rangecompare from "./date/RangeCompare.story.svelte";
 import * as rangepicker from "./date/RangePicker.story.svelte";
 import * as select from "./input/Select.story.svelte";
 import * as textarea from "./input/Textarea.story.svelte";
@@ -95,6 +96,7 @@ export const stories = [
   { slug: "datepicker", story: datepicker.story, demo: datepicker.default },
   { slug: "datespanpicker", story: datespanpicker.story, demo: datespanpicker.default },
   { slug: "monthgrid", story: monthgrid.story, demo: monthgrid.default },
+  { slug: "rangecompare", story: rangecompare.story, demo: rangecompare.default },
   { slug: "rangepicker", story: rangepicker.story, demo: rangepicker.default },
   { slug: "select", story: select.story, demo: select.default },
   { slug: "textarea", story: textarea.story, demo: textarea.default },

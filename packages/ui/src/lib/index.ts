@@ -14,7 +14,9 @@ export { default as Calendar, type Mode } from "./date/Calendar.svelte";
 export { default as DatePicker } from "./date/DatePicker.svelte";
 export { default as DateSpanPicker, type Span } from "./date/DateSpanPicker.svelte";
 export { default as MonthGrid, type Cell, type Look } from "./date/MonthGrid.svelte";
+export { default as RangeCompare } from "./date/RangeCompare.svelte";
 export { default as RangePicker, type Footer } from "./date/RangePicker.svelte";
+export { comparison, type CompareMode, type Comparison } from "./date/compare";
 export { dates, setDates, type Dates } from "./date/ctx";
 export {
   at,
@@ -33,6 +35,15 @@ export {
   type Range,
   type Weekday,
 } from "./date/day";
+export {
+  defaultPresets,
+  preset,
+  resolve as resolvePreset,
+  trailing,
+  type PeriodOption,
+  type PeriodPreset,
+  type PresetContext,
+} from "./date/preset";
 
 // markdown
 export { default as Markdown } from "./markdown/Markdown.svelte";

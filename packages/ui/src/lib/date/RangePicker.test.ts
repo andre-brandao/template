@@ -4,6 +4,7 @@ import { describe, expect, test } from "bun:test";
 import { fireEvent, render, screen, within } from "@testing-library/svelte";
 
 import RangePicker from "./RangePicker.svelte";
+import { preset, trailing } from "./preset";
 
 describe("RangePicker render", () => {
   test("renders a period trigger and the configured presets", () => {
@@ -31,5 +32,20 @@ describe("RangePicker render", () => {
 
     await fireEvent.click(screen.getByRole("button", { name: "Apply" }));
     expect(picked).toEqual({ start: "2026-11-10", end: "2026-11-16" });
+  });
+
+  test("resolves calendar presets and exposes their selected state", async () => {
+    render(RangePicker, {
+      range: { start: "2026-11-16", end: "2026-11-16" },
+      max: "2026-11-16",
+      presets: [preset.today, preset.week, trailing(14)],
+    });
+
+    const nav = within(screen.getByRole("navigation", { name: "Preset periods" }));
+    expect(nav.getByRole("button", { name: /Today/ }).getAttribute("aria-pressed")).toBe("true");
+    await fireEvent.click(nav.getByRole("button", { name: /This week/ }));
+    expect(nav.getByRole("button", { name: /This week/ }).getAttribute("aria-pressed")).toBe(
+      "true",
+    );
   });
 });

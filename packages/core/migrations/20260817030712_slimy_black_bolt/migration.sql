@@ -1,1 +1,0 @@
-ALTER TABLE "key" ADD COLUMN "meta" jsonb DEFAULT '{}' NOT NULL;

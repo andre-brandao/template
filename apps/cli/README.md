@@ -26,10 +26,24 @@ one with `bun dev` or `bun scripts/pglite.ts`.
 ```sh
 template-cli db migrate                     # apply pending migrations to DATABASE_URL
 template-cli db migrate --url postgres://…  # or an explicit database
+template-cli db migrate --workspace ws_acme # one tenant schema only
 ```
 
-Runs drizzle-orm's migrator under Bun, sharing the journal with `drizzle-kit migrate`. It
-reads the migration files from source, so it isn't available in `--compile` builds.
+Runs drizzle-orm's migrator under Bun: `migrations/central` first (journal in
+`drizzle.__drizzle_migrations`), then `migrations/tenant` into the single-mode schema
+(`WORKSPACE_SCHEMA` › `public`) and every schema in `central.workspace`, each keeping its own
+journal. The sets are bundled into `migrations/{central,tenant}/index.ts` by `db:generate`, so it reads
+no files at runtime.
+
+## Workspaces
+
+```sh
+template-cli workspace create acme --name Acme  # central row, then the setup job (inline) migrates ws_acme
+template-cli workspace list                     # every workspace: slug, name, schema, status
+```
+
+Only multi-workspace apps (`WORKSPACES=multi`) need these; requests pick one by
+`x-workspace` header (API, MCP) or `workspace` cookie (dashboard).
 
 ## Health
 

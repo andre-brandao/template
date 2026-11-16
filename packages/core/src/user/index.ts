@@ -3,7 +3,7 @@ import { and, asc, eq, ilike, isNull, sql, type SQLWrapper } from "drizzle-orm";
 import { Assert } from "../util/assert";
 import { fn } from "../util/fn";
 import { iso } from "../util/fmt";
-import { Database } from "../drizzle";
+import { Central } from "../drizzle/central";
 import { Identity } from "../identity";
 import { Common } from "../common";
 import { ErrorCodes, VisibleError } from "../error";
@@ -12,9 +12,9 @@ import { Examples } from "../examples";
 import { Identifier } from "../identifier";
 import { Permission } from "../permission";
 import { sortable } from "../drizzle/order";
-import { UserTable } from "./user.sql";
+import { UserTable } from "./user.central";
 import { Patch, Prefs } from "./prefs";
-import { ProviderIds, ProviderTable } from "../auth/provider.sql";
+import { ProviderIds, ProviderTable } from "../auth/provider.central";
 
 export namespace User {
   export const assert = Assert.create("User");
@@ -92,7 +92,7 @@ export namespace User {
 
   /** Every provider with its connection state, so the profile can offer the unconnected ones. */
   export const providers = fn(z.void(), () =>
-    Database.use(async (tx) => {
+    Central.use(async (tx) => {
       const rows = await tx
         .select({
           providerId: ProviderTable.providerId,
@@ -126,7 +126,7 @@ export namespace User {
     // A grant, not an open door: signup holds it through the `auth` agent, an App through its admin.
     async (input) => {
       Identity.check({ user: ["create"] });
-      const user = await Database.use((tx) =>
+      const user = await Central.use((tx) =>
         tx
           .insert(UserTable)
           .values({
@@ -151,7 +151,7 @@ export namespace User {
    * resolves its actor through this. Admin screens query directly to restore them.
    */
   export const fromID = fn(Info.shape.id, (id) =>
-    Database.use((tx) =>
+    Central.use((tx) =>
       tx
         .select()
         .from(UserTable)
@@ -170,7 +170,7 @@ export namespace User {
     z.object({ search: z.string().optional().meta({ description: "Part of a name." }) }),
     (input) => {
       Identity.check({ user: ["read"] });
-      return Database.use((tx) =>
+      return Central.use((tx) =>
         tx
           .select({
             id: UserTable.id,
@@ -238,7 +238,7 @@ export namespace User {
     (input) => {
       const id = Identity.userID();
       Identity.check({ user: ["update"] }, id);
-      return Database.use((tx) =>
+      return Central.use((tx) =>
         tx
           .update(UserTable)
           .set({ ...input, timeUpdated: new Date() })
@@ -250,7 +250,7 @@ export namespace User {
   /** Patch-merges prefs with a jsonb `||` in one statement — no read-modify-write race. */
   export const prefs = fn(Patch, (input) => {
     Identity.check({ user: ["update"] }, Identity.userID());
-    return Database.use((tx) =>
+    return Central.use((tx) =>
       tx
         .update(UserTable)
         .set({
@@ -263,7 +263,7 @@ export namespace User {
 
   /** Reads past the disabled filter `fromID` applies — the admin screens act on those rows. */
   const target = (id: string) =>
-    Database.use((tx) =>
+    Central.use((tx) =>
       tx
         .select()
         .from(UserTable)
@@ -289,7 +289,7 @@ export namespace User {
       const before = await assert.exists(target(input.id));
       if (before.role === input.role) return;
 
-      return Database.transaction(async (tx) => {
+      return Central.transaction(async (tx) => {
         await tx
           .update(UserTable)
           .set({ role: input.role, timeUpdated: new Date() })
@@ -306,7 +306,7 @@ export namespace User {
     const before = await assert.exists(target(id));
     if (before.timeDeleted) return;
 
-    return Database.transaction(async (tx) => {
+    return Central.transaction(async (tx) => {
       await tx.update(UserTable).set({ timeDeleted: new Date() }).where(eq(UserTable.id, id));
       await Event.Removed.publish({ email: before.email }, { subject: id });
     });
@@ -317,7 +317,7 @@ export namespace User {
     const before = await assert.exists(target(id));
     if (!before.timeDeleted) return;
 
-    return Database.transaction(async (tx) => {
+    return Central.transaction(async (tx) => {
       await tx
         .update(UserTable)
         .set({ timeDeleted: null, timeUpdated: new Date() })

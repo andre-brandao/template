@@ -1,6 +1,6 @@
 import { and, eq, gt, isNull, like, lte, or, sql } from "drizzle-orm";
 import type { PgAsyncDatabase, PgQueryResultHKT } from "drizzle-orm/pg-core";
-import { KvTable } from "../kv.sql";
+import { KvTable } from "../kv.central";
 import type { Store } from "../port";
 
 /** Whatever can run drizzle queries — the app's pooled db or an open transaction. */

@@ -10,6 +10,7 @@ import type { ExtractTablesWithRelations } from "drizzle-orm/relations";
 import pg from "postgres";
 import { Context } from "../context";
 import { Log } from "../util/log";
+import type { Workspace } from "../workspace";
 
 export namespace Database {
   export const DEFAULT_URL = "postgresql://postgres:password@localhost:5432/postgres";
@@ -31,6 +32,9 @@ export namespace Database {
   export type Client = { db: PostgresJsDatabase; sql: ReturnType<typeof pg> };
 
   const DatabaseContext = Context.create<Client>();
+
+  /** The workspace queries run in. Set it through `Workspace.provide`, never directly. */
+  export const Tenant = Context.create<Workspace.Info>();
   let fallback: Client | undefined;
 
   /**
@@ -102,11 +106,18 @@ export namespace Database {
     if (existing) {
       return callback(existing.tx);
     }
+    // search_path is set per transaction, so a tenant query needs one.
+    if (path()) return transaction(callback);
     const tx = db();
     const effects: (() => void | Promise<void>)[] = [];
     const result = await TransactionContext.provide({ tx, effects }, () => callback(tx));
     await Promise.all(effects.map((effect) => effect()));
     return result;
+  }
+
+  /** True inside `use` or `transaction`, where switching workspace would be ignored. */
+  export function open() {
+    return !!TransactionContext.peek();
   }
 
   /** Scopes a client to `fn` — everything under it reads through that pool. */
@@ -145,12 +156,21 @@ export namespace Database {
     }
 
     const effects: (() => void | Promise<void>)[] = [];
-    const result = await db().transaction(
-      async (tx) => TransactionContext.provide({ tx, effects }, () => callback(tx)),
-      config,
-    );
+    const schema = path();
+    const result = await db().transaction(async (tx) => {
+      // Transaction-local (`true`), so a pooled connection never keeps a tenant's path.
+      if (schema) await tx.execute(sql`select set_config('search_path', ${`"${schema}"`}, true)`);
+      return TransactionContext.provide({ tx, effects }, () => callback(tx));
+    }, config);
     await Promise.all(effects.map((effect) => effect()));
     return result as T;
+  }
+
+  // `public` is already on the default search_path, so it needs no transaction.
+  function path() {
+    const schema = Tenant.peek()?.schema;
+    if (schema === "public") return;
+    return schema;
   }
 
   export async function healthcheck(): Promise<{

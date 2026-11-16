@@ -7,7 +7,7 @@ import { InsightsApi } from "./handler/insights";
 import { ProjectApi } from "./handler/project";
 import { FileApi } from "./handler/file";
 import { HookApi } from "./handler/hook";
-import { auth } from "./middleware";
+import { auth, tenancy } from "./middleware";
 import { health } from "../health";
 import { fail } from "./error";
 
@@ -34,6 +34,7 @@ export const app = new Hono()
     return next();
   })
   .use(auth())
+  .use(tenancy())
   .route("/", routes)
   .onError(fail);
 

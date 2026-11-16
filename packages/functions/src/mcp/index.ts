@@ -4,7 +4,7 @@ import { McpServer, createMcpHandler } from "@modelcontextprotocol/server";
 import { VisibleError } from "@template/core/error";
 import { issuer } from "../api/auth";
 import { fail } from "../api/error";
-import { auth } from "../api/middleware";
+import { auth, tenancy } from "../api/middleware";
 import { authRequired } from "../api/common";
 import { feedback } from "./tool/feedback";
 import { todo } from "./tool/todo";
@@ -40,6 +40,7 @@ export const app = new Hono()
   .get(META, cors(), metadata)
   .get(`${META}/mcp`, cors(), metadata)
   .use(auth("mcp"))
+  .use(tenancy())
   .all("/mcp", authRequired, (c) => handler.fetch(c.req.raw))
   .onError((error, c) => {
     // The 401 is how an MCP client learns to start OAuth: it names the metadata to read.

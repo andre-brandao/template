@@ -9,15 +9,15 @@ import { token } from "../../util/token";
 import { Auth } from "../../auth";
 import { Bus } from "../bus";
 import { Common } from "../../common";
-import { Database } from "../../drizzle";
+import { Central } from "../../drizzle/central";
 import { ErrorCodes, VisibleError } from "../../error";
 import { Examples } from "../../examples";
 import { Identity } from "../../identity";
 import { Identifier } from "../../identifier";
 import { User } from "../../user";
-import { UserTable } from "../../user/user.sql";
+import { UserTable } from "../../user/user.central";
 import { Key } from "../key";
-import { KeyTable } from "../key/key.sql";
+import { KeyTable } from "../key/key.central";
 import { Webhook } from "../webhook";
 
 /** Five minutes either side of now: long enough for clock skew, short enough to stop replays. */
@@ -108,7 +108,7 @@ export namespace App {
     async (input) => {
       Identity.check({ app: ["update"] });
       await assert.exists(fromID(input.id));
-      await Database.use((tx) =>
+      await Central.use((tx) =>
         tx
           .update(UserTable)
           .set({ name: input.name, image: input.image, timeUpdated: new Date() })
@@ -124,7 +124,7 @@ export namespace App {
     async (id) => {
       Identity.check({ app: ["delete"] });
       await assert.exists(fromID(id));
-      await Database.transaction(async (tx) => {
+      await Central.transaction(async (tx) => {
         await tx.update(UserTable).set({ timeDeleted: new Date() }).where(eq(UserTable.id, id));
         for (const hook of await Webhook.list(id)) await Webhook.remove(hook.id);
       });
@@ -186,7 +186,7 @@ export namespace App {
       Identity.check({ app: ["update"] });
       await assert.exists(fromID(id));
       const value = token("whsec_");
-      await Database.transaction(async (tx) => {
+      await Central.transaction(async (tx) => {
         await tx.delete(KeyTable).where(and(eq(KeyTable.userID, id), eq(KeyTable.type, "hook")));
         await tx.insert(KeyTable).values({
           id: Identifier.create("key"),
@@ -219,7 +219,7 @@ export namespace App {
     }),
     async (input) => {
       const time = Number(input.timestamp);
-      const held = await Database.use((tx) =>
+      const held = await Central.use((tx) =>
         tx
           .select({ secret: KeyTable.key })
           .from(KeyTable)
@@ -278,7 +278,7 @@ export namespace App {
 
   function query(id?: string) {
     const owner = alias(UserTable, "owner");
-    return Database.use((tx) =>
+    return Central.use((tx) =>
       tx
         .select({
           id: UserTable.id,

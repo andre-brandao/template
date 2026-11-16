@@ -6,7 +6,15 @@ import { z } from "zod";
 export const ErrorResponse = z
   .object({
     type: z
-      .enum(["validation", "authentication", "forbidden", "not_found", "rate_limit", "internal"])
+      .enum([
+        "validation",
+        "authentication",
+        "forbidden",
+        "not_found",
+        "conflict",
+        "rate_limit",
+        "internal",
+      ])
       .meta({
         description: "The error type category",
         examples: ["validation", "authentication"],
@@ -77,6 +85,13 @@ export const ErrorCodes = {
     RESOURCE_NOT_FOUND: "resource_not_found",
   },
 
+  // Conflict errors (409)
+  Conflict: {
+    NOT_READY: "not_ready",
+    SINGLE_WORKSPACE: "single_workspace",
+    LAST_OWNER: "last_owner",
+  },
+
   // Rate limit errors (429)
   RateLimit: {
     EXCEEDED: "rate_limit_exceeded",
@@ -105,7 +120,7 @@ export class VisibleError extends Error {
   /**
    * Convert this error to an HTTP status code
    */
-  public statusCode(): 400 | 401 | 403 | 404 | 429 | 500 {
+  public statusCode(): 400 | 401 | 403 | 404 | 409 | 429 | 500 {
     switch (this.type) {
       case "validation":
         return 400;
@@ -115,6 +130,8 @@ export class VisibleError extends Error {
         return 403;
       case "not_found":
         return 404;
+      case "conflict":
+        return 409;
       case "rate_limit":
         return 429;
       case "internal":

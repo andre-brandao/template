@@ -4,6 +4,7 @@ import { api } from "./api";
 import { login, logout, whoami } from "./auth";
 import { health } from "./health";
 import { db } from "./db";
+import { workspace } from "./workspace";
 import { serve } from "./serve";
 
 const help = `template-cli — run and talk to the template
@@ -11,19 +12,22 @@ const help = `template-cli — run and talk to the template
 Usage:
   template-cli serve <api|mcp|auth|dashboard>  Serve a surface
   template-cli health <target> [--probe]       Probe it: ready (default), live or start
-  template-cli db migrate [--url]              Apply pending database migrations
+  template-cli db migrate [--url --workspace]  Apply migrations: central + every tenant, or one
+  template-cli workspace create <slug> [--name] Register a workspace and migrate its schema
+  template-cli workspace list                  List every workspace
   template-cli api [method] [args]             Call the API via the built-in SDK
   template-cli login [--issuer --url]          Log in via browser (PKCE) and save tokens
   template-cli logout                          Forget the saved tokens
   template-cli whoami                          Show the current user
 
-Env: API_URL, AUTH_URL, TEMPLATE_TOKEN, PORT, API_PORT, MCP_PORT, DATABASE_URL, AUTH_PERSIST
+Env: API_URL, AUTH_URL, TEMPLATE_TOKEN, PORT, API_PORT, MCP_PORT, DATABASE_URL, AUTH_PERSIST, WORKSPACE_SCHEMA
 Note: "serve api", "serve mcp" and "serve auth" need a reachable DATABASE_URL (use "bun dev" for local pglite).`;
 
 const commands: Record<string, (rest: string[]) => unknown> = {
   serve,
   health,
   db,
+  workspace,
   api,
   login,
   logout,

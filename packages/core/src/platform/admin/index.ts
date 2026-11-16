@@ -5,11 +5,13 @@ import { iso } from "../../util/fmt";
 import { Identity } from "../../identity";
 import { Common } from "../../common";
 import { Database } from "../../drizzle";
+import { Central } from "../../drizzle/central";
 import { ProjectTable } from "../../project/project.sql";
-import { JobTable } from "../../lib/queue/queue.sql";
+import { JobTable } from "../../lib/queue/queue.central";
 import { TodoTable } from "../../todo/todo.sql";
 import { User } from "../../user";
-import { UserTable } from "../../user/user.sql";
+import { UserTable } from "../../user/user.central";
+import { Workspace } from "../../workspace";
 
 /** The back office: the account directory, plus read-only stats queried live. */
 export namespace Admin {
@@ -33,7 +35,7 @@ export namespace Admin {
             )
           : undefined,
       );
-      return Database.use(async (tx) => {
+      return Central.use(async (tx) => {
         const [rows, totalRows] = await Promise.all([
           tx
             .select()
@@ -64,15 +66,14 @@ export namespace Admin {
   });
   export type Table = z.infer<typeof Table>;
 
-  /** Per-table size and row estimate (planner's `n_live_tup` — cheap), plus the db total. */
-  export const tables = fn(z.void(), async () => {
-    Identity.check({ admin: ["read"] });
+  async function measure(where: SQL) {
     const [rows, size] = await Promise.all([
       raw(sql`
         SELECT relname AS name,
                n_live_tup AS rows,
                pg_total_relation_size(relid) AS bytes
         FROM pg_stat_user_tables
+        WHERE ${where}
         ORDER BY pg_total_relation_size(relid) DESC
       `),
       raw(sql`SELECT pg_database_size(current_database()) AS bytes`),
@@ -86,12 +87,29 @@ export namespace Admin {
       })),
       bytes: Number([...size][0]?.bytes ?? 0),
     };
+  }
+
+  /** Per-table size and row estimate (planner's `n_live_tup` — cheap), plus the db total. */
+  export const tables = fn(z.void(), () => {
+    Identity.check({ admin: ["read"] });
+    return measure(sql`schemaname IN (${Workspace.peek()?.schema ?? "public"}, 'central')`);
   });
+
+  /** The same, narrowed to one workspace schema's own tables. */
+  export const schema = fn(
+    z.object({
+      schema: z.string().meta({ description: "The workspace schema.", example: "ws_acme" }),
+    }),
+    (input) => {
+      Identity.check({ admin: ["read"] });
+      return measure(sql`schemaname = ${input.schema}`);
+    },
+  );
 
   /** Queue depth and the age of the oldest thing still waiting — the "is it stuck" number. */
   export const queue = fn(z.void(), () => {
     Identity.check({ admin: ["read"] });
-    return Database.use(async (tx) => {
+    return Central.use(async (tx) => {
       const [pending, running, failed, oldest] = await Promise.all([
         tx
           .select({ n: count() })
@@ -124,25 +142,26 @@ export namespace Admin {
   });
 
   /** Product tallies rather than storage ones — what the instance actually holds. */
-  export const counts = fn(z.void(), () => {
+  export const counts = fn(z.void(), async () => {
     Identity.check({ admin: ["read"] });
-    return Database.use(async (tx) => {
-      const one = (table: typeof UserTable | typeof ProjectTable | typeof TodoTable, where?: any) =>
+    // Accounts are central, the rest per workspace: each half reads through its own runner.
+    const one =
+      (table: typeof UserTable | typeof ProjectTable | typeof TodoTable, where?: any) =>
+      (tx: Database.TxOrDb) =>
         tx
           .select({ n: count() })
           .from(table as any)
           .where(where)
           .then((r) => r[0]?.n ?? 0);
 
-      const [users, disabled, projects, todos, done] = await Promise.all([
-        one(UserTable, isNull(UserTable.timeDeleted)),
-        one(UserTable, isNotNull(UserTable.timeDeleted)),
-        one(ProjectTable, isNull(ProjectTable.timeDeleted)),
-        one(TodoTable, isNull(TodoTable.timeDeleted)),
-        one(TodoTable, isNotNull(TodoTable.timeDone)),
-      ] as const);
-      return { users, disabled, projects, todos, done };
-    });
+    const [users, disabled, projects, todos, done] = await Promise.all([
+      Central.use(one(UserTable, isNull(UserTable.timeDeleted))),
+      Central.use(one(UserTable, isNotNull(UserTable.timeDeleted))),
+      Database.use(one(ProjectTable, isNull(ProjectTable.timeDeleted))),
+      Database.use(one(TodoTable, isNull(TodoTable.timeDeleted))),
+      Database.use(one(TodoTable, isNotNull(TodoTable.timeDone))),
+    ] as const);
+    return { users, disabled, projects, todos, done };
   });
 
   /** Version, connection headroom and uptime — what you want when the pool misbehaves. */

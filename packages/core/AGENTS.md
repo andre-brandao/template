@@ -19,7 +19,7 @@
 - **Testing**: Use `bun:test` with `describe`/`it` pattern and `withTestUser` helper
 - **Documentation**: Annotate every Zod schema with `.meta({ description, example })`. These
   schemas are where the OpenAPI spec starts, so a missing description ships all the way to the SDK
-- **Database**: Use Drizzle ORM via `Database.use()` for shared db/tx access and `Database.transaction()` when you need an explicit transaction
+- **Database**: Use Drizzle ORM via `Database.use()` for shared db/tx access and `Database.transaction()` when you need an explicit transaction; modules on `*.central.ts` tables use `Central.use()`/`Central.transaction()` instead
 - **Validation**: Use `fn()` utility for input validation and schema definition. Pass a third
   `{ title, description }` when the op backs an HTTP route or an MCP tool — that prose is what the
   route's `summary`/`description` and the tool's registration both read, so it is written once
@@ -34,8 +34,10 @@
   agent delegations (`delegation.ts`)).
 - No top-level shim files at `src/<module>.ts` alongside `src/<module>/`.
   Consumers import through the directory via `@template/core/<module>`.
-- SQL schemas live next to the module they belong to (`user/user.sql.ts`,
-  `auth/provider.sql.ts`, `todo/todo.sql.ts`).
+- SQL schemas live next to the module they belong to. Shared tables are
+  `*.central.ts` on `central.table` (`user/user.central.ts`, `auth/provider.central.ts`);
+  per-workspace tables are `*.sql.ts` on `snakeCase.table` (`todo/todo.sql.ts`). See
+  `docs/core.md#workspaces`.
 - Inside a file, order for a reader asking what the module does, not how:
   schemas and their inferred types, shared constants, exported operations in
   lifecycle order (`create`, `list`, `fromID`, `update`, `remove`), then

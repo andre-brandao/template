@@ -3,6 +3,7 @@ import { Context } from "./context";
 import { Log } from "./util/log";
 import { Permission } from "./permission";
 import { ErrorCodes, VisibleError } from "./error";
+import { Workspace } from "./workspace";
 
 /**
  * Who is acting: a `user`, an `agent` for one, an App's `system` account, or the app's own
@@ -82,11 +83,17 @@ export namespace Identity {
     name: z.string().optional(),
     scope: grants.optional(),
     credential: z.string().optional(),
+    // The workspace it was pushed in; replay runs the job there.
+    workspace: z
+      .object({ schema: z.string(), role: z.enum(Workspace.roles).optional() })
+      .optional(),
   });
   export type Stamp = z.infer<typeof Stamp>;
 
   const ctx = Context.create<Info>();
   export const use = ctx.use;
+  /** The identity if one is provided — pre-auth paths and scripts have none. */
+  export const peek = ctx.peek;
 
   export function provide<R, T extends Type>(
     type: T,
@@ -146,9 +153,15 @@ export namespace Identity {
   /** The current identity as a queue can carry it, or null for public. */
   export function stamp(): Stamp | null {
     const info = use();
+    const workspace = Workspace.peek();
     if (info.type === "public") return null;
     if (info.type === "internal")
-      return { type: "internal", name: info.properties.name, scope: info.properties.scope };
+      return {
+        type: "internal",
+        name: info.properties.name,
+        scope: info.properties.scope,
+        workspace,
+      };
     if (info.type === "agent")
       return {
         type: "agent",
@@ -156,11 +169,13 @@ export namespace Identity {
         name: info.properties.name,
         scope: info.properties.scope,
         credential: info.properties.credential,
+        workspace,
       };
     return {
       type: info.type,
       userID: info.properties.userID,
       credential: info.properties.credential,
+      workspace,
     };
   }
 

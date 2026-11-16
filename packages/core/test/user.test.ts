@@ -2,7 +2,7 @@ import { describe, expect, it } from "bun:test";
 import { User } from "../src/user";
 import { Auth } from "../src/auth";
 import { Identity } from "../src/identity";
-import { ProviderIds } from "../src/auth/provider.sql";
+import { ProviderIds } from "../src/auth/provider.central";
 import { DEFAULTS, zone } from "../src/user/prefs";
 import { testEmail, withTestUser } from "./util";
 

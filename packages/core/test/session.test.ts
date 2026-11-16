@@ -2,7 +2,7 @@ import { describe, expect, it } from "bun:test";
 import { eq } from "drizzle-orm";
 import { Database } from "../src/drizzle";
 import { Key } from "../src/platform/key";
-import { KeyTable } from "../src/platform/key/key.sql";
+import { KeyTable } from "../src/platform/key/key.central";
 import { Session } from "../src/auth/session";
 import { Identity } from "../src/identity";
 import { User } from "../src/user";

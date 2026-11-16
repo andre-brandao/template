@@ -11,16 +11,17 @@ The one entrypoint that runs and talks to the template. Bun-only, no build step 
 
 ## Layout
 
-| File            | Owns                                                                 |
-| --------------- | -------------------------------------------------------------------- |
-| `src/index.ts`  | Command table + help text. Every command is one entry in `commands`. |
-| `src/serve.ts`  | `serve api\|mcp\|auth\|dashboard`                                    |
-| `src/health.ts` | `health <target>` — probe a surface, exit code as the answer         |
-| `src/db.ts`     | `db migrate [--url]` — apply core migrations via `Migrations.apply`  |
-| `src/api.ts`    | SDK reflection, param parsing, result printing                       |
-| `src/auth.ts`   | `login` (browser PKCE), `logout`, `whoami`                           |
-| `src/config.ts` | `~/.config/template/config.json` read/write + token/url resolution   |
-| `src/args.ts`   | Raw `--flag` helpers (`value`, `strip`)                              |
+| File               | Owns                                                                 |
+| ------------------ | -------------------------------------------------------------------- |
+| `src/index.ts`     | Command table + help text. Every command is one entry in `commands`. |
+| `src/serve.ts`     | `serve api\|mcp\|auth\|dashboard`                                    |
+| `src/health.ts`    | `health <target>` — probe a surface, exit code as the answer         |
+| `src/db.ts`        | `db migrate [--url --workspace]` — `Migrations.apply` / `.tenant`    |
+| `src/workspace.ts` | `workspace create\|list` — `Workspaces.create`, setup job run inline |
+| `src/api.ts`       | SDK reflection, param parsing, result printing                       |
+| `src/auth.ts`      | `login` (browser PKCE), `logout`, `whoami`                           |
+| `src/config.ts`    | `~/.config/template/config.json` read/write + token/url resolution   |
+| `src/args.ts`      | Raw `--flag` helpers (`value`, `strip`)                              |
 
 ## Rules
 
@@ -41,7 +42,7 @@ The one entrypoint that runs and talks to the template. Bun-only, no build step 
 - Output goes through `output()` in `api.ts`: JSON to stdout, errors to stderr with a
   non-zero exit. Keep the CLI pipeable.
 - Env read by this package: `API_URL`, `AUTH_URL`, `TEMPLATE_TOKEN`, `PORT`, `API_PORT`, `MCP_PORT`,
-  `DATABASE_URL`, `AUTH_PERSIST`, `XDG_CONFIG_HOME`.
+  `DATABASE_URL`, `AUTH_PERSIST`, `XDG_CONFIG_HOME`, `WORKSPACE_SCHEMA` (via `Migrations.apply`).
 
 ## Tests
 

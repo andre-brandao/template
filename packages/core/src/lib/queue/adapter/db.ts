@@ -1,7 +1,7 @@
 import { eq, sql } from "drizzle-orm";
 import type { PgAsyncDatabase, PgQueryResultHKT } from "drizzle-orm/pg-core";
 import { Identifier } from "../../../identifier";
-import { JobTable } from "../queue.sql";
+import { JobTable } from "../queue.central";
 import type { Config, Port } from "../port";
 
 /** Whatever can run drizzle queries — the app's pooled db or an open transaction. */

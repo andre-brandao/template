@@ -1,14 +1,14 @@
 import { z } from "zod";
 import { and, eq, gt, isNull, lt } from "drizzle-orm";
 import { fn } from "../util/fn";
-import { Database } from "../drizzle";
+import { Central } from "../drizzle/central";
 import { ErrorCodes, VisibleError } from "../error";
 import { Identity } from "../identity";
 import { Identifier } from "../identifier";
 import { Permission } from "../permission";
 import { digest, encode } from "../util/hash";
 import { token } from "../util/token";
-import { KeyTable } from "../platform/key/key.sql";
+import { KeyTable } from "../platform/key/key.central";
 
 /**
  * A person lending their authority to an agent: an `agt-` bearer that resolves to an `agent`
@@ -47,7 +47,7 @@ export namespace Delegation {
         );
       const scope = input.scope ?? held;
       const secret = token("agt-");
-      await Database.transaction(async (tx) => {
+      await Central.transaction(async (tx) => {
         // Expired delegations are never read again, so minting a new one sweeps them.
         await tx
           .delete(KeyTable)
@@ -75,7 +75,7 @@ export namespace Delegation {
   /** Who lent what to whom, or null when the token is unknown or expired. */
   export const verify = fn(z.string(), async (secret) => {
     const hash = encode(await digest(secret));
-    const row = await Database.use((tx) =>
+    const row = await Central.use((tx) =>
       tx
         .select({
           id: KeyTable.id,

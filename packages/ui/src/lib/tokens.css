@@ -31,6 +31,8 @@
     --progress: light-dark(#a3672a, #c98a3f);
     --done: light-dark(#2f7f68, #4fa98f);
     --danger: light-dark(#b8452c, #d3684f);
+    /* A cool hue for ideas and notices, apart from the teal that already means done. */
+    --info: light-dark(#3d63b8, #7f9fe6);
     --radius: 8px;
     --radius-sm: 6px;
     /* One height for every control (button, input, select, toggle); a toolbar may lower it. */

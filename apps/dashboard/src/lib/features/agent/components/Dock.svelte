@@ -5,9 +5,15 @@
 -->
 <script lang="ts">
 	import { createHotkey, createHotkeyAttachment } from '@tanstack/svelte-hotkeys';
+	import { onMount, type Component } from 'svelte';
 	import { innerWidth } from 'svelte/reactivity/window';
 	import { agent } from '../agent.svelte';
-	import Agent from './Agent.svelte';
+
+	// The chat, its renderers and page tools load after hydration, so a first paint never waits on them.
+	let Agent = $state<Component>();
+	onMount(async () => {
+		Agent = (await import('./Agent.svelte')).default;
+	});
 
 	const ctx = agent();
 	const full = $derived(ctx.open && (ctx.full || ctx.narrow));
@@ -100,7 +106,7 @@
 		></div>
 	{/if}
 	<!-- Full width while the column slides, so the chat clips instead of reflowing. -->
-	<div class="pane"><Agent /></div>
+	<div class="pane">{#if Agent}<Agent />{/if}</div>
 </div>
 
 <style>

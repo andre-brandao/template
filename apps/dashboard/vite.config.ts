@@ -96,6 +96,11 @@ export default defineConfig({
     }),
     process.env.SVELTE_ADAPTER === "cloudflare" ? cloudflaredPg() : workers(),
   ],
+  environments: {
+    // The SSR runner awaits each import in turn, so a cold first render was a waterfall.
+    // Pre-transforming static imports (the client default) compiles them in parallel.
+    ssr: { dev: { preTransformRequests: true } },
+  },
   build: {
     rolldownOptions: {
       output: {

@@ -1,0 +1,35 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "template-agent",
+  "main": "./worker.ts",
+  "compatibility_date": "2026-05-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "containers": [
+    {
+      "class_name": "SandboxContainer",
+      "image": "./Dockerfile",
+      "max_instances": 5,
+    },
+  ],
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "RUN_COORDINATOR",
+        "class_name": "RunCoordinator",
+      },
+      {
+        "name": "Sandbox",
+        "class_name": "SandboxContainer",
+      },
+    ],
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["RunCoordinator", "SandboxContainer"],
+    },
+  ],
+  "vars": {
+    "SANDBOX_TRANSPORT": "rpc",
+  },
+}

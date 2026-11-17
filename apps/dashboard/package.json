@@ -32,6 +32,7 @@
     "@tanstack/svelte-hotkeys": "catalog:frontend",
     "@tanstack/svelte-query": "catalog:frontend",
     "@tanstack/svelte-table": "^9.3.2",
+    "@template/agent": "workspace:*",
     "@template/core": "workspace:*",
     "@template/functions": "workspace:*",
     "@template/sdk": "workspace:*",

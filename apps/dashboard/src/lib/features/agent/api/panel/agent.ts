@@ -1,6 +1,7 @@
 import { AsyncLocalStorage } from "node:async_hooks";
 import { chat, defineAgent, toolDefinition, type StreamChunk } from "@tanstack/ai";
 import type { z } from "zod";
+import { Model } from "@template/agent";
 import { Identity } from "@template/core/identity";
 import { instructions, shape } from "../../panel/catalog";
 import { check } from "../../panel/check";
@@ -57,7 +58,7 @@ export function panel(input: { thread: string; model?: string }) {
         );
         return deliver(
           chat({
-            adapter: Agent.adapter(input.model),
+            adapter: Model.text(input.model),
             messages: ctx.messages,
             ...ctx.forward,
             systemPrompts: [Agent.prompt, guide, ...sql.prompts],

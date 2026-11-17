@@ -1,10 +1,10 @@
 import { chatParamsFromRequestBody, toServerSentEventsResponse } from "@tanstack/ai";
 import { error, type RequestEvent } from "@sveltejs/kit";
 import { z } from "zod";
+import { Model } from "@template/agent";
 import { Identity } from "@template/core/identity";
 import { Delegation } from "@template/core/auth/delegation";
 import { agents } from "./agents";
-import { Agent } from "./core";
 
 /** What the browser forwards with each message: model and page. */
 const Props = z.object({
@@ -44,7 +44,7 @@ export async function serve(event: RequestEvent) {
   const params = await chatParamsFromRequestBody(body);
   // The browser's conversation id keys the recorded thread, whose column is capped.
   if (params.threadId.length > 255) error(400, "Invalid threadId");
-  const opts = forwarded(params.forwardedProps, (await Agent.models()).ids);
+  const opts = forwarded(params.forwardedProps, (await Model.list()).ids);
   const abortController = new AbortController();
   const stream = await agents.orchestrator({
     ...opts,

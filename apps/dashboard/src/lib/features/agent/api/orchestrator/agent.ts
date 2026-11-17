@@ -5,6 +5,7 @@ import {
   type ModelMessage,
   type UIMessage,
 } from "@tanstack/ai";
+import { Model } from "@template/agent";
 import { Agent } from "../core";
 import { delegate, panel } from "../panel/agent";
 import { relax } from "../tools";
@@ -30,7 +31,7 @@ export async function orchestrator(
   const link = Agent.attach(await Agent.mcp(input.token));
   const child = panel({ thread: input.threadId, model: input.model });
   return chat({
-    adapter: Agent.adapter(input.model),
+    adapter: Model.text(input.model),
     messages: input.messages,
     threadId: input.threadId,
     runId: input.runId,
